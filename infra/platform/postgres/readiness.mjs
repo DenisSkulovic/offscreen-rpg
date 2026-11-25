@@ -10,6 +10,7 @@ import {
   DEV_CNPG_NAMESPACE,
   DEV_CNPG_OWNER,
 } from './dev-bootstrap.mjs';
+import { assessCnpgClusterTopologyReadiness } from './topology.mjs';
 
 const CNPG_CLUSTER_LABEL = 'cnpg.io/cluster';
 const CNPG_INSTANCE_ROLE = 'cnpg.io/instanceRole';
@@ -17,18 +18,6 @@ const DEV_DATABASE = 'dev';
 const SQL_PROBE_TIMEOUT_MS = 30_000;
 const DEFAULT_READINESS_TIMEOUT_MS = 480_000;
 const READINESS_POLL_MS = 5_000;
-
-/**
- * @param {object} cluster
- */
-function clusterReadyConditionTrue(cluster) {
-  const conditions = Array.isArray(cluster?.status?.conditions)
-    ? cluster.status.conditions
-    : [];
-  return conditions.some(
-    (item) => item?.type === 'Ready' && item?.status === 'True',
-  );
-}
 
 /**
  * @param {object} pod
@@ -127,17 +116,17 @@ export function observeDevPostgresReady(deps = {}) {
   if (owner !== DEV_CNPG_OWNER) {
     return { ok: false, detail: 'shared CNPG cluster has foreign ownership' };
   }
-  if (!clusterReadyConditionTrue(cluster)) {
-    return { ok: false, detail: 'shared CNPG cluster is not Ready' };
+
+  const expectedInstances = cluster?.spec?.instances;
+  const topology = assessCnpgClusterTopologyReadiness(
+    cluster,
+    expectedInstances,
+  );
+  if (!topology.ok) {
+    return { ok: false, detail: `shared CNPG cluster ${topology.detail}` };
   }
 
-  const currentPrimary = cluster?.status?.currentPrimary;
-  if (typeof currentPrimary !== 'string' || currentPrimary.length === 0) {
-    return {
-      ok: false,
-      detail: 'shared CNPG cluster currentPrimary is missing',
-    };
-  }
+  const currentPrimary = topology.currentPrimary;
 
   const podObservation = readPlatformObject(
     {

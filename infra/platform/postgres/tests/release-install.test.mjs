@@ -19,6 +19,7 @@ import {
   executeAuthorizedReleaseCnpg,
   planReleaseCnpg,
 } from '../release-install.mjs';
+import { CNPG_HEALTHY_PHASE } from '../topology.mjs';
 
 const postgresRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const pin = parseCnpgPin(
@@ -48,7 +49,7 @@ function compatibleNamespace() {
   };
 }
 
-function compatibleCluster() {
+function compatibleCluster(overrides = {}) {
   const docs = renderPlatformDocuments(
     { service: 'postgres', profile: 'release', section: 'cluster' },
     { run: helmRun },
@@ -69,7 +70,24 @@ function compatibleCluster() {
       localeCType: spec.bootstrap.initdb.localeCType,
       localeCollate: spec.bootstrap.initdb.localeCollate,
     },
+    ...overrides,
   };
+}
+
+/**
+ * @param {number} instances
+ */
+function healthyClusterJson(instances) {
+  return JSON.stringify({
+    spec: { instances },
+    status: {
+      instances,
+      readyInstances: instances,
+      phase: CNPG_HEALTHY_PHASE,
+      conditions: [{ type: 'Ready', status: 'True' }],
+      currentPrimary: `lab-pg-${instances}`,
+    },
+  });
 }
 
 const ready = {
@@ -82,6 +100,32 @@ const ready = {
   resources: [],
   crdState: 'absent',
 };
+
+test('live instance count above profile default reuses without apply', () => {
+  const decision = ensureReleaseCnpg(
+    {
+      ...ready,
+      resources: [
+        {
+          kind: 'Deployment',
+          name: 'cnpg-controller-manager',
+          namespace: 'cnpg-system',
+          image: pin.operatorImage,
+        },
+        compatibleNamespace(),
+        compatibleCluster({ instances: 4 }),
+      ],
+      crdState: 'present',
+    },
+    { authorize: true, operatorManifestSha256: pin.sha256 },
+  );
+  assert.equal(decision.ok, true);
+  assert.equal(decision.expectedInstances, 4);
+  assert.equal(
+    decision.actions.some((action) => action.op === 'apply-cluster'),
+    false,
+  );
+});
 
 test('matching namespace, cluster, and operator reuse without apply writes', () => {
   const decision = ensureReleaseCnpg(
@@ -356,14 +400,8 @@ test('matching operator verifies readiness and rejects a bad manifest digest', (
     },
     run: (_command, args) => {
       const query = args.join(' ');
-      if (query.includes('jsonpath={.status.phase}')) {
-        return { ok: true, stdout: 'Cluster in healthy state', stderr: '' };
-      }
-      if (query.includes('jsonpath={.spec.instances}')) {
-        return { ok: true, stdout: '1', stderr: '' };
-      }
-      if (query.includes("type=='Ready'")) {
-        return { ok: true, stdout: 'True', stderr: '' };
+      if (query.includes(' lab-pg') && args.at(-1) === 'json') {
+        return { ok: true, stdout: healthyClusterJson(1), stderr: '' };
       }
       return { ok: true, stdout: '10.0.0.1', stderr: '' };
     },
@@ -382,25 +420,121 @@ test('matching operator verifies readiness and rejects a bad manifest digest', (
   );
 });
 
-
 test('release installer CLI validates structured render and actually executes', () => {
-  const result = spawnSync(process.execPath, [join(postgresRoot, 'release-install.mjs'), 'verify-render'], { encoding: 'utf8', timeout: 30000 });
+  const result = spawnSync(
+    process.execPath,
+    [join(postgresRoot, 'release-install.mjs'), 'verify-render'],
+    { encoding: 'utf8', timeout: 30000 },
+  );
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout.trim(), 'release PostgreSQL render verified');
-  const unknown = spawnSync(process.execPath, [join(postgresRoot, 'release-install.mjs'), 'unknown'], { encoding: 'utf8', timeout: 30000 });
+  const unknown = spawnSync(
+    process.execPath,
+    [join(postgresRoot, 'release-install.mjs'), 'unknown'],
+    { encoding: 'utf8', timeout: 30000 },
+  );
   assert.equal(unknown.status, 2);
 });
 
 test('release render guard rejects wrong pin, count and identity', () => {
-  const docs = renderPlatformDocuments({ service: 'postgres', profile: 'release', section: 'cluster' });
+  const docs = renderPlatformDocuments({
+    service: 'postgres',
+    profile: 'release',
+    section: 'cluster',
+  });
   assert.doesNotThrow(() => assertReleaseClusterPin(docs, pin));
   const bad = structuredClone(docs);
   bad[0].spec.imageName += '-wrong';
   assert.throws(() => assertReleaseClusterPin(bad, pin), /imageName/);
   bad[0].spec.imageName = pin.postgresImage;
-  bad[0].spec.instances = 2;
-  assert.throws(() => assertReleaseClusterPin(bad, pin), /one instance/);
+  bad[0].spec.instances = 0;
+  assert.throws(
+    () => assertReleaseClusterPin(bad, pin),
+    /positive safe integer/,
+  );
   assert.throws(() => assertReleaseClusterPin([], pin), /identity/);
+});
+
+/**
+ * @param {() => object} collect
+ * @param {(command: string, args: string[]) => { ok: boolean, stdout?: string }} run
+ */
+function executeWithFastReadinessPoll(collect, run) {
+  let clock = 0;
+  return executeAuthorizedReleaseCnpg({
+    collect,
+    run,
+    now: () => clock,
+    sleep: (ms) => {
+      clock += ms;
+    },
+    readinessTimeoutMs: 15_000,
+  });
+}
+
+test('executeAuthorizedReleaseCnpg reports topology failures without reset', () => {
+  const baseProbe = () => ({
+    ...ready,
+    resources: [
+      {
+        kind: 'Deployment',
+        name: 'cnpg-controller-manager',
+        namespace: 'cnpg-system',
+        image: pin.operatorImage,
+      },
+      compatibleNamespace(),
+      compatibleCluster(),
+    ],
+    crdState: 'present',
+  });
+
+  const stale = executeWithFastReadinessPoll(baseProbe, (_command, args) => {
+    if (args.at(-1) === 'json') {
+      const body = JSON.parse(healthyClusterJson(1));
+      body.status.conditions = [{ type: 'Ready', status: 'False' }];
+      return { ok: true, stdout: JSON.stringify(body) };
+    }
+    return { ok: true, stdout: '10.0.0.1' };
+  });
+  assert.equal(stale.ok, false);
+  assert.equal(stale.refusals[0].id, 'cluster-readiness-failed');
+  assert.match(stale.refusals[0].detail, /Ready/);
+
+  const primary = executeWithFastReadinessPoll(baseProbe, (_command, args) => {
+    if (args.at(-1) === 'json') {
+      const body = JSON.parse(healthyClusterJson(1));
+      delete body.status.currentPrimary;
+      return { ok: true, stdout: JSON.stringify(body) };
+    }
+    return { ok: true, stdout: '10.0.0.1' };
+  });
+  assert.equal(primary.ok, false);
+  assert.match(primary.refusals[0].detail, /currentPrimary/);
+
+  const mismatch = executeWithFastReadinessPoll(
+    () => ({
+      ...ready,
+      resources: [
+        {
+          kind: 'Deployment',
+          name: 'cnpg-controller-manager',
+          namespace: 'cnpg-system',
+          image: pin.operatorImage,
+        },
+        compatibleNamespace(),
+        compatibleCluster({ instances: 4 }),
+      ],
+      crdState: 'present',
+    }),
+    (_command, args) => {
+      if (args.at(-1) === 'json') {
+        return { ok: true, stdout: healthyClusterJson(1) };
+      }
+      return { ok: true, stdout: '10.0.0.1' };
+    },
+  );
+  assert.equal(mismatch.ok, false);
+  assert.match(mismatch.refusals[0].detail, /expected 4/);
 });
 
 import { collectReleaseCnpgProbe } from '../release-install.mjs';
@@ -411,24 +545,27 @@ test('cold release inventory does not query an unregistered CNPG resource', () =
     readMeminfo: () => 'MemAvailable: 8192000 kB',
     run(command, args) {
       calls.push(args);
-      if (args.includes('cluster.postgresql.cnpg.io')) throw Error('CRD not installed');
+      if (args.includes('cluster.postgresql.cnpg.io'))
+        throw Error('CRD not installed');
       return { ok: true, stdout: '' };
     },
   });
   assert.equal(probe.crdState, 'absent');
   assert.deepEqual(probe.unreadableReads, []);
-  assert.ok(!calls.some(args => args.includes('cluster.postgresql.cnpg.io')));
+  assert.ok(!calls.some((args) => args.includes('cluster.postgresql.cnpg.io')));
 });
 
 test('unreadable CNPG CRD does not authorize cold installation', () => {
   const probe = collectReleaseCnpgProbe({
     readMeminfo: () => 'MemAvailable: 8192000 kB',
     run(command, args) {
-      if (args.includes('cluster.postgresql.cnpg.io')) throw Error('CRD state unknown');
-      if (args.includes('crd')) return { ok: false, stdout: '', stderr: 'Forbidden' };
+      if (args.includes('cluster.postgresql.cnpg.io'))
+        throw Error('CRD state unknown');
+      if (args.includes('crd'))
+        return { ok: false, stdout: '', stderr: 'Forbidden' };
       return { ok: true, stdout: '' };
     },
   });
   assert.equal(probe.crdState, 'unreadable');
-  assert.ok(probe.unreadableReads.some(row => row.id === 'postgres-crd'));
+  assert.ok(probe.unreadableReads.some((row) => row.id === 'postgres-crd'));
 });

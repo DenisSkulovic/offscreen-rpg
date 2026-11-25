@@ -15,6 +15,11 @@ import {
   RELEASE_CNPG_NAMESPACE,
   parseCnpgPin,
 } from './dev-bootstrap.mjs';
+import {
+  assertPositiveCnpgInstances,
+  assessCnpgClusterTopologyReadiness,
+  resolveExpectedCnpgInstances,
+} from './topology.mjs';
 
 const postgresRoot = dirname(fileURLToPath(import.meta.url));
 const operatorPinPath = join(postgresRoot, 'operator.pin');
@@ -28,18 +33,19 @@ export const RELEASE_CNPG_MIN_MEMORY_MIB = 4096;
 export const RELEASE_OPERATOR_FIELD_MANAGER = 'offscreen-release-cnpg';
 
 export function assertReleaseClusterPin(documents, pin) {
-  if (documents.length !== 1 || documents[0]?.kind !== 'Cluster' ||
-      documents[0]?.metadata?.name !== RELEASE_CNPG_CLUSTER ||
-      documents[0]?.metadata?.namespace !== RELEASE_CNPG_NAMESPACE) {
+  if (
+    documents.length !== 1 ||
+    documents[0]?.kind !== 'Cluster' ||
+    documents[0]?.metadata?.name !== RELEASE_CNPG_CLUSTER ||
+    documents[0]?.metadata?.namespace !== RELEASE_CNPG_NAMESPACE
+  ) {
     throw new Error('unexpected rendered release PostgreSQL cluster identity');
   }
   const spec = documents[0].spec;
   if (spec?.imageName !== pin.postgresImage) {
     throw new Error('rendered cluster imageName does not match operator.pin');
   }
-  if (spec?.instances !== 1) {
-    throw new Error('rendered cluster must request one instance');
-  }
+  assertPositiveCnpgInstances(spec?.instances);
 }
 
 /**
@@ -55,7 +61,10 @@ function renderReleaseManifests(deps = {}) {
     { service: 'postgres', profile: 'release', section: 'cluster' },
     { run },
   );
-  assertReleaseClusterPin(clusterDocs, parseCnpgPin(readFileSync(operatorPinPath, 'utf8')));
+  assertReleaseClusterPin(
+    clusterDocs,
+    parseCnpgPin(readFileSync(operatorPinPath, 'utf8')),
+  );
   return {
     namespaceManifest: renderPlatformYaml(namespaceDocs),
     clusterManifest: renderPlatformYaml(clusterDocs),
@@ -90,7 +99,6 @@ function classifyCluster(resource, expected) {
   const matches =
     resource.name === RELEASE_CNPG_CLUSTER &&
     resource.namespace === RELEASE_CNPG_NAMESPACE &&
-    resource.instances === expected.spec?.instances &&
     resource.image === expected.spec?.imageName &&
     resource.storageClass === storage?.storageClass &&
     resource.storageSize === storage?.size &&
@@ -219,12 +227,19 @@ export function assessReleaseCnpg(probe, expectedCluster) {
 export function planReleaseCnpg(probe, deps = {}) {
   const manifests = renderReleaseManifests(deps);
   const assessment = assessReleaseCnpg(probe, manifests.expectedCluster);
+  const expectedInstances = resolveExpectedCnpgInstances(
+    assessment.cluster,
+    manifests.expectedCluster,
+    probe,
+    RELEASE_CNPG_CLUSTER,
+  );
   return {
     mode: 'plan',
     readOnly: true,
     context: RELEASE_CNPG_CONTEXT,
     namespace: RELEASE_CNPG_NAMESPACE,
     cluster: RELEASE_CNPG_CLUSTER,
+    expectedInstances,
     operatorImage: assessment.pin?.operatorImage ?? null,
     postgresImage: assessment.pin?.postgresImage ?? null,
     namespaceManifest: manifests.namespaceManifest,
@@ -557,11 +572,17 @@ export function executeAuthorizedReleaseCnpg(deps) {
       continue;
     }
     if (action.op === 'wait-cluster-ready') {
-      const deadline = Date.now() + 600_000;
-      let phase = '';
-      let ready = '';
-      while (Date.now() < deadline) {
-        const phaseResult = deps.run('kubectl', [
+      const expectedInstances = recheck.expectedInstances;
+      const now = deps.now ?? Date.now;
+      const readinessTimeoutMs = deps.readinessTimeoutMs ?? 600_000;
+      const deadline = now() + readinessTimeoutMs;
+      /** @type {{ ok: false, detail: string } | { ok: true, currentPrimary: string }} */
+      let topology = {
+        ok: false,
+        detail: 'cluster readiness poll did not start',
+      };
+      while (now() < deadline) {
+        const clusterResult = deps.run('kubectl', [
           '--context',
           RELEASE_CNPG_CONTEXT,
           '-n',
@@ -570,28 +591,34 @@ export function executeAuthorizedReleaseCnpg(deps) {
           'cluster',
           RELEASE_CNPG_CLUSTER,
           '-o',
-          `jsonpath={.status.phase}`,
+          'json',
         ]);
-        const readyResult = deps.run('kubectl', [
-          '--context',
-          RELEASE_CNPG_CONTEXT,
-          '-n',
-          RELEASE_CNPG_NAMESPACE,
-          'get',
-          'cluster',
-          RELEASE_CNPG_CLUSTER,
-          '-o',
-          "jsonpath={range .status.conditions[?(@.type=='Ready')]}{.status}{end}",
-        ]);
-        phase = String(phaseResult.stdout ?? '').trim();
-        ready = String(readyResult.stdout ?? '').trim();
-        if (phase === 'Cluster in healthy state' && ready === 'True') {
-          break;
+        if (clusterResult.ok && clusterResult.stdout) {
+          try {
+            const cluster = JSON.parse(String(clusterResult.stdout));
+            topology = assessCnpgClusterTopologyReadiness(
+              cluster,
+              expectedInstances,
+            );
+            if (topology.ok) {
+              break;
+            }
+          } catch {
+            topology = {
+              ok: false,
+              detail: 'cluster JSON observation was malformed',
+            };
+          }
+        } else {
+          topology = {
+            ok: false,
+            detail: 'cluster observation failed during readiness poll',
+          };
         }
         if (deps.sleep) deps.sleep(5000);
       }
       completed.push(action);
-      if (phase !== 'Cluster in healthy state' || ready !== 'True') {
+      if (!topology.ok) {
         return {
           ...recheck,
           ok: false,
@@ -599,7 +626,7 @@ export function executeAuthorizedReleaseCnpg(deps) {
           refusals: [
             {
               id: 'cluster-readiness-failed',
-              detail: `phase=${phase || 'unknown'} ready=${ready || 'unknown'}`,
+              detail: topology.detail,
             },
           ],
           actions: completed,
@@ -636,7 +663,8 @@ export function executeAuthorizedReleaseCnpg(deps) {
       };
     }
   }
-  const instances = deps.run('kubectl', [
+  const expectedInstances = recheck.expectedInstances;
+  const verify = deps.run('kubectl', [
     '--context',
     RELEASE_CNPG_CONTEXT,
     '-n',
@@ -645,17 +673,52 @@ export function executeAuthorizedReleaseCnpg(deps) {
     'cluster',
     RELEASE_CNPG_CLUSTER,
     '-o',
-    'jsonpath={.spec.instances}',
+    'json',
   ]);
-  if (!instances.ok || String(instances.stdout ?? '').trim() !== '1') {
+  if (!verify.ok || !verify.stdout) {
     return {
       ...recheck,
       ok: false,
       mutated: completed.some((item) => item.op?.startsWith('apply-')),
       refusals: [
         {
-          id: 'cluster-instance-mismatch',
-          detail: `lab-pg instances is ${String(instances.stdout ?? '').trim() || 'unknown'}, expected 1`,
+          id: 'cluster-topology-verify-failed',
+          detail: 'final cluster topology observation failed',
+        },
+      ],
+      actions: completed,
+    };
+  }
+  let cluster;
+  try {
+    cluster = JSON.parse(String(verify.stdout));
+  } catch {
+    return {
+      ...recheck,
+      ok: false,
+      mutated: completed.some((item) => item.op?.startsWith('apply-')),
+      refusals: [
+        {
+          id: 'cluster-topology-verify-failed',
+          detail: 'final cluster JSON was malformed',
+        },
+      ],
+      actions: completed,
+    };
+  }
+  const topology = assessCnpgClusterTopologyReadiness(
+    cluster,
+    expectedInstances,
+  );
+  if (!topology.ok) {
+    return {
+      ...recheck,
+      ok: false,
+      mutated: completed.some((item) => item.op?.startsWith('apply-')),
+      refusals: [
+        {
+          id: 'cluster-topology-verify-failed',
+          detail: topology.detail,
         },
       ],
       actions: completed,
@@ -667,7 +730,8 @@ export function executeAuthorizedReleaseCnpg(deps) {
     mutated: completed.some((item) => item.op?.startsWith('apply-')),
     actions: completed,
     phase: 'Cluster in healthy state',
-    instances: '1',
+    instances: String(expectedInstances),
+    currentPrimary: topology.currentPrimary,
   };
 }
 
@@ -756,18 +820,22 @@ export function collectReleaseCnpgProbe(deps = {}) {
     unreadableReads,
   );
 
-  const clusterObservation = crdProbeState === 'absent' ? { state: 'absent' } : crdProbeState === 'present' ? read({
-    profileId: 'release',
-    resource: 'cluster.postgresql.cnpg.io',
-    name: RELEASE_CNPG_CLUSTER,
-    namespace: RELEASE_CNPG_NAMESPACE,
-  }) : { state: 'unreadable', reason: 'CRD inventory unreadable' };
+  const clusterObservation =
+    crdProbeState === 'absent'
+      ? { state: 'absent' }
+      : crdProbeState === 'present'
+        ? read({
+            profileId: 'release',
+            resource: 'cluster.postgresql.cnpg.io',
+            name: RELEASE_CNPG_CLUSTER,
+            namespace: RELEASE_CNPG_NAMESPACE,
+          })
+        : { state: 'unreadable', reason: 'CRD inventory unreadable' };
   const clusterState = observeState(
     clusterObservation,
     'postgres-cluster',
     unreadableReads,
   );
-
 
   let memoryMiB;
   try {
@@ -973,6 +1041,9 @@ function main() {
   process.exit(2);
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (
+  process.argv[1] &&
+  resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
   main();
 }

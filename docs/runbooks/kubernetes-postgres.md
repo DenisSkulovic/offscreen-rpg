@@ -13,11 +13,12 @@ Scripts live in `infra/platform/postgres/`. The workload manifests are no longer
 ## What it must not do
 
 - Do not put a password, a client certificate, or a generated Secret in Git. The operator creates credentials when the primary starts. The smoke uses local peer authentication inside the Pod and does not print Secret values.
-- Default baseline is one instance. Selected INF53/INF54 topology contract permits explicit scaling and isolated clusters once implemented; until source joins, existing installer remains single-instance. The historical pod-replacement smoke intentionally requires one instance. Never use it as a multi-instance failover test.
+- Default baseline is one instance. Shared chart rendering and normal bootstrap (`install.sh`, dev CNPG ensure) create or reuse a compatible cluster without implicitly changing an existing instance count. Only `topology-cli.mjs ensure` changes `spec.instances` on an existing baseline. Baseline cluster names are `dev-pg` (dev) and `lab-pg` (release) only in INF53; independently named clusters belong to [INF54](../../work/changes/open/2026-11-25--inf54-postgres-owned-clusters/CHANGE.md). The historical pod-replacement smoke intentionally requires one instance. Never use it as a multi-instance failover, HA, or backup test.
 - Do not point Compose, the game, or Temporal at `lab-pg`.
 - Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-release` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
 - Do not publish a workload on `0.0.0.0` or `[::]`. A NodePort or LoadBalancer Service fails the check.
 - Do not treat this primary as a backup or a restore of the game database.
+- Do not resize the shared dev baseline `dev-pg` through ordinary agent slot startup or worktree stack scripts. Dev instance-count changes are owner-operational only. See [Local CNPG topology](../technical/platform/database-infrastructure.md#local-cnpg-topology-selected-2026-11-25).
 
 ## Recovery limit
 
@@ -40,7 +41,32 @@ infra/clusters/kind/release/destroy.sh kind-offscreen-release
 
 `install.sh` still owns the disposable-lab guards from `infra/clusters/kind/release/lib.sh`: it refuses foreign Docker volume loss, foreign kubectl context loss, non-loopback exposure, and sub-4 GiB `MemAvailable` before mutation. After those guards it runs `node infra/platform/common/cli.mjs target release`, downloads the checksum-pinned operator manifest from `operator.pin`, and calls `release-install.mjs install`.
 
-`release-install.mjs` does not print Secret values, does not rotate credentials on reentry, and does not force-apply when the live namespace, Cluster, and operator already match the rendered release profile. A matching reentry waits for webhook and `lab-pg` readiness only. A missing namespace or Cluster creates only the absent object. An existing `lab-postgres` namespace must carry `offscreen.rpg/lab=disposable`. An existing `lab-pg` Cluster must match the pinned operand image, one instance, `local-path` storage, and `lab/lab` bootstrap identity. A matching operator skips manifest fetch and apply; a missing operator uses the checksum-verified download; a mismatched operator image refuses. Unreadable observation or foreign or mismatched resources refuse without create.
+`release-install.mjs` does not print Secret values, does not rotate credentials on reentry, and does not force-apply when the live namespace, Cluster, and operator already match the rendered release profile. A matching reentry waits for webhook and `lab-pg` readiness for the **observed** live instance count (not an implicit scale back to profile default). A missing namespace or Cluster creates only the absent object. An existing `lab-postgres` namespace must carry `offscreen.rpg/lab=disposable`. An existing `lab-pg` Cluster must match the pinned operand image, `local-path` storage, and `lab/lab` bootstrap identity; instance count is part of live identity on reuse, not reset by install. A matching operator skips manifest fetch and apply; a missing operator uses the checksum-verified download; a mismatched operator image refuses. Unreadable observation or foreign or mismatched resources refuse without create.
+
+### Baseline instance topology (read and explicit scale)
+
+Normative contract: [Local CNPG topology](../technical/platform/database-infrastructure.md#local-cnpg-topology-selected-2026-11-25). Operator for baseline clusters `dev-pg` and `lab-pg` only:
+
+```bash
+# Read-only plan / status (JSON on stdout)
+node infra/platform/postgres/topology-cli.mjs plan \
+  --env release --cluster lab-pg --instances 2
+node infra/platform/postgres/topology-cli.mjs status \
+  --env release --cluster lab-pg --instances 2
+
+# Mutate only with exact kubectl context confirmation (operational authorization, not RBAC)
+node infra/platform/postgres/topology-cli.mjs ensure \
+  --env release --cluster lab-pg --instances 2 \
+  --confirm-context kind-offscreen-release
+
+# Scale-down requires an extra flag; CNPG may retire standby storage
+node infra/platform/postgres/topology-cli.mjs ensure \
+  --env release --cluster lab-pg --instances 1 \
+  --confirm-context kind-offscreen-release \
+  --allow-scale-down
+```
+
+Use `--env dev --cluster dev-pg --confirm-context kind-offscreen-dev` for the shared dev baseline. Reserve dev baseline scaling for the human owner; agents must not run dev `ensure` as part of ordinary stack startup. `plan` and `status` never mutate. `ensure` patches only `spec.instances` with a compare-and-swap JSON patch and polls shared readiness; it does not install the operator, create a missing cluster, or read Secrets. This Change does not prove HA, backup, or failover.
 
 | Retired path | Successor |
 | --- | --- |

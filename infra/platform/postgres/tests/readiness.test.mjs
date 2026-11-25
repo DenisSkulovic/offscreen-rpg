@@ -7,6 +7,7 @@ import {
   DEV_CNPG_OWNER,
 } from '../dev-bootstrap.mjs';
 import { observeDevPostgresReady } from '../readiness.mjs';
+import { CNPG_HEALTHY_PHASE } from '../topology.mjs';
 
 const BASELINE_NAMESPACE = 'offscreen-dev-system';
 const DEV_CLUSTER_NAME = 'offscreen-dev';
@@ -46,7 +47,11 @@ function createMockRun(options = {}) {
       namespace: DEV_CNPG_NAMESPACE,
       labels: { 'offscreen.dev/owner': clusterOwner },
     },
+    spec: { instances: 1 },
     status: {
+      instances: 1,
+      readyInstances: 1,
+      phase: CNPG_HEALTHY_PHASE,
       conditions: ready ? [{ type: 'Ready', status: 'True' }] : [],
       currentPrimary,
     },
@@ -223,4 +228,41 @@ test('foreign cluster owner refuses', () => {
   assert.equal(result.ok, false);
   assert.match(result.detail ?? '', /foreign ownership/);
   assertNoWrites(calls);
+});
+
+test('stale Ready, bad counts, and missing primary refuse', () => {
+  const { run, calls } = createMockRun({ ready: false });
+  const stale = observeDevPostgresReady({ run });
+  assert.equal(stale.ok, false);
+  assert.match(stale.detail ?? '', /Ready/);
+  assertNoWrites(calls);
+
+  const mismatchRun = (command, args, runOptions = {}) => {
+    const mock = createMockRun();
+    const base = mock.run(command, args, runOptions);
+    if (command === 'kubectl' && args.includes('cluster.postgresql.cnpg.io')) {
+      const body = JSON.parse(String(base.stdout));
+      body.status.readyInstances = 0;
+      return { ...base, stdout: JSON.stringify(body) };
+    }
+    return base;
+  };
+  const mismatch = observeDevPostgresReady({ run: mismatchRun });
+  assert.equal(mismatch.ok, false);
+  assert.match(mismatch.detail ?? '', /readyInstances/);
+
+  let clusterBody;
+  const missingPrimaryRun = (command, args, runOptions = {}) => {
+    const mock = createMockRun();
+    const base = mock.run(command, args, runOptions);
+    if (command === 'kubectl' && args.includes('cluster.postgresql.cnpg.io')) {
+      clusterBody = JSON.parse(String(base.stdout));
+      delete clusterBody.status.currentPrimary;
+      return { ...base, stdout: JSON.stringify(clusterBody) };
+    }
+    return base;
+  };
+  const primary = observeDevPostgresReady({ run: missingPrimaryRun });
+  assert.equal(primary.ok, false);
+  assert.match(primary.detail ?? '', /currentPrimary/);
 });

@@ -1,4 +1,5 @@
 mode: release
+instances: 1
 namespace: lab-postgres
 clusterName: lab-pg
 namespaceLabels:

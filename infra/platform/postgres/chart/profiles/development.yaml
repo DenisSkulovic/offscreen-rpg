@@ -1,4 +1,5 @@
 mode: development
+instances: 1
 namespace: offscreen-dev-postgres
 clusterName: dev-pg
 namespaceLabels:

@@ -22,7 +22,8 @@ import { allowedNamespacesForService } from '../platform/common/render.mjs';
 const DEV_PORT = DEV_API_PORT_RANGE.start;
 
 function kubectlConfigJson(profile, port) {
-  const clusterName = profile === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
+  const clusterName =
+    profile === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
   const contextName =
     profile === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
   return JSON.stringify({
@@ -141,7 +142,8 @@ function releaseWarmRun(clusterPresent = true) {
         ok: true,
         stdout: JSON.stringify({
           metadata: {
-            name: 'offscreen-release-system', uid: 'release-baseline-uid',
+            name: 'offscreen-release-system',
+            uid: 'release-baseline-uid',
             labels: { 'offscreen.rpg/lab': 'disposable' },
           },
         }),
@@ -423,6 +425,57 @@ test('invalid plan selection exits 2', () => {
   assert.equal(preview.exitCode, 2);
 });
 
+test('release postgres status uses topology alignment, not Ready alone', () => {
+  const clusterMeta = { name: 'lab-pg', namespace: 'lab-postgres' };
+  const healthy = JSON.stringify({
+    metadata: clusterMeta,
+    spec: { instances: 4 },
+    status: {
+      instances: 4,
+      readyInstances: 4,
+      phase: 'Cluster in healthy state',
+      conditions: [{ type: 'Ready', status: 'True' }],
+      currentPrimary: 'lab-pg-1',
+    },
+  });
+  const stale = JSON.stringify({
+    metadata: clusterMeta,
+    spec: { instances: 1 },
+    status: {
+      instances: 1,
+      readyInstances: 0,
+      phase: 'Cluster in healthy state',
+      conditions: [{ type: 'Ready', status: 'True' }],
+      currentPrimary: 'lab-pg-1',
+    },
+  });
+  const run = (command, args) => {
+    assert.equal(command, 'kubectl');
+    if (
+      args.includes('cluster.postgresql.cnpg.io') &&
+      args.includes('lab-pg')
+    ) {
+      return { ok: true, stdout: healthy };
+    }
+    return { ok: true, stdout: '' };
+  };
+  const installed = observeSelectedServiceState('release', 'postgres', { run });
+  assert.equal(installed.state, 'installed');
+
+  const notReady = observeSelectedServiceState('release', 'postgres', {
+    run: (command, args) => {
+      if (
+        args.includes('cluster.postgresql.cnpg.io') &&
+        args.includes('lab-pg')
+      ) {
+        return { ok: true, stdout: stale };
+      }
+      return { ok: true, stdout: '' };
+    },
+  });
+  assert.equal(notReady.state, 'not-ready');
+  assert.match(notReady.detail ?? '', /readyInstances/);
+});
 
 test('release Temporal readiness verifies persisted schema and health when bootstrap Job is absent', () => {
   const calls = [];
@@ -431,44 +484,95 @@ test('release Temporal readiness verifies persisted schema and health when boots
     assert.equal(command, 'kubectl');
     assert.equal(args[1], 'kind-offscreen-release');
     if (args.includes('exec')) {
-      if (args.includes('deploy/temporal-admin')) return { ok: true, stdout: 'SERVING\n' };
-      assert.ok(args.some(arg => arg.includes('default_transaction_read_only=on')));
+      if (args.includes('deploy/temporal-admin'))
+        return { ok: true, stdout: 'SERVING\n' };
+      assert.ok(
+        args.some((arg) => arg.includes('default_transaction_read_only=on')),
+      );
       return { ok: true, stdout: 't\n' };
     }
     if (args.includes('job')) return { ok: true, stdout: '' };
     const name = args[6];
-    assert.ok(['temporal-server', 'temporal-postgres', 'temporal-admin'].includes(name));
-    return { ok: true, stdout: JSON.stringify({
-      metadata: { name, namespace: 'lab-temporal', labels: { 'offscreen.rpg/lab': 'disposable' } },
-      spec: { replicas: 1 }, status: { availableReplicas: 1 },
-    }) };
+    assert.ok(
+      ['temporal-server', 'temporal-postgres', 'temporal-admin'].includes(name),
+    );
+    return {
+      ok: true,
+      stdout: JSON.stringify({
+        metadata: {
+          name,
+          namespace: 'lab-temporal',
+          labels: { 'offscreen.rpg/lab': 'disposable' },
+        },
+        spec: { replicas: 1 },
+        status: { availableReplicas: 1 },
+      }),
+    };
   };
   const observed = observeSelectedServiceState('release', 'temporal', { run });
   assert.equal(observed.state, 'installed');
-  assert.ok(calls.some(args => args.includes('temporal_visibility')));
-  assert.equal(observeSelectedServiceState('release', 'temporal', {
-    run: (command, args) => args.includes('temporal_visibility')
-      ? { ok: true, stdout: 'f\n' } : run(command, args),
-  }).state, 'not-ready');
-  assert.equal(observeSelectedServiceState('release', 'temporal', {
-    run: (command, args) => args.includes('deploy/temporal-admin')
-      ? { ok: true, stdout: 'NOT_SERVING\n' } : run(command, args),
-  }).state, 'not-ready');
-  assert.equal(observeSelectedServiceState('release', 'temporal', {
-    run: (command, args) => args.includes('job')
-      ? { ok: true, stdout: JSON.stringify({ metadata: { name: 'temporal-schema', namespace: 'lab-temporal' }, status: { conditions: [{ type: 'Failed', status: 'True' }] } }) }
-      : run(command, args),
-  }).state, 'not-ready');
+  assert.ok(calls.some((args) => args.includes('temporal_visibility')));
+  assert.equal(
+    observeSelectedServiceState('release', 'temporal', {
+      run: (command, args) =>
+        args.includes('temporal_visibility')
+          ? { ok: true, stdout: 'f\n' }
+          : run(command, args),
+    }).state,
+    'not-ready',
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'temporal', {
+      run: (command, args) =>
+        args.includes('deploy/temporal-admin')
+          ? { ok: true, stdout: 'NOT_SERVING\n' }
+          : run(command, args),
+    }).state,
+    'not-ready',
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'temporal', {
+      run: (command, args) =>
+        args.includes('job')
+          ? {
+              ok: true,
+              stdout: JSON.stringify({
+                metadata: {
+                  name: 'temporal-schema',
+                  namespace: 'lab-temporal',
+                },
+                status: { conditions: [{ type: 'Failed', status: 'True' }] },
+              }),
+            }
+          : run(command, args),
+    }).state,
+    'not-ready',
+  );
 });
 
 test('release RabbitMQ absent CRD is not-installed, permission failure remains unreadable', () => {
   const run = (command, args) => {
     assert.equal(command, 'kubectl');
-    assert.deepEqual(args, ['--context', 'kind-offscreen-release', 'get', 'customresourcedefinition', 'rabbitmqclusters.rabbitmq.com', '--ignore-not-found', '-o', 'json']);
+    assert.deepEqual(args, [
+      '--context',
+      'kind-offscreen-release',
+      'get',
+      'customresourcedefinition',
+      'rabbitmqclusters.rabbitmq.com',
+      '--ignore-not-found',
+      '-o',
+      'json',
+    ]);
     return { ok: true, stdout: '' };
   };
-  assert.equal(observeSelectedServiceState('release', 'rabbitmq', { run }).state, 'not-installed');
-  assert.equal(observeSelectedServiceState('release', 'rabbitmq', {
-    run: () => ({ ok: false, stdout: '', stderr: 'Forbidden' }),
-  }).state, 'unreadable');
+  assert.equal(
+    observeSelectedServiceState('release', 'rabbitmq', { run }).state,
+    'not-installed',
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'rabbitmq', {
+      run: () => ({ ok: false, stdout: '', stderr: 'Forbidden' }),
+    }).state,
+    'unreadable',
+  );
 });

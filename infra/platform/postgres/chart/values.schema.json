@@ -6,6 +6,7 @@
     "namespace",
     "clusterName",
     "section",
+    "instances",
     "storage",
     "resources",
     "postgresql",
@@ -16,6 +17,7 @@
     "namespace": { "type": "string", "minLength": 1 },
     "clusterName": { "type": "string", "minLength": 1 },
     "section": { "type": "string", "minLength": 1 },
+    "instances": { "type": "integer", "minimum": 1 },
     "namespaceLabels": {
       "type": "object",
       "additionalProperties": { "type": "string" }
@@ -75,12 +77,7 @@
       "properties": {
         "initdb": {
           "type": "object",
-          "required": [
-            "database",
-            "owner",
-            "localeCType",
-            "localeCollate"
-          ],
+          "required": ["database", "owner", "localeCType", "localeCollate"],
           "properties": {
             "database": { "type": "string" },
             "owner": { "type": "string" },

@@ -155,6 +155,29 @@ test('release namespace and cluster match static manifests and pinned image', ()
   assert.equal(clusterDocs[0].spec.imageName, pins.POSTGRES_IMAGE);
 });
 
+for (const profile of /** @type {const} */ (['dev', 'release'])) {
+  for (const count of [1, 2, 4, 10]) {
+    test(`profile ${profile} renders cluster spec.instances=${count}`, () => {
+      const deps =
+        count === 1
+          ? { run: helmRun }
+          : { run: helmRun, stdinOverlay: { instances: count } };
+      const clusterDocs = renderPlatformDocuments(
+        { service: 'postgres', profile, section: 'cluster' },
+        deps,
+      );
+      assert.equal(clusterDocs.length, 1);
+      assert.equal(clusterDocs[0].spec.instances, count);
+      if (profile === 'dev' && count === 1) {
+        assert.deepEqual(clusterDocs[0], expectedDevCluster);
+      }
+      if (profile === 'release' && count === 1) {
+        assert.deepEqual(clusterDocs[0], expectedReleaseCluster);
+      }
+    });
+  }
+}
+
 test('full render emits namespace and cluster only (no Secret docs)', () => {
   for (const profile of /** @type {const} */ (['dev', 'release'])) {
     const docs = renderPlatformDocuments(
@@ -203,4 +226,20 @@ test('negative: unknown profile or section and tampered pin overlay', () => {
     () => parsePins('POSTGRES_IMAGE=\n', POSTGRES_OPERATOR_PIN_KEYS),
     /missing pin key/,
   );
+});
+
+test('negative: invalid instances overlay refuses in dev and release', () => {
+  const invalid = [0, 0.5, -1, '2'];
+  for (const profile of /** @type {const} */ (['dev', 'release'])) {
+    for (const instances of invalid) {
+      assert.throws(
+        () =>
+          renderPlatformDocuments(
+            { service: 'postgres', profile, section: 'cluster' },
+            { run: helmRun, stdinOverlay: { instances } },
+          ),
+        /helm template failed/,
+      );
+    }
+  }
 });

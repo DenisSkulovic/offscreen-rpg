@@ -43,7 +43,7 @@ metadata:
 {{- end }}
 {{- end }}
 spec:
-  instances: 1
+  instances: {{ .Values.instances }}
   imageName: {{ .Values.images.postgres | quote }}
   storage:
     size: {{ .Values.storage.size | quote }}
