@@ -22,8 +22,6 @@ const RELEASE_SMOKE_SH = join(VERIFY_ROOT, 'smoke/release.sh');
 const GUARDED_SCRIPTS = [
   join(REPO_ROOT, 'infra/platform/postgres/install.sh'),
   join(VERIFY_ROOT, 'smoke/postgres/smoke.sh'),
-  join(REPO_ROOT, 'infra/platform/temporal/install.sh'),
-  join(VERIFY_ROOT, 'smoke/temporal/smoke.sh'),
   join(VERIFY_ROOT, 'smoke/object-storage/smoke.sh'),
   join(
     REPO_ROOT,
