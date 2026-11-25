@@ -21,3 +21,5 @@ On disposable multi-version services: start old binaries on schema N, safely exp
 **Excluded:** database primary/standby topology and backups (SCALE02, DATAOPS01), query indexes/performance operations (DBOPS02), domain transaction review (SQL01), product schema changes. No live migration, production deployment, data deletion or model call authorized by this proposal.
 
 **2026-11-25 reconciliation:** DB10 owns source graph closure and disposable component proof of DB01–DB09. Do not repeat component migration-lock/hash/rollback tests here as a new framework. DBOPS01 remains backlog: checked-in generator snapshot recovery, actual mixed-version release and backfill/interrupt evidence are separate acceptance. No implicit DB deployment authorization.
+
+2026-11-25: [DBOPS03–06](../../../../undertakings/storyteller-workshop/DB-OPERATIONS.md) now own generic local operations catalog, ledger, bounded SQL batches and offline schema review. This backlog retains metadata repair, actual mixed-version deployment/backfill proof, nontransactional DDL and release sequencing; do not duplicate their generic engines. No execution promotion.
