@@ -1,6 +1,6 @@
 # INF71 | Fail closed at Temporal execution gates
 
-**State: Done (source implementation; live Kubernetes/SQL/execution NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf71-temporal-execution-refusals` from main `fb6c404f46e196369cc5b112e76bb63ebbc0cff2`. Kind: implementation. Owner commissioned source-only 2026-11-25. No live Kubernetes, Docker, SQL, provider or destructive operations. Exclusive writes: release and dev Temporal executors plus focused tests named in TASKS. No successor auto-started. Live execution NOT-RUN; deterministic source evidence only.
+**State: Done (source implementation; live Kubernetes/SQL/execution NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf71-temporal-execution-refusals` from main `fb6c404f46e196369cc5b112e76bb63ebbc0cff2`. Joined main at `6cdd491cb937506c27a46679bb97bc370bb04dd2`. Kind: implementation. Owner commissioned source-only 2026-11-25. No live Kubernetes, Docker, SQL, provider or destructive operations. Exclusive writes: release and dev Temporal executors plus focused tests named in TASKS. No successor auto-started. Live execution NOT-RUN; deterministic source evidence only.
 
 ## Outcome
 Release and authorized-dev Temporal executors refuse refused plans and malformed readiness/SQL/secret gates without further writes, use an explicit reuse allowlist and own-property action dispatch, and surface structured refusal receipts (including `secret-create-conflict` and `unknown-action`) without exposing raw errors.
