@@ -1,6 +1,6 @@
 # DB03 | Story Engine-owned durable schema leaf
 
-**Status: Done / source-only. Kind: implementation. Profile: CONTRACT.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB02, CACHE04 and CACHE06B source joins satisfied. Landed on `change/db03-story-persistence` at `72c05ee1`. No further planner promotion for the frozen scope.
+**Status: Done / source-only. Kind: implementation. Profile: CONTRACT.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB02, CACHE04 and CACHE06B source joins satisfied. Joined main at `337a25478a88baca6c01ce33862159c67b30c379`. No further planner promotion for the frozen scope.
 
 [Selected architecture](../../../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -32,6 +32,6 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
-| Story Engine-owned durable schema leaf | database-infrastructure | `@offscreen/story-persistence` leaf with six exports; eleven schema modules from `packages/db/src/schema`; six `@offscreen/db/*-schema` export keys removed; registry and consumers remapped; SHA `72c05ee1` | pure source: story-persistence build exit 0; `check:schema` exit 0; db-migrations test 9/9; turbo build+typecheck eight packages exit 0 | zero retired schema import literals in tracked apps/packages/tools; migration diff empty; live SQL NOT RUN; pre-existing `@offscreen/api-integration` typecheck failures excluded | [database-infrastructure](../../../../../../docs/technical/platform/database-infrastructure.md#realization-record) · [SOURCE-MAP](SOURCE-MAP.md) |
+| Story Engine-owned durable schema leaf | database-infrastructure | `@offscreen/story-persistence` leaf with six exports; eleven schema modules from `packages/db/src/schema`; six `@offscreen/db/*-schema` export keys removed; registry and consumers remapped; SHA `337a25478a88baca6c01ce33862159c67b30c379` | pure source: story-persistence build exit 0; `check:schema` exit 0; db-migrations test 9/9; turbo build+typecheck eight packages exit 0 | zero retired schema import literals in tracked apps/packages/tools; migration diff empty; live SQL NOT RUN; pre-existing `@offscreen/api-integration` typecheck failures excluded | [database-infrastructure](../../../../../../docs/technical/platform/database-infrastructure.md#realization-record) · [SOURCE-MAP](SOURCE-MAP.md) |
 
 Read [SOURCE-MAP.md](SOURCE-MAP.md) for frozen source mapping and implementation decisions. No new live resource permission.
