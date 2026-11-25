@@ -1,6 +1,6 @@
 # DB04 | Admin and QA table ownership
 
-**Status: Done / source-only. Kind: implementation. Profile: CONTRACT.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB03 joined; DB05 not concurrent. T01–T02 accepted. Joined main at pending-commit. Live PostgreSQL remains separately gated and is not part of this Change's accepted proof.
+**Status: Done / source-only. Kind: implementation. Profile: CONTRACT.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB03 joined; DB05 not concurrent. T01–T02 accepted. Joined main at `15dcca19487387e34010565cfa462ce433a5bacc`. Live PostgreSQL remains separately gated and is not part of this Change's accepted proof.
 
 [Selected architecture](../../../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -31,6 +31,6 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
-| Admin and QA table ownership | database-infrastructure | Admin → `@offscreen/admin/persistence/schema`; QA → `@offscreen/lab-support/persistence/schema`; `./admin-schema` and `./qa-schema` removed from `@offscreen/db`; identity dep removed from db; registry remapped; join SHA recorded after main merge | source-tested: admin tests 34/34; `check:schema` ok; turbo build/typecheck admin+lab+db+db-migrations PASS; migration diff empty | zero residual `@offscreen/db/(admin\|qa)-schema` literals among remapped callers; live SQL NOT RUN | [realization record](../../../../../../docs/technical/platform/database-infrastructure.md#realization-record) · [SOURCE-MAP](SOURCE-MAP.md) · [db README](../../../../../../packages/db/README.md) |
+| Admin and QA table ownership | database-infrastructure | Admin → `@offscreen/admin/persistence/schema`; QA → `@offscreen/lab-support/persistence/schema`; `./admin-schema` and `./qa-schema` removed from `@offscreen/db`; identity dep removed from db; registry remapped; SHA `15dcca19487387e34010565cfa462ce433a5bacc` | source-tested: admin tests 34/34; `check:schema` ok; turbo build/typecheck admin+lab+db+db-migrations PASS; migration diff empty | zero residual `@offscreen/db/(admin\|qa)-schema` literals among remapped callers; live SQL NOT RUN | [realization record](../../../../../../docs/technical/platform/database-infrastructure.md#realization-record) · [SOURCE-MAP](SOURCE-MAP.md) · [db README](../../../../../../packages/db/README.md) |
 
 Read [SOURCE-MAP.md](SOURCE-MAP.md) for frozen source mapping and implementation decisions. No new live resource permission.
