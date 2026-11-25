@@ -106,6 +106,17 @@ ensureDevArtifact "$fingerprint"
 canonical="$DEV_CANONICAL_REF"
 digest="$DEV_ARTIFACT_DIGEST"
 builds="$DEV_ARTIFACT_BUILDS"
+# Exact immutable target equality proves every alias in one inventory per node.
+# Any missing/stale/unreadable identity uses the existing full reconciliation.
+if [[ "$builds" == 0 ]] && node "$repo/infra/images/development/verify-warm-aliases.mjs" "$slot" "$role" "$canonical" "$digest"; then
+  if [[ -n "${OFFSCREEN_IMAGE_REF_FILE:-}" ]]; then
+    receipt_ref="$canonical"
+    if [[ "$role" != all ]]; then receipt_ref="offscreen-dev-workspace:${slot}-${role}"; fi
+    write_image_ref_receipt "$OFFSCREEN_IMAGE_REF_FILE" "$receipt_ref"
+  fi
+  echo "builds=0 kindLoads=0 digest=${digest} ref=${canonical} warmAliasProof=hit"
+  exit 0
+fi
 kind_json="$(node "$repo/infra/images/distribution/kind-image-loader.mjs" dev "$canonical" "$digest")"
 kind_loads="$(node --input-type=module -e "
 const receipt = JSON.parse(process.argv[1]);
