@@ -6,7 +6,7 @@
 import { spawnSync } from 'node:child_process';
 import { observeDevObjectStoreReady } from '../../../../infra/platform/object-storage/readiness.mjs';
 import { observeDevPostgresReady } from '../../../../infra/platform/postgres/readiness.mjs';
-import { observeDevTemporalReady } from '../../../../infra/platform/temporal/readiness.mjs';
+import { observeTemporalReady } from '../../../../infra/platform/temporal/readiness.mjs';
 
 /**
  * @param {string} command
