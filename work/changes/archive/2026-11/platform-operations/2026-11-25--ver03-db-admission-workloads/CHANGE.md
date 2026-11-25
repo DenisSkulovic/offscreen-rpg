@@ -1,6 +1,6 @@
 # VER03 | DB programme: admission, pressure and process isolation
 
-**State: Done (source implementation; live admission/stress/multiprocess/constrained/shutdown NOT-RUN).** Closed 2026-11-25 on Change branch `change/ver03-db-admission-workloads` from main `e67ffede3a666c64d506403b92814f4ea84d0215`. Kind: implementation. Profile: PROOF. Baseline `0c45ae7318295398d706511b9d702720a55c8a92`; target main. VER02 joined; DB07 joined (verified); DB09 source Done (telemetry sections may use joined helpers).
+**State: Done (source implementation; live admission/stress/multiprocess/constrained/shutdown NOT-RUN).** Closed 2026-11-25 on Change branch `change/ver03-db-admission-workloads` from main `e67ffede3a666c64d506403b92814f4ea84d0215`. Joined main at `5034224e102096f66827f3ff50149e82af06499a`. Kind: implementation. Profile: PROOF. Baseline `0c45ae7318295398d706511b9d702720a55c8a92`; target main. VER02 joined; DB07 joined (verified); DB09 source Done (telemetry sections may use joined helpers).
 
 [Normative verification programme](../../../../../../docs/technical/platform/verification-programmes.md) · [Program and ownership](../../../../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md) · [TASKS](TASKS.md)
 
