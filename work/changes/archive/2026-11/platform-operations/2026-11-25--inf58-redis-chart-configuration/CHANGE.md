@@ -1,6 +1,6 @@
 # INF58 | Redis chart configuration and rollout identity
 
-**State: Done (source implementation; live Kubernetes NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf58-redis-chart-configuration` from main `c5b6f892cf7b7a433ce5cf11604c9735296890d8`. Kind: implementation. Profile: STANDARD. Owner commissioned source-only in 2026-11-25 Redis exploration. No live Kubernetes/Docker, provider, tenant, SQL or Redis mutations. No application package or VER07/VER08 changes. INF59 may proceed independently; INF60 remains dependency-gated on INF58 + INF59 source receipts. Live tests NOT-RUN, source evidence only.
+**State: Done (source implementation; live Kubernetes NOT-RUN).** Closed 2026-11-25 on Change branch `change/inf58-redis-chart-configuration` from main `c5b6f892cf7b7a433ce5cf11604c9735296890d8`. Joined main at `a9e455feb130dc9170998b707e3d80111055881a`. Kind: implementation. Profile: STANDARD. Owner commissioned source-only in 2026-11-25 Redis exploration. No live Kubernetes/Docker, provider, tenant, SQL or Redis mutations. No application package or VER07/VER08 changes. INF59 may proceed independently; INF60 remains dependency-gated on INF58 + INF59 source receipts. Live tests NOT-RUN, source evidence only.
 
 ## Outcome
 Standalone Redis resource configuration is explicit, validated and inspectable without changing default identity or sizing. Templates are split by resource; deterministic configuration changes annotate `offscreen.rpg/redis-config-sha256` and retain Recreate rollout. Existing local cache semantics preserved.
