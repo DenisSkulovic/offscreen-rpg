@@ -81,3 +81,5 @@ Inspected main at cf038a61615b64d3966ee7c37a318bb458c7bceb: createDatabase is a 
 ### Remaining selected generic runtime corrections (2026-11-25)
 
 DB12–DB14 source repairs above are fixture-exercised, not live-observed. A successful COMMIT acknowledgement must not be described as uncertain merely because of timing; the current generic admission late-result contract (post-COMMIT callback success convertible to timeout by generic admission) needs a separate planner decision before domain adoption. These remaining items are selected source corrections, not live evidence. DBOPS01 retains generator metadata and mixed-version migration ownership.
+
+[Controlled database operations](database-operations.md) owns exceptional reviewed local data operations and their audit/checkpoint contract; ordinary schema migration and domain DML ownership above remain unchanged. DBOPS03–06 source commission does not grant live permission.

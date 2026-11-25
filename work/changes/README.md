@@ -386,3 +386,10 @@ CACHE12 held for planner migration; no global queue change.
 - [DB13 Migration runner postcondition and failure reporting](archive/2026-11/platform-operations/2026-11-25--db13-db-migration-runner/CHANGE.md) — Done, source only.
 - [DB14 Explicit admission telemetry ownership and probe navigation](archive/2026-11/platform-operations/2026-11-25--db14-db-admission-ownership/CHANGE.md) — Done (source), live NOT RUN.
 No live authorization or queue change; DBOPS01 remains separate.
+
+## Database operations wave
+- [DBOPS03 Database operations catalog and local target guard](open/2026-11-25--dbops03-db-operation-catalog/CHANGE.md) — Ready; source only.
+- [DBOPS04 Explicit enrollment and atomic operation ledger](open/2026-11-25--dbops04-db-operation-ledger/CHANGE.md) — Ready (dependency-gated); source only.
+- [DBOPS05 Resumable bounded data-operation engine](open/2026-11-25--dbops05-db-batched-operations/CHANGE.md) — Ready (dependency-gated); source only.
+- [DBOPS06 Lightweight schema change review workflow](open/2026-11-25--dbops06-schema-change-review/CHANGE.md) — Ready; source only.
+No global queue change or live permission; DBOPS01 metadata and release proof remain separate.
