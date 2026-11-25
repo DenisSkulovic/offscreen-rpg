@@ -3,7 +3,6 @@ import test from 'node:test';
 import { TEMPORAL_LEGACY_YAML_SUCCESSORS } from '../dev-bootstrap.mjs';
 import {
   executeReleaseTemporalInstall,
-  observeReleaseTemporal,
   planReleaseTemporalInstall,
   verifyReleaseRenderedPins,
 } from '../release-install.mjs';
@@ -15,6 +14,38 @@ const presentOwned = (uid = 'uid-1') => ({
   owner: 'disposable',
   uid,
 });
+
+/** Observations for a completed schema job planning apply-server. */
+function schemaReadyObservations() {
+  return {
+    namespace: presentOwned(),
+    secret: presentOwned(),
+    pvc: presentOwned(),
+    postgres: presentOwned(),
+    server: absent,
+    admin: absent,
+    schemaJob: { ...presentOwned('job-done'), condition: 'Complete' },
+    namespaceJob: absent,
+    defaultNamespace: absent,
+    clusterHealth: absent,
+    sql: {
+      state: 'readable',
+      databases: { temporal: true, temporal_visibility: true },
+      schemaTables: { temporal: true, temporal_visibility: true },
+    },
+  };
+}
+
+/** Explicit successful gate callbacks required after T02 fail-closed wiring. */
+function successfulGateDeps(overrides = {}) {
+  return {
+    waitPostgresReady: () => ({ ok: true, refusals: [] }),
+    waitSchemaJob: () => ({ ok: true, refusals: [] }),
+    waitNamespaceJob: () => ({ ok: true, refusals: [] }),
+    probeSql: () => ({ ok: true, refusals: [] }),
+    ...overrides,
+  };
+}
 
 test('legacy flat YAML successors map chart sections', () => {
   assert.equal(
@@ -160,6 +191,103 @@ test('fake runner reentry after secret conflict performs no further writes', () 
   assert.equal(writes.includes('create-secret'), true);
   assert.equal(writes.includes('delete'), false);
   assert.equal(result.writes.includes('delete'), false);
+});
+
+test('runner calls probeSql for SQL gates and reaches apply-server with fakes', () => {
+  const probePhases = [];
+  const writes = [];
+  const result = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: (args) => {
+      if (args[0] === 'apply') writes.push('apply');
+      return { ok: true };
+    },
+    ...successfulGateDeps({
+      probeSql: (phase) => {
+        probePhases.push(phase);
+        return { ok: true, refusals: [] };
+      },
+    }),
+  });
+  assert.equal(result.ok, true);
+  assert.deepEqual(probePhases, ['authenticated', 'schema']);
+  assert.equal(result.writes.includes('apply-server'), true);
+  assert.equal(result.writes.includes('apply-admin'), true);
+  const authGate = result.actions.find(
+    (item) => item.op === 'wait-authenticated-sql',
+  );
+  assert.equal(authGate?.ok, true);
+  const schemaGate = result.actions.find(
+    (item) => item.op === 'verify-schema-tables',
+  );
+  assert.equal(schemaGate?.ok, true);
+});
+
+test('absent probeSql stops before server apply', () => {
+  const writes = [];
+  const result = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: (args) => {
+      if (args[0] === 'apply') writes.push('kubectl-apply');
+      return { ok: true };
+    },
+    ...successfulGateDeps({ probeSql: undefined }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0]?.id, 'sql-probe-missing');
+  assert.equal(writes.length, 0);
+  assert.equal(result.writes.includes('apply-server'), false);
+  const authGate = result.actions.find(
+    (item) => item.op === 'wait-authenticated-sql',
+  );
+  assert.equal(authGate?.ok, false);
+});
+
+test('failed schema probe stops before server apply', () => {
+  const writes = [];
+  const result = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: () => ({ ok: true }),
+    ...successfulGateDeps({
+      probeSql: (phase) =>
+        phase === 'schema'
+          ? {
+              ok: false,
+              refusals: [{ id: 'schema-version-missing', detail: 'missing' }],
+            }
+          : { ok: true, refusals: [] },
+    }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0]?.id, 'schema-version-missing');
+  assert.equal(writes.length, 0);
+  assert.equal(result.writes.includes('apply-server'), false);
+  const schemaGate = result.actions.find(
+    (item) => item.op === 'verify-schema-tables',
+  );
+  assert.equal(schemaGate?.ok, false);
+});
+
+test('absent postgres waiter fails closed before SQL probe', () => {
+  const probeCalls = [];
+  const result = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: () => ({ ok: true }),
+    ...successfulGateDeps({
+      waitPostgresReady: undefined,
+      probeSql: (phase) => {
+        probeCalls.push(phase);
+        return { ok: true, refusals: [] };
+      },
+    }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0]?.id, 'postgres-wait-missing');
+  assert.deepEqual(probeCalls, []);
+  const waitAction = result.actions.find(
+    (item) => item.op === 'wait-postgres-ready',
+  );
+  assert.equal(waitAction?.ok, false);
 });
 
 test('default namespace job reuses after describe finds default', () => {

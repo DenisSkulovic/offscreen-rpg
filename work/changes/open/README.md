@@ -107,8 +107,8 @@ No global queue change or live permission; DBOPS01 metadata and release proof re
 
 ## Temporal infrastructure (2026-11-25)
 
-- [INF61 Helm chart decomposition](../archive/2026-11/platform-operations/2026-11-25--inf61-temporal-chart-ownership/CHANGE.md): Done (source); render 6/6; live NOT-RUN.
-- [INF62 Honest bootstrap SQL gates](2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md): Ready, source-only.
+- INF61 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--inf61-temporal-chart-ownership/CHANGE.md).
+- INF62 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md).
 - INF63 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--inf63-temporal-explicit-ownership/CHANGE.md).
 
 [Programme and later gates](../../undertakings/storyteller-workshop/TEMPORAL-INFRASTRUCTURE.md).

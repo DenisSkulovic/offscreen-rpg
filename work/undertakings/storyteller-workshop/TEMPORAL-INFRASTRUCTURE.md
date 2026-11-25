@@ -4,10 +4,10 @@ Baseline 4cba2d3974db34ac47b3834b81ded9f5b6f60b56. Main. Owner commissioned sour
 
 ## Wave A (parallel source; serialized joins)
 - [INF61 Helm chart decomposition](../../changes/archive/2026-11/platform-operations/2026-11-25--inf61-temporal-chart-ownership/CHANGE.md): Done (source); render 6/6; live NOT-RUN.
-- [INF62 Honest bootstrap SQL gates](../../changes/open/2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md): Ready, independent.
+- [INF62 Honest bootstrap SQL gates](../../changes/archive/2026-11/platform-operations/2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md): Done (source); release/dev SQL existence gates; focused 49/49 with schema-policy; live NOT-RUN.
 - [INF63 Reject unidentified resource ownership](../../changes/archive/2026-11/platform-operations/2026-11-25--inf63-temporal-explicit-ownership/CHANGE.md): Done (source; live NOT-RUN). `classifyTemporalResource` no longer treats uid-only as owned.
 
-INF61 and INF63 joined; INF62 is the remaining Wave A custodian. Coordinate any active external join custodian. INF62 still shares read-only compatibility tests with the INF63 predicate. No global queue change.
+Wave A source closed. INF64–69 remain planner-held. No global queue change. Live Temporal/SQL acceptance NOT-RUN.
 
 ## Architecture decisions
 - PostgreSQL platform owns clusters, replication, primary endpoint, database/role provisioning, backup. Temporal owns vendor schema lifecycle and server configuration. Shared CNPG local default target, dedicated CNPG or external managed SQL hosted options, not yet activated. Stable writable DNS endpoint; never discover primary Pods or route writes to replicas. Keep existing data until explicit verified migration. Both history and visibility stores must be compatible; successful Job is not authority. Schema verification in INF62 is intentionally only existence, not version compatibility.

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import process from 'node:process';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -31,15 +32,53 @@ const ready = {
   resources: [],
 };
 
+/** @param {Record<string, string | ((joined: string) => { ok: boolean, stdout?: string } | undefined)>} [overrides] */
+function fakeDevKubectlRun(overrides = {}) {
+  return function run(_command, args, options = {}) {
+    const joined = args.join(' ');
+    assert.equal(args[1], DEV_TEMPORAL_CONTEXT);
+    const namespaceFlag = args.indexOf('-n');
+    if (namespaceFlag >= 0) {
+      assert.equal(args[namespaceFlag + 1], DEV_TEMPORAL_NAMESPACE);
+    }
+    for (const [needle, value] of Object.entries(overrides)) {
+      if (!joined.includes(needle)) continue;
+      if (typeof value === 'function') {
+        const hit = value(joined);
+        if (hit !== undefined) return hit;
+      } else {
+        return { ok: true, stdout: value };
+      }
+    }
+    if (joined.includes('availableReplicas')) return { ok: true, stdout: '1' };
+    if (joined.includes('status.succeeded')) return { ok: true, stdout: '1' };
+    if (joined.includes('status.failed')) return { ok: true, stdout: '0' };
+    if (joined.includes('exec') && joined.includes('temporal-postgres')) {
+      if (joined.includes('-d postgres')) return { ok: true, stdout: '1' };
+      return { ok: true, stdout: 't' };
+    }
+    return { ok: true, stdout: options.input ?? '' };
+  };
+}
+
 test('the rendered Temporal stack uses the pinned images and dev storage class', () => {
-  const pin = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../infra/platform/temporal/images.pin'), 'utf8');
+  const pin = readFileSync(
+    join(
+      dirname(fileURLToPath(import.meta.url)),
+      '../../../infra/platform/temporal/images.pin',
+    ),
+    'utf8',
+  );
   const manifest = renderDevTemporal();
   assert.equal(renderDevTemporal(), manifest);
   assert.match(pin, new RegExp(DEV_TEMPORAL_SERVER_IMAGE.split(':')[1]));
   assert.match(manifest, new RegExp(DEV_TEMPORAL_SERVER_IMAGE));
   assert.match(manifest, new RegExp(DEV_TEMPORAL_ADMIN_IMAGE));
   assert.match(manifest, new RegExp(DEV_TEMPORAL_POSTGRES_IMAGE));
-  assert.match(manifest, new RegExp(`"storageClassName":"${DEV_TEMPORAL_STORAGE_CLASS}"`));
+  assert.match(
+    manifest,
+    new RegExp(`"storageClassName":"${DEV_TEMPORAL_STORAGE_CLASS}"`),
+  );
   assert.match(manifest, /"type":"ClusterIP"/);
   assert.match(manifest, /\/etc\/temporal\/lab\/start\.sh/);
   assert.match(manifest, /databaseName: \\"temporal\\"/);
@@ -60,8 +99,21 @@ test('the rendered Temporal stack uses the pinned images and dev storage class',
 
 test('fresh ensure creates the secret and schema job once, and a partial failure keeps the secret', () => {
   const created = ensureDevTemporal(ready, { authorize: true });
-  assert.deepEqual(created.actions.map((action) => action.op), ['ensure-namespace', 'create-secret', 'apply-postgres', 'create-schema-job', 'verify-schema', 'apply-server']);
-  const partial = ensureDevTemporal(ready, { authorize: true, failAfterSecret: true });
+  assert.deepEqual(
+    created.actions.map((action) => action.op),
+    [
+      'ensure-namespace',
+      'create-secret',
+      'apply-postgres',
+      'create-schema-job',
+      'verify-schema',
+      'apply-server',
+    ],
+  );
+  const partial = ensureDevTemporal(ready, {
+    authorize: true,
+    failAfterSecret: true,
+  });
   assert.equal(partial.ok, false);
   assert.equal(JSON.stringify(partial.actions).includes('delete'), false);
 });
@@ -70,12 +122,44 @@ test('a succeeded schema job is reused and a failed or foreign job is not replac
   const owned = {
     ...ready,
     resources: [
-      { kind: 'Namespace', name: DEV_TEMPORAL_NAMESPACE, owner: 'offscreen-dev', uid: 'ns' },
-      { kind: 'Secret', name: 'temporal-db', owner: 'offscreen-dev', uid: 'sec' },
-      { kind: 'PersistentVolumeClaim', name: 'temporal-postgres', owner: 'offscreen-dev', uid: 'pvc' },
-      { kind: 'Deployment', name: 'temporal-postgres', owner: 'offscreen-dev', uid: 'dep-pg' },
-      { kind: 'Job', name: DEV_TEMPORAL_SCHEMA_JOB, owner: 'offscreen-dev', uid: 'job', succeeded: true },
-      { kind: 'Deployment', name: 'temporal-server', owner: 'offscreen-dev', uid: 'dep', image: DEV_TEMPORAL_SERVER_IMAGE },
+      {
+        kind: 'Namespace',
+        name: DEV_TEMPORAL_NAMESPACE,
+        owner: 'offscreen-dev',
+        uid: 'ns',
+      },
+      {
+        kind: 'Secret',
+        name: 'temporal-db',
+        owner: 'offscreen-dev',
+        uid: 'sec',
+      },
+      {
+        kind: 'PersistentVolumeClaim',
+        name: 'temporal-postgres',
+        owner: 'offscreen-dev',
+        uid: 'pvc',
+      },
+      {
+        kind: 'Deployment',
+        name: 'temporal-postgres',
+        owner: 'offscreen-dev',
+        uid: 'dep-pg',
+      },
+      {
+        kind: 'Job',
+        name: DEV_TEMPORAL_SCHEMA_JOB,
+        owner: 'offscreen-dev',
+        uid: 'job',
+        succeeded: true,
+      },
+      {
+        kind: 'Deployment',
+        name: 'temporal-server',
+        owner: 'offscreen-dev',
+        uid: 'dep',
+        image: DEV_TEMPORAL_SERVER_IMAGE,
+      },
     ],
   };
   const calls = [];
@@ -85,45 +169,111 @@ test('a succeeded schema job is reused and a failed or foreign job is not replac
       throw new Error('password must not be regenerated');
     },
     run(_command, args) {
-      calls.push(args.join(' '));
+      const line = args.join(' ');
+      calls.push(line);
+      if (line.includes('availableReplicas')) return { ok: true, stdout: '1' };
+      if (line.includes('exec') && line.includes('temporal-postgres')) {
+        if (line.includes('-d postgres')) return { ok: true, stdout: '1' };
+        return { ok: true, stdout: 't' };
+      }
       return { ok: true, stdout: '1' };
     },
   });
   assert.equal(result.ok, true);
-  assert.equal(result.actions.some((action) => action.op === 'reuse-schema-job'), true);
-  const verifyIdx = result.actions.findIndex((action) => action.op === 'verify-schema');
+  assert.equal(
+    result.actions.some((action) => action.op === 'reuse-schema-job'),
+    true,
+  );
+  const verifyIdx = result.actions.findIndex(
+    (action) => action.op === 'verify-schema',
+  );
   const serverIdx = result.actions.findIndex(
     (action) => action.op === 'apply-server' || action.op === 'reuse-server',
   );
   assert.equal(verifyIdx >= 0 && serverIdx >= 0 && verifyIdx < serverIdx, true);
-  assert.equal(calls.some((line) => line.includes(' create ')), false);
-  const failed = ensureDevTemporal({ ...ready, resources: [{ kind: 'Job', name: DEV_TEMPORAL_SCHEMA_JOB, owner: 'offscreen-dev', uid: 'job', failed: true }] }, { authorize: true });
-  assert.equal(failed.refusals.some((item) => item.id === 'schema-job-failed'), true);
-  const foreign = ensureDevTemporal({ ...ready, resources: [{ kind: 'Job', name: DEV_TEMPORAL_SCHEMA_JOB, succeeded: true }] }, { authorize: true });
+  assert.equal(
+    calls.some((line) => line.includes(' create ')),
+    false,
+  );
+  const failed = ensureDevTemporal(
+    {
+      ...ready,
+      resources: [
+        {
+          kind: 'Job',
+          name: DEV_TEMPORAL_SCHEMA_JOB,
+          owner: 'offscreen-dev',
+          uid: 'job',
+          failed: true,
+        },
+      ],
+    },
+    { authorize: true },
+  );
+  assert.equal(
+    failed.refusals.some((item) => item.id === 'schema-job-failed'),
+    true,
+  );
+  const foreign = ensureDevTemporal(
+    {
+      ...ready,
+      resources: [
+        { kind: 'Job', name: DEV_TEMPORAL_SCHEMA_JOB, succeeded: true },
+      ],
+    },
+    { authorize: true },
+  );
   assert.equal(foreign.ok, false);
   assert.equal(foreign.mutated, false);
-  const unownedMap = ensureDevTemporal({ ...ready, resources: [{ kind: 'ConfigMap', name: 'temporal-dynamic', uid: 'cm' }] }, { authorize: true });
+  const unownedMap = ensureDevTemporal(
+    {
+      ...ready,
+      resources: [{ kind: 'ConfigMap', name: 'temporal-dynamic', uid: 'cm' }],
+    },
+    { authorize: true },
+  );
   assert.equal(unownedMap.ok, false);
   assert.equal(unownedMap.mutated, false);
   const blocked = executeAuthorizedDevTemporal({
     collect: () => ready,
     generatePassword: () => 'temporal-password-value',
-    run(_command, args) {
-      const joined = args.join(' ');
-      if (joined.includes('availableReplicas')) return { ok: true, stdout: '1' };
-      return { ok: true, stdout: '0' };
-    },
+    probeSql: (phase) =>
+      phase === 'schema'
+        ? {
+            ok: false,
+            refusals: [
+              {
+                id: 'schema-version-missing',
+                detail: 'schema_version is not present in temporal',
+              },
+            ],
+          }
+        : { ok: true, refusals: [] },
+    run: fakeDevKubectlRun(),
   });
   assert.equal(blocked.ok, false);
-  assert.equal(blocked.actions.some((action) => action.op === 'apply-server'), false);
-  assert.equal(blocked.refusals.some((item) => item.id === 'schema-not-ready'), true);
+  assert.equal(
+    blocked.actions.some((action) => action.op === 'apply-server'),
+    false,
+  );
+  assert.equal(
+    blocked.refusals.some((item) => item.id === 'schema-version-missing'),
+    true,
+  );
+  const schemaGate = blocked.actions.find(
+    (action) => action.op === 'verify-schema',
+  );
+  assert.equal(schemaGate?.ok, false);
 });
 
 test('wrong context, low memory, and the release namespace refuse without mutation', () => {
   for (const probe of [
     { ...ready, context: 'kind-offscreen-release' },
     { ...ready, memoryMiB: 100 },
-    { ...ready, resources: [{ kind: 'Namespace', name: RELEASE_TEMPORAL_NAMESPACE }] },
+    {
+      ...ready,
+      resources: [{ kind: 'Namespace', name: RELEASE_TEMPORAL_NAMESPACE }],
+    },
   ]) {
     const result = ensureDevTemporal(probe, { authorize: true });
     assert.equal(result.ok, false);
@@ -131,31 +281,146 @@ test('wrong context, low memory, and the release namespace refuse without mutati
   }
 });
 
+test('dev SQL gates probe authenticated and schema stores and fail closed', () => {
+  const probePhases = [];
+  const execLines = [];
+  const success = executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    probeSql: (phase) => {
+      probePhases.push(phase);
+      return { ok: true, refusals: [] };
+    },
+    run(_command, args) {
+      execLines.push(args.join(' '));
+      if (args.join(' ').includes('availableReplicas'))
+        return { ok: true, stdout: '1' };
+      return { ok: true, stdout: '1' };
+    },
+  });
+  assert.equal(success.ok, true);
+  assert.deepEqual(probePhases, ['authenticated', 'schema']);
+  assert.equal(
+    success.actions.some((action) => action.op === 'apply-server'),
+    true,
+  );
+  const schemaGate = success.actions.find(
+    (action) => action.op === 'verify-schema',
+  );
+  assert.equal(schemaGate?.ok, true);
+
+  const missingProbe = executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    probeSql: undefined,
+    run: fakeDevKubectlRun(),
+  });
+  assert.equal(missingProbe.ok, false);
+  assert.equal(missingProbe.refusals[0]?.id, 'sql-probe-missing');
+  assert.equal(
+    missingProbe.actions.some((action) => action.op === 'apply-server'),
+    false,
+  );
+
+  const badAuth = executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    run: fakeDevKubectlRun({
+      '-d postgres': () => ({ ok: true, stdout: '0' }),
+    }),
+  });
+  assert.equal(badAuth.ok, false);
+  assert.equal(badAuth.refusals[0]?.id, 'sql-output-wrong');
+  assert.equal(
+    badAuth.actions.some((action) => action.op === 'apply-server'),
+    false,
+  );
+
+  const failedExec = executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    run: fakeDevKubectlRun({
+      exec: () => ({ ok: false, stdout: '' }),
+    }),
+  });
+  assert.equal(failedExec.ok, false);
+  assert.equal(failedExec.refusals[0]?.id, 'sql-exec-failed');
+  assert.equal(
+    failedExec.actions.some((action) => action.op === 'apply-server'),
+    false,
+  );
+
+  const oneSidedSchema = executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    run(_command, args) {
+      const joined = args.join(' ');
+      if (joined.includes('availableReplicas'))
+        return { ok: true, stdout: '1' };
+      if (joined.includes('status.succeeded')) return { ok: true, stdout: '1' };
+      if (joined.includes('status.failed')) return { ok: true, stdout: '0' };
+      if (joined.includes('-d postgres')) return { ok: true, stdout: '1' };
+      if (joined.includes('-d temporal_visibility'))
+        return { ok: true, stdout: 'f' };
+      if (joined.includes('-d temporal')) return { ok: true, stdout: 't' };
+      return { ok: true, stdout: '' };
+    },
+  });
+  assert.equal(oneSidedSchema.ok, false);
+  assert.equal(oneSidedSchema.refusals[0]?.id, 'schema-version-missing');
+  assert.equal(
+    oneSidedSchema.actions.some((action) => action.op === 'apply-server'),
+    false,
+  );
+
+  const probeTargets = [];
+  executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    run(_command, args) {
+      probeTargets.push(args);
+      return fakeDevKubectlRun()(_command, args);
+    },
+  });
+  const sqlExec = probeTargets.find((args) => args.join(' ').includes('exec'));
+  assert.equal(sqlExec?.[1], DEV_TEMPORAL_CONTEXT);
+  const sqlNsFlag = sqlExec?.indexOf('-n') ?? -1;
+  assert.equal(sqlExec?.[sqlNsFlag + 1], DEV_TEMPORAL_NAMESPACE);
+  assert.equal(sqlExec?.join(' ').includes('delete'), false);
+});
+
 test('execution omits the password from the receipt and the CLI refuses live ensure', () => {
   const result = executeAuthorizedDevTemporal({
     collect: () => ready,
     generatePassword: () => 'temporal-password-value',
-    run(_command, args, options = {}) {
-      assert.equal(args[1], DEV_TEMPORAL_CONTEXT);
-      const joined = args.join(' ');
-      if (joined.includes('availableReplicas')) return { ok: true, stdout: '1' };
-      if (joined.includes('status.succeeded')) return { ok: true, stdout: '1' };
-      if (joined.includes('status.failed')) return { ok: true, stdout: '0' };
-      return { ok: true, stdout: options.input ?? '' };
-    },
+    run: fakeDevKubectlRun(),
   });
   assert.equal(result.ok, true);
-  assert.equal(JSON.stringify(result).includes('temporal-password-value'), false);
-  const script = join(dirname(fileURLToPath(import.meta.url)), '../src/adapters/dev-temporal-bootstrap-cli.mjs');
+  assert.equal(
+    JSON.stringify(result).includes('temporal-password-value'),
+    false,
+  );
+  const script = join(
+    dirname(fileURLToPath(import.meta.url)),
+    '../src/adapters/dev-temporal-bootstrap-cli.mjs',
+  );
   const ensure = spawnSync(process.execPath, [script, 'ensure'], {
     encoding: 'utf8',
-    env: { ...process.env, OFFSCREEN_DEV_TEMPORAL_ENSURE: 'authorized', OFFSCREEN_DEV_TEMPORAL_PROBE: JSON.stringify(ready), OFFSCREEN_DEV_TEMPORAL_PROBE_MODE: 'test' },
+    env: {
+      ...process.env,
+      OFFSCREEN_DEV_TEMPORAL_ENSURE: 'authorized',
+      OFFSCREEN_DEV_TEMPORAL_PROBE: JSON.stringify(ready),
+      OFFSCREEN_DEV_TEMPORAL_PROBE_MODE: 'test',
+    },
   });
   assert.equal(ensure.status, 2);
   assert.match(ensure.stderr, /injected probe cannot authorize mutation/);
   const injectedPlan = spawnSync(process.execPath, [script, 'plan'], {
     encoding: 'utf8',
-    env: { ...process.env, OFFSCREEN_DEV_TEMPORAL_PROBE: JSON.stringify(ready) },
+    env: {
+      ...process.env,
+      OFFSCREEN_DEV_TEMPORAL_PROBE: JSON.stringify(ready),
+    },
   });
   assert.equal(injectedPlan.status, 2);
   assert.match(injectedPlan.stderr, /injected Temporal probe outside tests/);
@@ -166,22 +431,67 @@ test('the host probe drops secret data and records a foreign config map', () => 
     readMeminfo: () => 'MemAvailable: 8388608 kB\n',
     run(command, args) {
       const joined = args.join(' ');
-      if (command === 'docker') return { ok: true, stdout: '28\n', timedOut: false };
-      if (command === 'kind') return { ok: true, stdout: 'offscreen-dev\n', timedOut: false };
-      if (joined.includes('current-context')) return { ok: true, stdout: 'kind-offscreen-release\n', timedOut: false };
-      if (joined.includes('cluster-info')) return { ok: true, stdout: 'https://127.0.0.1:24443\n', timedOut: false };
-      if (joined.includes('offscreen-dev-system')) return { ok: true, stdout: JSON.stringify({ metadata: { labels: { 'offscreen.dev/owner': 'offscreen-dev' } } }), timedOut: false };
-      if (joined.includes('storageclass')) return { ok: true, stdout: 'standard', timedOut: false };
+      if (command === 'docker')
+        return { ok: true, stdout: '28\n', timedOut: false };
+      if (command === 'kind')
+        return { ok: true, stdout: 'offscreen-dev\n', timedOut: false };
+      if (joined.includes('current-context'))
+        return {
+          ok: true,
+          stdout: 'kind-offscreen-release\n',
+          timedOut: false,
+        };
+      if (joined.includes('cluster-info'))
+        return {
+          ok: true,
+          stdout: 'https://127.0.0.1:24443\n',
+          timedOut: false,
+        };
+      if (joined.includes('offscreen-dev-system'))
+        return {
+          ok: true,
+          stdout: JSON.stringify({
+            metadata: { labels: { 'offscreen.dev/owner': 'offscreen-dev' } },
+          }),
+          timedOut: false,
+        };
+      if (joined.includes('storageclass'))
+        return { ok: true, stdout: 'standard', timedOut: false };
       if (joined.includes('get secret')) {
-        return { ok: true, stdout: JSON.stringify({ metadata: { name: 'temporal-db', namespace: DEV_TEMPORAL_NAMESPACE, uid: 'sec', labels: { 'offscreen.dev/owner': 'offscreen-dev' } }, data: { password: 'c2VjcmV0' } }), timedOut: false };
+        return {
+          ok: true,
+          stdout: JSON.stringify({
+            metadata: {
+              name: 'temporal-db',
+              namespace: DEV_TEMPORAL_NAMESPACE,
+              uid: 'sec',
+              labels: { 'offscreen.dev/owner': 'offscreen-dev' },
+            },
+            data: { password: 'c2VjcmV0' },
+          }),
+          timedOut: false,
+        };
       }
       if (joined.includes('get configmap temporal-dynamic')) {
-        return { ok: true, stdout: JSON.stringify({ metadata: { name: 'temporal-dynamic', namespace: DEV_TEMPORAL_NAMESPACE, uid: 'cm' } }), timedOut: false };
+        return {
+          ok: true,
+          stdout: JSON.stringify({
+            metadata: {
+              name: 'temporal-dynamic',
+              namespace: DEV_TEMPORAL_NAMESPACE,
+              uid: 'cm',
+            },
+          }),
+          timedOut: false,
+        };
       }
       return { ok: false, stdout: '', timedOut: false };
     },
   });
   assert.equal(JSON.stringify(probe).includes('c2VjcmV0'), false);
   assert.equal(probe.currentContext, 'kind-offscreen-release');
-  assert.equal(probe.resources.find((item) => item.name === 'temporal-dynamic').owner, null);
+  assert.equal(
+    probe.resources.find((item) => item.name === 'temporal-dynamic').owner,
+    null,
+  );
 });

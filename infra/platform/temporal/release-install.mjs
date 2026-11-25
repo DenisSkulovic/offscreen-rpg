@@ -14,17 +14,18 @@ import {
 } from '../common/render.mjs';
 import { decideTemporalBootstrap } from './schema-policy.mjs';
 import { TEMPORAL_LEGACY_YAML_SUCCESSORS } from './dev-bootstrap.mjs';
+import { probeLegacyTemporalSql } from './legacy-sql-probe.mjs';
 
 const temporalRoot = dirname(fileURLToPath(import.meta.url));
 const chartRoot = join(temporalRoot, 'chart');
 
 const releaseProfile = readPlatformProfile('release');
 const RELEASE_NAMESPACE = releaseProfile.namespaces.temporal;
-const RELEASE_CONTEXT = releaseProfile.contextName;
 const RELEASE_OWNER = releaseProfile.ownerValue;
 const RELEASE_SECRET = 'temporal-db';
 const RELEASE_SCHEMA_JOB = 'temporal-schema';
 const RELEASE_NAMESPACE_JOB = 'temporal-namespace';
+const RELEASE_SQL_PROBE_TIMEOUT_MS = 30_000;
 
 export { TEMPORAL_LEGACY_YAML_SUCCESSORS };
 
@@ -261,16 +262,82 @@ export function executeReleaseTemporalInstall(deps) {
   for (const action of plan.actions) {
     if (
       action.op.startsWith('reuse-') ||
-      action.op === 'wait-authenticated-sql' ||
-      action.op === 'verify-schema-tables' ||
       action.op === 'reuse-existing-schema'
     ) {
       completed.push(action);
       continue;
     }
 
+    if (
+      action.op === 'wait-authenticated-sql' ||
+      action.op === 'verify-schema-tables'
+    ) {
+      const phase =
+        action.op === 'wait-authenticated-sql' ? 'authenticated' : 'schema';
+      /** @type {{ ok: boolean, refusals?: { id: string, detail: string }[] }} */
+      let probe;
+      if (typeof deps.probeSql !== 'function') {
+        probe = {
+          ok: false,
+          refusals: [
+            {
+              id: 'sql-probe-missing',
+              detail: 'SQL probe callback is missing',
+            },
+          ],
+        };
+      } else {
+        try {
+          probe = deps.probeSql(phase);
+        } catch {
+          probe = {
+            ok: false,
+            refusals: [
+              {
+                id: 'sql-probe-threw',
+                detail: 'SQL probe callback threw',
+              },
+            ],
+          };
+        }
+      }
+      completed.push({
+        ...action,
+        ok: probe.ok,
+        refusals: probe.refusals ?? [],
+      });
+      if (probe.ok !== true) {
+        return {
+          ok: false,
+          mutated: writes.length > 0,
+          refusals: probe.refusals ?? [
+            { id: 'sql-probe-failed', detail: 'SQL probe failed' },
+          ],
+          actions: completed,
+          writes,
+        };
+      }
+      continue;
+    }
+
     if (action.op === 'wait-postgres-ready') {
-      const ready = deps.waitPostgresReady?.() ?? { ok: true };
+      if (typeof deps.waitPostgresReady !== 'function') {
+        const refusals = [
+          {
+            id: 'postgres-wait-missing',
+            detail: 'postgres ready waiter is missing',
+          },
+        ];
+        completed.push({ ...action, ok: false, refusals });
+        return {
+          ok: false,
+          mutated: writes.length > 0,
+          refusals,
+          actions: completed,
+          writes,
+        };
+      }
+      const ready = deps.waitPostgresReady();
       completed.push({ ...action, ...ready });
       if (ready.ok === false) {
         return {
@@ -294,7 +361,23 @@ export function executeReleaseTemporalInstall(deps) {
         action.op === 'wait-schema-job'
           ? deps.waitSchemaJob
           : deps.waitNamespaceJob;
-      const ready = waiter?.() ?? { ok: true };
+      if (typeof waiter !== 'function') {
+        const refusals = [
+          {
+            id: `${action.op}-wait-missing`,
+            detail: 'job wait callback is missing',
+          },
+        ];
+        completed.push({ ...action, ok: false, refusals });
+        return {
+          ok: false,
+          mutated: writes.length > 0,
+          refusals,
+          actions: completed,
+          writes,
+        };
+      }
+      const ready = waiter();
       completed.push({ ...action, ...ready });
       if (ready.ok === false) {
         return {
@@ -476,6 +559,27 @@ function runKubectl(baseKubectl, args, options = {}) {
 }
 
 /**
+ * @param {string[]} baseKubectl
+ * @param {string} database
+ * @param {string} query
+ * @returns {{ ok: boolean, stdout: string, stderr: string }}
+ */
+function execReleasePostgresSql(baseKubectl, database, query) {
+  return runKubectl(
+    baseKubectl,
+    [
+      'exec',
+      'deploy/temporal-postgres',
+      '--',
+      'bash',
+      '-lc',
+      `psql -h 127.0.0.1 -U temporal -d ${database} -Atqc ${JSON.stringify(query)}`,
+    ],
+    { timeoutMs: RELEASE_SQL_PROBE_TIMEOUT_MS },
+  );
+}
+
+/**
  * @param {string[]} kubectlBase from install.sh KUBECTL array without trailing args
  */
 export function runLiveReleaseInstall(kubectlBase) {
@@ -593,5 +697,10 @@ export function runLiveReleaseInstall(kubectlBase) {
       ]);
       return { ok: result.ok };
     },
+    probeSql: (phase) =>
+      probeLegacyTemporalSql(({ database, query }) => {
+        const result = execReleasePostgresSql(kubectlBase, database, query);
+        return { ok: result.ok, stdout: result.stdout };
+      }, phase),
   });
 }

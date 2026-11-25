@@ -375,7 +375,7 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 
 ## Temporal infrastructure source wave
 - [INF61 Helm chart decomposition](archive/2026-11/platform-operations/2026-11-25--inf61-temporal-chart-ownership/CHANGE.md) — Done (source); ownership partials; render 6/6; live NOT-RUN.
-- [INF62 Honest bootstrap SQL gates](open/2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md) — Ready, source-only.
+- [INF62 Honest bootstrap SQL gates](archive/2026-11/platform-operations/2026-11-25--inf62-temporal-bootstrap-verification/CHANGE.md) — Done (source); SQL existence gates; 49/49 with schema-policy; live NOT-RUN.
 - [INF63 Reject unidentified resource ownership](archive/2026-11/platform-operations/2026-11-25--inf63-temporal-explicit-ownership/CHANGE.md) — Done (source); 36/36; live NOT-RUN.
 [Programme](../undertakings/storyteller-workshop/TEMPORAL-INFRASTRUCTURE.md). No global queue change or live permission.
 

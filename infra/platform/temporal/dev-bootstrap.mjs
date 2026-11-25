@@ -10,6 +10,7 @@ import {
   renderPlatformManifestText,
   renderPlatformYaml,
 } from '../common/render.mjs';
+import { probeLegacyTemporalSql } from './legacy-sql-probe.mjs';
 import { decideTemporalBootstrap } from './schema-policy.mjs';
 
 const temporalRoot = dirname(fileURLToPath(import.meta.url));
@@ -31,6 +32,7 @@ export const DEV_TEMPORAL_SCRIPTS_CONFIGMAP = 'temporal-server-scripts';
 export const DEV_TEMPORAL_DYNAMIC_CONFIGMAP = 'temporal-dynamic';
 export const DEV_TEMPORAL_STORAGE_CLASS = 'standard';
 export const DEV_TEMPORAL_MIN_MEMORY_MIB = 4096;
+export const DEV_SQL_PROBE_TIMEOUT_MS = 30_000;
 export const RELEASE_TEMPORAL_NAMESPACE = 'lab-temporal';
 
 const OWNER_LABEL = 'offscreen.dev/owner';
@@ -448,17 +450,70 @@ export function temporalReadinessMet(sample) {
  * @param {object} deps
  */
 function kubectlSample(deps, args) {
-  return (
-    deps
-      .run('kubectl', [
-        '--context',
-        DEV_TEMPORAL_CONTEXT,
-        '-n',
-        DEV_TEMPORAL_NAMESPACE,
-        ...args,
-      ])
-      .stdout?.trim() ?? ''
+  const result = deps.run('kubectl', [
+    '--context',
+    DEV_TEMPORAL_CONTEXT,
+    '-n',
+    DEV_TEMPORAL_NAMESPACE,
+    ...args,
+  ]);
+  return result.stdout?.trim() ?? '';
+}
+
+/**
+ * @param {object} deps
+ * @param {string} database
+ * @param {string} query
+ * @returns {{ ok: boolean, stdout: string, stderr?: string }}
+ */
+export function execDevPostgresSql(deps, database, query) {
+  return deps.run(
+    'kubectl',
+    [
+      '--context',
+      DEV_TEMPORAL_CONTEXT,
+      '-n',
+      DEV_TEMPORAL_NAMESPACE,
+      'exec',
+      'deploy/temporal-postgres',
+      '--',
+      'bash',
+      '-lc',
+      `psql -h 127.0.0.1 -U temporal -d ${database} -Atqc ${JSON.stringify(query)}`,
+    ],
+    { timeoutMs: DEV_SQL_PROBE_TIMEOUT_MS },
   );
+}
+
+/**
+ * @param {object} deps
+ * @param {'authenticated' | 'schema'} phase
+ */
+function runDevTemporalSqlProbe(deps, phase) {
+  if (typeof deps.probeSql !== 'function') {
+    return {
+      ok: false,
+      refusals: [
+        {
+          id: 'sql-probe-missing',
+          detail: 'SQL probe callback is missing',
+        },
+      ],
+    };
+  }
+  try {
+    return deps.probeSql(phase);
+  } catch {
+    return {
+      ok: false,
+      refusals: [
+        {
+          id: 'sql-probe-threw',
+          detail: 'SQL probe callback threw',
+        },
+      ],
+    };
+  }
 }
 
 /**
@@ -587,20 +642,36 @@ function runDevTemporalActions(deps, actions, completed) {
       }
       continue;
     }
-    if (action.op === 'wait-authenticated-sql') {
-      completed.push(action);
-      continue;
-    }
     if (
-      action.op === 'wait-schema-job' ||
+      action.op === 'wait-authenticated-sql' ||
       action.op === 'verify-schema' ||
       action.op === 'verify-schema-tables'
     ) {
-      const checked = waitForDevTemporalSchema(deps);
-      const receiptOp =
-        action.op === 'wait-schema-job' ? 'wait-schema-job' : 'verify-schema';
+      const phase =
+        action.op === 'wait-authenticated-sql' ? 'authenticated' : 'schema';
+      const probe = runDevTemporalSqlProbe(deps, phase);
       completed.push({
-        op: receiptOp,
+        ...action,
+        ok: probe.ok,
+        refusals: probe.refusals ?? [],
+        context: DEV_TEMPORAL_CONTEXT,
+      });
+      if (probe.ok !== true) {
+        return {
+          ok: false,
+          mutated: completed.some((item) => mutating.has(item.op)),
+          refusals: probe.refusals ?? [
+            { id: 'sql-probe-failed', detail: 'SQL probe failed' },
+          ],
+          actions: completed,
+        };
+      }
+      continue;
+    }
+    if (action.op === 'wait-schema-job') {
+      const checked = waitForDevTemporalSchema(deps);
+      completed.push({
+        op: 'wait-schema-job',
         context: DEV_TEMPORAL_CONTEXT,
         postgresReady: checked.postgresReady,
         schemaSucceeded: checked.schemaSucceeded,
@@ -729,17 +800,29 @@ function runDevTemporalActions(deps, actions, completed) {
  * @param {object} deps
  */
 export function executeAuthorizedDevTemporal(deps) {
-  const decision = ensureDevTemporal(deps.collect(), { authorize: true });
+  const probeSql =
+    'probeSql' in deps
+      ? deps.probeSql
+      : (phase) =>
+          probeLegacyTemporalSql(({ database, query }) => {
+            const result = execDevPostgresSql(deps, database, query);
+            return { ok: result.ok, stdout: result.stdout };
+          }, phase);
+  const runtimeDeps = { ...deps, probeSql };
+  const decision = ensureDevTemporal(runtimeDeps.collect(), {
+    authorize: true,
+  });
   if (!decision.ok && decision.actions.length === 0)
     return { ...decision, mutated: false };
-  const again = ensureDevTemporal(deps.collect(), { authorize: true });
+  const again = ensureDevTemporal(runtimeDeps.collect(), { authorize: true });
   if (!again.ok && again.actions.length === 0)
     return { ...again, mutated: false };
   /** @type {object[]} */
   const completed = [];
   const outcome = runDevTemporalActions(
-    deps,
-    decideTemporalBootstrap(probeToBootstrapInput(deps.collect())).actions,
+    runtimeDeps,
+    decideTemporalBootstrap(probeToBootstrapInput(runtimeDeps.collect()))
+      .actions,
     completed,
   );
   const mutating = new Set([
