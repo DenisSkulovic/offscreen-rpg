@@ -340,3 +340,4 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [CACHE07](cache/2026-11-24--cache07-distributed-proof/CHANGE.md): Superseded, source preserved, proof transferred to VER06–07.
 - [VER01](platform-operations/2026-11-25--ver01-unified-verification-runner/CHANGE.md): Done source (`pnpm verify` + infra adapter); live disposable acceptance NOT-RUN.
 - [VER02](platform-operations/2026-11-25--ver02-owned-postgres-verification-resource/CHANGE.md): Done source (owned Postgres Docker plan/create/fault/cleanup); live Docker acquire NOT-RUN.
+- [VER03](platform-operations/2026-11-25--ver03-db-admission-workloads/CHANGE.md): Done source (`@offscreen/db` admission/pressure/process isolation suite); live admission/stress NOT-RUN.

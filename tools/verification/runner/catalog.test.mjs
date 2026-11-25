@@ -33,7 +33,7 @@ test('discoverWorkspacePackages reads direct child manifest names', () => {
   );
 });
 
-test('buildVerificationCatalog registers infra adapter and db placeholder', () => {
+test('buildVerificationCatalog registers infra adapter and db suite', () => {
   const catalog = buildVerificationCatalog(REPO_ROOT);
   assert.equal(catalog.infra.implementationStatus, 'registered');
   assert.equal(catalog.infra.adapter, 'suites/infra');
@@ -42,7 +42,8 @@ test('buildVerificationCatalog registers infra adapter and db placeholder', () =
     (row) => row.manifestName === '@offscreen/db',
   );
   assert.ok(dbRow);
-  assert.equal(dbRow.implementationStatus, 'placeholder');
+  assert.equal(dbRow.implementationStatus, 'registered');
+  assert.equal(dbRow.adapter, 'suites/packages/db');
   assert.ok(catalog.unimplemented.packages.includes('@offscreen/cache'));
   assert.ok(catalog.unimplemented.apps.length > 0);
 });

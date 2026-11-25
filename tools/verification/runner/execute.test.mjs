@@ -9,6 +9,7 @@ import {
   resolveSubject,
   REPO_ROOT,
 } from './catalog.mjs';
+import { buildDbVerificationDeps } from '../suites/packages/db/adapter.mjs';
 import {
   acquireLiveResource,
   runChildCommand,
@@ -172,9 +173,23 @@ test('runChildCommand maps timeout to public TIMEOUT', async () => {
 test('all selected scenario ids are emitted', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'verify-exec-'));
   const plan = dbPlan('source');
-  const result = await runVerification(plan, { repoRoot });
+  const fakeRun = async () => ({
+    code: 0,
+    stdout: '',
+    stderr: '',
+    reason: null,
+  });
+  const deps = buildDbVerificationDeps(plan, {
+    repoRoot: REPO_ROOT,
+    run: fakeRun,
+  });
+  const result = await runVerification(plan, { ...deps, repoRoot });
   const ids = result.report.scenarios.map((row) => row.scenarioId).sort();
   assert.deepEqual(ids, ['DB-S01', 'DB-S02']);
+  assert.equal(
+    result.report.scenarios.find((row) => row.scenarioId === 'DB-S02')?.status,
+    'NOT-RUN',
+  );
 });
 
 test('interrupted run yields incomplete report', async () => {

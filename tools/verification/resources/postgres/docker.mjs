@@ -1083,10 +1083,24 @@ export async function createPostgresDockerResource(options) {
     adminObserver: adminObserverHandle,
   };
 
+  const publicFacts = sanitizePostgresResourcePublicFacts(resource);
+  Object.defineProperty(resource, 'runtimeConnect', {
+    value: Object.freeze({
+      host,
+      port,
+      database: VERIFY_DATABASE_NAME,
+      user: VERIFY_RUNTIME_ROLE,
+      password: plan.credentials.runtimePassword,
+    }),
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  });
+
   return {
     ok: true,
     resource,
-    publicFacts: sanitizePostgresResourcePublicFacts(resource),
+    publicFacts,
     ownerReceipt: buildPostgresDockerOwnerReceipt(resource),
   };
 }

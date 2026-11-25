@@ -170,11 +170,12 @@ export const INFRA_SUITE = Object.freeze({
   }),
 });
 
-const DB_SUITE_PLACEHOLDER = Object.freeze({
+const DB_SUITE = Object.freeze({
   kind: 'package',
   manifestName: DB_MANIFEST_NAME,
   defaultProfile: 'standard',
-  implementationStatus: 'placeholder',
+  implementationStatus: 'registered',
+  adapter: 'suites/packages/db',
   manifestPath: 'suites/packages/db/manifest.mjs',
   profiles: DB_PROFILE_SECTIONS,
   sections: DB_SECTION_DEFINITIONS,
@@ -226,9 +227,10 @@ export function buildVerificationCatalog(repoRoot) {
         kind: 'package',
         dirName: entry.dirName,
         manifestName: entry.manifestName,
-        defaultProfile: DB_SUITE_PLACEHOLDER.defaultProfile,
-        implementationStatus: 'placeholder',
-        manifestPath: DB_SUITE_PLACEHOLDER.manifestPath,
+        defaultProfile: DB_SUITE.defaultProfile,
+        implementationStatus: DB_SUITE.implementationStatus,
+        adapter: DB_SUITE.adapter,
+        manifestPath: DB_SUITE.manifestPath,
         profiles: Object.keys(DB_PROFILE_SECTIONS),
       };
     }
@@ -316,7 +318,7 @@ export function resolveSubject(kind, name, repoRoot) {
     return {
       ok: true,
       subject: {
-        ...DB_SUITE_PLACEHOLDER,
+        ...DB_SUITE,
         dirName: resolved.entry.dirName,
       },
     };
@@ -365,7 +367,8 @@ export function buildVerificationPlan(input) {
       const plannedStatus = requiresLive && !input.live ? 'NOT-RUN' : 'PLANNED';
       return {
         id,
-        tier: definition?.tier ?? (id === 'source-suite' ? 'SOURCE' : 'FIXTURE'),
+        tier:
+          definition?.tier ?? (id === 'source-suite' ? 'SOURCE' : 'FIXTURE'),
         plannedStatus,
         scenarioIds: definition?.scenarioIds ?? [],
         timeoutMs: definition?.timeoutMs ?? null,
@@ -395,7 +398,10 @@ export function buildVerificationPlan(input) {
     };
   }
 
-  if (subject.implementationStatus === 'placeholder') {
+  if (
+    subject.implementationStatus === 'registered' ||
+    subject.implementationStatus === 'placeholder'
+  ) {
     const profiles = subject.profiles;
     if (!Object.prototype.hasOwnProperty.call(profiles, profileId)) {
       return { ok: false, message: `unknown profile: ${profileId}` };
@@ -453,6 +459,7 @@ export function buildVerificationPlan(input) {
         mode: input.live ? 'live' : 'source',
         sections,
         manifestPath: subject.manifestPath,
+        adapter: subject.adapter ?? null,
         incomplete,
       },
     };
