@@ -47,6 +47,7 @@ flowchart LR
 | Who is logged in, and what may they read? | [Identities and access](platform/identities-and-access.md) |
 | What must every player route agree about actor, operation id, 202, GET, and errors? | [HTTP and client contracts](platform/http-api-and-client-contracts.md) |
 | Which trust boundary may this actor cross? | [Platform trust boundaries](platform/security-and-trust-boundaries.md) |
+| How is local Temporal deployed, persisted and operated? | [Temporal infrastructure](platform/temporal-infrastructure.md) · [operator runbook](../runbooks/kubernetes-temporal.md) |
 | Who owns SQL declarations and database execution? | [Database infrastructure and domain persistence](platform/database-infrastructure.md) |
 | How are exceptional local data repairs catalogued and targeted? | [Controlled database operations](platform/database-operations.md). Operator tool in `tools/db-operations`; not application runtime. Live proof separately gated. |
 | Where does durable state live? | [Data and persistence](platform/data-and-persistence.md) |

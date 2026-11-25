@@ -1,77 +1,73 @@
 # Kubernetes Temporal
 
-Disposable Temporal server on the [kind lab](kubernetes-lab.md). This is not the Compose development server, not a game workflow, and not [First hosted deployment](../technical/platform/deployment-and-compatibility.md#first-hosted-deployment).
+Operate the local shared Temporal platform using the pinned upstream Helm chart and existing CNPG. See [technical contract](../technical/platform/temporal-infrastructure.md) for ownership, configuration and invariants. This replaces the removed embedded-database installer and toy smoke scripts. The old [2026-11-19 run](https://github.com/DenisSkulovic/offscreen-rpg/blob/3bf63b3ab46de8974b76886031853249c15e1e10/docs/runbooks/kubernetes-temporal.md#observed-local-run) is historical evidence only.
 
-Compose still runs Temporal's development server for the game. This procedure does not replace that process and does not point the game at the lab server.
+## Prerequisites and targets
 
-## What this procedure is
+From the repository root in supported Linux/WSL environment: installed workspace dependencies, Docker/Kind, kubectl, Helm, curl and flock, sufficient host memory; verified target cluster and healthy CNPG writable service. See [local platform quick reference](local-development-platform.md) and [PostgreSQL](kubernetes-postgres.md). Use explicit contexts, never rely on the current kubectl context.
 
-Install Temporal server 1.32.2 into the existing `offscreen-release` cluster, with PostgreSQL 17.11 on a `local-path` claim in namespace `lab-temporal`. The server process is `temporal-server --config-file /tmp/temporal-config.yaml --allow-no-auth start`. It listens inside the pod and is reached through a ClusterIP Service. History and visibility use databases `temporal` and `temporal_visibility` on that claim. Four history shards are set in the rendered config.
+| Profile | Context | Kubernetes namespace |
+| --- | --- | --- |
+| dev | kind-offscreen-dev | offscreen-dev-temporal |
+| release | kind-offscreen-release | lab-temporal |
 
-The database password is created in memory at install time and stored only in Secret `temporal-db`. The server script writes it into `/tmp/temporal-config.yaml` inside the container. No password is committed.
+Development procedure below is live-observed on an existing cluster. Release uses the same commands with release profile/context/namespace, but release isolation and installation remain unproven. In particular, current source refuses unrelated PUBLIC CONNECT grants; do not bypass that check or change unrelated grants without an approved PostgreSQL operation.
 
-A separate worker image runs one toy workflow, `labOnce`, on task queue `lab-once`. The workflow inserts one row into database `lab`, then waits on a 90-second timer. That workflow is not a game workflow. The game packages are not mounted into the worker.
-
-The server container limits are 700m CPU and 768Mi memory. PostgreSQL limits are 500m CPU and 384Mi memory. The worker limits are 500m CPU and 640Mi memory. There is no authorizer. `--allow-no-auth` is a lab limit, not a production authentication design.
-
-Platform install is `infra/platform/temporal/install.sh`, which renders the Helm chart under `infra/platform/temporal/chart/` through `release-install.mjs` (section wrappers `namespace.yaml`, `postgres.yaml`, `schema-job.yaml`, `server.yaml`, `admin.yaml`, and `namespace-job.yaml` select chart sections). Named document and script defines live in ownership partials (`_namespace.tpl`, `_postgres.tpl`, `_schema.tpl`, `_server.tpl`, `_admin.tpl`, `_namespace-job.tpl`); `_helpers.tpl` keeps shared `jsonFrom` and `validate` only. Before applying the server on a reuse path, release and dev bootstrap run mandatory SQL gates through `legacy-sql-probe.mjs`: authenticated `SELECT 1` against `postgres`, then existence of `public.schema_version` in both `temporal` and `temporal_visibility` (trimmed `t` required). That check is existence only, not version compatibility. A missing probe callback, failed exec, or wrong output refuses and stops before subsequent writes; Job completion alone is not schema authority. Verification scripts and the toy worker live under `infra/verification/smoke/temporal/`; `smoke.sh` builds and imports the worker image. Run them from the repository root after `infra/clusters/kind/release/up.sh`.
-
-## What it must not do
-
-- Do not call this cluster a production Temporal cluster. One process holds frontend, history, matching, and the internal worker. There is no second replica and no authorizer.
-- Do not describe this process as Temporal's development server. Compose still uses that mode. This lab server reads and writes PostgreSQL.
-- Do not point Compose, the game worker, or the game database at `lab-temporal`.
-- Do not put a password or a rendered server config in Git.
-- Do not publish a workload on `0.0.0.0` or `[::]`. `bindOnIP` is inside the pod network. A NodePort or LoadBalancer Service fails the check. The API server stays on `127.0.0.1`.
-- Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-release` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
-- Do not treat deletion of the kind cluster as a backup of workflow history.
-
-## Recovery limit
-
-The smoke starts `labOnce`, waits until the activity has completed and the timer has started, then scales the worker to zero. The workflow stays running. It then deletes the Temporal server pod. The new pod is a different uid. The PostgreSQL claim uid stays the same, and `temporal workflow show` still returns the same run id with the timer event. The worker is scaled back to one. The same run completes once. The insert in `lab_effect` stays at one row, because replay does not run a completed activity again.
-
-Deleting the kind cluster does not preserve local-path volumes. The provisioner stores files on the kind node disk, and `kind delete cluster` removes that node. There is no backup job and no second history replica. Recreating the cluster creates an empty volume. A replaced server pod and a deleted cluster are different events.
-
-## Create, probe, and delete
+## Plan, render, install and repeat
 
 ```bash
-infra/clusters/kind/release/up.sh
-infra/platform/temporal/install.sh
-infra/verification/smoke/temporal/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-release
+pnpm infra:plan --env dev --services temporal
+pnpm infra:render temporal dev > /tmp/temporal-dev.yaml
+pnpm infra:status --env dev --services temporal
 ```
 
-`install.sh` and `smoke.sh` take no arguments. `smoke.sh` does not delete the cluster or the claim. `down.sh` deletes the whole kind cluster, including the server, the worker, PostgreSQL, and the local-path files on the node.
-
-Hold the shared cluster lock from `up.sh` through `down.sh`. If `up.sh` says the cluster already exists, stop. Do not delete a cluster this shell did not create.
-
-## Failure
-
-If the server deployment does not become ready, the schema job does not complete, or the SQL existence gates fail, stop. Do not raise the WSL memory cap and do not delete Compose volumes to free space. Leave the Change unproven.
-
-If the smoke says the history run id changed, the timer event disappeared, the workflow completed while the worker was stopped, or `lab_effect` is not one row, the proof failed.
-
-If a check says a Docker volume outside the cluster disappeared, stop and do not run a broader Docker prune.
-
-## Observed local run
-
-On 2026-11-19, from branch `change/k8s06-temporal` at baseline `66f82cac`, one shell held `/tmp/offscreen-k8s-cluster.lock`, created `offscreen-release` only after that name was absent, and deleted that same cluster before it released the lock.
-
-Machine: MemTotal 12249872 kB. MemAvailable was 8443232 KiB before create, 7302676 KiB at the start of the smoke, and 8052748 KiB after delete. Docker 29.9.3, kind v0.33.0, kubectl client v1.37.2, node image `kindest/node:v1.37.0`.
-
-Pinned images: `docker.io/temporalio/server:1.32.2` digest `sha256:7bf69188a6232fea14869b9cef3d94aa82a1601d99517f7e86c71f22da4e0670`, `docker.io/temporalio/admin-tools:1.32.2` digest `sha256:4a95866efba29d7e17ab012df5232795e8b0ad0f7d5f9d1ec4df321f7792a754`, and `docker.io/library/postgres:17.11-bookworm` digest `sha256:665dc7b37ac52a17e298511414c21d23ffa4e6a6ef6225b3e5d59c7afb35e994`. The worker image was built locally as `offscreen-lab-temporal-worker:k8s06` from Node 22 and `@temporalio/worker` 1.24.0.
-
-Commands, from the repository root:
+Plan/status are read-only; render downloads and verifies the pinned chart but does not contact the cluster. If PostgreSQL is absent, provision it through the normal explicit platform path first (separate authorization). On a fresh authorized target:
 
 ```bash
-infra/clusters/kind/release/up.sh
-infra/platform/temporal/install.sh
-infra/verification/smoke/temporal/smoke.sh
-infra/clusters/kind/release/destroy.sh kind-offscreen-release
+pnpm infra:up --env dev --services temporal
 ```
 
-The server command was `temporal-server --config-file /tmp/temporal-config.yaml --allow-no-auth start`. `temporal-server --version` printed `temporal version 1.32.2`. The admin CLI printed `temporal version 1.10.0 (Server 1.32.2, UI 2.56.1)`. Postgres printed `postgres (PostgreSQL) 17.11 (Debian 17.11-1.pgdg12+2)`. Cluster health was `SERVING`. Claim `temporal-postgres` was Bound on `local-path`. Both Services were ClusterIP. The API container published `127.0.0.1:6443` only.
+This prepares the two databases/role in CNPG, creates the projected credential and namespace, and installs the upstream Helm release. First observed run succeeded in 66 seconds after correcting CNPG normalization handling. Repeating on matching healthy state took 2 seconds; no automatic upgrade or schema replay. Do not run legacy install.sh, release-install.mjs or deleted smoke scripts.
 
-`labOnce` run `01a1f508-38d1-7089-b20e-5ae1ca74a044` on task queue `lab-once` completed its activity and started its timer while the status was still `RUNNING`. `lab_effect` had one row. The worker was scaled to zero. The server pod uid changed from `23b8fa1e-77b5-43ce-a604-1baf606537c9` to `f992a343-45f8-4181-9378-687e3902b31a`. The claim uid stayed `c72d384b-11c3-42a3-b8f0-4276962f1653`. After the new server was `SERVING`, the same run id was still `RUNNING` and the history still had one `TimerStarted`. `lab_effect` was still one row. The worker was scaled back to one. The same run completed. The history had one `ActivityTaskCompleted`, one `TimerFired`, and one `WorkflowExecutionCompleted`. The result text was `finished-once`. The workflow list contained one execution. `lab_effect` stayed one row.
+## Inspect the runtime
 
-`down.sh` then removed `offscreen-release`. No kind cluster remained. `offscreen-rpg_postgres-data` and `offscreen-rpg_temporal-data` were still present. No Secret value was printed, and no password was written under `infra/kubernetes/lab/temporal/`. No model call was made. The game was not pointed at this server. This run is a disposable lab, not the Compose development server, and not a production cluster. Deleting the kind cluster did not keep the workflow history.
+```bash
+helm --kube-context kind-offscreen-dev -n offscreen-dev-temporal list --all
+kubectl --context kind-offscreen-dev -n offscreen-dev-temporal get deploy,pod,svc,job,pvc
+kubectl --context kind-offscreen-dev -n offscreen-dev-postgres get databaserole temporal
+kubectl --context kind-offscreen-dev -n offscreen-dev-postgres get database temporal temporal-visibility
+kubectl --context kind-offscreen-dev -n offscreen-dev-temporal exec deploy/temporal-admintools -- temporal operator cluster health
+kubectl --context kind-offscreen-dev -n offscreen-dev-temporal exec deploy/temporal-admintools -- temporal operator namespace list
+```
+
+Expect deployed Helm chart temporal-1.8.0, six ready Deployments/Pods, six Services, no Temporal PVC, both databases and role applied=true, health SERVING. Successful hook Job may already be deleted by Helm. Fresh dev initially has temporal-system only; ordinary dev lifecycle owns game namespace registration. Do not manually create default to bypass tenant binding.
+
+## Browser UI
+
+```bash
+kubectl --context kind-offscreen-dev -n offscreen-dev-temporal \
+  port-forward svc/temporal-web 8233:8080 --address 127.0.0.1
+```
+
+Keep terminal running and open http://localhost:8233. Restart forwarding after web Pod replacement; use hard refresh if old assets are cached. UI 2.58.1 includes upstream Chrome CSP correction; do not disable browser security. No external ingress or public bind.
+
+## Failure and maintenance
+
+If ensure refuses, stop and inspect Helm list, Deployment/Pod events and CNPG CR status. For a failed schema hook, inspect its Job/Pod logs locally with credential redaction. Do not dump Secret values, raw Helm-generated credentials or full sensitive environment. CNPG can temporarily report Secret forbidden before its own RBAC converges; the installer waits for semantic reconciliation. Do not patch operator RBAC manually. Partial resource state is intentionally preserved; do not blindly rerun, adopt, delete, or rotate credentials.
+
+Existing release with different values/chart refuses normal ensure. The observed 2.56.1→2.58.1 UI-only upgrade used the checksum-verified same chart, committed values, explicit target and no hooks because server/schema were unchanged. This is historical scoped maintenance, not a general upgrade procedure. Generic upgrade/rollback and schema compatibility workflow still require design; never skip hooks on a server/schema upgrade just because UI-only maintenance did.
+
+Stop owned consumers before separately authorized replacement. Do not delete an existing namespace or SQL state solely because install refuses. External CNPG stores/role are retained independently of Helm/namespace; cluster destruction may delete all local volumes. No backups/restore proof or production HA. Never treat disposable local permission as permission for another cluster or foreign slot.
+
+## Verification scope
+
+```bash
+node --test infra/platform/temporal/tests/*.test.mjs \
+  infra/platform/postgres/tests/temporal-persistence.test.mjs \
+  infra/environments/platform-plan.test.mjs \
+  infra/environments/infra-cli.test.mjs \
+  tools/dev-environments/test/dev-temporal-tenant.test.mjs
+pnpm infra:verify --suite diagnostic
+```
+
+Source fixtures and read-only health are not workflow acceptance. The old toy workflow smoke was retired; no replacement live smoke is claimed. See [dated evidence](../../evidence/runs/2026-11-26-temporal-platform.md) for exact tests and outcomes, and [capability catalog](../../infra/verification/CAPABILITIES.md) for remaining proof.
