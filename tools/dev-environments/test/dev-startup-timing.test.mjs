@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   exclusiveDurations,
+  useDevPrettyOutput,
+  formatDevProgress,
   timePhase,
   beginStartupTiming,
   finishStartupTiming,
@@ -230,4 +232,14 @@ test('a phase completing after its receipt was finished does not throw or reopen
     assert.equal(receipt.outcome, 'signal:SIGTERM');
     assert.deepEqual(startupTimingChildEnv(), {});
   });
+});
+
+test('interactive startup formatting is opt-out and non-TTY output stays plain', () => {
+  assert.equal(useDevPrettyOutput({isTTY:true}, {}), true);
+  assert.equal(useDevPrettyOutput({isTTY:false}, {}), false);
+  assert.equal(useDevPrettyOutput({isTTY:true}, {OFFSCREEN_DEV_UI:'plain'}), false);
+  const line = formatDevProgress('✓ migration (3.2s; returned)', {elapsed:'5.2s', available:8.5,total:19.5,columns:80,env:{NO_COLOR:''}});
+  assert.match(line, /Schema migrations/);
+  assert.match(line, /8.5 GiB free/);
+  assert.doesNotMatch(line, /\x1b/);
 });

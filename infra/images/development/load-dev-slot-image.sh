@@ -82,7 +82,13 @@ source "$repo/infra/images/development/build.sh"
 image_progress() {
   if [[ "${OFFSCREEN_DEV_PROGRESS:-}" == quiet || "$tilt_ref_mode" == true ]]; then return 0; fi
   if [[ -t 3 ]]; then
-    printf '[dev] images / %s\n' "$*" >&3 || true
+    if [[ "${OFFSCREEN_DEV_UI:-}" == plain || "${TERM:-}" == dumb ]]; then
+      printf '[dev] images / %s\n' "$*" >&3 || true
+    elif [[ -v NO_COLOR ]]; then
+      printf '     │  %s\n' "$*" >&3 || true
+    else
+      printf '\033[90m     │  %s\033[0m\n' "$*" >&3 || true
+    fi
   fi
 }
 if [[ "$tilt_ref_mode" != true && "${OFFSCREEN_DEV_PROGRESS:-}" != quiet ]]; then

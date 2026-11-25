@@ -197,6 +197,11 @@ export function beginStartupTiming(receiptPath, options = {}) {
     ? `${receiptPath}.${operationId}.phases.jsonl`
     : `${receiptPath}.phases.jsonl`;
   rmSync(childPath, { force: true });
+  if (useDevPrettyOutput() && process.env.OFFSCREEN_DEV_PROGRESS !== 'quiet') {
+    process.stderr.write('\n  ' + devColor('◈  OFFSCREEN / DEVELOPMENT', '1;36') + '\n');
+    process.stderr.write('  ' + devColor('Owned workspace  ·  Kind / Tilt  ·  live startup', '90') + '\n');
+    process.stderr.write('  ' + devColor('─'.repeat(Math.max(12, Math.min(78, (process.stderr.columns ?? 80) - 3))), '90') + '\n');
+  }
   scope.active = {
     path: receiptPath,
     childPath,
@@ -221,16 +226,48 @@ export function startupTimingActive() {
  * @param {(note: (extra: object) => void) => unknown} fn
  */
 // Human progress uses the existing timing boundaries; no second lifecycle owner.
+const DEV_LABELS = Object.freeze({
+  preflight: 'Host & ownership', artifact: 'Migration artifact', sql: 'Database tenant',
+  migration: 'Schema migrations', s3: 'Object storage', temporal: 'Temporal namespace',
+  images: 'Workspace image', workloads: 'Deployment manifests', reconcile: 'Environment reconciliation',
+});
+export function useDevPrettyOutput(stream = process.stderr, env = process.env) {
+  return stream.isTTY === true && env.TERM !== 'dumb' && env.CI !== 'true' &&
+    env.CI !== '1' && env.OFFSCREEN_DEV_UI !== 'plain';
+}
+function devColor(value, code, env = process.env) {
+  return env.NO_COLOR !== undefined ? value : '\x1b[' + code + 'm' + value + '\x1b[0m';
+}
+export function formatDevProgress(message, { elapsed, available, total, columns = 80, env = process.env }) {
+  const match = /^([▶✓✗…]) (.*)$/.exec(message);
+  const mark = match?.[1] ?? '·';
+  const raw = match?.[2] ?? message;
+  const parts = raw.split(' / ');
+  const tail = parts.at(-1);
+  const label = tail.replace(/^[a-z-]+/, key => DEV_LABELS[key] ?? key);
+  const body = parts[0] === 'reconcile' && parts.length > 1 ? label : parts.length > 1 ? parts[0] + ' / ' + label : label;
+  const width = Math.max(16, Math.min(54, columns - 30));
+  const clipped = body.length > width ? body.slice(0, width - 1) + '…' : body;
+  const symbol = devColor(mark, mark === '✓' ? '32' : mark === '✗' ? '31' : mark === '…' ? '33' : '36', env);
+  const time = elapsed.padStart(7);
+  const ram = available.toFixed(1) + ' GiB free';
+  return '  ' + symbol + '  ' + clipped.padEnd(width) + '  ' + devColor(time, '90', env) +
+    (columns >= 62 ? '  ' + devColor(ram, available < 2 ? '33' : '90', env) : '');
+}
 export function announceDevStartup(message) {
   if (process.env.OFFSCREEN_DEV_PROGRESS === 'quiet') return;
   let available = freemem();
   try {
-    const match = /^MemAvailable:\s+(\d+)\s+kB/m.exec(readFileSync('/proc/meminfo', 'utf8'));
+    const match = /^MemAvailable:\\s+(\\d+)\\s+kB/m.exec(readFileSync('/proc/meminfo', 'utf8'));
     if (match) available = Number(match[1]) * 1024;
   } catch { /* portable fallback */ }
-  const gib = n => (n / 1024 ** 3).toFixed(1);
+  const gib = n => n / 1024 ** 3;
   const elapsed = currentScope().active ? ((performance.now() - currentScope().active.origin) / 1000).toFixed(1) + 's' : '';
-  process.stderr.write('[dev] ' + message + '  |  ' + elapsed + '  |  RAM available ' + gib(available) + '/' + gib(totalmem()) + ' GiB\n');
+  if (useDevPrettyOutput()) {
+    process.stderr.write(formatDevProgress(message, { elapsed, available: gib(available), total: gib(totalmem()), columns: process.stderr.columns ?? 80 }) + '\n');
+  } else {
+    process.stderr.write('[dev] ' + message + '  |  ' + elapsed + '  |  RAM available ' + gib(available).toFixed(1) + '/' + gib(totalmem()).toFixed(1) + ' GiB\n');
+  }
 }
 export async function timePhase(name, parent, fn) {
   const scope = currentScope();
@@ -482,7 +519,21 @@ export function finishStartupTiming(outcome) {
     (phase) =>
       `${phase.name} ${phase.ms}ms wall, ${phase.exclusiveMs}ms exclusive${phase.cache ? ` cache=${phase.cache}` : ''}`,
   );
-  console.log(`startup timing ${active.path}\n${lines.join('\n')}`);
+  if (useDevPrettyOutput() && successStartupOutcome(outcome) && process.env.OFFSCREEN_DEV_PROGRESS !== 'quiet') {
+    const main = ['preflight', 'reconcile', 'readiness'].map(name => {
+      const phase = phases.find(p => p.name === name && p.parent === null);
+      return phase ? name + ' ' + (phase.ms / 1000).toFixed(1) + 's' : null;
+    }).filter(Boolean).join('  ·  ');
+    const image = phases.find(p => p.name === 'images');
+    const build = phases.find(p => p.name === 'docker-build');
+    const details = image ? 'Images ' + (image.ms / 1000).toFixed(1) + 's' + (build?.cache ? '  ·  Docker cache ' + build.cache : '') : '';
+    console.log('\n  ' + devColor('✓  Workload verification complete', '1;32') + '  ' + (receipt.elapsedMs / 1000).toFixed(1) + 's');
+    console.log('  ' + devColor(main, '90'));
+    if (details) console.log('  ' + devColor(details, '90'));
+    console.log('  ' + devColor('Full timings: ' + active.path, '90') + '\n');
+  } else {
+    console.log(`startup timing ${active.path}\n${lines.join('\n')}`);
+  }
   scope.active = null;
   scope.rollbackSpan = null;
   return receipt;
