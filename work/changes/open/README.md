@@ -71,7 +71,7 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 
 ## Unified verification programme (2026-11-25)
 
-[VER01–VER05 execution program](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md) · [Normative verification contract](../../../docs/technical/platform/verification-programmes.md). VER01 Ready, VER02–05 dependency-gated, source commissioned. DB work continues; live resources separately authorized. No global queue change.
+[VER01–VER05 execution program](../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md) · [Normative verification contract](../../../docs/technical/platform/verification-programmes.md). [VER01](../archive/2026-11/platform-operations/2026-11-25--ver01-unified-verification-runner/CHANGE.md) source Done (live NOT-RUN). VER02–05 dependency-gated, source commissioned. DB work continues; live resources separately authorized. No global queue change.
 
 ## Infrastructure reconciliation (2026-11-25)
 

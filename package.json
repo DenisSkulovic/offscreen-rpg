@@ -80,7 +80,8 @@
     "repo:change-branch:test": "node --test scripts/repo-tools/change-branch-guard.test.mjs",
     "repo:code-quality:changed": "node scripts/repo-tools/changed-code-quality.mjs",
     "repo:code-quality:changed:test": "node --test scripts/repo-tools/changed-code-quality.test.mjs",
-    "repo:affected": "node scripts/repo-tools/affected-check.mjs"
+    "repo:affected": "node scripts/repo-tools/affected-check.mjs",
+    "verify": "node tools/verification/runner/cli.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

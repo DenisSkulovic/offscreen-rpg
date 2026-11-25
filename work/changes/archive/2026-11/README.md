@@ -338,3 +338,4 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 
 - [CACHE04](cache/2026-11-24--cache04-story-snapshot/CHANGE.md): Done source-only, SQL proof transferred to VER08.
 - [CACHE07](cache/2026-11-24--cache07-distributed-proof/CHANGE.md): Superseded, source preserved, proof transferred to VER06–07.
+- [VER01](platform-operations/2026-11-25--ver01-unified-verification-runner/CHANGE.md): Done source (`pnpm verify` + infra adapter); live disposable acceptance NOT-RUN.
