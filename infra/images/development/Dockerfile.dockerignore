@@ -33,3 +33,7 @@ state
 **/coverage
 **/.cache
 **/*.log
+
+# Host orchestration is not a workspace package or pod runtime input.
+tools/dev-environments/src
+tools/dev-environments/test

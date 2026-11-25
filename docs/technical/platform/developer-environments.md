@@ -37,6 +37,8 @@ flowchart TD
 
 **Landed correction:** image preparation writes a content-derived ref and does not patch Deployments. Tilt selects that ref. Readiness accepts a sibling tag only when the running container digest is on the selected image. The `e93f33c7` trial, where the loader also patched `offscreen.dev/image-generation`, remains the failure that this correction replaced.
 
+The dev image copies the workspace trees but excludes `tools/dev-environments/src` and `tools/dev-environments/test` via its Dockerfile-specific ignore policy. These host-only trees are not workspace packages. Pod runtime modules under `tools/dev-environments/runtime` remain packaged and fingerprinted. Host UI and orchestration edits must not create a new image generation; real runtime edits must. Both Kind nodes remain required until the scheduling/distribution contract is separately changed.
+
 **Selected image rules:**
 1. Artifact identity must be content-derived and correspond to bytes actually loaded into the relevant Kind nodes. A mutable alias being present in `ctr images ls` is insufficient. Docker image config digest, OCI index digest, manifest digest and CRI image ID are different representations; only compare identities that have a proven mapping.
 2. Prefer a content-addressed deployment reference and Tilt's custom-build output-reference handoff **if** the active Tilt/Kind custom-build contract supports it. This is an implementation option to verify, not a claim of current API usage. Do not invent a digest conversion or make a mutable alias into an 'immutable' label by renaming it.

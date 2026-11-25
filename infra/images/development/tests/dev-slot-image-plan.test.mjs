@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -565,4 +565,21 @@ test('Dockerfile and copied npm configuration remain fingerprint inputs', () => 
   assert.notEqual(changed, original);
   writeFileSync(join(root, 'infra/images/development/Dockerfile'), RECIPE + '\n# recipe change\n');
   assert.notEqual(fingerprint(root).fingerprint, changed);
+});
+
+test('real Docker ignore policy excludes host developer CLI and tests but retains pod runtime', () => {
+  const root = checkout('ctx-dev-host-');
+  const policy = readFileSync(new URL('../Dockerfile.dockerignore', import.meta.url), 'utf8');
+  writeFileSync(join(root, 'infra/images/development/Dockerfile.dockerignore'), policy);
+  const initial = fingerprint(root).fingerprint;
+  for (const relative of ['src/application/dev-startup-timing.mjs', 'test/dev-startup-timing.test.mjs']) {
+    const file = join(root, 'tools/dev-environments', relative);
+    mkdirSync(join(file, '..'), { recursive: true });
+    writeFileSync(file, 'host-only change');
+    assert.equal(fingerprint(root).fingerprint, initial);
+  }
+  const runtime = join(root, 'tools/dev-environments/runtime/compile-watch.mjs');
+  mkdirSync(join(runtime, '..'), { recursive: true });
+  writeFileSync(runtime, 'pod runtime change');
+  assert.notEqual(fingerprint(root).fingerprint, initial);
 });
