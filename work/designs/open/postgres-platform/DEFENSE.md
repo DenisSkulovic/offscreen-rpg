@@ -34,3 +34,7 @@ E. Existing release cutover rehearsal with representative copied/disposable data
 
 ## Overall verdict
 Core thesis remains credible, but **REVISE AND RE-DEFEND**. Stronger access layer direction and concurrency/fencing corrections are material. Structural slice needs exact source/lock/caller closure and re-defense; ACL, capacity, release migration remain separately evidence-gated. Do not promote design or write implementation packets yet. Next: resolve actual lock infrastructure, migration and journal contracts, concrete comparison matrix and scope-specific re-defense. No fictional independent review.
+
+## Pass 2 follow-up
+
+See [DEFENSE-PASS-02.md](DEFENSE-PASS-02.md). Narrowed concurrency to one cooperating PostgreSQL mutation lock for structural slice; host-wide guarantees rejected without cross-platform admission design. Identified actual migration advisory lock boundary, two migration connections and runtime login dependency. Application privilege publication remains a separately gated consumer responsibility. Candidate not yet submitted.

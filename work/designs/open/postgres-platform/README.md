@@ -1,6 +1,6 @@
 # PostgreSQL platform renewal | design workshop
 
-**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: 2026-11-26, round 8b (revision and re-defense). Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
+**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: 2026-11-26, round 8c (structural candidate closure). Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
 
 ## Intent
 
@@ -34,10 +34,10 @@ Current canonical sources: [database infrastructure](../../../../docs/technical/
 5. Tenant and persistence — proposed target, see [tenancy](TENANCY.md); migration and live proof gated.
 6. Concrete specimens — provisional renderer and layout selected, see [specimens](SPECIMENS.md).
 7. Core source gap analysis — see [gap map](GAP-ANALYSIS.md); exhaustive caller closure still required before edits.
-8. Formal architecture defense — [pass 1](DEFENSE.md): REVISE AND RE-DEFEND; evidence gates remain.
+8. Formal architecture defense — [pass 1](DEFENSE.md): REVISE AND RE-DEFEND; see [pass 2](DEFENSE-PASS-02.md). Independent committee required after self-defense.
 9. Convergence, canonical promotion and execution choice only after gates.
 
-Next action: resolve lock/caller and migration contracts, revise comparison matrix and re-defend bounded structural slice before convergence. No implementation until target, integration/preservation map and necessary proof/acceptance are settled. Live experiments deferred until owner at terminal. No current queue change.
+Next action: close structural caller map, compatibility matrix and bounded lock custody; revise artifacts and self-defend exact scope before fresh-chat committee submission. No implementation until target, integration/preservation map and necessary proof/acceptance are settled. Live experiments deferred until owner at terminal. No current queue change.
 
 ## Evidence discipline
 
