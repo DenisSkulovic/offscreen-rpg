@@ -25,3 +25,6 @@ Verification (root): `pnpm --filter @offscreen/db build && node --test packages/
 Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
 
 Read [EXECUTION.md](EXECUTION.md) before dispatch. No further planner approval.
+
+## Parent join proof
+Add new db07-errors.test.js and db07-transaction.test.js to packages/db/package.json test script, preserving DB06/08 test entries; custodian merges only test-script keys with schema lane exports/dependencies. Run full DB source test script after build. No DB07 domain adoption. Source-only; live DB10.

@@ -14,3 +14,5 @@ In a disposable realistic dataset with distinct owners/stories, demonstrate base
 
 ## Scope/gate
 Read current `packages/db/src/database.ts` pool settings, outbox/Story Engine query owners, Postgres/Kubernetes manifests and actual observability telemetry. Source audit then decide which operational scripts/metrics are missing. Don't move SQL into repositories, install an arbitrary monitoring stack, or claim production capacity from 100 local users. No protected DB maintenance, paid model or cluster change authorized.
+
+**2026-11-25 reconciliation:** DB09 exposes bounded managed-operation telemetry and counters; DB10 proves the component runtime at its selected tier. DBOPS02 consumes these and current infra/monitoring composition to measure PostgreSQL operational capacity, statistics and plans. Do not retrofit all legacy query paths under DB09 or duplicate component tests. Remains backlog, no implicit live operations.
