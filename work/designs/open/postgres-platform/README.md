@@ -1,6 +1,6 @@
 # PostgreSQL platform renewal | design workshop
 
-**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: 2026-11-26, round 6 (concrete specimens and source layout). Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
+**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: 2026-11-26, round 7 (detailed legacy gap analysis). Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
 
 ## Intent
 
@@ -32,12 +32,12 @@ Current canonical sources: [database infrastructure](../../../../docs/technical/
 3. Independent target architecture — proposed, see [architecture](ARCHITECTURE.md).
 4. Resource/connection budget — source model complete, measurement and final sizing gated; see [capacity](CAPACITY.md).
 5. Tenant and persistence — proposed target, see [tenancy](TENANCY.md); migration and live proof gated.
-6. Concrete specimens and review; choose tools only after requirements and research.
+6. Concrete specimens — provisional renderer and layout selected, see [specimens](SPECIMENS.md).
 7. Detailed source gap map and preserve/replace decisions, actual callers/tests/commands and historical runtime identity.
 8. Architecture defense and bounded experiment sequence; revise based on findings.
 9. Convergence, canonical promotion and execution choice only after gates.
 
-Next action: construct concrete native declarations and minimal operational specimens; compare composition mechanisms and test whether common provisioning responsibilities need custom modules. No implementation until target, integration/preservation map and necessary proof/acceptance are settled. Live experiments deferred until owner at terminal. No current queue change.
+Next action: audit actual PostgreSQL orchestration, common helpers, callers and tests against target; map preserve/replace/retire decisions and compatibility risks. No implementation until target, integration/preservation map and necessary proof/acceptance are settled. Live experiments deferred until owner at terminal. No current queue change.
 
 ## Evidence discipline
 

@@ -21,7 +21,7 @@ Historical runtime names are compatibility constraints, not design naming preced
 
 **Proposed choice:** keep checksum-pinned upstream manifest for operator installation, native CNPG Cluster/Database/DatabaseRole objects for data-plane declarations. Operator install and Cluster configuration are separate concerns. The existing operator installation method preserves controller identity and avoids unnecessary Helm ownership migration. [Tagged upstream installation](https://github.com/cloudnative-pg/cloudnative-pg/blob/v1.30.2/docs/src/installation_upgrade.md) explicitly supports server-side apply and uses cnpg-controller-manager in cnpg-system; Helm default Deployment identity differs. Operator updates may roll all managed clusters; no implicit update. Verify actual artifact contents, ownership and image digest before finalizing.
 
-Compare configuration mechanisms with actual specimen in round 6:
+Round 6 refinement: provisionally retain the small existing Helm rendering chart (not a Helm release), after inspecting its two-resource output and dynamic experiment/integration needs. See [specimens](SPECIMENS.md). Original alternatives considered:
 
 | Mechanism | Disposition |
 | --- | --- |
