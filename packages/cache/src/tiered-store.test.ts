@@ -2,10 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { createFakeStore } from './core/test-stores.js';
-import {
-  createMemoryStore,
-  createTieredStore,
-} from './memory/index.js';
+import { createMemoryStore, createTieredStore } from './memory/index.js';
 import type { CacheEntry, CacheStore } from './core/cache-store.js';
 
 function liveEntry(

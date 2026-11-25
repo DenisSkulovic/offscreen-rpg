@@ -115,10 +115,17 @@ test('telemetry: store hit emits l2 get hit', async () => {
   }));
 
   assert.equal(value, 'cached');
-  const hit = hasEvent(events, { tier: 'l2', operation: 'get', outcome: 'hit' });
+  const hit = hasEvent(events, {
+    tier: 'l2',
+    operation: 'get',
+    outcome: 'hit',
+  });
   assert.ok(hit);
   assertBounded(hit!);
-  assert.equal(hasEvent(events, { tier: 'origin', operation: 'load', outcome: 'ok' }), undefined);
+  assert.equal(
+    hasEvent(events, { tier: 'origin', operation: 'load', outcome: 'ok' }),
+    undefined,
+  );
 });
 
 test('telemetry: store miss emits l2 get miss before origin load', async () => {
@@ -139,8 +146,14 @@ test('telemetry: store miss emits l2 get miss before origin load', async () => {
   }));
 
   assert.equal(value, 'loaded');
-  assert.ok(hasEvent(events, { tier: 'l2', operation: 'get', outcome: 'miss' }));
-  const loadOk = hasEvent(events, { tier: 'origin', operation: 'load', outcome: 'ok' });
+  assert.ok(
+    hasEvent(events, { tier: 'l2', operation: 'get', outcome: 'miss' }),
+  );
+  const loadOk = hasEvent(events, {
+    tier: 'origin',
+    operation: 'load',
+    outcome: 'ok',
+  });
   assert.ok(loadOk);
   assert.ok(typeof loadOk!.durationMs === 'number' && loadOk!.durationMs >= 0);
 });
@@ -281,7 +294,11 @@ test('telemetry: origin bulkhead overload emits origin load overload', async () 
   await Promise.all([first, queued]);
 
   assert.ok(
-    hasEvent(events, { tier: 'origin', operation: 'load', outcome: 'overload' }),
+    hasEvent(events, {
+      tier: 'origin',
+      operation: 'load',
+      outcome: 'overload',
+    }),
   );
   const runtimeOverload = events.filter(
     (event) =>

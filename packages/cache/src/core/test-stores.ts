@@ -29,17 +29,7 @@ function isExpiredForWrite(entry: CacheEntry, nowMs: number): boolean {
   return entry.expiresAtMs <= nowMs;
 }
 
-/** Test-only store that always bypasses with reason {@link disabled}. */
-export function createDisabledStore(): CacheStore {
-  return {
-    async get() {
-      return { kind: 'bypass', reason: 'disabled' };
-    },
-    async set() {
-      return { kind: 'bypass', reason: 'disabled' };
-    },
-  };
-}
+export { createDisabledStore } from './disabled-store.js';
 
 /**
  * Bounded in-memory {@link CacheStore} for tests: copies bytes, uses injected clock, rejects oversize/expired writes.

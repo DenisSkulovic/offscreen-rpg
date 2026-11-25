@@ -99,10 +99,7 @@ test('revision race: observed identity controls population key', async () => {
   assert.equal(setKeys.length, 1);
   const expectedB = makeCacheKey(env, 'story', 1, ['b']);
   assert.equal(setKeys[0], expectedB);
-  assert.notEqual(
-    setKeys[0],
-    makeCacheKey(env, 'story', 1, ['a']),
-  );
+  assert.notEqual(setKeys[0], makeCacheKey(env, 'story', 1, ['a']));
 
   const hitB = await bound.getOrLoad(['b'], async () => {
     loads += 1;
@@ -175,7 +172,9 @@ test('stale observation at write time skips store population', async () => {
   const setKeys: string[] = [];
   const store = wrapStore(inner, { onSet: (k) => setKeys.push(k) });
   const bound = bindCache(
-    versionedDefinition({ policy: validPolicy({ jitterRatio: 0, ttlMs: 1000 }) }),
+    versionedDefinition({
+      policy: validPolicy({ jitterRatio: 0, ttlMs: 1000 }),
+    }),
     { store, environment: env, clock: () => now, random: () => 0 },
   );
 

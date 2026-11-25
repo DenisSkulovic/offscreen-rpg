@@ -214,7 +214,7 @@ export function assertEvictionScenario(result) {
 export const T02_RECOVERY_BUDGET_MS = 25_000;
 export const T02_SHUTDOWN_BUDGET_MS = 5_000;
 export const SDK_QUEUE_METRICS_PROOF =
-  'packages/cache/src/cache03-single-flight.test.ts';
+  'packages/cache/src/single-flight.test.ts';
 
 /**
  * @param {readonly number[]} samples
