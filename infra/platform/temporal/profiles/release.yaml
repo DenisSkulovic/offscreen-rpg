@@ -1,0 +1,10 @@
+server:
+  config:
+    persistence:
+      datastores:
+        default:
+          sql:
+            connectAddr: "lab-pg-rw.lab-postgres.svc:5432"
+        visibility:
+          sql:
+            connectAddr: "lab-pg-rw.lab-postgres.svc:5432"
