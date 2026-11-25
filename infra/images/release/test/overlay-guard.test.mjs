@@ -206,7 +206,7 @@ fi
 if [[ "$joined" == *"get gateway lab-edge"* ]]; then exit 0; fi
 if [[ "$joined" == *"get secret lab-pg-app"* ]]; then exit 0; fi
 if [[ "$joined" == *"get service object-store"* ]]; then exit 0; fi
-if [[ "$joined" == *"get service temporal-server"* ]]; then exit 0; fi
+if [[ "$joined" == *"get service temporal-frontend"* ]]; then exit 0; fi
 echo "unexpected kubectl invocation: $*" >&2
 exit 2
 `;
@@ -338,7 +338,7 @@ fi
 if [[ "$joined" == *"get gateway lab-edge"* ]]; then exit 0; fi
 if [[ "$joined" == *"get secret lab-pg-app"* ]]; then exit 0; fi
 if [[ "$joined" == *"get service object-store"* ]]; then exit 0; fi
-if [[ "$joined" == *"get service temporal-server"* ]]; then exit 0; fi
+if [[ "$joined" == *"get service temporal-frontend"* ]]; then exit 0; fi
 if [[ "\${1:-}" == "apply" ]]; then exit 0; fi
 if [[ "$joined" == *"wait --for=condition=complete job/game-migrate"* ]]; then
   echo "migration wait failed" >&2
