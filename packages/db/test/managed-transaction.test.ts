@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { PoolClient, QueryResult } from 'pg';
+import { DatabaseError, type PoolClient, type QueryResult } from 'pg';
 import { NodePgTransaction, NodePgSession } from 'drizzle-orm/node-postgres';
 import { PgDialect } from 'drizzle-orm/pg-core/dialect';
 import type { ExtractTablesWithRelations } from 'drizzle-orm';
@@ -41,6 +41,17 @@ function okResult(command: string): QueryResult {
   return { command, rowCount: 0, rows: [], oid: 0, fields: [] };
 }
 
+function pgDatabaseError(
+  code: string,
+  severity: string,
+  message = 'postgres failure',
+): DatabaseError {
+  const error = new DatabaseError(message, message.length, 'error');
+  error.severity = severity;
+  error.code = code;
+  return error;
+}
+
 function createFakeQueryClient(
   handlers: FakeQueryClient['handlers'] = [],
 ): FakeQueryClient {
@@ -67,7 +78,7 @@ function createFakeQueryClient(
       if (handler) {
         return await handler(call, index);
       }
-      if (text === 'BEGIN ISOLATION LEVEL READ COMMITTED') {
+      if (text.startsWith('BEGIN ISOLATION LEVEL')) {
         return okResult('BEGIN');
       }
       if (text.startsWith('SELECT set_config')) {
@@ -186,6 +197,126 @@ test('BEGIN failure surfaces without rollback', async () => {
   );
 
   assert.equal(client.queries.filter((q) => q.text === 'ROLLBACK').length, 0);
+  assert.equal(client.discardCalls, 1);
+  assert.equal(client.releases, 1);
+});
+
+test('unexpected BEGIN command tag discards without rollback or callback', async () => {
+  let callbackRan = false;
+  const client = createFakeQueryClient([async () => okResult('SELECT')]);
+  const runtime = directRuntime(client);
+
+  await assert.rejects(
+    executeManagedTransaction(
+      { withClient: runtime.withClient, onBackgroundError: () => {} },
+      basePolicy(),
+      async () => {
+        callbackRan = true;
+        return 'never';
+      },
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof DatabaseTransactionError);
+      assert.equal(error.category, 'application');
+      return true;
+    },
+  );
+
+  assert.equal(callbackRan, false);
+  assert.equal(client.discardCalls, 1);
+  assert.equal(client.queries.filter((q) => q.text === 'ROLLBACK').length, 0);
+});
+
+test('setup failure rolls back once without callback and normal release', async () => {
+  let callbackRan = false;
+  const setupError = new Error('set_config failed');
+  const client = createFakeQueryClient([
+    async () => okResult('BEGIN'),
+    async () => {
+      throw setupError;
+    },
+  ]);
+  const runtime = directRuntime(client);
+
+  await assert.rejects(
+    executeManagedTransaction(
+      { withClient: runtime.withClient, onBackgroundError: () => {} },
+      basePolicy(),
+      async () => {
+        callbackRan = true;
+        return 'never';
+      },
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof DatabaseTransactionError);
+      assert.equal(error.cause, setupError);
+      return true;
+    },
+  );
+
+  assert.equal(callbackRan, false);
+  assert.equal(client.queries.filter((q) => q.text === 'ROLLBACK').length, 1);
+  assert.equal(client.discardCalls, 0);
+  assert.equal(client.releases, 1);
+});
+
+test('setup rollback failure discards and preserves setup error', async () => {
+  const setupError = new Error('set_config failed');
+  const rollbackError = new Error('rollback transport loss');
+  const client = createFakeQueryClient([
+    async () => okResult('BEGIN'),
+    async () => {
+      throw setupError;
+    },
+    async () => {
+      throw rollbackError;
+    },
+  ]);
+  const runtime = directRuntime(client);
+
+  await assert.rejects(
+    executeManagedTransaction(
+      { withClient: runtime.withClient, onBackgroundError: () => {} },
+      basePolicy(),
+      async () => 'never',
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof DatabaseTransactionError);
+      assert.equal(error.cause, setupError);
+      return true;
+    },
+  );
+
+  assert.equal(client.discardCalls, 1);
+  assert.equal(client.queries.filter((q) => q.text === 'ROLLBACK').length, 1);
+});
+
+test('setup rollback wrong tag discards and preserves setup error', async () => {
+  const setupError = new Error('set_config failed');
+  const client = createFakeQueryClient([
+    async () => okResult('BEGIN'),
+    async () => {
+      throw setupError;
+    },
+    async () => okResult('COMMIT'),
+  ]);
+  const runtime = directRuntime(client);
+
+  await assert.rejects(
+    executeManagedTransaction(
+      { withClient: runtime.withClient, onBackgroundError: () => {} },
+      basePolicy(),
+      async () => 'never',
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof DatabaseTransactionError);
+      assert.equal(error.cause, setupError);
+      return true;
+    },
+  );
+
+  assert.equal(client.discardCalls, 1);
+  assert.equal(client.queries.filter((q) => q.text === 'ROLLBACK').length, 1);
 });
 
 test('BEGIN uses read-only isolation and set_config uses local timeouts', async () => {
@@ -241,6 +372,257 @@ test('callback rejection rolls back before surfacing error', async () => {
   );
 
   assert.equal(client.queries.at(-1)?.text, 'ROLLBACK');
+});
+
+test('COMMIT constraint refusal rolls back once and does not retry', async () => {
+  let attempts = 0;
+  const constraint = pgDatabaseError('23505', 'ERROR', 'unique violation');
+  const client = createFakeQueryClient();
+  const baseQuery = client.query.bind(client);
+  client.query = async (text, values) => {
+    if (text === 'COMMIT') {
+      throw constraint;
+    }
+    return baseQuery(text, values);
+  };
+
+  const runtime = directRuntime(client);
+
+  await assert.rejects(
+    executeManagedTransaction(
+      { withClient: runtime.withClient, onBackgroundError: () => {} },
+      basePolicy({ retry: 'sql-only-conflicts' }),
+      async () => {
+        attempts += 1;
+        return 'done';
+      },
+      fixedJitter,
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof DatabaseTransactionError);
+      assert.equal(error.category, 'constraint');
+      assert.equal(error.cause, constraint);
+      return true;
+    },
+  );
+
+  assert.equal(attempts, 1);
+  assert.equal(client.queries.filter((q) => q.text === 'ROLLBACK').length, 1);
+  assert.equal(client.discardCalls, 0);
+});
+
+test('COMMIT serialization refusal retries after confirmed rollback', async () => {
+  let attempts = 0;
+  let commitFailures = 0;
+  const conflict = pgDatabaseError('40001', 'ERROR', 'serialization failure');
+  const client = createFakeQueryClient();
+  const baseQuery = client.query.bind(client);
+  client.query = async (text, values) => {
+    if (text === 'COMMIT') {
+      commitFailures += 1;
+      if (commitFailures === 1) {
+        throw conflict;
+      }
+    }
+    return baseQuery(text, values);
+  };
+
+  const runtime = directRuntime(client);
+
+  const result = await executeManagedTransaction(
+    {
+      withClient: runtime.withClient,
+      onBackgroundError: () => {},
+    },
+    basePolicy({ retry: 'sql-only-conflicts' }),
+    async () => {
+      attempts += 1;
+      return 'retried';
+    },
+    fixedJitter,
+  );
+
+  assert.equal(result, 'retried');
+  assert.equal(attempts, 2);
+  assert.ok(client.queries.filter((q) => q.text === 'ROLLBACK').length >= 1);
+  assert.equal(client.discardCalls, 0);
+});
+
+test('COMMIT deadlock refusal retries after confirmed rollback', async () => {
+  let attempts = 0;
+  let commitFailures = 0;
+  const deadlock = pgDatabaseError('40P01', 'ERROR', 'deadlock detected');
+  const client = createFakeQueryClient();
+  const baseQuery = client.query.bind(client);
+  client.query = async (text, values) => {
+    if (text === 'COMMIT') {
+      commitFailures += 1;
+      if (commitFailures === 1) {
+        throw deadlock;
+      }
+    }
+    return baseQuery(text, values);
+  };
+
+  const runtime = directRuntime(client);
+
+  const result = await executeManagedTransaction(
+    {
+      withClient: runtime.withClient,
+      onBackgroundError: () => {},
+    },
+    basePolicy({ retry: 'sql-only-conflicts' }),
+    async () => {
+      attempts += 1;
+      return 'retried';
+    },
+    fixedJitter,
+  );
+
+  assert.equal(result, 'retried');
+  assert.equal(attempts, 2);
+});
+
+test('COMMIT serialization refusal does not retry without rollback confirmation', async () => {
+  let attempts = 0;
+  const conflict = pgDatabaseError('40001', 'ERROR', 'serialization failure');
+  const rollbackError = new Error('rollback transport loss');
+  const client = createFakeQueryClient();
+  const baseQuery = client.query.bind(client);
+  client.query = async (text, values) => {
+    if (text === 'COMMIT') {
+      throw conflict;
+    }
+    if (text === 'ROLLBACK') {
+      throw rollbackError;
+    }
+    return baseQuery(text, values);
+  };
+
+  const runtime = directRuntime(client);
+
+  await assert.rejects(
+    executeManagedTransaction(
+      { withClient: runtime.withClient, onBackgroundError: () => {} },
+      basePolicy({ retry: 'sql-only-conflicts' }),
+      async () => {
+        attempts += 1;
+        return 'done';
+      },
+      fixedJitter,
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof DatabaseTransactionError);
+      assert.equal(error.category, 'serialization');
+      return true;
+    },
+  );
+
+  assert.equal(attempts, 1);
+  assert.equal(client.discardCalls, 1);
+});
+
+test('COMMIT serialization refusal does not retry when retry policy is none', async () => {
+  let attempts = 0;
+  const conflict = pgDatabaseError('40001', 'ERROR', 'serialization failure');
+  const client = createFakeQueryClient();
+  const baseQuery = client.query.bind(client);
+  client.query = async (text, values) => {
+    if (text === 'COMMIT') {
+      throw conflict;
+    }
+    return baseQuery(text, values);
+  };
+
+  const runtime = directRuntime(client);
+
+  await assert.rejects(
+    executeManagedTransaction(
+      { withClient: runtime.withClient, onBackgroundError: () => {} },
+      basePolicy({ retry: 'none' }),
+      async () => {
+        attempts += 1;
+        return 'done';
+      },
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof DatabaseTransactionError);
+      assert.equal(error.category, 'serialization');
+      return true;
+    },
+  );
+
+  assert.equal(attempts, 1);
+  assert.equal(client.queries.filter((q) => q.text === 'ROLLBACK').length, 1);
+});
+
+test('COMMIT rejections without pg DatabaseError are commit-unknown', async () => {
+  const cases = [
+    Object.assign(new Error('looks like conflict'), { code: '40001' }),
+    pgDatabaseError('40001', 'FATAL', 'fatal conflict'),
+    new Error('connection dropped'),
+  ];
+
+  for (const commitError of cases) {
+    let attempts = 0;
+    const client = createFakeQueryClient();
+    const baseQuery = client.query.bind(client);
+    client.query = async (text, values) => {
+      if (text === 'COMMIT') {
+        throw commitError;
+      }
+      return baseQuery(text, values);
+    };
+
+    const runtime = directRuntime(client);
+
+    await assert.rejects(
+      executeManagedTransaction(
+        { withClient: runtime.withClient, onBackgroundError: () => {} },
+        basePolicy({ retry: 'sql-only-conflicts' }),
+        async () => {
+          attempts += 1;
+          return 'done';
+        },
+        fixedJitter,
+      ),
+      (error: unknown) => {
+        assert.ok(error instanceof DatabaseTransactionError);
+        assert.equal(error.category, 'commit-unknown');
+        return true;
+      },
+    );
+
+    assert.equal(attempts, 1);
+    assert.equal(client.discardCalls, 1);
+    assert.equal(client.queries.filter((q) => q.text === 'ROLLBACK').length, 0);
+  }
+});
+
+test('unexpected COMMIT command tag is commit-unknown and discards', async () => {
+  const client = createFakeQueryClient([
+    async () => okResult('BEGIN'),
+    async () => okResult('SELECT'),
+    async () => okResult('SELECT'),
+  ]);
+
+  const runtime = directRuntime(client);
+
+  await assert.rejects(
+    executeManagedTransaction(
+      { withClient: runtime.withClient, onBackgroundError: () => {} },
+      basePolicy(),
+      async () => 'done',
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof DatabaseTransactionError);
+      assert.equal(error.category, 'commit-unknown');
+      return true;
+    },
+  );
+
+  assert.equal(client.discardCalls, 1);
+  assert.equal(client.queries.filter((q) => q.text === 'ROLLBACK').length, 0);
 });
 
 test('COMMIT transport loss is commit-unknown and discards client', async () => {
