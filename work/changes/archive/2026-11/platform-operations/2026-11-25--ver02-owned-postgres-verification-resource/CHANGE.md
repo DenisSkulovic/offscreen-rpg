@@ -1,6 +1,6 @@
 # VER02 | Disposable PostgreSQL resource adapter
 
-**State: Done (source implementation; live Docker acquire/fault/cleanup NOT-RUN).** Closed 2026-11-25 on Change branch `change/ver02-owned-postgres-verification-resource` from main `598403a8e3e0fdb532882b8bf6eddb5b25924834`. Kind: implementation. Profile: STATE. Baseline `0c45ae7318295398d706511b9d702720a55c8a92`. VER01 joined; no DB runtime API changes.
+**State: Done (source implementation; live Docker acquire/fault/cleanup NOT-RUN).** Closed 2026-11-25 on Change branch `change/ver02-owned-postgres-verification-resource` from main `598403a8e3e0fdb532882b8bf6eddb5b25924834`. Joined main at `d27df892ab8aa4ecae1c415026a8371e0d13a6ca`. Kind: implementation. Profile: STATE. Baseline `0c45ae7318295398d706511b9d702720a55c8a92`. VER01 joined; no DB runtime API changes.
 
 [Normative verification programme](../../../../../../docs/technical/platform/verification-programmes.md) · [Program and ownership](../../../../../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md) · [TASKS](TASKS.md)
 
