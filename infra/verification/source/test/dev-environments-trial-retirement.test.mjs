@@ -12,7 +12,6 @@ const TRIAL_NAMES = [
   'dev-s3-tenant-trial.mjs',
   'dev-sql-tenant-trial.mjs',
   'dev-sql-tenant-migrate-trial.mjs',
-  'dev-temporal-tenant-trial.mjs',
 ];
 
 const RETIRED_PREFIX = 'tools/dev-environments/src/adapters/';
@@ -43,6 +42,12 @@ describe('tenant trial scripts retired from runtime adapters', () => {
       assert.equal(existsSync(join(REPO_ROOT, RETIRED_PREFIX, name)), false);
     });
   }
+
+  test('obsolete fixed-slot Temporal trial is retired from both locations', () => {
+    const name = 'dev-temporal-tenant-trial.mjs';
+    assert.equal(existsSync(join(VERIFICATION_DIR, name)), false);
+    assert.equal(existsSync(join(REPO_ROOT, RETIRED_PREFIX, name)), false);
+  });
 
   test('runtime src does not import verification dev-environments', () => {
     const hits = gitGrep('infra/verification/dev-environments', [
