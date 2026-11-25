@@ -112,3 +112,7 @@ No global queue change or live permission; DBOPS01 metadata and release proof re
 - INF63 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--inf63-temporal-explicit-ownership/CHANGE.md).
 
 [Programme and later gates](../../undertakings/storyteller-workshop/TEMPORAL-INFRASTRUCTURE.md).
+
+## Temporal corrective wave
+- [INF70](2026-11-25--inf70-temporal-sql-authentication/CHANGE.md): Ready.
+- [INF71](2026-11-25--inf71-temporal-execution-refusals/CHANGE.md): Ready after INF70.
