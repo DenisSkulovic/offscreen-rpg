@@ -115,4 +115,4 @@ No global queue change or live permission; DBOPS01 metadata and release proof re
 
 ## Temporal corrective wave
 - INF70 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--inf70-temporal-sql-authentication/CHANGE.md).
-- [INF71](2026-11-25--inf71-temporal-execution-refusals/CHANGE.md): Ready after INF70.
+- INF71 archived Done (source): [packet](../archive/2026-11/platform-operations/2026-11-25--inf71-temporal-execution-refusals/CHANGE.md).

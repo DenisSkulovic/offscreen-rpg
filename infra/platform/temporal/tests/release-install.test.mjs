@@ -57,15 +57,58 @@ function schemaReadyObservations() {
   };
 }
 
-/** Explicit successful gate callbacks required after T02 fail-closed wiring. */
+/** Explicit successful gate callbacks required by fail-closed release executor. */
 function successfulGateDeps(overrides = {}) {
   return {
     waitPostgresReady: () => ({ ok: true, refusals: [] }),
     waitSchemaJob: () => ({ ok: true, refusals: [] }),
     waitNamespaceJob: () => ({ ok: true, refusals: [] }),
+    waitServerReady: () => ({ ok: true, refusals: [] }),
+    waitAdminReady: () => ({ ok: true, refusals: [] }),
     probeSql: () => ({ ok: true, refusals: [] }),
     ...overrides,
   };
+}
+
+const EXECUTOR_REUSE_OPS = new Set([
+  'reuse-secret',
+  'reuse-schema-job',
+  'reuse-existing-schema',
+  'reuse-server',
+  'reuse-admin',
+  'reuse-namespace-job',
+  'reuse-default-namespace',
+]);
+
+const EXECUTOR_SECTION_OPS = new Set([
+  'ensure-namespace',
+  'apply-postgres',
+  'create-schema-job',
+  'apply-server',
+  'apply-admin',
+  'create-namespace-job',
+]);
+
+const EXECUTOR_GATE_OPS = new Set([
+  'wait-postgres-ready',
+  'wait-authenticated-sql',
+  'verify-schema-tables',
+  'wait-schema-job',
+  'wait-namespace-job',
+  'create-secret',
+]);
+
+/** @param {Parameters<typeof planReleaseTemporalInstall>[0]} observations */
+function assertPlannerOpsCoveredByExecutor(observations) {
+  const plan = planReleaseTemporalInstall(observations);
+  if (!plan.ok) return;
+  for (const { op } of plan.actions) {
+    const covered =
+      EXECUTOR_REUSE_OPS.has(op) ||
+      EXECUTOR_SECTION_OPS.has(op) ||
+      EXECUTOR_GATE_OPS.has(op);
+    assert.equal(covered, true, `planner op not covered by executor: ${op}`);
+  }
 }
 
 test('release SQL exec fake matches database and query argv tail', () => {
@@ -338,6 +381,163 @@ test('absent postgres waiter fails closed before SQL probe', () => {
     (item) => item.op === 'wait-postgres-ready',
   );
   assert.equal(waitAction?.ok, false);
+});
+
+test('refused plan with prior actions performs zero writes', () => {
+  const kubectlCalls = [];
+  const observations = {
+    ...schemaReadyObservations(),
+    sql: {
+      state: 'readable',
+      databases: { temporal: true, temporal_visibility: true },
+      schemaTables: { temporal: false, temporal_visibility: true },
+    },
+  };
+  const plan = planReleaseTemporalInstall(observations);
+  assert.equal(plan.ok, false);
+  assert.equal(plan.refusals[0]?.id, 'schema-tables-unverified');
+  assert.ok(plan.actions.length > 0);
+
+  const result = executeReleaseTemporalInstall({
+    observe: () => observations,
+    kubectl: (...args) => {
+      kubectlCalls.push(args);
+      return { ok: true };
+    },
+    ...successfulGateDeps(),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, false);
+  assert.deepEqual(result.writes, []);
+  assert.equal(kubectlCalls.length, 0);
+  assert.equal(result.refusals[0]?.id, 'schema-tables-unverified');
+});
+
+test('planner action allowlist matches release install fixtures', () => {
+  assertPlannerOpsCoveredByExecutor({
+    namespace: absent,
+    secret: absent,
+    pvc: absent,
+    postgres: absent,
+    server: absent,
+    admin: absent,
+    schemaJob: absent,
+    namespaceJob: absent,
+    defaultNamespace: absent,
+    clusterHealth: absent,
+  });
+  assertPlannerOpsCoveredByExecutor(schemaReadyObservations());
+  assertPlannerOpsCoveredByExecutor({
+    namespace: presentOwned(),
+    secret: presentOwned(),
+    pvc: presentOwned(),
+    postgres: presentOwned(),
+    server: presentOwned(),
+    admin: presentOwned(),
+    schemaJob: { ...presentOwned(), condition: 'Complete' },
+    namespaceJob: absent,
+    defaultNamespace: { state: 'present' },
+    clusterHealth: { state: 'release-serving' },
+    serverHealth: { state: 'healthy', mode: 'release-serving' },
+    sql: {
+      state: 'readable',
+      databases: { temporal: true, temporal_visibility: true },
+      schemaTables: { temporal: true, temporal_visibility: true },
+    },
+  });
+});
+
+test('malformed and thrown readiness waiters fail closed', () => {
+  const nullReady = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: () => ({ ok: true }),
+    ...successfulGateDeps({
+      waitPostgresReady: () => null,
+    }),
+  });
+  assert.equal(nullReady.ok, false);
+  assert.equal(nullReady.refusals[0]?.id, 'postgres-not-ready');
+  assert.equal(nullReady.writes.length, 0);
+
+  const thrownReady = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: () => ({ ok: true }),
+    ...successfulGateDeps({
+      waitPostgresReady: () => {
+        throw new Error('rollout failed');
+      },
+    }),
+  });
+  assert.equal(thrownReady.ok, false);
+  assert.equal(thrownReady.refusals[0]?.id, 'postgres-not-ready');
+});
+
+test('missing post-apply server and admin waiters fail closed', () => {
+  const missingServer = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: () => ({ ok: true }),
+    ...successfulGateDeps({ waitServerReady: undefined }),
+  });
+  assert.equal(missingServer.ok, false);
+  assert.equal(missingServer.refusals[0]?.id, 'server-wait-missing');
+  assert.equal(missingServer.writes.includes('apply-server'), true);
+  assert.equal(missingServer.writes.includes('apply-admin'), false);
+
+  const missingAdmin = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: () => ({ ok: true }),
+    ...successfulGateDeps({ waitAdminReady: undefined }),
+  });
+  assert.equal(missingAdmin.ok, false);
+  assert.equal(missingAdmin.refusals[0]?.id, 'admin-wait-missing');
+  assert.equal(missingAdmin.writes.includes('apply-server'), true);
+  assert.equal(missingAdmin.writes.includes('apply-admin'), true);
+});
+
+test('explicit server and admin readiness waits succeed', () => {
+  let serverWaits = 0;
+  let adminWaits = 0;
+  const result = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: () => ({ ok: true }),
+    ...successfulGateDeps({
+      waitServerReady: () => {
+        serverWaits += 1;
+        return { ok: true, refusals: [] };
+      },
+      waitAdminReady: () => {
+        adminWaits += 1;
+        return { ok: true, refusals: [] };
+      },
+    }),
+  });
+  assert.equal(result.ok, true);
+  assert.equal(serverWaits, 1);
+  assert.equal(adminWaits, 1);
+  const serverReady = result.actions.find(
+    (item) => item.op === 'verify-server-ready',
+  );
+  const adminReady = result.actions.find(
+    (item) => item.op === 'verify-admin-ready',
+  );
+  assert.equal(serverReady?.ok, true);
+  assert.equal(adminReady?.ok, true);
+});
+
+test('malformed SQL probe receipt uses sql-probe-failed', () => {
+  const result = executeReleaseTemporalInstall({
+    observe: () => schemaReadyObservations(),
+    kubectl: () => ({ ok: true }),
+    ...successfulGateDeps({
+      probeSql: () => null,
+    }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0]?.id, 'sql-probe-failed');
+  const authGate = result.actions.find(
+    (item) => item.op === 'wait-authenticated-sql',
+  );
+  assert.equal(authGate?.ok, false);
 });
 
 test('default namespace job reuses after describe finds default', () => {

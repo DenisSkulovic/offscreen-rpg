@@ -232,7 +232,7 @@ test('a succeeded schema job is reused and a failed or foreign job is not replac
     true,
   );
   const verifyIdx = result.actions.findIndex(
-    (action) => action.op === 'verify-schema',
+    (action) => action.op === 'verify-schema-tables',
   );
   const serverIdx = result.actions.findIndex(
     (action) => action.op === 'apply-server' || action.op === 'reuse-server',
@@ -308,7 +308,7 @@ test('a succeeded schema job is reused and a failed or foreign job is not replac
     true,
   );
   const schemaGate = blocked.actions.find(
-    (action) => action.op === 'verify-schema',
+    (action) => action.op === 'verify-schema-tables',
   );
   assert.equal(schemaGate?.ok, false);
 });
@@ -352,7 +352,7 @@ test('dev SQL gates probe authenticated and schema stores and fail closed', () =
     true,
   );
   const schemaGate = success.actions.find(
-    (action) => action.op === 'verify-schema',
+    (action) => action.op === 'verify-schema-tables',
   );
   assert.equal(schemaGate?.ok, true);
 
@@ -444,6 +444,104 @@ test('dev SQL gates probe authenticated and schema stores and fail closed', () =
   const sqlNsFlag = sqlExec?.indexOf('-n') ?? -1;
   assert.equal(sqlExec?.[sqlNsFlag + 1], DEV_TEMPORAL_NAMESPACE);
   assert.equal(sqlExec?.join(' ').includes('delete'), false);
+});
+
+test('authorized execution uses two collects, raw gates, and explicit refusals', () => {
+  let collects = 0;
+  const refusedSecond = executeAuthorizedDevTemporal({
+    collect: () => {
+      collects += 1;
+      if (collects === 1) return ready;
+      return { ...ready, memoryMiB: 100 };
+    },
+    generatePassword: () => 'temporal-password-value',
+    run() {
+      throw new Error('writes must not run after second-snapshot refusal');
+    },
+  });
+  assert.equal(refusedSecond.ok, false);
+  assert.equal(refusedSecond.mutated, false);
+  assert.equal(collects, 2);
+
+  const malformedSql = executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    probeSql: () => null,
+    run: fakeDevKubectlRun(),
+  });
+  assert.equal(malformedSql.ok, false);
+  assert.equal(malformedSql.refusals[0]?.id, 'sql-probe-failed');
+  assert.equal(
+    malformedSql.actions.some((action) => action.op === 'apply-server'),
+    false,
+  );
+
+  const badReplicas = executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    probeSql: () => ({ ok: true, refusals: [] }),
+    run: fakeDevKubectlRun({ availableReplicas: '' }),
+  });
+  assert.equal(badReplicas.ok, false);
+  assert.equal(badReplicas.refusals[0]?.id, 'postgres-not-ready');
+  assert.equal(
+    badReplicas.actions.some(
+      (action) => action.op === 'wait-authenticated-sql',
+    ),
+    false,
+  );
+
+  const writes = [];
+  const conflict = executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    probeSql: () => ({ ok: true, refusals: [] }),
+    run(_command, args, options = {}) {
+      const joined = args.join(' ');
+      if (joined.includes(' create ') && args.includes('-f')) {
+        return { ok: false, stderr: 'AlreadyExists' };
+      }
+      writes.push(joined);
+      return fakeDevKubectlRun()(_command, args, options);
+    },
+  });
+  assert.equal(conflict.ok, false);
+  assert.equal(conflict.mutated, true);
+  assert.equal(
+    conflict.refusals.some((item) => item.id === 'secret-create-conflict'),
+    true,
+  );
+  const secretAttempt = conflict.actions.find(
+    (action) => action.op === 'create-secret',
+  );
+  assert.equal(secretAttempt?.ok, false);
+  assert.equal(
+    writes.some(
+      (line) =>
+        line.includes('temporal-postgres') || line.includes('temporal-server'),
+    ),
+    false,
+  );
+
+  const rawGates = executeAuthorizedDevTemporal({
+    collect: () => ready,
+    generatePassword: () => 'temporal-password-value',
+    probeSql: () => ({ ok: true, refusals: [] }),
+    run: fakeDevKubectlRun(),
+  });
+  assert.equal(rawGates.ok, true);
+  assert.equal(
+    rawGates.actions.some((action) => action.op === 'wait-authenticated-sql'),
+    true,
+  );
+  assert.equal(
+    rawGates.actions.some((action) => action.op === 'verify-schema-tables'),
+    true,
+  );
+  assert.equal(
+    rawGates.actions.some((action) => action.op === 'verify-schema'),
+    false,
+  );
 });
 
 test('execution omits the password from the receipt and the CLI refuses live ensure', () => {

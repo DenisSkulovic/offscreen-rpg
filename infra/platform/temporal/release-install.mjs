@@ -249,10 +249,31 @@ export function renderReleaseSection(section) {
 /**
  * @param {object} deps
  */
+const RELEASE_REUSE_OPS = new Set([
+  'reuse-secret',
+  'reuse-schema-job',
+  'reuse-existing-schema',
+  'reuse-server',
+  'reuse-admin',
+  'reuse-namespace-job',
+  'reuse-default-namespace',
+]);
+
+/**
+ * @param {unknown} result
+ * @returns {result is { ok: true }}
+ */
+function readinessOk(result) {
+  return (
+    result != null &&
+    typeof result === 'object' &&
+    /** @type {{ ok?: unknown }} */ (result).ok === true
+  );
+}
+
 export function executeReleaseTemporalInstall(deps) {
   const plan = planReleaseTemporalInstall(deps.observe());
-  if (!plan.ok && plan.actions.length === 0)
-    return { ...plan, mutated: false, writes: [] };
+  if (!plan.ok) return { ...plan, mutated: false, writes: [] };
 
   /** @type {object[]} */
   const completed = [];
@@ -260,10 +281,7 @@ export function executeReleaseTemporalInstall(deps) {
   const writes = [];
 
   for (const action of plan.actions) {
-    if (
-      action.op.startsWith('reuse-') ||
-      action.op === 'reuse-existing-schema'
-    ) {
+    if (RELEASE_REUSE_OPS.has(action.op)) {
       completed.push(action);
       continue;
     }
@@ -301,12 +319,19 @@ export function executeReleaseTemporalInstall(deps) {
           };
         }
       }
+      if (probe == null || typeof probe !== 'object') {
+        probe = {
+          ok: false,
+          refusals: [{ id: 'sql-probe-failed', detail: 'SQL probe failed' }],
+        };
+      }
+      const probeOk = probe.ok === true;
       completed.push({
         ...action,
-        ok: probe.ok,
+        ok: probeOk,
         refusals: probe.refusals ?? [],
       });
-      if (probe.ok !== true) {
+      if (!probeOk) {
         return {
           ok: false,
           mutated: writes.length > 0,
@@ -337,22 +362,50 @@ export function executeReleaseTemporalInstall(deps) {
           writes,
         };
       }
-      const ready = deps.waitPostgresReady();
-      completed.push({ ...action, ...ready });
-      if (ready.ok === false) {
+      /** @type {unknown} */
+      let ready;
+      try {
+        ready = deps.waitPostgresReady();
+      } catch {
+        const refusals = [
+          {
+            id: 'postgres-not-ready',
+            detail: 'PostgreSQL rollout did not finish',
+          },
+        ];
+        completed.push({ ...action, ok: false, refusals });
         return {
           ok: false,
           mutated: writes.length > 0,
-          refusals: ready.refusals ?? [
-            {
-              id: 'postgres-not-ready',
-              detail: 'PostgreSQL rollout did not finish',
-            },
-          ],
+          refusals,
           actions: completed,
           writes,
         };
       }
+      if (!readinessOk(ready)) {
+        const refusals =
+          ready != null &&
+          typeof ready === 'object' &&
+          Array.isArray(/** @type {{ refusals?: unknown }} */ (ready).refusals)
+            ? /** @type {{ refusals: { id: string, detail: string }[] }} */ (
+                ready
+              ).refusals
+            : [
+                {
+                  id: 'postgres-not-ready',
+                  detail: 'PostgreSQL rollout did not finish',
+                },
+              ];
+        completed.push({ ...action, ok: false, refusals });
+        return {
+          ok: false,
+          mutated: writes.length > 0,
+          refusals,
+          actions: completed,
+          writes,
+        };
+      }
+      completed.push({ ...action, .../** @type {object} */ (ready) });
       continue;
     }
 
@@ -377,19 +430,42 @@ export function executeReleaseTemporalInstall(deps) {
           writes,
         };
       }
-      const ready = waiter();
-      completed.push({ ...action, ...ready });
-      if (ready.ok === false) {
+      /** @type {unknown} */
+      let ready;
+      try {
+        ready = waiter();
+      } catch {
+        const refusals = [
+          { id: `${action.op}-failed`, detail: 'job wait failed' },
+        ];
+        completed.push({ ...action, ok: false, refusals });
         return {
           ok: false,
           mutated: writes.length > 0,
-          refusals: ready.refusals ?? [
-            { id: `${action.op}-failed`, detail: 'job wait failed' },
-          ],
+          refusals,
           actions: completed,
           writes,
         };
       }
+      if (!readinessOk(ready)) {
+        const refusals =
+          ready != null &&
+          typeof ready === 'object' &&
+          Array.isArray(/** @type {{ refusals?: unknown }} */ (ready).refusals)
+            ? /** @type {{ refusals: { id: string, detail: string }[] }} */ (
+                ready
+              ).refusals
+            : [{ id: `${action.op}-failed`, detail: 'job wait failed' }];
+        completed.push({ ...action, ok: false, refusals });
+        return {
+          ok: false,
+          mutated: writes.length > 0,
+          refusals,
+          actions: completed,
+          writes,
+        };
+      }
+      completed.push({ ...action, .../** @type {object} */ (ready) });
       continue;
     }
 
@@ -437,11 +513,22 @@ export function executeReleaseTemporalInstall(deps) {
       'apply-admin': 'admin',
       'create-namespace-job': 'namespace-job',
     };
-    const section = sectionByOp[action.op];
-    if (!section) {
-      completed.push(action);
-      continue;
+    if (!Object.hasOwn(sectionByOp, action.op)) {
+      return {
+        ok: false,
+        mutated: writes.length > 0,
+        refusals: [
+          {
+            id: 'unknown-action',
+            detail: 'unsupported Temporal install action',
+          },
+        ],
+        actions: completed,
+        writes,
+      };
     }
+    const section =
+      sectionByOp[/** @type {keyof typeof sectionByOp} */ (action.op)];
     const verb =
       action.op === 'create-schema-job' || action.op === 'create-namespace-job'
         ? 'create'
@@ -467,41 +554,135 @@ export function executeReleaseTemporalInstall(deps) {
         writes,
       };
     }
-    if (action.op === 'apply-server' && deps.waitServerReady) {
-      const ready = deps.waitServerReady();
-      completed.push({ op: 'verify-server-ready', ...ready });
-      if (ready.ok === false) {
+    if (action.op === 'apply-server') {
+      if (typeof deps.waitServerReady !== 'function') {
+        const refusals = [
+          {
+            id: 'server-wait-missing',
+            detail: 'server ready waiter is missing',
+          },
+        ];
+        completed.push({ op: 'verify-server-ready', ok: false, refusals });
         return {
           ok: false,
           mutated: writes.length > 0,
-          refusals: ready.refusals ?? [
-            {
-              id: 'server-not-ready',
-              detail: 'Temporal server did not become ready',
-            },
-          ],
+          refusals,
           actions: completed,
           writes,
         };
       }
+      /** @type {unknown} */
+      let ready;
+      try {
+        ready = deps.waitServerReady();
+      } catch {
+        const refusals = [
+          {
+            id: 'server-not-ready',
+            detail: 'Temporal server did not become ready',
+          },
+        ];
+        completed.push({ op: 'verify-server-ready', ok: false, refusals });
+        return {
+          ok: false,
+          mutated: writes.length > 0,
+          refusals,
+          actions: completed,
+          writes,
+        };
+      }
+      if (!readinessOk(ready)) {
+        const refusals =
+          ready != null &&
+          typeof ready === 'object' &&
+          Array.isArray(/** @type {{ refusals?: unknown }} */ (ready).refusals)
+            ? /** @type {{ refusals: { id: string, detail: string }[] }} */ (
+                ready
+              ).refusals
+            : [
+                {
+                  id: 'server-not-ready',
+                  detail: 'Temporal server did not become ready',
+                },
+              ];
+        completed.push({ op: 'verify-server-ready', ok: false, refusals });
+        return {
+          ok: false,
+          mutated: writes.length > 0,
+          refusals,
+          actions: completed,
+          writes,
+        };
+      }
+      completed.push({
+        op: 'verify-server-ready',
+        .../** @type {object} */ (ready),
+      });
     }
-    if (action.op === 'apply-admin' && deps.waitAdminReady) {
-      const ready = deps.waitAdminReady();
-      completed.push({ op: 'verify-admin-ready', ...ready });
-      if (ready.ok === false) {
+    if (action.op === 'apply-admin') {
+      if (typeof deps.waitAdminReady !== 'function') {
+        const refusals = [
+          {
+            id: 'admin-wait-missing',
+            detail: 'admin ready waiter is missing',
+          },
+        ];
+        completed.push({ op: 'verify-admin-ready', ok: false, refusals });
         return {
           ok: false,
           mutated: writes.length > 0,
-          refusals: ready.refusals ?? [
-            {
-              id: 'admin-not-ready',
-              detail: 'Temporal admin did not become ready',
-            },
-          ],
+          refusals,
           actions: completed,
           writes,
         };
       }
+      /** @type {unknown} */
+      let ready;
+      try {
+        ready = deps.waitAdminReady();
+      } catch {
+        const refusals = [
+          {
+            id: 'admin-not-ready',
+            detail: 'Temporal admin did not become ready',
+          },
+        ];
+        completed.push({ op: 'verify-admin-ready', ok: false, refusals });
+        return {
+          ok: false,
+          mutated: writes.length > 0,
+          refusals,
+          actions: completed,
+          writes,
+        };
+      }
+      if (!readinessOk(ready)) {
+        const refusals =
+          ready != null &&
+          typeof ready === 'object' &&
+          Array.isArray(/** @type {{ refusals?: unknown }} */ (ready).refusals)
+            ? /** @type {{ refusals: { id: string, detail: string }[] }} */ (
+                ready
+              ).refusals
+            : [
+                {
+                  id: 'admin-not-ready',
+                  detail: 'Temporal admin did not become ready',
+                },
+              ];
+        completed.push({ op: 'verify-admin-ready', ok: false, refusals });
+        return {
+          ok: false,
+          mutated: writes.length > 0,
+          refusals,
+          actions: completed,
+          writes,
+        };
+      }
+      completed.push({
+        op: 'verify-admin-ready',
+        .../** @type {object} */ (ready),
+      });
     }
   }
 

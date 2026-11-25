@@ -29,6 +29,6 @@ Do not dispatch these candidates as investigation tasks. ChatGPT must resolve an
 ## Corrective wave (after post-implementation audit at d622ec7e25200b03ab75cb3fa87e2f67506b40a1)
 
 - [INF70](../../changes/archive/2026-11/platform-operations/2026-11-25--inf70-temporal-sql-authentication/CHANGE.md): Done (source); three SQL builders map `POSTGRES_PASSWORD`→`PGPASSWORD` with `psql -w` and positional database/query; focused 28/28; live auth NOT-RUN.
-- [INF71](../../changes/open/2026-11-25--inf71-temporal-execution-refusals/CHANGE.md): Ready after INF70; fail closed on refused plans and execution gate errors. Sequential source and joins, no new approval required. Source-only.
+- [INF71](../../changes/archive/2026-11/platform-operations/2026-11-25--inf71-temporal-execution-refusals/CHANGE.md): Done (source); release/dev executors fail closed on refused plans and readiness/SQL/secret gate errors; focused 58/58 with INF70 suite; live execution NOT-RUN.
 
 INF61–63 remain archived, but their receipts do not establish runtime readiness. INF62's TCP probe omitted libpq password mapping. INF67 must replace partial pending-Job success, full resource inventory/ownership (including namespace Job, Services and ConfigMaps), and duplicated reconciliation. INF64–65 retire legacy SQL probes after migration contract; INF66 evaluates upstream chart before any more template restructuring. All INF64–69 remain planner-held, now dependent on corrective wave where relevant. No additional completion credit.

@@ -504,8 +504,10 @@ function runDevTemporalSqlProbe(deps, phase) {
       ],
     };
   }
+  /** @type {unknown} */
+  let probe;
   try {
-    return deps.probeSql(phase);
+    probe = deps.probeSql(phase);
   } catch {
     return {
       ok: false,
@@ -517,6 +519,15 @@ function runDevTemporalSqlProbe(deps, phase) {
       ],
     };
   }
+  if (probe == null || typeof probe !== 'object') {
+    return {
+      ok: false,
+      refusals: [{ id: 'sql-probe-failed', detail: 'SQL probe failed' }],
+    };
+  }
+  return /** @type {{ ok: boolean, refusals?: { id: string, detail: string }[] }} */ (
+    probe
+  );
 }
 
 /**
@@ -629,8 +640,14 @@ function runDevTemporalActions(deps, actions, completed) {
         '-o',
         'jsonpath={.status.availableReplicas}',
       ]);
-      completed.push({ op: action.op, availableReplicas: replicas });
-      if (Number(replicas) < 1) {
+      const replicaCount = Number(replicas);
+      const postgresReady = Number.isFinite(replicaCount) && replicaCount >= 1;
+      completed.push({
+        op: action.op,
+        availableReplicas: replicas,
+        ...(postgresReady ? {} : { ok: false }),
+      });
+      if (!postgresReady) {
         return {
           ok: false,
           mutated: completed.some((item) => mutating.has(item.op)),
@@ -717,28 +734,37 @@ function runDevTemporalActions(deps, actions, completed) {
         ['--context', DEV_TEMPORAL_CONTEXT, 'create', '-f', '-'],
         { input: manifest },
       );
-      completed.push({ op: 'create-secret', name: DEV_TEMPORAL_SECRET });
       if (!created.ok) {
         if (created.stderr?.includes('AlreadyExists')) {
-          const retry = ensureDevTemporal(deps.collect(), { authorize: true });
-          if (!retry.ok) return { ...retry, mutated: true, actions: completed };
-          return runDevTemporalActions(
-            deps,
-            retry.actions.filter(
-              (item) => !completed.some((done) => done.op === item.op),
-            ),
-            completed,
-          );
+          completed.push({
+            op: 'create-secret',
+            name: DEV_TEMPORAL_SECRET,
+            ok: false,
+          });
+          return {
+            ok: false,
+            mutated: completed.some((item) => mutating.has(item.op)),
+            refusals: [
+              {
+                id: 'secret-create-conflict',
+                detail:
+                  'Secret creation conflicted; rerun ensure after ownership observation',
+              },
+            ],
+            actions: completed,
+          };
         }
+        completed.push({ op: 'create-secret', name: DEV_TEMPORAL_SECRET });
         return {
           ok: false,
-          mutated: true,
+          mutated: completed.some((item) => mutating.has(item.op)),
           refusals: [
             { id: 'create-secret-failed', detail: 'secret create failed' },
           ],
           actions: completed,
         };
       }
+      completed.push({ op: 'create-secret', name: DEV_TEMPORAL_SECRET });
       continue;
     }
     const sectionByOp = {
@@ -747,11 +773,21 @@ function runDevTemporalActions(deps, actions, completed) {
       'create-schema-job': 'schema',
       'apply-server': 'server',
     };
-    const section = sectionByOp[action.op];
-    if (!section) {
-      completed.push(action);
-      continue;
+    if (!Object.hasOwn(sectionByOp, action.op)) {
+      return {
+        ok: false,
+        mutated: completed.some((item) => mutating.has(item.op)),
+        refusals: [
+          {
+            id: 'unknown-action',
+            detail: 'unsupported Temporal install action',
+          },
+        ],
+        actions: completed,
+      };
     }
+    const section =
+      sectionByOp[/** @type {keyof typeof sectionByOp} */ (action.op)];
     const verb = action.op === 'create-schema-job' ? 'create' : 'apply';
     const manifest = renderDevSection(section);
     const applied = deps.run(
@@ -815,19 +851,24 @@ export function executeAuthorizedDevTemporal(deps) {
   const decision = ensureDevTemporal(runtimeDeps.collect(), {
     authorize: true,
   });
-  if (!decision.ok && decision.actions.length === 0)
-    return { ...decision, mutated: false };
-  const again = ensureDevTemporal(runtimeDeps.collect(), { authorize: true });
-  if (!again.ok && again.actions.length === 0)
-    return { ...again, mutated: false };
+  if (!decision.ok) return { ...decision, mutated: false };
+  const secondProbe = runtimeDeps.collect();
+  const again = ensureDevTemporal(secondProbe, { authorize: true });
+  if (!again.ok) return { ...again, mutated: false };
+  const policy = decideTemporalBootstrap(probeToBootstrapInput(secondProbe));
+  if (!policy.ok) {
+    return {
+      ...again,
+      ok: false,
+      mutated: false,
+      manifest: undefined,
+      refusals: policy.refusals,
+      actions: [],
+    };
+  }
   /** @type {object[]} */
   const completed = [];
-  const outcome = runDevTemporalActions(
-    runtimeDeps,
-    decideTemporalBootstrap(probeToBootstrapInput(runtimeDeps.collect()))
-      .actions,
-    completed,
-  );
+  const outcome = runDevTemporalActions(runtimeDeps, policy.actions, completed);
   const mutating = new Set([
     'ensure-namespace',
     'create-secret',
@@ -839,7 +880,7 @@ export function executeAuthorizedDevTemporal(deps) {
     ...again,
     ok: outcome.ok === true,
     mutated: completed.some((item) => mutating.has(item.op)),
-    actions: presentDevEnsureActions(outcome.actions ?? completed),
+    actions: outcome.actions ?? completed,
     refusals: outcome.refusals ?? again.refusals,
   };
 }
