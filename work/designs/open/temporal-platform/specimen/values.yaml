@@ -1,9 +1,11 @@
 # DESIGN SPECIMEN ONLY. Not approved for installation.
-# Upstream chart temporal 1.8.0; image versions inherited from that exact chart.
+# Upstream chart temporal 1.8.0; image index digests observed in owner terminal; final pinned render pending.
 # Local trusted Kind clusters; not a production security profile.
 fullnameOverride: temporal
 
 server:
+  image:
+    tag: "1.32.2@sha256:7bf69188a6232fea14869b9cef3d94aa82a1601d99517f7e86c71f22da4e0670"
   replicaCount: 1
   resources:
     requests:
@@ -56,6 +58,8 @@ server:
       enabled: false
 
 web:
+  image:
+    tag: "2.56.1@sha256:584dd3408ab8333888d50b12d4a683e550e963409bf95fa2c9159d40d7cb825f"
   enabled: true
   service:
     type: ClusterIP
@@ -67,6 +71,8 @@ web:
       memory: 128Mi
 
 admintools:
+  image:
+    tag: "1.32.2@sha256:4a95866efba29d7e17ab012df5232795e8b0ad0f7d5f9d1ec4df321f7792a754"
   enabled: true
   resources:
     requests:
