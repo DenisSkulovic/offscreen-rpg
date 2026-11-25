@@ -379,3 +379,10 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 - [CACHE11 Redis envelope and bounded command executor](archive/2026-11/cache/2026-11-25--cache11-cache-redis-execution/CHANGE.md) — Done (source); redis/ owners, envelope + command executor; 98/98; live NOT-RUN.
 - [CQ06 Changed-code craftsmanship diagnostics](archive/2026-11/other/2026-11-25--cq06-code-craft-diagnostics/CHANGE.md) — Done (2026-11-25); advisory AST/naming/boundary diagnostics.
 CACHE12 held for planner migration; no global queue change.
+
+## Database craftsmanship wave
+- [DB11 Database package navigation and test ownership](open/2026-11-25--db11-db-navigation/CHANGE.md) — Ready, source only.
+- [DB12 Repair managed transaction outcome and cleanup safety](open/2026-11-25--db12-db-transaction-outcomes/CHANGE.md) — Ready (dependency-gated), source only.
+- [DB13 Migration runner postcondition and failure reporting](open/2026-11-25--db13-db-migration-runner/CHANGE.md) — Ready (dependency-gated), source only.
+- [DB14 Explicit admission telemetry ownership and probe navigation](open/2026-11-25--db14-db-admission-ownership/CHANGE.md) — Ready (dependency-gated), source only.
+No live authorization or queue change; DBOPS01 remains separate.
