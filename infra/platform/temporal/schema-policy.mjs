@@ -88,11 +88,16 @@ export function classifyTemporalResource(observation, ownerValue) {
   ) {
     return 'foreign';
   }
-  if (observation.foreign === false) return 'owned';
-  if (observation.owner != null && observation.owner === ownerValue) {
+  // Fail closed: uid alone never proves ownership; require a matching
+  // owner label or an explicit trusted-adapter foreign===false verdict.
+  if (
+    ownerValue &&
+    observation.owner != null &&
+    observation.owner === ownerValue
+  ) {
     return 'owned';
   }
-  if (observation.uid) return 'owned';
+  if (observation.foreign === false) return 'owned';
   return 'foreign';
 }
 

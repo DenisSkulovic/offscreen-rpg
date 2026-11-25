@@ -87,6 +87,62 @@ test('classifyTemporalResource respects absent, unreadable, foreign, and owned',
   assert.equal(classifyTemporalResource(present(), OWNER), 'owned');
 });
 
+test('classifyTemporalResource rejects unidentified ownership proofs', () => {
+  const uidOnly = { state: 'present', uid: 'orphan-uid' };
+  assert.equal(classifyTemporalResource(uidOnly, OWNER), 'foreign');
+  assert.equal(classifyTemporalResource(uidOnly), 'foreign');
+
+  assert.equal(
+    classifyTemporalResource(
+      { state: 'present', foreign: false, owner: 'other-tenant', uid: 'u1' },
+      OWNER,
+    ),
+    'foreign',
+  );
+
+  const missingLabel = { state: 'present', uid: 'u2' };
+  assert.equal(classifyTemporalResource(missingLabel, OWNER), 'foreign');
+  assert.equal(
+    classifyTemporalResource({ state: 'present' }, OWNER),
+    'foreign',
+  );
+
+  assert.equal(
+    classifyTemporalResource(
+      { state: 'present', owner: OWNER, uid: 'u3' },
+      OWNER,
+    ),
+    'owned',
+  );
+
+  assert.equal(
+    classifyTemporalResource(
+      { state: 'present', foreign: false, uid: 'u4' },
+      OWNER,
+    ),
+    'owned',
+  );
+  assert.equal(
+    classifyTemporalResource({ state: 'present', foreign: false }),
+    'owned',
+  );
+
+  assert.equal(classifyTemporalResource(unreadable(), OWNER), 'unreadable');
+  assert.equal(classifyTemporalResource(absent(), OWNER), 'absent');
+});
+
+test('uid-only persisted resource refuses bootstrap without actions', () => {
+  const decision = decideTemporalBootstrap(
+    input({
+      secret: present(),
+      pvc: { state: 'present', uid: 'unowned-pvc' },
+    }),
+  );
+  assert.equal(decision.ok, false);
+  assert.equal(decision.refusals[0]?.id, 'foreign-pvc');
+  assert.equal(decision.actions.length, 0);
+});
+
 test('fresh bootstrap plans namespace, create-secret via stdin, postgres, schema, then server', () => {
   const decision = decideTemporalBootstrap(input());
   assert.equal(decision.ok, true);
