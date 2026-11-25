@@ -27,10 +27,16 @@ const plan = buildPlatformPlan({
   confirmation,
 });
 
+let done = 0;
+const progress = text => {
+  if (process.env.OFFSCREEN_STACK_PROGRESS === '1') process.stderr.write('@offscreen-stack ' + JSON.stringify({ type: 'substep', id: 'platform', done, total: plan.phases.length, text }) + '\n');
+};
 const receipt = runPlatformPlan(plan, (argv, options) =>
   {
-    if (process.env.OFFSCREEN_STACK_PROGRESS === '1') process.stderr.write('@offscreen-stack ' + JSON.stringify({ type: 'detail', text: 'Platform: ' + options.phaseId }) + '\n');
-    return defaultPlatformRunner(argv, options);
+    progress('Platform: ' + options.phaseId);
+    const result = defaultPlatformRunner(argv, options);
+    if (result.ok) { done++; progress('Platform: ' + options.phaseId + ' ready'); }
+    return result;
   },
 );
 

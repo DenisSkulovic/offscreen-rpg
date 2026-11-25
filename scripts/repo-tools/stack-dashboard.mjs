@@ -20,20 +20,27 @@ export function shouldUseStackDashboard(argv, { stdout = process.stdout, stderr 
 }
 
 export function createProgressState() {
-  return { phases: [], completed: new Set(), current: null, detail: 'Checking release prerequisites', logs: [], failed: false };
+  return { phases: [], completed: new Set(), current: null, detail: 'Checking release prerequisites', logs: [], failed: false, timings: new Map(), substep: null, cpuHistory: [], ramHistory: [] };
 }
 
-export function acceptProgress(state, event) {
+export function acceptProgress(state, event, now = Date.now()) {
   if (event?.type === 'plan' && Array.isArray(event.phases) &&
       event.phases.length > 0 && new Set(event.phases).size === event.phases.length &&
       event.phases.every(id => Object.hasOwn(LABELS, id))) {
     state.phases = [...event.phases];
   } else if (event?.type === 'start' && state.phases.includes(event.id) && !state.completed.has(event.id)) {
     state.current = event.id;
+    state.timings.set(event.id, { start: now });
+    state.substep = null;
     state.detail = LABELS[event.id];
   } else if (event?.type === 'done' && state.current === event.id) {
     state.completed.add(event.id);
+    state.timings.get(event.id).end = now;
     state.current = null;
+    state.substep = null;
+  } else if (event?.type === 'substep' && state.current === event.id && Number.isInteger(event.done) && Number.isInteger(event.total) && event.done >= 0 && event.total > 0 && event.done <= event.total) {
+    state.substep = { done: event.done, total: event.total };
+    if (typeof event.text === 'string') state.detail = cleanLine(event.text);
   } else if (event?.type === 'detail' && typeof event.text === 'string') {
     state.detail = cleanLine(event.text);
   }
@@ -79,47 +86,45 @@ const bar = (fraction, width) => {
   return '█'.repeat(fill) + '░'.repeat(width - fill);
 };
 
-export function dashboardLines(state, { elapsed, cpu, mem, columns = 80, rows = 24, exitCode = null, host = 'Linux' }) {
-  const width = Math.max(12, Math.min(100, columns - 1));
+export function sparkline(values) {
+  return values.slice(-24).map(value => Number.isFinite(value) ? '▁▂▃▄▅▆▇█'[Math.min(7, Math.max(0, Math.floor(value * 8)))] : '·').join('');
+}
+export function dashboardLines(state, { elapsed, cpu, mem, columns = 80, rows = 24, exitCode = null, host = 'Linux', now = Date.now() }) {
+  const width = Math.max(1, Math.min(100, columns - 1));
   const count = state.completed.size, total = state.phases.length;
   const percent = total ? Math.floor(100 * count / total) : 0;
   const time = String(Math.floor(elapsed / 60)).padStart(2,'0') + ':' + String(Math.floor(elapsed % 60)).padStart(2,'0');
-  const lines = [
-    '◈ OFFSCREEN / RELEASE  ·  ' + time + (exitCode === null ? '' : exitCode === 0 ? '  COMPLETE' : '  FAILED'),
-    '─'.repeat(width),
-    host + '  CPU ' + (cpu === null ? '…' : cpu + '%') + '  RAM ' + gib(mem.used) + '/' + gib(mem.total) + ' GiB' +
-      (mem.swap ? '  swap ' + gib(mem.swap[0]) + '/' + gib(mem.swap[1]) : ''),
-    'CPU ' + bar((cpu ?? 0)/100, 12) + '  RAM ' + bar(mem.total ? mem.used/mem.total : 0, 12),
-    '',
-    ...state.phases.map(id => (state.completed.has(id) ? '✓ ' : state.current === id ? (exitCode !== null && exitCode !== 0 ? '✗ ' : '▶ ') : '· ') + LABELS[id]),
-    '',
-    bar(total ? count/total : 0, Math.min(24, Math.max(6, width - 18))) + '  ' + (total ? count + '/' + total + '  ' + percent + '%' : 'Preflight'),
-    state.detail,
-    '─'.repeat(width),
-    ...state.logs.slice(-3).map(line => '  ' + line),
-  ];
-  // On small terminals retain the actual progress and current phase, not a scrolling wall.
-  const compact = rows < lines.length + 1 ? [lines[0], lines[2], lines[3], lines[lines.length - state.logs.slice(-3).length - 3], state.detail, ...state.logs.slice(-2)] : lines;
-  return compact.slice(0, Math.max(1, rows - 1)).map(line => cleanLine(line).slice(0,width));
+  const header = '◈ OFFSCREEN / RELEASE  ·  ' + time + (exitCode === null ? '' : exitCode === 0 ? '  COMPLETE' : '  FAILED');
+  const resources = host + '  CPU ' + (cpu === null ? '…' : cpu + '%') + '  RAM ' + gib(mem.used) + '/' + gib(mem.total) + ' GiB' +
+      (mem.swap ? '  swap ' + gib(mem.swap[0]) + '/' + gib(mem.swap[1]) : '');
+  const history = 'CPU ' + sparkline(state.cpuHistory).padStart(24, '·') + '  RAM ' + sparkline(state.ramHistory).padStart(24, '·');
+  const progress = bar(total ? count/total : 0, Math.min(24, Math.max(6, width - 18))) + '  ' + (total ? count + '/' + total + '  ' + percent + '%' : 'Preflight');
+  const detail = exitCode === 0 ? 'All planned operations completed' : state.detail + (state.substep ? '  [' + state.substep.done + '/' + state.substep.total + ' verified]' : '');
+  const steps = state.phases.map(id => {
+    const timing = state.timings.get(id);
+    const duration = timing ? ((Math.max(0, (timing.end ?? now) - timing.start))/1000).toFixed(1) + 's' : '';
+    const mark = state.completed.has(id) ? '✓ ' : state.current === id ? (exitCode !== null && exitCode !== 0 ? '✗ ' : '▶ ') : '· ';
+    return (mark + LABELS[id]).padEnd(33) + duration.padStart(7);
+  });
+  const rule = '─'.repeat(width);
+  const full = [header, rule, resources, history, '', ...steps, '', progress, detail, rule, ...state.logs.slice(-3).map(line => '  ' + line)];
+  const compact = [header, resources, progress, detail, history, ...state.logs.slice(-2)];
+  return (full.length < rows ? full : compact).slice(0, Math.max(1, rows - 1)).map(line => cleanLine(line).slice(0,width));
 }
 
 export async function runStackDashboard(script, argv) {
   const state = createProgressState();
   const started = Date.now();
-  let previous = cpuSnapshot(), cpu = null, drawn = 0, exitCode = null;
+  let previous = cpuSnapshot(), cpu = null, exitCode = null;
   const output = process.stderr;
   const host = platform() === 'linux' ? (/microsoft/i.test(release()) ? 'WSL2' : 'Linux') : platform() === 'darwin' ? 'macOS' : platform();
-  const render = () => {
-    const lines = dashboardLines(state, { elapsed: (Date.now()-started)/1000, cpu, mem: memory(),
-      columns: output.columns ?? 80, rows: output.rows ?? 24, exitCode, host });
-    if (drawn) output.write('\r\x1b[' + drawn + 'A');
-    output.write(lines.map(line => '\r\x1b[2K' + line).join('\n') + '\n');
-    if (drawn > lines.length) {
-      const extra = drawn - lines.length;
-      output.write(('\r\x1b[2K\n').repeat(extra) + '\x1b[' + extra + 'A');
-    }
-    drawn = lines.length;
-  };
+  const color = line => process.env.NO_COLOR !== undefined ? line :
+    (line.startsWith('✓') ? '\x1b[32m' : line.startsWith('✗') || line.includes('FAILED') ? '\x1b[31m' :
+     line.startsWith('▶') || line.startsWith('◈') ? '\x1b[36m' : line.startsWith('·') || line.startsWith('─') ? '\x1b[90m' : '') + line + '\x1b[0m';
+  const frame = () => dashboardLines(state, { elapsed: (Date.now()-started)/1000, cpu, mem: memory(),
+    columns: output.columns ?? 80, rows: output.rows ?? 24, exitCode, host }).map(color).join('\r\n');
+  // Alternate buffer isolates redraws from shell scrollback and terminal resize.
+  const render = () => output.write('\x1b[H' + frame() + '\x1b[J');
   const child = spawn(process.execPath, [script, ...argv], {
     stdio: ['ignore','pipe','pipe'], env: { ...process.env, OFFSCREEN_STACK_PROGRESS: '1', OFFSCREEN_STACK_UI: 'plain' },
   });
@@ -152,9 +157,15 @@ export async function runStackDashboard(script, argv) {
   const interrupt = () => onSignal('SIGINT');
   const terminate = () => onSignal('SIGTERM');
   process.on('SIGINT', interrupt); process.on('SIGTERM', terminate);
-  output.write('\x1b[?25l');
+  output.write('\x1b[?1049h\x1b[?25l\x1b[2J');
   const interval = setInterval(() => {
-    const next = cpuSnapshot(); cpu = cpuPercent(previous,next); previous = next; render();
+    const next = cpuSnapshot(); cpu = cpuPercent(previous,next); previous = next;
+    const mem = memory();
+    state.cpuHistory.push(cpu === null ? null : cpu / 100);
+    state.ramHistory.push(mem.total ? mem.used / mem.total : null);
+    if (state.cpuHistory.length > 24) state.cpuHistory.shift();
+    if (state.ramHistory.length > 24) state.ramHistory.shift();
+    render();
   }, 500);
   try {
     render();
@@ -162,12 +173,13 @@ export async function runStackDashboard(script, argv) {
       child.once('error', error => { state.logs.push(cleanLine(error.message)); resolve(1); });
       child.once('close', (code, signal) => resolve(code ?? (signal === 'SIGINT' ? 130 : signal === 'SIGTERM' ? 143 : 1)));
     });
-    render();
-    if (exitCode !== 0) output.write('\nRecent diagnostics:\n' + errors.join('\n') + '\n');
+    // Final receipt is printed exactly once on the normal terminal after cleanup.
     return exitCode;
   } finally {
     clearInterval(interval);
     process.off('SIGINT', interrupt); process.off('SIGTERM', terminate);
-    output.write('\x1b[?25h');
+    output.write('\x1b[?1049l\x1b[?25h');
+    output.write(frame() + '\n');
+    if (exitCode !== 0) output.write('\nRecent diagnostics:\n' + errors.join('\n') + '\n');
   }
 }
