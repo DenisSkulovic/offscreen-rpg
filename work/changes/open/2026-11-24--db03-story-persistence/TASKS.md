@@ -1,30 +1,18 @@
-# DB03 | bounded Composer tasks
+# DB03 | Bounded Composer tasks
 
-Base SHA 7322b6f1a6df6f5ae612763b9786563dca2989eb; state Proposed / planner-gated. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
+Base SHA d08e36d809bb53c48fef3351224994bae92b6e7c; Ready / commissioned. Target main. DB02, CACHE04 and CACHE06B source joins satisfied; no concurrently edited Story Engine/GA/Worker consumer paths. [Program](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). MODEL=Composer Standard | DEPTH=PATCH. One child at a time. Parent owns lockfile, manifest integration and receipts; separate linked Change worktree. No unselected successor. Run commands from repository root. Stop on actual semantic/safety contradiction; missing live permission records NOT RUN. Receipt exact paths, command/cwd, result, baseline failures and SHA. No provider, migration-history or protected DB changes.
 
-## T01 | Extract story roots and generations | PLANNER-BLOCKED until promotion
+## T01 | Leaf and registry
+Read SOURCE-MAP.md first table; packages/identity-persistence/package.json, tsconfig.json; packages/db/src/schema; tools/db-migrations/src/registry/story.ts. Create leaf, move eleven files exactly, replace registry imports, add tool dep. Keep old export keys until T03–T05 consumer rewrite (temporarily unresolved within branch; no integration). Run leaf build after pnpm install --lockfile-only then frozen install if needed. No DDL.
 
-Requires: DB02 and CACHE04/CACHE06B joins; no concurrent Story Engine/GA/worker consumers.
-Read: packages/db/src/schema/drafts.ts; packages/db/src/schema/generations.ts; packages/db/src/schema/stories.ts; packages/db/src/schema/launch.ts.
-May write: exact source/test destinations in algorithm, no peer ownership. 
-Algorithm: Create packages/story-persistence with exports ./drafts ./generations ./stories ./launch ./campaign ./storyteller; only Drizzle and identity-persistence dependencies. Move exact four files; update identity import, preserve relative internal references; stage remaining campaign/writer in same branch before build. No aliases, no table redefinition.
-Verification (root): `pnpm --filter @offscreen/story-persistence build (after T02)`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
-Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
+## T02 | Engine consumers
+Read SOURCE-MAP.md consumer map, packages/story-engine/package.json, src/stories/reads.ts, src/storyteller/budget.ts. Replace six literal specifiers across this workspace source/tests, add direct dep. No logic edits. Verify zero six old strings in source/tests. Build deferred until T05.
 
-## T02 | Move campaign and Writer custody | PLANNER-BLOCKED until promotion
+## T03 | Runtime apps and Admin/Lab
+Read SOURCE-MAP.md, manifests apps/game-authority, apps/worker, packages/admin, packages/lab-support. Apply identical mapping and direct deps to these four only. Verify old literals absent.
 
-Requires: previous task accepted.
-Read: packages/db/src/schema/campaign.ts; packages/db/src/schema/storyteller.ts; packages/db/src/schema/storyteller/{capture,execution,funding,policy,writer}.ts.
-May write: exact source/test destinations in algorithm, no peer ownership. 
-Algorithm: Move campaign and all six Writer barrel/lifecycle files verbatim, relative same layout; policy/campaign use identity leaf. Existing 20-table fingerprint remains unchanged. No pure Storyteller dependency on SQL. No funding lock or money type changes.
-Verification (root): `pnpm --filter @offscreen/story-persistence build; pnpm --filter @offscreen/db-migrations test`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
-Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
+## T04 | Test tools and removal
+Read SOURCE-MAP.md, tools/chamber/package.json, tools/api-integration/package.json, packages/db/package.json. Map test tools, add direct deps, remove six old DB export keys, update package docs. Regenerate lockfile once; affected builds, typechecks and registry proofs in T05.
 
-## T03 | Migrate every consumer and registry | PLANNER-BLOCKED until promotion
-
-Requires: previous task accepted.
-Read: packages/story-engine/src/stories/reads.ts; packages/story-engine/src/storyteller/budget.ts; packages/admin/src/player-reads.ts; apps/game-authority/src/launch-ledger.ts; apps/worker/src/activities/scripted-writer-scene.ts.
-May write: exact source/test destinations in algorithm, no peer ownership. 
-Algorithm: Replace six old DB subpaths exactly per map; add direct dependency for actual importers; update legacy dist import paths if any, registry story module and migration proof. Delete old exports and declarations. Only import tokens/manifests; no logic changes. Consumer file inventory pinned by planner before dispatch. Preserve snapshot CACHE04 and lexical CACHE06B source.
-Verification (root): `pnpm exec turbo run build typecheck --filter=@offscreen/story-engine... --filter=@offscreen/admin... --filter=@offscreen/game-authority...; pnpm --filter @offscreen/db-migrations check:schema`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
-Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
+## T05 | Proof and join
+Run SOURCE-MAP.md proof commands; affected packages filters use --filter=@offscreen/story-persistence --filter=@offscreen/story-engine --filter=@offscreen/game-authority --filter=@offscreen/worker --filter=@offscreen/admin --filter=@offscreen/lab-support --filter=@offscreen/chamber --filter=@offscreen/api-integration --filter=@offscreen/db-migrations with dependency suffix ... where required. Distinguish pre-existing failures. Migration diff empty; no old aliases.

@@ -1,21 +1,12 @@
-# DB10 | bounded Composer tasks
+# DB10 | Bounded Composer tasks
 
-Base SHA 7322b6f1a6df6f5ae612763b9786563dca2989eb; state Proposed / planner-gated. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
+Base SHA d08e36d809bb53c48fef3351224994bae92b6e7c; Ready / commissioned (dependency-gated). Target main. DB03/04/05/07/09 joined; DB08 source joined. Live execution requires separately authorized disposable PostgreSQL. [Program](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). MODEL=Composer Standard | DEPTH=PATCH. One child at a time. Parent owns lockfile, manifest integration and receipts; separate linked Change worktree. No unselected successor. Run commands from repository root. Stop on actual semantic/safety contradiction; missing live permission records NOT RUN. Receipt exact paths, command/cwd, result, baseline failures and SHA. No provider, migration-history or protected DB changes.
 
-## T01 | Enforce final graph | PLANNER-BLOCKED until promotion
+## T01 | Graph law
+Read EXECUTION.md, scripts/repo-tools/module-graph.mjs, module-graph.test.mjs, eslint.config.mjs, infra/images/release/production-workspace-closure.test.mjs. Implement exact graph/closure guards and fixtures. Run node --test scripts/repo-tools/module-graph.test.mjs infra/images/release/production-workspace-closure.test.mjs; pnpm repo:module-graph. No live permission required.
 
-Requires: DB02–DB09 source integrated; Cache source waves joined; disposable resource authorization gates T02 live execution only, not T01.
-Read: scripts/repo-tools/module-graph.mjs; scripts/repo-tools/module-graph.test.mjs; eslint.config.mjs; infra/images/release/production-workspace-closure.test.mjs.
-May write: exact source/test destinations in algorithm, no peer ownership. 
-Algorithm: Reject DB domain workspace imports and retired schema subpaths, identity/story schema leaves runtime imports except Drizzle/identity, browser/workflows/SQL-free executor transitive SQL closure. Add fixtures per negative. Reconcile direct manifests, lock, package READMEs/SQL-OWNERSHIP; require no residual old alias. Existing migration asset paths unchanged.
-Verification (root): `node --test scripts/repo-tools/module-graph.test.mjs; pnpm repo:module-graph; pnpm exec turbo run build typecheck`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
-Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
+## T02 | Docs and wiki classification
+Read EXECUTION.md, scripts/repo-tools/wiki-core/model.mjs, packages/db/README.md, packages/story-engine/SQL-OWNERSHIP.md, docs/technical/platform/database-infrastructure.md. Correct current owner paths and realization, add existing wiki tests for each owner. Run schema and source verification, affected builds/typechecks; preserve migration bytes.
 
-## T02 | Integrated SQL evidence | PLANNER-BLOCKED until promotion
-
-Requires: previous task accepted.
-Read: packages/db/test/database.integration.ts; packages/db/test/obs00-current-authority.migration.integration.ts; packages/db/test/wr05s-scene-checkpoint-schema.integration.ts; packages/db/test/wr07l-launch-ledger.integration.ts; tools/api-integration/test/stories-core.integration.ts.
-May write: exact source/test destinations in algorithm, no peer ownership. 
-Algorithm: Prove disposable migration lock/rollback/hash refusal, managed saturation/recovery, serializable concurrent conflict, rollback/read-only/lock timeout, no duplicated effects. Use owned database test path; no shared tenant or live cluster authorization inferred. Verify zero generated DDL and exact tracked migration bytes. Record actual commands, cases and NOT RUN; DBOPS01/02 retain mixed version and operational proof.
-Verification (root): `pnpm --filter @offscreen/db-migrations check:schema; pnpm --filter @offscreen/db test:integration only with DATABASE_TEST_URL explicitly authorized; affected integration fixtures pinned before release`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
-Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
+## T03 | Managed live proof harness
+Read EXECUTION.md, packages/db/test/database.integration.ts, packages/db/src/transaction/execute.ts, packages/db/package.json. Add selected tests and strict loopback guard, build only without authorization. Run existing component test only on explicitly authorized exclusive disposable DB. Separate full-schema suites as specified. Record NOT RUN if unavailable; do not fabricate PASS. DB10 stays open for missing required acceptance.

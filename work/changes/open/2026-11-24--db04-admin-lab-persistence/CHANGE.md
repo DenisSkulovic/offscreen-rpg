@@ -1,6 +1,6 @@
 # DB04 | Admin and QA table ownership
 
-**Status: Proposed / not commissioned. Kind: implementation. Profile: CONTRACT.** Baseline 7322b6f1a6df6f5ae612763b9786563dca2989eb; target main. Prerequisite: DB03; coordinate DB05 test/import ownership; DB04/05 may overlap only if exact changed files disjoint. Owner-selected near-term planning, not execution permission.
+**Status: Ready (dependency-gated) / owner-commissioned source implementation. Kind: implementation. Profile: CONTRACT.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB03 joined; DB05 not concurrent. No further planner promotion for the frozen scope.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -15,7 +15,7 @@ Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guar
 
 ## Acceptance and stop
 
-Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Missing fixture, unresolved interface, new dependency cycle or semantic mismatch is planner stop, not executor investigation. **Readiness:** G0 target confirmed, remaining G1–G7 need current-source audit and exact fixture/consumer mapping at promotion; no Ready claim. Follow DB-PARALLEL review gates. Record exact accepted proof and baseline limitations.
+Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Missing live fixture gates live proof only; actual semantic or safety contradiction stops. **Readiness:** source mapping and selected implementation refreshed at the stated baseline; predecessor postconditions required as above; live proof separately gated. Follow DB-PARALLEL review gates. Record exact accepted proof and baseline limitations.
 
 ## planned-impact.v1
 
@@ -32,3 +32,5 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
 | Admin and QA table ownership | database-infrastructure | pending | NOT RUN | TASKS | pending |
+
+Read [SOURCE-MAP.md](SOURCE-MAP.md) for frozen source mapping and implementation decisions before dispatch. The revised TASKS supersede older outcome shorthand wherever more precise. No new live resource permission.

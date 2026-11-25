@@ -1,6 +1,6 @@
 # DB07 | Managed SQL transaction execution
 
-**Status: Ready / owner-commissioned source implementation. Kind: implementation. Profile: STATE.** Baseline 7322b6f1a6df6f5ae612763b9786563dca2989eb; target main. DB01 and DB06 joined. Executable now; no further promotion. Live SQL separately gated.
+**Status: Ready / owner-commissioned source implementation. Kind: implementation. Profile: STATE.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB01 and DB06 joined. Start T00. No further planner promotion for the frozen scope.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 

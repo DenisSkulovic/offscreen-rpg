@@ -1,6 +1,6 @@
 # DB09 | Database observability and narrow concurrency utilities
 
-**Status: Proposed / not commissioned. Kind: implementation. Profile: PATCH.** Baseline 7322b6f1a6df6f5ae612763b9786563dca2989eb; target main. Prerequisite: DB06 + DB07; no schema consumer edits. Owner-selected near-term planning, not execution permission.
+**Status: Ready (dependency-gated) / owner-commissioned source implementation. Kind: implementation. Profile: PATCH.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; target main. DB07 joined; DB06/07 deterministic tests green. No further planner promotion for the frozen scope.
 
 [Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
@@ -15,7 +15,7 @@ Separate linked Change worktree, run `node scripts/repo-tools/change-branch-guar
 
 ## Acceptance and stop
 
-Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Missing fixture, unresolved interface, new dependency cycle or semantic mismatch is planner stop, not executor investigation. **Readiness:** G0 target confirmed, remaining G1–G7 need current-source audit and exact fixture/consumer mapping at promotion; no Ready claim. Follow DB-PARALLEL review gates. Record exact accepted proof and baseline limitations.
+Run named focused normal/negative tests in TASKS, affected builds/typechecks and module graph; prove actual source imports and exact historical SQL/journal bytes for ownership changes. Do not claim unrun SQL/cluster evidence. Missing live fixture gates live proof only; actual semantic or safety contradiction stops. **Readiness:** source mapping and selected implementation refreshed at the stated baseline; predecessor postconditions required as above; live proof separately gated. Follow DB-PARALLEL review gates. Record exact accepted proof and baseline limitations.
 
 ## planned-impact.v1
 
@@ -32,3 +32,5 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 | Affected claim | Authority | Source delta / SHA | Evidence tier | Negative | Links |
 | --- | --- | --- | --- | --- | --- |
 | Database observability and narrow concurrency utilities | database-infrastructure | pending | NOT RUN | TASKS | pending |
+
+Read [EXECUTION.md](EXECUTION.md) for frozen source mapping and implementation decisions before dispatch. The revised TASKS supersede older outcome shorthand wherever more precise. No new live resource permission.

@@ -1,21 +1,12 @@
-# DB05 | bounded Composer tasks
+# DB05 | Bounded Composer tasks
 
-Base SHA 7322b6f1a6df6f5ae612763b9786563dca2989eb; state Proposed / planner-gated. [Program and frozen contracts](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). Shared path lock: integration custodian; own named paths only. MODEL=Composer Standard | DEPTH=PATCH. One child at a time, no research swarm. Receipt: exact paths, command/cwd, positive/negative, limitations, branch SHA.
+Base SHA d08e36d809bb53c48fef3351224994bae92b6e7c; Ready / commissioned (dependency-gated). Target main. DB04 joined (includes DB03); DB01 Transaction root export remains. [Program](../../../undertakings/storyteller-workshop/DB-PARALLEL.md). MODEL=Composer Standard | DEPTH=PATCH. One child at a time. Parent owns lockfile, manifest integration and receipts; separate linked Change worktree. No unselected successor. Run commands from repository root. Stop on actual semantic/safety contradiction; missing live permission records NOT RUN. Receipt exact paths, command/cwd, result, baseline failures and SHA. No provider, migration-history or protected DB changes.
 
-## T01 | Move delivery store | PLANNER-BLOCKED until promotion
+## T01 | Delivery package
+Read SOURCE-MAP.md, packages/db/src/outbox.ts, outbox-relay.ts, schema/outbox.ts. Create outbox leaf, move three implementations with exact import edits. No behavior changes. Build leaf after lock regeneration.
 
-Requires: DB03 and DB01 Transaction export; DB04 disjoint ownership or serialized after it.
-Read: packages/db/src/schema/outbox.ts; packages/db/src/outbox.ts; packages/db/src/outbox-relay.ts; apps/worker/src/outbox/relay.ts.
-May write: exact source/test destinations in algorithm, no peer ownership. 
-Algorithm: Create @offscreen/outbox with schema, enqueue, relay subpaths; move exact implementations; Transaction imported from @offscreen/db root. Keep notice identity conflict, SKIP LOCKED order, clock_timestamp lease, 30s expiry, token-fenced acknowledge. Update registry outbox module. No new delivery topics or timing changes.
-Verification (root): `pnpm --filter @offscreen/outbox build`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
-Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
+## T02 | Engine callers
+Read SOURCE-MAP.md, packages/story-engine/package.json, src/stories/continuation.ts, src/storyteller/launch-admission.ts. Apply exact mixed import split and all three literal mappings to engine source/tests; direct outbox dep. No SQL/query edits.
 
-## T02 | Migrate delivery and transaction consumers | PLANNER-BLOCKED until promotion
-
-Requires: previous task accepted.
-Read: packages/story-engine/src/stories/continuation.ts; packages/story-engine/src/storyteller/launch-admission.ts; packages/lab-support/src/chamber.ts; tools/api-integration/legacy-engine-tests/ma05b-outbox-compat.test.mjs.
-May write: exact source/test destinations in algorithm, no peer ownership. 
-Algorithm: Move all type-only Transaction imports to DB root, runtime enqueue/Notice to @offscreen/outbox/enqueue, relay to /relay, table to /schema. For mixed import split exactly; update direct manifests. Remove DB outbox aliases and files. Consumer inventory pinned before release. Existing SQL behavior remains byte-equivalent except imports.
-Verification (root): `pnpm exec turbo run build typecheck --filter=@offscreen/outbox...; node --test tools/api-integration/legacy-engine-tests/ma05b-outbox-compat.test.mjs after affected build; pnpm --filter @offscreen/db-migrations check:schema`. If integration fixture is unavailable, record NOT RUN and keep proof open; do not invent a harness or start shared stack.
-Stop: named semantic/ownership/fixture contradiction; report exact evidence to planner.
+## T03 | Runtime and test consumers
+Read SOURCE-MAP.md, apps/worker/src/outbox/relay.ts, packages/lab-support/package.json, tools/api-integration/legacy-engine-tests/ma05b-outbox-compat.test.mjs. Map worker/lab/chamber/api-integration/db-migrations groups exactly, direct deps, remove DB aliases and tool DB dependency where unused. Regenerate lockfile. Run SOURCE-MAP proof and affected builds/typechecks.
