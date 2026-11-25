@@ -1,6 +1,6 @@
 import { DEV_CLUSTER_NAME } from '../domain/dev-worktree-allocator.mjs';
 import { deriveDevNamespace } from '../domain/dev-worktree-registry.mjs';
-import { DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
+import { DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/config.mjs';
 import { DEV_S3_NAMESPACE } from '../../../../infra/platform/object-storage/dev-bootstrap.mjs';
 import { deriveDevS3Tenant } from '../adapters/dev-s3-tenant.mjs';
 import {

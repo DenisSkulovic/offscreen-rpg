@@ -11,7 +11,7 @@ Selected source layout, 2026-11-24. Implementation is staged by INF01–INF05; p
 ## Selected layout
 
 - clusters/kind/{dev,release}: cluster topology/bootstrap and context fences.
-- platform/{postgres,temporal,object-storage,gateway,observability,redis,rabbitmq}: reusable installed backing infrastructure, vendor assets and service configuration.
+- platform/{postgres,temporal,object-storage,gateway,observability,redis,rabbitmq}: reusable installed backing infrastructure, vendor assets and service configuration. PostgreSQL layout and CLI: [platform/postgres/README.md](platform/postgres/README.md).
 - workloads/{dev,release}: existing static YAML, grouped by environment for now; dynamic slot renderer remains in tools/dev-environments. No forced YAML deduplication.
 - environments/{dev,release}: assembly/install entrypoints, content bootstrap, release Tilt graph and environment binding.
 - images/{common,distribution,development,release}: shared toolchain, Docker recipes, pins, build/load scripts, verified Kind distribution and artifact verification.

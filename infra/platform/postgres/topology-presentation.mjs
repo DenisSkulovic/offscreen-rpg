@@ -6,7 +6,8 @@ const REFUSAL_REASON_LABELS = Object.freeze({
   'target-unverified': 'selected kubectl target could not be verified',
   'unreadable-observation': 'cluster observation was unreadable',
   'wrong-context': 'live context does not match selected profile',
-  'postgres-namespace-owner-mismatch': 'postgres namespace owner labels mismatch',
+  'postgres-namespace-owner-mismatch':
+    'postgres namespace owner labels mismatch',
   'postgres-namespace-uid-missing': 'postgres namespace uid missing',
   'crd-absent': 'CNPG Cluster CRD is absent',
   'operator-absent': 'CNPG operator is absent',
@@ -22,7 +23,8 @@ const REFUSAL_REASON_LABELS = Object.freeze({
   'insufficient-memory': 'host memory budget refuses the instance delta',
   'unhealthy-starting-topology': 'starting topology is not healthy for resize',
   'fence-changed-before-patch': 'target identity changed before patch',
-  'fence-owned-namespace-drift': 'owned namespace identity drifted before write',
+  'fence-owned-namespace-drift':
+    'owned namespace identity drifted before write',
   'patch-failed': 'instances patch failed',
   'patch-result-uncertain': 'instances patch result is uncertain',
   'readiness-timeout': 'desired topology readiness was not reached',
@@ -203,12 +205,16 @@ function formatResourceBudget(resources) {
 function formatReadiness(receipt) {
   /** @type {string[]} */
   const lines = [];
-  if (receipt.ok === true && receipt.complete === true) {
-    lines.push('readiness: READY');
-  } else if (receipt.ok === true && receipt.command === 'plan') {
+  if (receipt.ok === true && receipt.command === 'plan') {
     lines.push('readiness: not observed (plan is read-only preview)');
   } else if (receipt.ok === true && receipt.command === 'status') {
     lines.push('readiness: observation complete');
+  } else if (
+    receipt.ok === true &&
+    receipt.command === 'ensure' &&
+    receipt.complete === true
+  ) {
+    lines.push('readiness: READY');
   } else if (
     Array.isArray(receipt.refusals) &&
     receipt.refusals.some(

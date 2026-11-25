@@ -9,8 +9,8 @@ import {
   DEV_CNPG_CONTEXT,
   DEV_CNPG_NAMESPACE,
   DEV_CNPG_OWNER,
-} from './dev-bootstrap.mjs';
-import { assessCnpgClusterTopologyReadiness } from './topology.mjs';
+} from './config.mjs';
+import { assessCnpgClusterTopologyReadiness } from './cluster-readiness.mjs';
 
 const CNPG_CLUSTER_LABEL = 'cnpg.io/cluster';
 const CNPG_INSTANCE_ROLE = 'cnpg.io/instanceRole';

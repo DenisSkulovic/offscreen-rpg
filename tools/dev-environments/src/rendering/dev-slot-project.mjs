@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer';
 import { createHash, randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
+import { DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/config.mjs';
 import { DEV_S3_NAMESPACE } from '../../../../infra/platform/object-storage/dev-bootstrap.mjs';
 import { deriveDevS3Tenant } from '../adapters/dev-s3-tenant.mjs';
 import { deriveDevSqlTenant } from './dev-sql-tenant-contract.mjs';

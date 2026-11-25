@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { DEV_CNPG_CLUSTER, DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
+import { DEV_CNPG_CLUSTER, DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/config.mjs';
 
 const MUTATION = /\b(REVOKE|GRANT|CREATE|ALTER|DROP|INSERT|UPDATE|DELETE|TRUNCATE|VACUUM)\b/i;
 

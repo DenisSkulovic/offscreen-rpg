@@ -366,4 +366,4 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 
 ## PostgreSQL readability (2026-11-25)
 
-[INF57](open/2026-11-25--inf57-postgres-infrastructure-readability/CHANGE.md) — source refactor commissioned; break dependency cycle, split topology/bootstrap, remove duplicate dev manifest projection, fix misleading readiness presentation. No live permission or behavioral redesign.
+[INF57](archive/2026-11/platform-operations/2026-11-25--inf57-postgres-infrastructure-readability/CHANGE.md) — Done (source). Topology/bootstrap ownership split, cycle removed, truthful plan/status readiness text; focused 78/78 + related 71/71 PASS; live K8s NOT-RUN.

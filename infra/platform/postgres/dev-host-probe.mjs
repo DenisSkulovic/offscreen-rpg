@@ -2,13 +2,18 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readPlatformObject, runPlatformCommand } from '../common/commands.mjs';
+import { runPlatformCommand } from '../common/commands.mjs';
+import {
+  observeState,
+  platformRead,
+  readMemoryMiB,
+} from './bootstrap/observation-helpers.mjs';
 import {
   DEV_CNPG_CLUSTER,
   DEV_CNPG_CONTEXT,
   DEV_CNPG_NAMESPACE,
   parseCnpgPin,
-} from './dev-bootstrap.mjs';
+} from './config.mjs';
 
 const postgresRoot = dirname(fileURLToPath(import.meta.url));
 const operatorPinPath = join(postgresRoot, 'operator.pin');
@@ -32,28 +37,6 @@ export function runCnpgReadOnly(command, args, timeoutMs = 15000) {
     stdout: result.stdout ?? '',
     stderr: result.stderr ?? '',
   };
-}
-
-/**
- * @param {(command: string, args: string[], options?: { timeoutMs?: number }) => ReturnType<typeof runPlatformCommand>} run
- */
-function platformRead(run) {
-  return (spec) => readPlatformObject(spec, { run });
-}
-
-/**
- * @param {ReturnType<typeof readPlatformObject>} observation
- * @param {string} id
- * @param {{ id: string, reason: string }[]} unreadableReads
- * @returns {'absent' | 'present' | 'unreadable'}
- */
-function observeState(observation, id, unreadableReads) {
-  if (observation.state === 'unreadable') {
-    unreadableReads.push({ id, reason: observation.reason });
-    return 'unreadable';
-  }
-  if (observation.state === 'absent') return 'absent';
-  return 'present';
 }
 
 /**
@@ -169,16 +152,7 @@ export function collectDevCnpgProbe(deps = {}) {
     unreadableReads,
   );
 
-  let memoryMiB;
-  try {
-    const text = deps.readMeminfo
-      ? deps.readMeminfo()
-      : readFileSync('/proc/meminfo', 'utf8');
-    const available = text.match(/^MemAvailable:\s+(\d+)\s+kB/m);
-    memoryMiB = available ? Math.floor(Number(available[1]) / 1024) : 0;
-  } catch {
-    memoryMiB = 0;
-  }
+  const memoryMiB = readMemoryMiB(deps);
 
   let pin;
   try {

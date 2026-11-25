@@ -3,7 +3,7 @@ import {
   DEV_CNPG_CONTEXT,
   DEV_CNPG_NAMESPACE,
   DEV_CNPG_OWNER,
-} from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
+} from '../../../../infra/platform/postgres/config.mjs';
 import {
   deriveDevSqlTenant,
   renderDevSqlTenant,

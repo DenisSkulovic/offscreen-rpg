@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import {
   DEV_CNPG_CONTEXT,
   DEV_CNPG_NAMESPACE,
-} from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
+} from '../../../../infra/platform/postgres/config.mjs';
 import {
   applyDevTenantMigration,
   DEV_SQL_MIGRATION_LIVE,

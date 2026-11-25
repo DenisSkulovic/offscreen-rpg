@@ -1,5 +1,5 @@
 import { DEV_CLUSTER_NAME } from '../domain/dev-worktree-allocator.mjs';
-import { DEV_CNPG_CLUSTER, DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';
+import { DEV_CNPG_CLUSTER, DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE } from '../../../../infra/platform/postgres/config.mjs';
 
 const SLOT_ID = /^dev-([1-9][0-9]*)$/;
 const SQL_NAME_LIMIT = 63;

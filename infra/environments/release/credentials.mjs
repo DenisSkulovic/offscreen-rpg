@@ -9,7 +9,7 @@ import {
   runPlatformCommand,
 } from '../../platform/common/commands.mjs';
 import { readPlatformProfile } from '../../platform/common/profile.mjs';
-import { RELEASE_CNPG_CLUSTER } from '../../platform/postgres/dev-bootstrap.mjs';
+import { RELEASE_CNPG_CLUSTER } from '../../platform/postgres/config.mjs';
 
 const PROFILE_ID = 'release';
 const LAB_LABEL_KEY = 'offscreen.rpg/lab';

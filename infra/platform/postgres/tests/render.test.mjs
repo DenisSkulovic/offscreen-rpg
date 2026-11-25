@@ -24,6 +24,11 @@ import {
   renderOwnedPostgresCluster,
 } from '../topology.mjs';
 import { readPlatformProfile } from '../../common/profile.mjs';
+import { parseAllDocuments } from 'yaml';
+import {
+  renderDevCnpgCluster,
+  renderDevCnpgNamespace,
+} from '../dev-bootstrap.mjs';
 
 const postgresRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const pinText = readFileSync(join(postgresRoot, 'operator.pin'), 'utf8');
@@ -127,6 +132,26 @@ const expectedReleaseCluster = {
     },
   },
 };
+
+test('dev bootstrap YAML manifests are semantically equal to renderPlatformDocuments', () => {
+  const nsDocs = renderPlatformDocuments(
+    { service: 'postgres', profile: 'dev', section: 'namespace' },
+    { run: helmRun },
+  );
+  const nsParsed = parseAllDocuments(
+    renderDevCnpgNamespace({ run: helmRun }),
+  ).map((doc) => doc.toJS());
+  assert.deepEqual(nsParsed, nsDocs);
+
+  const clusterDocs = renderPlatformDocuments(
+    { service: 'postgres', profile: 'dev', section: 'cluster' },
+    { run: helmRun },
+  );
+  const clusterParsed = parseAllDocuments(
+    renderDevCnpgCluster(pin, { run: helmRun }),
+  ).map((doc) => doc.toJS());
+  assert.deepEqual(clusterParsed, clusterDocs);
+});
 
 test('dev namespace and cluster match renderDevCnpg* via common renderer', () => {
   const nsDocs = renderPlatformDocuments(

@@ -5,10 +5,9 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collectDevCnpgProbe } from '../../../../infra/platform/postgres/dev-host-probe.mjs';
+import { DEV_CNPG_CONTEXT, parseCnpgPin } from '../../../../infra/platform/postgres/config.mjs';
 import {
-  DEV_CNPG_CONTEXT,
   executeAuthorizedDevCnpg,
-  parseCnpgPin,
   planDevCnpg,
   statusDevCnpg,
 } from '../../../../infra/platform/postgres/dev-bootstrap.mjs';

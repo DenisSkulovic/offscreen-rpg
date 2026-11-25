@@ -115,6 +115,46 @@ test('formatTopologyResult formats owned status endpoints', () => {
   assert.match(text, /endpoint-rw:/);
   assert.match(text, /endpoint-ro:/);
   assert.match(text, /result: OK/);
+  assert.match(text, /readiness: observation complete/);
+  assert.doesNotMatch(text, /readiness: READY/);
+});
+
+test('formatTopologyResult readiness: plan ok+complete is not READY', () => {
+  const text = formatTopologyResult({
+    command: 'plan',
+    ok: true,
+    readOnly: true,
+    env: 'release',
+    baselineCluster: 'lab-pg',
+    currentInstances: 1,
+    targetInstances: 2,
+    resources: null,
+    refusals: [],
+    mutated: false,
+    complete: true,
+  });
+  assert.match(text, /readiness: not observed \(plan is read-only preview\)/);
+  assert.doesNotMatch(text, /readiness: READY/);
+});
+
+test('formatTopologyResult readiness: ensure ok+complete is READY', () => {
+  const text = formatTopologyResult({
+    command: 'ensure',
+    ok: true,
+    readOnly: false,
+    env: 'release',
+    baselineCluster: 'lab-pg',
+    currentInstances: 1,
+    targetInstances: 2,
+    resources: null,
+    refusals: [],
+    mutated: true,
+    complete: true,
+    currentPrimary: 'lab-pg-1',
+  });
+  assert.match(text, /readiness: READY/);
+  assert.match(text, /primary: lab-pg-1/);
+  assert.match(text, /complete: yes/);
 });
 
 test('formatTopologyResult marks readiness timeout distinctly', () => {
@@ -145,7 +185,12 @@ test('formatTopologyResult marks readiness timeout distinctly', () => {
       },
       delta: { instances: 1, memoryLimitMiB: 768, memoryRequestMiB: 256 },
     },
-    refusals: [{ id: 'readiness-timeout', detail: 'cluster Ready condition is not True' }],
+    refusals: [
+      {
+        id: 'readiness-timeout',
+        detail: 'cluster Ready condition is not True',
+      },
+    ],
     mutated: true,
     complete: false,
   });
