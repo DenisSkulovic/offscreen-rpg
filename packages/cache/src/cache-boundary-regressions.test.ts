@@ -8,8 +8,8 @@ import {
   buildCacheAdapterFromConnection,
   type CacheAdapterRedisCommands,
 } from './index.js';
-import type { RedisConnection } from './runtime/redis-connection.js';
-import type { RedisConnectionSettings } from './runtime/redis-config.js';
+import type { RedisConnection } from './redis/redis-connection.js';
+import type { RedisConnectionSettings } from './redis/redis-config.js';
 import { bindCache } from './strategies/index.js';
 
 function readyConnection(operationTimeoutMs: number): RedisConnection {

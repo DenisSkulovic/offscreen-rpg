@@ -5,12 +5,12 @@ import {
   createRedisStore,
   REDIS_ENTRY_MAX_BYTES,
   type RedisStoreCommands,
-} from './adapters/redis-store.js';
+} from './redis/redis-store.js';
 import { jsonCodec } from './codecs/json-codec.js';
 import { defineCache, makeCacheKey, type CacheStore } from './core/index.js';
 import { createFakeStore } from './core/test-stores.js';
 import { createTieredStore } from './memory/tiered-store.js';
-import { createRedisCircuitBreaker } from './resilience/redis-circuit-breaker.js';
+import { createRedisCircuitBreaker } from './redis/redis-circuit-breaker.js';
 import {
   CacheOverloadError,
   createSingleFlight,
@@ -19,7 +19,7 @@ import {
   createRedisConnection,
   type RedisClientFactory,
   type RedisLifecycleClient,
-} from './runtime/redis-connection.js';
+} from './redis/redis-connection.js';
 import { bindCache } from './strategies/index.js';
 
 test('single-flight: 10k distinct settled keys without capacity leak', async () => {
@@ -261,7 +261,7 @@ test('redis-store: non-canonical base64 bypasses invalid before decode allocatio
 
 test('readCache: oversize cached hit bypasses decode and reloads origin', async () => {
   const env = 'dev';
-  let now = 12_000;
+  const now = 12_000;
   const inner = createFakeStore(() => now);
   const key = makeCacheKey(env, 'story', 1, ['big']);
   const oversized = new Uint8Array(512);
@@ -336,4 +336,188 @@ test('redis-store: oversize encoded payload bypasses invalid within envelope bou
   const lookup = await store.get('oversize-encoded');
   assert.equal(lookup.kind, 'bypass');
   assert.equal(lookup.reason, 'invalid');
+});
+
+function readStoreOutstanding(
+  store: ReturnType<typeof createRedisStore>,
+): number {
+  const probe = store as ReturnType<typeof createRedisStore> & {
+    __outstanding?: () => number;
+  };
+  return probe.__outstanding?.() ?? -1;
+}
+
+test('command-executor: SET deferred SDK timeout retains outstanding capacity', async () => {
+  const nowMs = { value: 1_000 };
+  let releaseSet: (() => void) | undefined;
+  const commands: RedisStoreCommands = {
+    async get() {
+      return null;
+    },
+    async set() {
+      await new Promise<void>((resolve) => {
+        releaseSet = resolve;
+      });
+    },
+  };
+  const connection = createRedisConnection(
+    { REDIS_URL: 'redis://127.0.0.1:6379' },
+    { clientFactory: () => createLifecycleClient() },
+  );
+  await connection.start();
+  const store = createRedisStore({
+    connection,
+    clock: () => nowMs.value,
+    commands,
+    operationTimeoutMs: 25,
+    breaker: createRedisCircuitBreaker({ now: () => nowMs.value }),
+  });
+
+  const write = store.set('slow-set', {
+    bytes: new Uint8Array([1]),
+    observedAtMs: 900,
+    expiresAtMs: 9_000,
+  });
+  const lookup = await write;
+  assert.equal(lookup.kind, 'bypass');
+  if (lookup.kind === 'bypass') {
+    assert.equal(lookup.reason, 'timeout');
+  }
+  assert.equal(readStoreOutstanding(store), 1);
+
+  releaseSet?.();
+  await write;
+  await Promise.resolve();
+  assert.equal(readStoreOutstanding(store), 0);
+});
+
+test('command-executor: late SDK success reports exactly one breaker failure', async () => {
+  const nowMs = { value: 1_000 };
+  const commands: RedisStoreCommands = {
+    async get() {
+      return await new Promise<string | null>((resolve) => {
+        setTimeout(() => resolve(null), 200);
+      });
+    },
+    async set() {},
+  };
+  const connection = createRedisConnection(
+    { REDIS_URL: 'redis://127.0.0.1:6379' },
+    { clientFactory: () => createLifecycleClient() },
+  );
+  await connection.start();
+  const breaker = createRedisCircuitBreaker({ now: () => nowMs.value });
+  const store = createRedisStore({
+    connection,
+    clock: () => nowMs.value,
+    commands,
+    operationTimeoutMs: 25,
+    breaker,
+  });
+
+  const lookup = await store.get('late-success');
+  assert.equal(lookup.kind, 'bypass');
+  assert.equal(lookup.reason, 'timeout');
+  assert.equal(breaker.snapshot().consecutiveConnectivityFailures, 1);
+
+  await new Promise<void>((resolve) => setTimeout(resolve, 250));
+  assert.equal(breaker.snapshot().consecutiveConnectivityFailures, 1);
+});
+
+test('command-executor: late SDK reject does not add a second breaker failure', async () => {
+  const nowMs = { value: 1_000 };
+  const commands: RedisStoreCommands = {
+    async get() {
+      return await new Promise<string | null>((_, reject) => {
+        setTimeout(() => reject(new Error('late')), 200);
+      });
+    },
+    async set() {},
+  };
+  const connection = createRedisConnection(
+    { REDIS_URL: 'redis://127.0.0.1:6379' },
+    { clientFactory: () => createLifecycleClient() },
+  );
+  await connection.start();
+  const breaker = createRedisCircuitBreaker({ now: () => nowMs.value });
+  const store = createRedisStore({
+    connection,
+    clock: () => nowMs.value,
+    commands,
+    operationTimeoutMs: 25,
+    breaker,
+  });
+
+  await store.get('late-reject');
+  assert.equal(breaker.snapshot().consecutiveConnectivityFailures, 1);
+
+  await new Promise<void>((resolve) => setTimeout(resolve, 250));
+  assert.equal(breaker.snapshot().consecutiveConnectivityFailures, 1);
+});
+
+test('command-executor: saturation bypass never dispatches SDK command', async () => {
+  const nowMs = { value: 1_000 };
+  let dispatchCount = 0;
+  let release: (() => void) | undefined;
+  const commands: RedisStoreCommands = {
+    async get() {
+      dispatchCount += 1;
+      await new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      return null;
+    },
+    async set() {},
+  };
+  const connection = createRedisConnection(
+    { REDIS_URL: 'redis://127.0.0.1:6379' },
+    { clientFactory: () => createLifecycleClient() },
+  );
+  await connection.start();
+  const store = createRedisStore({
+    connection,
+    clock: () => nowMs.value,
+    commands,
+    maxOutstandingCommands: 1,
+    operationTimeoutMs: 500,
+    breaker: createRedisCircuitBreaker({ now: () => nowMs.value }),
+  });
+
+  void store.get('holder');
+  await Promise.resolve();
+  const saturated = await store.get('blocked');
+  assert.equal(saturated.kind, 'bypass');
+  assert.equal(saturated.reason, 'saturated');
+  assert.equal(dispatchCount, 1);
+
+  release?.();
+  await Promise.resolve();
+});
+
+test('command-executor: synchronous dispatch throw releases outstanding slot', async () => {
+  const nowMs = { value: 1_000 };
+  const commands: RedisStoreCommands = {
+    get() {
+      throw new Error('sync-sdk-failure');
+    },
+    async set() {},
+  };
+  const connection = createRedisConnection(
+    { REDIS_URL: 'redis://127.0.0.1:6379' },
+    { clientFactory: () => createLifecycleClient() },
+  );
+  await connection.start();
+  const breaker = createRedisCircuitBreaker({ now: () => nowMs.value });
+  const store = createRedisStore({
+    connection,
+    clock: () => nowMs.value,
+    commands,
+    breaker,
+  });
+
+  const lookup = await store.get('sync-throw');
+  assert.equal(lookup.kind, 'bypass');
+  assert.equal(lookup.reason, 'unavailable');
+  assert.equal(breaker.snapshot().consecutiveConnectivityFailures, 1);
+  assert.equal(readStoreOutstanding(store), 0);
 });

@@ -1,1 +1,1 @@
-export { createRedisStore } from '../adapters/redis-store.js';
+export { createRedisStore } from './redis-store.js';

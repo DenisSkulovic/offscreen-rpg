@@ -4,13 +4,13 @@ import test from 'node:test';
 import {
   computeReconnectDelayMs,
   parseRedisConnectionEnv,
-} from './runtime/redis-config.js';
+} from './redis/redis-config.js';
 import {
   createLazyRedisLifecycleClient,
   createRedisConnection,
   type RedisClientFactory,
   type RedisLifecycleClient,
-} from './runtime/redis-connection.js';
+} from './redis/redis-connection.js';
 
 type FakeClientOptions = Readonly<{
   shouldFailConnect?: (attempt: number) => boolean;

@@ -12,7 +12,7 @@ import {
   createRedisConnection,
   type RedisClientFactory,
   type RedisLifecycleClient,
-} from './runtime/redis-connection.js';
+} from './redis/redis-connection.js';
 type FakeClientOptions = Readonly<{
   shouldFailConnect?: (attempt: number) => boolean;
 }>;

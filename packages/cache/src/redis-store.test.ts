@@ -4,13 +4,13 @@ import test from 'node:test';
 import {
   createRedisStore,
   type RedisStoreCommands,
-} from './adapters/redis-store.js';
-import { createRedisCircuitBreaker } from './resilience/redis-circuit-breaker.js';
+} from './redis/redis-store.js';
+import { createRedisCircuitBreaker } from './redis/redis-circuit-breaker.js';
 import {
   createRedisConnection,
   type RedisClientFactory,
   type RedisLifecycleClient,
-} from './runtime/redis-connection.js';
+} from './redis/redis-connection.js';
 
 type StoreHarness = Readonly<{
   store: ReturnType<typeof createRedisStore>;

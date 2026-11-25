@@ -91,5 +91,4 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 
 ## Cache craftsmanship wave
 - [CACHE10 Memory and single-flight readability](2026-11-25--cache10-cache-memory-concurrency/CHANGE.md) — Ready after CACHE09 source; source only.
-- [CACHE11 Redis envelope and bounded command executor](2026-11-25--cache11-cache-redis-execution/CHANGE.md) — Ready after CACHE09 source; source only.
 CACHE09 and CQ06 archived Done (source). CACHE12 held for planner migration; no global queue change.
