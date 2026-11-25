@@ -8,6 +8,7 @@ import { randomUUID } from 'node:crypto';
 import { appendFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { dirname } from 'node:path';
+import { totalmem, freemem } from 'node:os';
 import process from 'node:process';
 import {
   childOperationEnv,
@@ -219,12 +220,25 @@ export function startupTimingActive() {
  * @param {string | null} parent
  * @param {(note: (extra: object) => void) => unknown} fn
  */
+// Human progress uses the existing timing boundaries; no second lifecycle owner.
+export function announceDevStartup(message) {
+  if (process.env.OFFSCREEN_DEV_PROGRESS === 'quiet') return;
+  let available = freemem();
+  try {
+    const match = /^MemAvailable:\s+(\d+)\s+kB/m.exec(readFileSync('/proc/meminfo', 'utf8'));
+    if (match) available = Number(match[1]) * 1024;
+  } catch { /* portable fallback */ }
+  const gib = n => (n / 1024 ** 3).toFixed(1);
+  const elapsed = currentScope().active ? ((performance.now() - currentScope().active.origin) / 1000).toFixed(1) + 's' : '';
+  process.stderr.write('[dev] ' + message + '  |  ' + elapsed + '  |  RAM available ' + gib(available) + '/' + gib(totalmem()) + ' GiB\n');
+}
 export async function timePhase(name, parent, fn) {
   const scope = currentScope();
   const active = scope.active;
   if (!active) {
     return fn(() => {});
   }
+  announceDevStartup('▶ ' + (parent ? parent + ' / ' : '') + name);
   const phaseId = randomUUID();
   const parentLink = resolveParentPhaseId(parent, { allowApproximate: true });
   const startedAt = wallNowIso();
@@ -257,6 +271,7 @@ export async function timePhase(name, parent, fn) {
       const monotonicEndNs = monoNowNs();
       const finishedAt = wallNowIso();
       const durationMs = Number(monotonicEndNs - monotonicStartNs) / 1e6;
+      announceDevStartup((failed ? '✗ ' : '✓ ') + name + ' (' + (durationMs / 1000).toFixed(1) + 's; returned' + (failed ? ' with error' : '') + ')');
       emitTimelinePhase('phase-end', {
         observedAt: finishedAt,
         monotonicNs: monotonicEndNs.toString(),

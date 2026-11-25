@@ -45,6 +45,7 @@ import {
   beginMonitorOperation,
   beginRollbackMonitorSpan,
   beginStartupTiming,
+  announceDevStartup,
   bindStartupTimingCallback,
   startupTimingChildEnv,
   withStartupTimingScope,
@@ -1342,6 +1343,7 @@ async function runScopedDevTiltLaunch(deps) {
 
     const fingerprint =
       deps.fingerprintDevImageContext ?? fingerprintDevImageContext;
+    announceDevStartup('▶ ' + ownerRecord.slotId + ' / image fingerprint');
     const fingerprintStarted = performance.now();
     const imageDistribution =
       beginMonitorOperation('dev.images.distribute', {
@@ -1386,6 +1388,7 @@ async function runScopedDevTiltLaunch(deps) {
       await settleLaunchCleanup(cancelReason ?? 'cancelled', 130);
       return;
     }
+    announceDevStartup('▶ ' + ownerRecord.slotId + ' / starting Tilt');
     const child = spawnFn(
       'tilt',
       [
@@ -1464,6 +1467,7 @@ async function runScopedDevTiltLaunch(deps) {
               deps.resolveDevImageConfigIds ?? resolveDevImageConfigIds,
           }).readiness,
         ));
+    announceDevStartup('▶ ' + ownerRecord.slotId + ' / waiting for six workloads');
     const readinessStarted = performance.now();
     /** @type {string | null} */
     let startupFailure = null;
@@ -1509,6 +1513,7 @@ async function runScopedDevTiltLaunch(deps) {
         finishStartupTiming('six-roles-ready');
         break;
       }
+      announceDevStartup('… ' + ownerRecord.slotId + ' / waiting: ' + assessment.refusals.map(refusal => refusal.id).join(', '));
       if (elapsed === startupWindowMs) {
         const missing = assessment.refusals
           .map((refusal) => refusal.id)
