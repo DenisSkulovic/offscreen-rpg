@@ -10,7 +10,7 @@ const AMBIENT_PG_KEYS = [
   'PGSSLMODE',
 ] as const;
 
-const SESSION_CHECK_SQL =
+export const SESSION_CHECK_SQL =
   'SELECT current_database() AS database, current_user AS role, pg_is_in_recovery() AS recovery';
 
 const EXPLICIT_PASSWORD_AUTHORITY = /^postgres(?:ql)?:\/\/[^:@/]+:[^@]*@/i;

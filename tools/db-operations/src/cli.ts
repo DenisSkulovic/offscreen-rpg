@@ -2,7 +2,24 @@ import { fileURLToPath } from 'node:url';
 
 import { parseCliArguments } from './arguments.js';
 import { operationKey, type OperationManifest } from './contract.js';
-import { lookup, manifests } from './registry.js';
+import {
+  EnrollOutcomeUnknownError,
+  executeEnroll,
+  redactEnrollError,
+} from './ledger/enroll.js';
+import {
+  executeAtomicPlan,
+  executeAtomicRun,
+  executeAtomicStatus,
+  redactAtomicError,
+  type GitProvenanceReader,
+} from './execution/atomic.js';
+import { LedgerOutcomeUnknownError } from './ledger/repository.js';
+import { lookup, lookupOperation, manifests } from './registry.js';
+import {
+  SessionOutcomeUnknownError,
+  type SessionClient,
+} from './execution/session.js';
 import {
   TargetParseError,
   TargetSessionError,
@@ -14,16 +31,20 @@ import {
   type ParsedTarget,
 } from './target.js';
 
-export const CLI_HELP_TEXT = `offscreen database operations (read-only)
+export const CLI_HELP_TEXT = `offscreen database operations
 
 Commands:
   help
   list [--json]
   inspect <id@version> [--json]
   target [--json]
+  enroll --confirm-target <label> [--json]
+  plan <id@version> --target-id <uuid> [--json]
+  status <id@version> --target-id <uuid>
+  run <id@version> --target-id <uuid> --confirm-target <label> --actor <token> [--json]
 
 Environment:
-  DB_OPS_URL  loopback PostgreSQL URL (required for target only)
+  DB_OPS_URL  loopback PostgreSQL URL (required for database commands)
 `;
 
 export interface CliWriter {
@@ -32,7 +53,10 @@ export interface CliWriter {
 
 export interface ClientLike {
   connect(): Promise<void>;
-  query(sql: string): Promise<{ rows: Array<Record<string, unknown>> }>;
+  query(
+    sql: string,
+    values?: readonly unknown[],
+  ): Promise<{ rows: Array<Record<string, unknown>> }>;
   end(): Promise<void>;
 }
 
@@ -40,6 +64,7 @@ export interface RunCliDeps {
   stdout: CliWriter;
   stderr: CliWriter;
   createClient?: (target: ParsedTarget) => ClientLike;
+  gitProvenance?: GitProvenanceReader;
 }
 
 const SESSION_CHECK_SQL =
@@ -52,7 +77,39 @@ export function redactCliError(error: unknown): string {
   if (error instanceof TargetSessionError) {
     return 'database session verification failed';
   }
+  const atomic = redactAtomicError(error);
+  if (atomic !== 'atomic operation failed') {
+    return atomic;
+  }
   return 'database operations failed';
+}
+
+function refuseOperationBeforeConnect(
+  key: string,
+  deps: RunCliDeps,
+  requireHandlers: boolean,
+): {
+  manifest: OperationManifest;
+  operation?: ReturnType<typeof lookupOperation>;
+} | null {
+  const manifest = lookup(key);
+  if (manifest === undefined) {
+    deps.stderr.write('unknown operation\n');
+    return null;
+  }
+  if (manifest.risk === 'high') {
+    deps.stderr.write('high-risk operation execution refused\n');
+    return null;
+  }
+  if (requireHandlers) {
+    const operation = lookupOperation(key);
+    if (operation === undefined) {
+      deps.stderr.write('unregistered operation\n');
+      return null;
+    }
+    return { manifest, operation };
+  }
+  return { manifest };
 }
 
 function writeUsage(deps: RunCliDeps, message: string): void {
@@ -75,6 +132,12 @@ function formatManifestHuman(manifest: OperationManifest): string {
   return `${lines.join('\n')}\n`;
 }
 
+function asSessionClient(
+  client: ClientLike | ReturnType<typeof createOpsClient>,
+): SessionClient {
+  return client as unknown as SessionClient;
+}
+
 function formatListHuman(entries: readonly OperationManifest[]): string {
   if (entries.length === 0) {
     return '';
@@ -88,6 +151,192 @@ function manifestJsonLine(manifest: OperationManifest): string {
 
 function listJsonLine(entries: readonly OperationManifest[]): string {
   return `${JSON.stringify(entries)}\n`;
+}
+
+async function runPlan(
+  command: Readonly<{
+    kind: 'plan';
+    key: string;
+    targetId: string;
+    json: boolean;
+  }>,
+  env: Record<string, string | undefined>,
+  deps: RunCliDeps,
+): Promise<number> {
+  const resolved = refuseOperationBeforeConnect(command.key, deps, true);
+  if (resolved === null || resolved.operation === undefined) {
+    return 1;
+  }
+
+  let target: ParsedTarget;
+  try {
+    target = parseTarget(env);
+  } catch (error) {
+    deps.stderr.write(`${redactCliError(error)}\n`);
+    return 1;
+  }
+
+  const createClient = deps.createClient ?? createOpsClient;
+  const client = createClient(target);
+
+  try {
+    const receipt = await executeAtomicPlan(
+      resolved.operation,
+      command.targetId,
+      asSessionClient(client),
+      target,
+    );
+    if (command.json) {
+      deps.stdout.write(`${JSON.stringify(receipt)}\n`);
+    } else {
+      deps.stdout.write(
+        `${receipt.operationKey} eligible_rows=${receipt.eligibleRows} (estimate only)\n`,
+      );
+    }
+    return 0;
+  } catch (error) {
+    deps.stderr.write(`${redactCliError(error)}\n`);
+    return 1;
+  }
+}
+
+async function runStatus(
+  command: Readonly<{ kind: 'status'; key: string; targetId: string }>,
+  env: Record<string, string | undefined>,
+  deps: RunCliDeps,
+): Promise<number> {
+  const resolved = refuseOperationBeforeConnect(command.key, deps, false);
+  if (resolved === null) {
+    return 1;
+  }
+
+  let target: ParsedTarget;
+  try {
+    target = parseTarget(env);
+  } catch (error) {
+    deps.stderr.write(`${redactCliError(error)}\n`);
+    return 1;
+  }
+
+  const createClient = deps.createClient ?? createOpsClient;
+  const client = createClient(target);
+
+  try {
+    const receipt = await executeAtomicStatus(
+      command.key,
+      command.targetId,
+      asSessionClient(client),
+      target,
+    );
+    deps.stdout.write(`${JSON.stringify(receipt)}\n`);
+    return 0;
+  } catch (error) {
+    deps.stderr.write(`${redactCliError(error)}\n`);
+    return 1;
+  }
+}
+
+async function runAtomic(
+  command: Readonly<{
+    kind: 'run';
+    key: string;
+    targetId: string;
+    confirmTarget: string;
+    actor: string;
+    json: boolean;
+  }>,
+  env: Record<string, string | undefined>,
+  deps: RunCliDeps,
+): Promise<number> {
+  const resolved = refuseOperationBeforeConnect(command.key, deps, true);
+  if (resolved === null || resolved.operation === undefined) {
+    return 1;
+  }
+
+  let target: ParsedTarget;
+  try {
+    target = parseTarget(env);
+  } catch (error) {
+    deps.stderr.write(`${redactCliError(error)}\n`);
+    return 1;
+  }
+
+  const createClient = deps.createClient ?? createOpsClient;
+  const client = createClient(target);
+
+  try {
+    const receipt = await executeAtomicRun(
+      resolved.operation,
+      {
+        targetId: command.targetId,
+        confirmTarget: command.confirmTarget,
+        actor: command.actor,
+      },
+      asSessionClient(client),
+      target,
+      deps.gitProvenance === undefined
+        ? {}
+        : { gitProvenance: deps.gitProvenance },
+    );
+    if (command.json) {
+      deps.stdout.write(`${JSON.stringify(receipt)}\n`);
+    } else if (receipt.outcome === 'noop') {
+      deps.stdout.write(
+        `${receipt.operationKey} noop artifact_sha=${receipt.artifactSha}\n`,
+      );
+    } else {
+      deps.stdout.write(
+        `${receipt.operationKey} succeeded affected_rows=${receipt.affectedRows}\n`,
+      );
+    }
+    return 0;
+  } catch (error) {
+    if (
+      error instanceof LedgerOutcomeUnknownError ||
+      error instanceof SessionOutcomeUnknownError
+    ) {
+      deps.stderr.write(`${redactCliError(error)}\n`);
+      return 1;
+    }
+    deps.stderr.write(`${redactAtomicError(error)}\n`);
+    return 1;
+  }
+}
+
+async function runEnroll(
+  command: Readonly<{ kind: 'enroll'; confirmTarget: string; json: boolean }>,
+  env: Record<string, string | undefined>,
+  deps: RunCliDeps,
+): Promise<number> {
+  let target: ParsedTarget;
+  try {
+    target = parseTarget(env);
+  } catch (error) {
+    deps.stderr.write(`${redactCliError(error)}\n`);
+    return 1;
+  }
+
+  const createClient = deps.createClient ?? createOpsClient;
+  const client = createClient(target);
+
+  try {
+    const result = await executeEnroll(target, command.confirmTarget, client);
+    if (command.json) {
+      deps.stdout.write(`${JSON.stringify(result)}\n`);
+    } else {
+      deps.stdout.write(
+        `${result.label} enrolled target_id=${result.targetId}\n`,
+      );
+    }
+    return 0;
+  } catch (error) {
+    if (error instanceof EnrollOutcomeUnknownError) {
+      deps.stderr.write(`${redactEnrollError(error)}\n`);
+      return 1;
+    }
+    deps.stderr.write(`${redactEnrollError(error)}\n`);
+    return 1;
+  }
 }
 
 async function runTarget(
@@ -181,7 +430,27 @@ export async function runCli(
     return 0;
   }
 
-  return runTarget(command, env, deps);
+  if (command.kind === 'enroll') {
+    return runEnroll(command, env, deps);
+  }
+
+  if (command.kind === 'plan') {
+    return runPlan(command, env, deps);
+  }
+
+  if (command.kind === 'status') {
+    return runStatus(command, env, deps);
+  }
+
+  if (command.kind === 'run') {
+    return runAtomic(command, env, deps);
+  }
+
+  if (command.kind === 'target') {
+    return runTarget(command, env, deps);
+  }
+
+  return 2;
 }
 
 export { SESSION_CHECK_SQL };
