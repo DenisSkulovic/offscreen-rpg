@@ -13,7 +13,7 @@ Scripts live in `infra/platform/postgres/`. The workload manifests are no longer
 ## What it must not do
 
 - Do not put a password, a client certificate, or a generated Secret in Git. The operator creates credentials when the primary starts. The smoke uses local peer authentication inside the Pod and does not print Secret values.
-- Default baseline is one instance. Shared chart rendering and normal bootstrap (`install.sh`, dev CNPG ensure) create or reuse a compatible cluster without implicitly changing an existing instance count. Only `topology-cli.mjs ensure` changes `spec.instances` on an existing baseline. Baseline cluster names are `dev-pg` (dev) and `lab-pg` (release) only in INF53; independently named clusters belong to [INF54](../../work/changes/open/2026-11-25--inf54-postgres-owned-clusters/CHANGE.md). The historical pod-replacement smoke intentionally requires one instance. Never use it as a multi-instance failover, HA, or backup test.
+- Default baseline is one instance. Shared chart rendering and normal bootstrap (`install.sh`, dev CNPG ensure) create or reuse a compatible cluster without implicitly changing an existing instance count. Only `topology-cli.mjs ensure` changes `spec.instances` on an existing baseline. Baseline cluster names are `dev-pg` (dev) and `lab-pg` (release) only in INF53; independently named clusters belong to [INF54](../../work/changes/archive/2026-11/platform-operations/2026-11-25--inf54-postgres-owned-clusters/CHANGE.md). The historical pod-replacement smoke intentionally requires one instance. Never use it as a multi-instance failover, HA, or backup test.
 - Do not point Compose, the game, or Temporal at `lab-pg`.
 - Do not delete Docker volumes outside this cluster. `down.sh` may drop only the volumes attached to `offscreen-release` node containers. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain. A clone that has neither volume is valid.
 - Do not publish a workload on `0.0.0.0` or `[::]`. A NodePort or LoadBalancer Service fails the check.
@@ -66,7 +66,40 @@ node infra/platform/postgres/topology-cli.mjs ensure \
   --allow-scale-down
 ```
 
-Use `--env dev --cluster dev-pg --confirm-context kind-offscreen-dev` for the shared dev baseline. Reserve dev baseline scaling for the human owner; agents must not run dev `ensure` as part of ordinary stack startup. `plan` and `status` never mutate. `ensure` patches only `spec.instances` with a compare-and-swap JSON patch and polls shared readiness; it does not install the operator, create a missing cluster, or read Secrets. This Change does not prove HA, backup, or failover.
+Use `--env dev --cluster dev-pg --confirm-context kind-offscreen-dev` for the shared dev baseline. Reserve dev baseline scaling for the human owner; agents must not run dev `ensure` as part of ordinary stack startup. `plan` and `status` never mutate. `ensure` patches only `spec.instances` with a compare-and-swap JSON patch and polls shared readiness; it does not install the operator, create a missing cluster, or read Secrets. This runbook does not prove HA, backup, or failover.
+
+### Owned independent clusters (INF54)
+
+[INF54](../../work/changes/archive/2026-11/platform-operations/2026-11-25--inf54-postgres-owned-clusters/CHANGE.md) adds non-baseline cluster names scoped by `--owner` (run-owned DNS label, 1–24 characters). Baseline names `dev-pg` and `lab-pg` refuse `--owner`. The owner maps to namespace `offscreen-pg-<ownerId>` in the selected profile context. Rendering and reconciliation live in `infra/platform/postgres/topology.mjs`; the CLI entrypoint is `topology-cli.mjs`. A future CNPG verification resource adapter must call this shared builder only; it does not maintain a second manifest algorithm (see [verification programmes](../technical/platform/verification-programmes.md)).
+
+Ordinary dev slot startup and worktree stack scripts keep the shared `dev-pg` endpoint. Agent verification uses explicit isolated RW/RO endpoints returned by the resource adapter for the owned run; nothing in this path rebinding application Deployments, Secrets, or Compose to an experiment cluster.
+
+Operational example: two independent cluster names under one owner, two instances each (dual-replicated topology proof shape). Replace `RUN_ID`, cluster names, and context to match the run. `plan`/`status` are read-only; `ensure` mutates only after context confirmation.
+
+Release (`kind-offscreen-release`):
+
+```bash
+node infra/platform/postgres/topology-cli.mjs plan \
+  --env release --owner RUN_ID --cluster pg-repl-a --instances 2
+node infra/platform/postgres/topology-cli.mjs plan \
+  --env release --owner RUN_ID --cluster pg-repl-b --instances 2
+
+node infra/platform/postgres/topology-cli.mjs ensure \
+  --env release --owner RUN_ID --cluster pg-repl-a --instances 2 \
+  --confirm-context kind-offscreen-release
+node infra/platform/postgres/topology-cli.mjs ensure \
+  --env release --owner RUN_ID --cluster pg-repl-b --instances 2 \
+  --confirm-context kind-offscreen-release
+
+node infra/platform/postgres/topology-cli.mjs status \
+  --env release --owner RUN_ID --cluster pg-repl-a --instances 2
+node infra/platform/postgres/topology-cli.mjs status \
+  --env release --owner RUN_ID --cluster pg-repl-b --instances 2
+```
+
+Dev (`kind-offscreen-dev`): same flags with `--env dev`, `--confirm-context kind-offscreen-dev`, and distinct non-baseline cluster names if both environments are exercised.
+
+JSON receipts redact secrets; use returned RW/RO hostnames for adapter connection only. Partial create leaves owned objects in place with recovery identity in the receipt; there is no implicit delete on omission. Explicit experiment cleanup belongs to the verification resource lifecycle (aligned with VER02 cleanup ledger semantics), not to ordinary stack stop. No production availability claim.
 
 | Retired path | Successor |
 | --- | --- |

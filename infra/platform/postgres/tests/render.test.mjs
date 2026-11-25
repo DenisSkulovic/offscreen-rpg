@@ -15,8 +15,15 @@ import {
   DEV_CNPG_MAX_CONNECTIONS,
   DEV_CNPG_NAMESPACE,
   DEV_CNPG_OWNER,
+  RELEASE_CNPG_CLUSTER,
   parseCnpgPin,
 } from '../dev-bootstrap.mjs';
+import {
+  baselineCnpgClusterName,
+  renderExpectedBaselineCluster,
+  renderOwnedPostgresCluster,
+} from '../topology.mjs';
+import { readPlatformProfile } from '../../common/profile.mjs';
 
 const postgresRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const pinText = readFileSync(join(postgresRoot, 'operator.pin'), 'utf8');
@@ -242,4 +249,112 @@ test('negative: invalid instances overlay refuses in dev and release', () => {
       );
     }
   }
+});
+
+for (const profileId of /** @type {const} */ (['dev', 'release'])) {
+  const platform = readPlatformProfile(profileId);
+  const baselineName = baselineCnpgClusterName(profileId);
+  const baselineNs = platform.namespaces.postgres;
+
+  for (const instances of [2, 4, 10]) {
+    test(`owned ${profileId} renders separate cluster at instances=${instances}`, () => {
+      const ownerId = `run${profileId}${instances}`.slice(0, 24);
+      const clusterName = `pg-${ownerId}`.slice(0, 40);
+      const before = structuredClone(
+        renderExpectedBaselineCluster(profileId, helmRun),
+      );
+      const { namespace, cluster } = renderOwnedPostgresCluster(
+        { profileId, ownerId, clusterName, instances },
+        { run: helmRun },
+      );
+      const after = renderExpectedBaselineCluster(profileId, helmRun);
+      assert.deepEqual(before, after);
+
+      const expectedNs = `offscreen-pg-${ownerId}`;
+      assert.equal(namespace.metadata.name, expectedNs);
+      assert.equal(cluster.metadata.name, clusterName);
+      assert.equal(cluster.metadata.namespace, expectedNs);
+      assert.equal(cluster.spec.instances, instances);
+
+      const ownerLabelKey = `${platform.ownerLabel}/owner`;
+      assert.equal(
+        namespace.metadata.labels[ownerLabelKey],
+        platform.ownerValue,
+      );
+      assert.equal(cluster.metadata.labels[ownerLabelKey], platform.ownerValue);
+      assert.equal(
+        namespace.metadata.labels['offscreen.rpg/pg-experiment'],
+        ownerId,
+      );
+      assert.equal(
+        cluster.metadata.labels['offscreen.rpg/pg-experiment'],
+        ownerId,
+      );
+
+      assert.notEqual(cluster.metadata.name, baselineName);
+      assert.notEqual(cluster.metadata.namespace, baselineNs);
+      assert.notEqual(namespace.metadata.name, baselineNs);
+
+      const baseline = before;
+      assert.deepEqual(cluster.spec.imageName, baseline.spec.imageName);
+      assert.deepEqual(cluster.spec.storage, baseline.spec.storage);
+      assert.deepEqual(cluster.spec.resources, baseline.spec.resources);
+      assert.deepEqual(cluster.spec.bootstrap, baseline.spec.bootstrap);
+      assert.deepEqual(cluster.spec.postgresql, baseline.spec.postgresql);
+    });
+  }
+}
+
+test('negative: owned render refuses invalid owner, name, count, baseline, and deps', () => {
+  const valid = {
+    profileId: 'dev',
+    ownerId: 'agent01',
+    clusterName: 'pg-agent01',
+    instances: 2,
+  };
+  assert.throws(
+    () =>
+      renderOwnedPostgresCluster(
+        { ...valid, ownerId: 'Agent-01' },
+        { run: helmRun },
+      ),
+    /ownerId must be a lowercase DNS label/,
+  );
+  assert.throws(
+    () =>
+      renderOwnedPostgresCluster(
+        { ...valid, ownerId: 'a'.repeat(25) },
+        { run: helmRun },
+      ),
+    /ownerId must be a lowercase DNS label/,
+  );
+  assert.throws(
+    () =>
+      renderOwnedPostgresCluster(
+        { ...valid, clusterName: DEV_CNPG_CLUSTER },
+        { run: helmRun },
+      ),
+    /reserved for baseline cluster/,
+  );
+  assert.throws(
+    () =>
+      renderOwnedPostgresCluster(
+        { ...valid, profileId: 'release', clusterName: RELEASE_CNPG_CLUSTER },
+        { run: helmRun },
+      ),
+    /reserved for baseline cluster/,
+  );
+  assert.throws(
+    () =>
+      renderOwnedPostgresCluster({ ...valid, instances: 0 }, { run: helmRun }),
+    /positive safe integer instance count/,
+  );
+  assert.throws(
+    () =>
+      renderOwnedPostgresCluster(
+        { ...valid, instances: 2 },
+        { run: helmRun, stdinOverlay: { instances: 99 } },
+      ),
+    /unsupported owned render dependency/,
+  );
 });
