@@ -5,7 +5,6 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import {
-  TEMPORAL_IMAGE_PIN_KEYS,
   parsePins,
 } from '../../../../infra/platform/common/pins.mjs';
 
@@ -156,8 +155,8 @@ export function validateLocalDockerContext(
 export function loadPinnedPostgresImage(deps = {}) {
   const repoRoot = deps.repoRoot ?? defaultRepoRoot;
   const readFile = deps.readFile ?? ((path) => readFileSync(path, 'utf8'));
-  const pinPath = join(repoRoot, 'infra/platform/temporal/images.pin');
-  const pins = parsePins(readFile(pinPath), TEMPORAL_IMAGE_PIN_KEYS);
+  const pinPath = join(repoRoot, 'tools/verification/resources/postgres/image.pin');
+  const pins = parsePins(readFile(pinPath), ['POSTGRES_IMAGE', 'POSTGRES_DIGEST']);
   return {
     image: pins.POSTGRES_IMAGE,
     digest: pins.POSTGRES_DIGEST,
