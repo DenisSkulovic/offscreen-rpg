@@ -10,6 +10,8 @@ For every substantial design, establish the desired state independently of inher
 
 At material-design kickoff, use the [adaptive workshop method](.agents/rules/target-driven-renewal.md#adaptive-design-workshop-choose-the-investigation-not-a-universal-sequence): choose problem-specific lenses, keep a living investigation plan, make provisional specimens, and use discriminating evidence to revise the design. Do not default to a packet wave or copy the Temporal sequence mechanically. Explain decisions and experiments to the owner as they happen.
 
+Before promotion or implementation planning, perform and record the [mandatory formal architecture defense](.agents/rules/target-driven-renewal.md#mandatory-formal-architecture-defense-and-convergence). Act as a skeptical examiner of your own design, test serious alternatives and concrete counterexamples, revise or abandon weak proposals, and defend the revised target again until the selected scope is defensible. An evidence-gated decision remains blocked; a superficial review is not a defense.
+
 After design convergence and necessary owner acceptance, choose the cheapest appropriate execution route: direct planner implementation with owner-operated terminal experiments, a bounded Change handed to Cursor, or a hybrid. Cursor is optional, not the inevitable next step. All implementation routes retain Git ownership, documentation, safety and proof requirements. No automatic permission for destructive actions, live mutations or paid calls. Small fixes to settled contracts remain narrow.
 
 ## Dependency readiness is not a planner blocker
