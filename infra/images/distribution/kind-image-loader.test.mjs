@@ -675,3 +675,35 @@ test('historical import wrapper accepts identical executable config across packa
   blobs.set(tampered, blobs.get(tampered) + ' ');
   assert.equal(check(tampered), false);
 });
+
+
+test('two missing dev nodes share one export and import sequentially with exact digest proof', () => {
+  const ref = 'offscreen-dev-workspace:union-0123456789abcdef';
+  const nodes = ['offscreen-dev-control-plane', 'offscreen-dev-worker'];
+  const loaded = new Set();
+  const calls = [];
+  const run = (command, args) => {
+    calls.push([command, ...args]);
+    const ok = stdout => ({status:0, stdout:stdout ?? '', stderr:''});
+    if (command === 'kind' && args[0] === 'get') return ok(nodes.join('\n'));
+    if (command === 'docker' && args[0] === 'inspect') return ok('offscreen-dev');
+    if (command === 'docker' && args[0] === 'image' && args[1] === 'inspect') return ok(TARGET_T);
+    if (command === 'docker' && args[0] === 'image' && args[1] === 'save') return ok();
+    if (command === 'kind' && args[0] === 'load' && args[1] === 'image-archive') {
+      loaded.add(args.at(-1)); return ok();
+    }
+    if (command === 'docker' && args[0] === 'exec' && args.includes('ls')) {
+      return ok(loaded.has(args[1]) ? 'docker.io/library/' + ref + ' x ' + TARGET_T : '');
+    }
+    if (command === 'docker' && args[0] === 'exec' && args.includes('get')) return ok(ociManifestJson(CONFIG_A));
+    throw Error('unexpected command ' + command + ' ' + args.join(' '));
+  };
+  const receipt = ensureKindImage({profileId:'dev',ref,expectedDigest:TARGET_T,run});
+  assert.deepEqual(receipt.loadedNodes,nodes);
+  const saves = calls.filter(c => c[0] === 'docker' && c[2] === 'save');
+  const imports = calls.filter(c => c[0] === 'kind' && c[1] === 'load');
+  assert.equal(saves.length,1);
+  assert.equal(imports.length,2);
+  assert.equal(imports[0][3],imports[1][3]);
+  assert.deepEqual(imports.map(c=>c.at(-1)),nodes);
+});

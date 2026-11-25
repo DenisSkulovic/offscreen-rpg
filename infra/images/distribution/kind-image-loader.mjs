@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { writeSync } from 'node:fs';
+import { writeSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { isatty } from 'node:tty';
 import { createHash } from 'node:crypto';
 import { readKindProfile } from '../../clusters/kind/manager/config.mjs';
@@ -555,32 +557,48 @@ export function ensureKindImage(opts) {
   /** @type {string[]} */
   const reusedNodes = [];
 
+  const missing = nodes.filter(node => snapshot.get(node)?.targetDigest !== hostDigest);
   for (const node of nodes) {
-    const identity = snapshot.get(node) ?? null;
-    // Docker 29 reports image Id as the OCI index or manifest digest, which is
-    // the containerd target. The platform config blob is a different digest.
-    const nodeTarget = identity?.targetDigest ?? null;
-    if (nodeTarget === hostDigest) {
+    if (!missing.includes(node)) {
       logKindLoad(node, 'reused');
       reusedNodes.push(node);
-      continue;
     }
-    logKindLoad(node, 'miss');
+  }
 
-    const freshHost = inspectHostDigest(validatedRef, run);
-    if (freshHost !== hostDigest) {
-      throw new Error('host image digest changed before load');
+  // Kind exports a Docker archive once per invocation. When both dev nodes
+  // need the same immutable generation, export once ourselves and import
+  // sequentially: no concurrent containerd transfers over WSL.
+  let archiveDir = null;
+  try {
+    if (profileId === 'dev' && missing.length > 1) {
+      archiveDir = mkdtempSync(join(tmpdir(), 'offscreen-kind-image-'));
+      const archive = join(archiveDir, 'image.tar');
+      if (inspectHostDigest(validatedRef, run) !== hostDigest) {
+        throw new Error('host image digest changed before export');
+      }
+      const exported = run('docker', ['image', 'save', '--output', archive, validatedRef], { timeout: 300_000 });
+      if (exported.status !== 0) throw new Error('dev image archive export failed');
     }
-
-    loadImageToNode(profile.clusterName, validatedRef, node, run);
-    loadedNodes.push(node);
-    logKindLoad(node, 'loaded');
-
-    const afterLoad = readKindImageIdentity({ node, ref: validatedRef, run });
-    if (!afterLoad || afterLoad.targetDigest !== hostDigest) {
-      throw new Error(`post-load-mismatch node=${node}`);
+    for (const node of missing) {
+      logKindLoad(node, 'miss');
+      if (inspectHostDigest(validatedRef, run) !== hostDigest) {
+        throw new Error('host image digest changed before load');
+      }
+      if (archiveDir) {
+        const imported = run('kind', ['load', 'image-archive', join(archiveDir, 'image.tar'), '--name', profile.clusterName, '--nodes', node], { timeout: 300_000 });
+        if (imported.status !== 0) throw new Error('kind archive load failed for ' + node);
+      } else {
+        loadImageToNode(profile.clusterName, validatedRef, node, run);
+      }
+      loadedNodes.push(node);
+      logKindLoad(node, 'loaded');
+      const afterLoad = readKindImageIdentity({ node, ref: validatedRef, run });
+      if (!afterLoad || afterLoad.targetDigest !== hostDigest) {
+        throw new Error(`post-load-mismatch node=${node}`);
+      }
     }
-    snapshot.set(node, afterLoad);
+  } finally {
+    if (archiveDir) rmSync(archiveDir, { recursive: true, force: true });
   }
 
   const receiptHost = inspectHostDigest(validatedRef, run);
