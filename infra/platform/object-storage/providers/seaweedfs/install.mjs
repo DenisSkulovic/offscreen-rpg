@@ -1,4 +1,5 @@
 import process from 'node:process';
+import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import {
   readPlatformObject,
@@ -20,6 +21,14 @@ import {
 } from './observe.mjs';
 
 export const OBJECT_STORE_ADMIN_SECRET = 'object-store-s3';
+
+/** Generate independent S3-compatible credentials without external commands. */
+export function generateObjectStoreAdminCredentials() {
+  return {
+    accessKeyId: randomBytes(10).toString('hex'),
+    secretAccessKey: randomBytes(20).toString('hex'),
+  };
+}
 
 const LEGACY_OCCUPIED_HISTORY_REASON =
   'object-storage namespace exists without an object-store Helm release';
@@ -387,7 +396,10 @@ async function objectStorageCliMain(args) {
     return;
   }
 
-  const result = await ensureObjectStorage(profileId, { authorize: true });
+  const result = await ensureObjectStorage(profileId, {
+    authorize: true,
+    generateCredentials: generateObjectStoreAdminCredentials,
+  });
   process.stdout.write(`${JSON.stringify(result)}\n`);
   process.exitCode = result.ok ? 0 : 1;
 }
