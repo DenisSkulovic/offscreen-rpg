@@ -25,7 +25,7 @@ import {
   stopAfterUnknownConfirm,
   validateQueueName,
 } from './proof-host.mjs';
-import { main } from './proof.mjs';
+import { main, createKubectlProofRunner } from './proof.mjs';
 
 const BASELINE = {
   baselineUid: 'base-1',
@@ -519,4 +519,103 @@ test('queue receipt fsync failure creates zero publisher pods', async () => {
   assert.equal(result.ok, false);
   assert.equal(result.publisherCreates, 0);
   assert.equal(countPublisherCreates(runner), 0);
+});
+
+const SMOKE_LOG = 'SMOKE-PUBLISHED queue=amq.gen-test\nSMOKE-EMPTY\nMGMT-OK\nMETRICS-OK\n';
+
+async function exerciseSmoke(fault = '') {
+  const io = createMemoryIo();
+  const receiptPath = '/tmp/smoke-test/receipt.json';
+  const calls = [];
+  const runner = async op => {
+    calls.push(op);
+    const saved = JSON.parse(io.readBack(receiptPath) || '{}');
+    if (op.op === 'capture-identities') {
+      const changed = fault === 'identity' && calls.some(x => x.op === 'pod-create');
+      return { ok: true, identities: { ...BASELINE, crUid: changed ? 'replacement' : BASELINE.crUid } };
+    }
+    if (op.op === 'configmap-create' || op.op === 'pod-create') {
+      assert.equal(saved.phase, 'CREATE_INTENT');
+      assert.equal(saved.pendingFixture.name, op.name);
+      if (fault === 'unknown-create' && op.role === 'smoke') return { ok: false, lostResponse: true };
+      return { ok: true, uid: op.role + '-uid' };
+    }
+    if (op.op === 'pod-wait') {
+      assert.ok(Object.values(saved.fixtureUids).includes(op.uid));
+      return fault === 'terminal' ? { ok: false, reason: 'pod-terminal-failed' } : { ok: true };
+    }
+    if (op.op === 'pod-logs') return { ok: true, stdout: op.name.endsWith('-wrong-password')
+      ? (fault === 'auth' ? 'AUTH-INCONCLUSIVE\n' : 'AUTH-REFUSED 403\n')
+      : (fault === 'positive' ? 'MGMT-OK\n' : SMOKE_LOG) };
+    if (op.op === 'smoke-fixture-delete') {
+      assert.ok(['CLEANUP_INTENT', 'CLEANUP_PROGRESS'].includes(saved.phase));
+      assert.ok(Object.values(saved.fixtureUids).includes(op.uid));
+      assert.equal(saved.proofEvidence.negative, 'AUTH-REFUSED 403');
+      return { ok: fault !== 'cleanup' };
+    }
+    throw new Error('unexpected op ' + op.op);
+  };
+  const result = await runProofSupervisor({
+    mode: 'smoke', profile: 'dev', context: 'kind-offscreen-dev',
+    env: AUTH_ENV, runner, io, receiptDir: '/tmp/smoke-test', receiptPath,
+    receipt: initialReceipt({ mode: 'smoke', profile: 'dev', context: 'kind-offscreen-dev', runId: '0123456789abcdef' }),
+    runLive: true,
+  });
+  return { result, calls, receipt: JSON.parse(io.readBack(receiptPath)) };
+}
+
+test('smoke persists intent, exact UIDs, proof and cleanup before success', async () => {
+  const { result, calls, receipt } = await exerciseSmoke();
+  assert.equal(result.ok, true);
+  assert.equal(receipt.phase, 'smoke-complete');
+  assert.deepEqual(receipt.fixtureUids, { configmap: 'configmap-uid', smoke: 'smoke-uid', 'wrong-password': 'wrong-password-uid' });
+  assert.deepEqual(receipt.cleanedFixtures, ['smoke', 'wrong-password', 'configmap']);
+  assert.equal(receipt.outcome.ok, true);
+  assert.equal(calls.filter(x => x.op === 'smoke-fixture-delete').length, 3);
+});
+
+for (const [fault, reason] of [
+  ['unknown-create', 'fixture-create-unknown'],
+  ['terminal', 'pod-terminal-failed'],
+  ['positive', 'positive-markers-missing'],
+  ['auth', 'explicit-auth-refusal-missing'],
+  ['identity', 'identity-changed'],
+  ['cleanup', 'cleanup-unconfirmed'],
+]) {
+  test('smoke refuses false success on ' + fault, async () => {
+    const { result, calls, receipt } = await exerciseSmoke(fault);
+    assert.equal(result.ok, false);
+    assert.equal(result.reason, reason);
+    assert.equal(receipt.phase, 'RETAINED');
+    assert.equal(receipt.outcome.ok, false);
+    assert.equal(calls.filter(x => x.op === 'smoke-fixture-delete').length, fault === 'cleanup' ? 1 : 0);
+    if (fault === 'unknown-create') assert.equal(receipt.pendingFixture.role, 'smoke');
+  });
+}
+
+test('live identity adapter requests exact resource kinds, scope and names', async () => {
+  const calls = [];
+  const context = 'kind-offscreen-dev';
+  const ns = 'offscreen-dev-rabbitmq';
+  const runner = createKubectlProofRunner(context, ns, { run(command, args) {
+    calls.push([command, ...args]);
+    return { ok: true, stdout: 'uid-' + calls.length };
+  } });
+  assert.deepEqual(await runner({ op: 'capture-identities' }), {
+    ok: true, identities: { vhost: '/', namespaceUid: 'uid-1', crUid: 'uid-2', serviceUid: 'uid-3', secretUid: 'uid-4' },
+  });
+  const get = (kind, name, namespaced) => ['kubectl', '--context', context, ...(namespaced ? ['-n', ns] : []), 'get', kind, name, '-o', 'jsonpath={.metadata.uid}'];
+  assert.deepEqual(calls, [
+    get('namespace', ns, false),
+    get('rabbitmqclusters.rabbitmq.com', 'rabbitmq', true),
+    get('service', 'rabbitmq', true),
+    get('secret', 'rabbitmq-default-user', true),
+  ]);
+});
+
+test('live identity adapter refuses failed or empty UID observations', async () => {
+  for (const response of [{ ok: false, stdout: 'uid' }, { ok: true, stdout: ' ' }]) {
+    const runner = createKubectlProofRunner('kind-offscreen-dev', 'offscreen-dev-rabbitmq', { run: () => response });
+    assert.deepEqual(await runner({ op: 'capture-identities' }), { ok: false, reason: 'identity-read-namespaceUid' });
+  }
 });

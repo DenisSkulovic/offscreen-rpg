@@ -69,13 +69,21 @@ export function firstMismatch(expected, actual, path = '', quantities = new Set(
   return isDeepStrictEqual(expected, actual) ? null : path || '/';
 }
 
-export function expectedClusterSpec(profileId) {
+export function expectedClusterSpec(profileId, { historical = false } = {}) {
   if (!Object.hasOwn(references, profileId)) throw new Error('Unknown PostgreSQL profile');
-  return structuredClone(references[profileId]);
+  const spec = structuredClone(references[profileId]);
+  if (!historical) {
+    const initdb = spec.bootstrap.initdb;
+    initdb.postInitSQL = ['REVOKE CONNECT, TEMPORARY ON DATABASE "postgres" FROM PUBLIC;'];
+    initdb.postInitApplicationSQL = [profileId === 'dev'
+      ? 'REVOKE CONNECT, TEMPORARY ON DATABASE "dev" FROM PUBLIC;'
+      : 'REVOKE CONNECT, TEMPORARY ON DATABASE "lab" FROM PUBLIC;'];
+  }
+  return spec;
 }
 
 /** Ordinary ensure preserves any positive compatible live topology. */
-export function assessClusterSpec(profileId, actual, { exactInstances = false } = {}) {
+export function assessClusterSpec(profileId, actual, { exactInstances = false, freshAdmission = false } = {}) {
   const expected = expectedClusterSpec(profileId);
   if (!isRecord(actual)) return { ok: false, path: '/spec' };
   const instances = actual.instances;
@@ -83,6 +91,12 @@ export function assessClusterSpec(profileId, actual, { exactInstances = false } 
     return { ok: false, path: '/spec/instances' };
   if (!exactInstances) expected.instances = instances;
   const mismatch = firstMismatch(expected, actual, '', quantityPaths);
+  if (mismatch !== null && !freshAdmission) {
+    const historical = expectedClusterSpec(profileId, { historical: true });
+    if (!exactInstances) historical.instances = instances;
+    if (firstMismatch(historical, actual, '', quantityPaths) === null)
+      return { ok: true, instances };
+  }
   return mismatch === null
     ? { ok: true, instances }
     : { ok: false, path: '/spec' + mismatch };

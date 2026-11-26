@@ -66,4 +66,6 @@ spec:
       owner: {{ .Values.bootstrap.initdb.owner | quote }}
       localeCType: {{ .Values.bootstrap.initdb.localeCType | quote }}
       localeCollate: {{ .Values.bootstrap.initdb.localeCollate | quote }}
+      postInitSQL: {{ required "postInitSQL required" .Values.bootstrap.initdb.postInitSQL | toJson }}
+      postInitApplicationSQL: {{ required "postInitApplicationSQL required" .Values.bootstrap.initdb.postInitApplicationSQL | toJson }}
 {{- end -}}

@@ -152,7 +152,6 @@ function clearPendingDurable(path) {
  * @param {string} pendingPath
  */
 function readExistingPending(pendingPath) {
-  if (!existsSync(pendingPath)) return null;
   try {
     const stat = lstatSync(pendingPath);
     assertPrivate(stat, false);
@@ -162,7 +161,8 @@ function readExistingPending(pendingPath) {
     const body = readFileSync(pendingPath, 'utf8');
     JSON.parse(body);
     return { present: true };
-  } catch {
+  } catch (error) {
+    if (error.code === 'ENOENT') return null;
     return { malformed: true };
   }
 }
@@ -279,53 +279,69 @@ function identityAdoptAfterWrite(captured, next) {
  * @param {import('node:child_process').ChildProcess} child
  * @param {number} timeoutMs
  */
-function awaitBoundedChild(child, timeoutMs) {
+function awaitBoundedChild(child, timeoutMs, input) {
   return new Promise((resolve) => {
-    /** @type {Buffer[]} */
     const stdoutChunks = [];
-    /** @type {Buffer[]} */
     const stderrChunks = [];
-    child.stdout?.on('data', (chunk) => stdoutChunks.push(chunk));
-    child.stderr?.on('data', (chunk) => stderrChunks.push(chunk));
+    const maxOutputBytes = 4 * 1024 * 1024;
+    let outputBytes = 0;
+    let failed = false;
+    let timedOut = false;
+    let killTimer;
+    let closed = false;
 
-    let finished = false;
-    let killPhase = false;
-    const timer = setTimeout(() => {
-      killPhase = true;
+    function terminate() {
+      failed = true;
+      if (closed || killTimer !== undefined) return;
       child.kill('SIGTERM');
-      setTimeout(() => {
-        if (!finished) {
-          child.kill('SIGKILL');
-        }
+      killTimer = setTimeout(() => {
+        if (!closed) child.kill('SIGKILL');
       }, CHILD_KILL_GRACE_MS);
+    }
+
+    function collect(chunks, chunk) {
+      outputBytes += chunk.length;
+      if (outputBytes > maxOutputBytes) {
+        terminate();
+        return;
+      }
+      chunks.push(chunk);
+    }
+
+    child.stdout?.on('data', (chunk) => collect(stdoutChunks, chunk));
+    child.stderr?.on('data', (chunk) => collect(stderrChunks, chunk));
+    child.stdout?.on('error', terminate);
+    child.stderr?.on('error', terminate);
+    child.stdin?.on('error', terminate);
+    child.on('error', () => { failed = true; });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      terminate();
     }, timeoutMs);
-    child.on('exit', (status, signal) => {
-      finished = true;
+
+    // Exit alone does not guarantee that the output has been drained.
+    // Spawn errors also lead to close; never release custody on error alone.
+    child.once('close', (status, signal) => {
+      closed = true;
       clearTimeout(timer);
+      clearTimeout(killTimer);
+      const ok = status === 0 && !signal && !failed;
       resolve({
-        ok: status === 0 && !signal,
+        ok,
         status: status ?? null,
         signal: signal ?? null,
-        timedOut: killPhase && status !== 0,
-        unknown: signal != null || killPhase,
-        stdout: Buffer.concat(stdoutChunks).toString('utf8'),
-        stderr: Buffer.concat(stderrChunks).toString('utf8'),
+        timedOut,
+        unknown: failed || signal != null,
+        stdout: ok ? Buffer.concat(stdoutChunks).toString('utf8') : '',
+        stderr: ok ? Buffer.concat(stderrChunks).toString('utf8') : '',
       });
     });
-    child.on('error', (error) => {
-      finished = true;
-      clearTimeout(timer);
-      resolve({
-        ok: false,
-        status: null,
-        signal: null,
-        timedOut: false,
-        unknown: true,
-        error: error.message,
-        stdout: Buffer.concat(stdoutChunks).toString('utf8'),
-        stderr: Buffer.concat(stderrChunks).toString('utf8'),
-      });
-    });
+
+    try {
+      child.stdin?.end(input);
+    } catch {
+      terminate();
+    }
   });
 }
 
@@ -623,7 +639,7 @@ export async function withObjectStorageMutation(
      * @param {string[]} args
      * @param {{ input?: string, timeoutMs?: number }} [options]
      */
-    const runWrite = async (command, args, options = {}) => {
+    const executeWrite = async (command, args, options = {}) => {
       if (!mutationCommands.includes(command)) {
         throw new Error('Object storage mutation command refused');
       }
@@ -668,18 +684,14 @@ export async function withObjectStorageMutation(
         stdio: ['pipe', 'pipe', 'pipe', lockFd],
         windowsHide: true,
       });
-      if (options.input != null) {
-        child.stdin?.write(options.input);
-      }
-      child.stdin?.end();
-      const result = await awaitBoundedChild(child, timeoutMs);
+      const result = await awaitBoundedChild(child, timeoutMs, options.input);
       if (!result.ok || result.unknown) {
         throw new Error('Object storage native write incomplete or unknown');
       }
 
       const afterWrite = await readIdentity(profileId);
       if (afterWrite.state !== 'known' || !afterWrite.identity) {
-        throw new Error('Object storage identity unknown after write');
+        throw new Error(`Object storage identity unknown after write: ${afterWrite.reason ?? 'unclassified'}`);
       }
       if (
         !identityAdoptAfterWrite(
@@ -692,13 +704,35 @@ export async function withObjectStorageMutation(
       return result;
     };
 
-    const outcome = await operation({
-      runWrite,
-      remaining,
-      identity: captured,
-      profileId,
-    });
-    operationOk = outcome?.ok === true;
+    // The callback receives a scoped, sequential capability. Even a caller
+    // that catches a failed write cannot turn it into a successful receipt.
+    let active = true;
+    let inFlight = null;
+    let writeFailed = false;
+    const runWrite = (command, args, options = {}) => {
+      if (!active || inFlight || writeFailed) {
+        writeFailed = true;
+        throw new Error('Object storage write outside active sequential custody');
+      }
+      const task = executeWrite(command, args, options);
+      inFlight = task;
+      task.then(
+        () => { inFlight = null; },
+        () => { writeFailed = true; inFlight = null; },
+      );
+      return task;
+    };
+    let outcome;
+    try {
+      outcome = await operation({ runWrite, remaining, identity: captured, profileId });
+    } finally {
+      active = false;
+      if (inFlight) {
+        writeFailed = true;
+        await inFlight.catch(() => {});
+      }
+    }
+    operationOk = outcome?.ok === true && !writeFailed;
     if (!operationOk) {
       throw new Error('Object storage mutation reported incomplete');
     }

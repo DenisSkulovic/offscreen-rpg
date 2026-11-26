@@ -258,7 +258,7 @@ export function ensureBaseline(profileId, deps = {}) {
       { input: JSON.stringify(probe), timeoutMs: 30000 }));
     if (!admitted || admitted.kind !== 'Cluster' || admitted.apiVersion !== probe.apiVersion ||
       admitted.metadata?.name !== probe.metadata.name || admitted.metadata?.namespace !== probe.metadata.namespace ||
-      !assessClusterSpec(profileId, admitted.spec, { exactInstances: true }).ok)
+      !assessClusterSpec(profileId, admitted.spec, { exactInstances: true, freshAdmission: true }).ok)
       return refuse('admission-probe-failed', 'Trusted Cluster admission reference mismatch');
     actions.push({ op: 'verify-admission', outcome: 'ready' });
 

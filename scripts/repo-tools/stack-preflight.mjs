@@ -106,7 +106,7 @@ export function resourceProfileFromPins() {
 
 /**
  * @param {StackPreflightProbes} probes
- * @param {{ requireHelm?: boolean }} [options]
+ * @param {{ requireHelm?: boolean, createAbsentRelease?: boolean }} [options]
  * @returns {{ ok: boolean, refusals: StackPreflightRefusal[], profile: ReturnType<typeof resourceProfileFromPins> }}
  */
 export function runStackPreflight(probes, options = {}) {
@@ -135,7 +135,9 @@ export function runStackPreflight(probes, options = {}) {
 
   const ownedExists = probes.ownedClusterExists === true;
   const ctx = probes.currentContext === undefined ? null : probes.currentContext;
-  if (ctx !== null && ctx !== '' && ctx !== CONTEXT_NAME) {
+  // Only the explicit absent-cluster creation path may preserve a different current context.
+  const creatingAbsentRelease = options.createAbsentRelease === true && probes.ownedClusterExists === false;
+  if (!creatingAbsentRelease && ctx !== null && ctx !== '' && ctx !== CONTEXT_NAME) {
     refusals.push({
       id: 'foreign-context',
       message: `Refusing: current kubectl context is "${ctx}", not ${CONTEXT_NAME}.`,

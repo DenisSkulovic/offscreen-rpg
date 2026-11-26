@@ -10,6 +10,7 @@ import {
   createDevS3LiveAdapter,
   parseCredentials,
   parseWeedBucketList,
+  parseWeedPolicyInventory,
   parseWeedUserList,
   parseWeedUserShow,
 } from '../src/adapters/dev-s3-tenant-live-adapter.mjs';
@@ -82,6 +83,7 @@ test('prefix collision keeps dev-1 distinct from dev-10', () => {
   const exec = (command, args, input) => {
     if (String(input).includes('s3.bucket.list'))
       return WEED_BUCKET_LIST_FIXTURE;
+    if (String(input).includes('s3.user.list')) return WEED_USER_LIST_FIXTURE;
     if (String(input).includes('s3.user.show -name dev-1')) {
       return JSON.stringify({
         name: 'dev-1',
@@ -101,7 +103,7 @@ test('prefix collision keeps dev-1 distinct from dev-10', () => {
   assert.equal(adapter.user('dev-2'), null);
 });
 
-test('provision stores the secret with create and the receipt has only a uid', () => {
+test('provision stores the secret with create and the receipt has only a uid', async () => {
   const calls = [];
   const exec = (command, args, input) => {
     calls.push({ command, args, input });
@@ -133,7 +135,7 @@ test('provision stores the secret with create and the receipt has only a uid', (
     return '';
   };
   const adapter = createDevS3LiveAdapter({ exec });
-  const created = adapter.provisionUser({
+  const created = await adapter.provisionUser({
     slotId: 'dev-1',
     bucket: 'offscreen-dev-1',
     user: 'dev-1',
@@ -158,7 +160,7 @@ test('provision stores the secret with create and the receipt has only a uid', (
   );
 });
 
-test('credential create conflicts refuse with an actionable retry message', () => {
+test('credential create conflicts refuse with an actionable retry message', async () => {
   const exec = (command, args, input) => {
     const joined = args.join(' ');
     if (String(input).includes('s3.user.provision'))
@@ -173,7 +175,7 @@ test('credential create conflicts refuse with an actionable retry message', () =
     return '';
   };
   const adapter = createDevS3LiveAdapter({ exec });
-  assert.throws(
+  await assert.rejects(
     () =>
       adapter.provisionUser({
         slotId: 'dev-1',
@@ -195,6 +197,7 @@ test('existing tenant reuse retains the secret uid without recreating credential
     if (String(input).includes('s3.bucket.list')) {
       return ` ${names.bucket}\tsize:0\tlogical:0\tchunk:0\towner:"${names.user}"\n`;
     }
+    if (String(input).includes('s3.user.list')) return JSON.stringify([{ name: names.user }]);
     if (String(input).includes(`s3.user.show -name ${names.user}`)) {
       return JSON.stringify({
         name: names.user,
@@ -207,10 +210,10 @@ test('existing tenant reuse retains the secret uid without recreating credential
       });
     }
     if (String(input).includes('s3.policy -list')) {
-      return `"${names.policyName}"\n`;
+      return `Name: ${names.policyName}\nContent: ${policyDoc}\n---\n`;
     }
     if (String(input).includes('s3.policy -get')) return policyDoc;
-    if (String(input).includes('s3.user.list -groups')) return '[]';
+    if (String(input).includes('s3.group.list')) return '[]';
     if (
       joined.includes(`get secret ${names.secret}`) &&
       joined.includes('--ignore-not-found')
@@ -288,9 +291,10 @@ test('partial secret state refuses before bucket creation with zero writes', asy
     calls.push({ args, input });
     const joined = args.join(' ');
     if (String(input).includes('s3.bucket.list')) return '';
+    if (String(input).includes('s3.user.list')) return '[]';
     if (String(input).includes('s3.user.show')) return '';
     if (String(input).includes('s3.policy -list')) return '';
-    if (String(input).includes('s3.user.list -groups')) return '[]';
+    if (String(input).includes('s3.group.list')) return '[]';
     if (
       joined.includes(`get secret ${names.secret}`) &&
       joined.includes('--ignore-not-found')
@@ -361,4 +365,35 @@ test('user show without status or source is not treated as an enabled dynamic us
   assert.equal(shown.enabled, false);
   assert.equal(shown.source, '');
   assert.equal(shown.credentials[0]?.status ?? '', '');
+});
+
+ test('missing user is established by successful inventory, never targeted NotFound', () => {
+  const adapter = createDevS3LiveAdapter({ exec: (_command, _args, input) => {
+    if (String(input).includes('s3.user.list')) return '[]';
+    throw new Error('unexpected detail call');
+  } });
+  assert.equal(adapter.user('dev-1'), null);
+  assert.throws(() => parseWeedUserList(''));
+  assert.throws(() => parseWeedUserList('[{}]'));
+});
+
+test('policy inventory reads actual Name/Content records and rejects malformed output', () => {
+  const doc = JSON.stringify(expectedTenantPolicy('offscreen-dev-1'));
+  const record = `Name: offscreen-dev-1-dev-1-readwrite\nContent: ${doc}\n---\n`;
+  assert.deepEqual(parseWeedPolicyInventory(record), ['offscreen-dev-1-dev-1-readwrite']);
+  assert.deepEqual(parseWeedPolicyInventory(''), []);
+  assert.throws(() => parseWeedPolicyInventory(record + record));
+  assert.throws(() => parseWeedPolicyInventory('unexpected output'));
+});
+
+
+test('mixed malformed and duplicate bucket inventories refuse', () => {
+  assert.throws(() => parseWeedBucketList(WEED_BUCKET_LIST_FIXTURE + ' stray-bucket\towner:dev-1\n'));
+  assert.throws(() => parseWeedBucketList(WEED_BUCKET_LIST_FIXTURE + WEED_BUCKET_LIST_FIXTURE));
+});
+
+test('ordinary live adapter cannot invoke a write outside custody', async () => {
+  const adapter = createDevS3LiveAdapter();
+  await assert.rejects(() => adapter.createBucket(deriveDevS3Tenant('dev-1')), /requires provider custody/);
+  await assert.rejects(() => adapter.provisionUser(deriveDevS3Tenant('dev-1')), /requires provider custody/);
 });

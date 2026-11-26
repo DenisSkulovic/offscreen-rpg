@@ -1185,13 +1185,14 @@ test('up cold dev path invokes dev-cli ensure when cluster is absent', () => {
   const result = runInfraUp({
     profileId: 'dev',
     services: 'none',
-    run: () => ({ ok: true, stdout: '' }),
+    run: (command, args) => devWarmRun(runnerCalls.length > 0)(command, args),
     runner: (argv) => {
       runnerCalls.push(argv);
       return { ok: true, status: 0 };
     },
   });
   assert.equal(result.ok, true);
+  assert.deepEqual(result.ran, ['cluster-ensure', 'cluster-verify']);
   assert.deepEqual(runnerCalls, [[execPath, DEV_CLUSTER_CLI, 'ensure']]);
 });
 
@@ -1219,13 +1220,14 @@ test('up cold release path invokes up.sh when cluster is absent', () => {
   const result = runInfraUp({
     profileId: 'release',
     services: 'none',
-    run: () => ({ ok: true, stdout: '' }),
+    run: (command, args) => releaseWarmRun(runnerCalls.length > 0)(command, args),
     runner: (argv) => {
       runnerCalls.push(argv);
       return { ok: true, status: 0 };
     },
   });
   assert.equal(result.ok, true);
+  assert.deepEqual(result.ran, ['cluster-ensure', 'cluster-verify']);
   assert.deepEqual(runnerCalls, [['bash', RELEASE_CLUSTER_UP]]);
 });
 
@@ -1248,6 +1250,28 @@ test('up warm release with services skips up.sh', () => {
   );
   assert.deepEqual(result.ran, ['cluster-verify']);
 });
+
+for (const profileId of ['dev', 'release']) {
+  test(`up cold ${profileId} refuses an unready foundation before platform ensure`, () => {
+    const healthy = profileId === 'dev' ? devWarmRun : releaseWarmRun;
+    const calls = [];
+    const result = runInfraUp({
+      profileId,
+      services: 'core',
+      run: (command, args) =>
+        command === 'kubectl' && args.includes('nodes')
+          ? { ok: true, stdout: JSON.stringify({ items: [] }) }
+          : healthy(calls.length > 0)(command, args),
+      runner: (argv) => {
+        calls.push(argv);
+        return { ok: true, status: 0 };
+      },
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.phase, 'cluster-verify');
+    assert.equal(calls.length, 1);
+  });
+}
 
 test('up cluster ensure failure stops before platform calls', () => {
   /** @type {string[][]} */
@@ -1842,4 +1866,69 @@ test('rabbitmq observer maps unreadable inventory to unreadable service state', 
       'unreadable',
     );
   }
+});
+
+for (const profileId of ['dev', 'release']) {
+  for (const outcome of ['converges', 'wait-fails', 'still-unready']) {
+    test(`cold ${profileId} node readiness: ${outcome}`, () => {
+      const healthy = profileId === 'dev' ? devWarmRun : releaseWarmRun;
+      const creates = [];
+      const waits = [];
+      let reads = 0;
+      const result = runInfraUp({
+        profileId, services: 'none',
+        runner: argv => { creates.push(argv); return { ok: true, status: 0 }; },
+        run: (command, args, options) => {
+          if (command === 'kubectl' && args.includes('nodes')) {
+            if (args.includes('wait')) {
+              waits.push({ args, options });
+              return { ok: outcome !== 'wait-fails' };
+            }
+            reads++;
+            return { ok: true, stdout: JSON.stringify({ items: [
+              { status: { conditions: [{ type: 'Ready', status: reads > 1 && outcome === 'converges' ? 'True' : 'False' }] } },
+            ] }) };
+          }
+          return healthy(creates.length > 0)(command, args);
+        },
+      });
+      assert.equal(result.ok, outcome === 'converges');
+      assert.equal(creates.length, 1);
+      assert.equal(waits.length, 1);
+      assert.deepEqual(waits[0], {
+        args: ['--context', 'kind-offscreen-' + profileId, 'wait', '--for=condition=Ready', 'nodes', '--all', '--timeout=120s'],
+        options: { timeoutMs: 125000 },
+      });
+      assert.equal(reads, outcome === 'wait-fails' ? 1 : 2);
+    });
+  }
+}
+
+test('cold release waits for storage availability and reobserves', () => {
+  let created = false;
+  let reads = 0;
+  let waits = 0;
+  const result = runInfraUp({
+    profileId: 'release', services: 'none',
+    runner: () => { created = true; return { ok: true, status: 0 }; },
+    run: (command, args, options) => {
+      if (command === 'kubectl' && args.some(x => x.includes('local-path-provisioner'))) {
+        if (args.includes('wait')) {
+          waits++;
+          assert.equal(options.timeoutMs, 125000);
+          assert.ok(args.includes('--timeout=120s'));
+          return { ok: true };
+        }
+        reads++;
+        return { ok: true, stdout: JSON.stringify({
+          metadata: { name: 'local-path-provisioner', namespace: 'local-path-storage' },
+          status: { conditions: [{ type: 'Available', status: reads > 1 ? 'True' : 'False' }] },
+        }) };
+      }
+      return releaseWarmRun(created)(command, args);
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(reads, 2);
+  assert.equal(waits, 1);
 });

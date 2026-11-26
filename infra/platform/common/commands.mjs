@@ -85,7 +85,7 @@ function assertResourceType(value, field) {
  */
 function isClusterScopedRead(resource) {
   const lower = resource.toLowerCase();
-  return ['namespace', 'namespaces', 'ns', 'customresourcedefinition', 'customresourcedefinitions', 'crd', 'crds', 'customresourcedefinition.apiextensions.k8s.io', 'clusterrole.rbac.authorization.k8s.io', 'clusterrolebinding.rbac.authorization.k8s.io', 'mutatingwebhookconfiguration.admissionregistration.k8s.io', 'validatingwebhookconfiguration.admissionregistration.k8s.io'].includes(lower);
+  return ['namespace', 'namespaces', 'ns', 'pv', 'persistentvolume', 'persistentvolumes', 'customresourcedefinition', 'customresourcedefinitions', 'crd', 'crds', 'customresourcedefinition.apiextensions.k8s.io', 'customresourcedefinitions.apiextensions.k8s.io', 'clusterrole.rbac.authorization.k8s.io', 'clusterroles.rbac.authorization.k8s.io', 'clusterrolebinding.rbac.authorization.k8s.io', 'clusterrolebindings.rbac.authorization.k8s.io', 'mutatingwebhookconfiguration.admissionregistration.k8s.io', 'mutatingwebhookconfigurations.admissionregistration.k8s.io', 'validatingwebhookconfiguration.admissionregistration.k8s.io', 'validatingwebhookconfigurations.admissionregistration.k8s.io'].includes(lower);
 }
 
 /**
@@ -98,7 +98,14 @@ export function readPlatformObject(
 ) {
   const profile = readPlatformProfile(profileId);
   assertResourceType(resource, 'resource');
-  assertIdentifier(name, 'name');
+  const rbacResource = /^(?:clusterroles?|clusterrolebindings?|roles?|rolebindings?)(?:\.rbac\.authorization\.k8s\.io)?$/.test(resource);
+  if (rbacResource && typeof name === 'string' && name.includes(':')) {
+    if (name.length > 253 || !name.split(':').every(part => DNS_LABEL.test(part))) {
+      throw new Error('invalid name');
+    }
+  } else {
+    assertIdentifier(name, 'name');
+  }
 
   const clusterScoped = isClusterScopedRead(resource);
   if (!clusterScoped) {

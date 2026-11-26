@@ -1,4 +1,6 @@
 import { spawnSync } from 'node:child_process';
+import { withObjectStorageMutation } from '../../../../infra/platform/object-storage/providers/seaweedfs/mutation-guard.mjs';
+import { runPlatformCommand } from '../../../../infra/platform/common/commands.mjs';
 import {
   DEV_S3_CONTEXT,
   DEV_S3_IMAGE,
@@ -8,6 +10,7 @@ import {
   DEV_S3_SECRET,
 } from '../../../../infra/platform/object-storage/dev-bootstrap.mjs';
 import { parsePolicyDocumentStrict } from '../../../../infra/platform/object-storage/providers/seaweedfs/provision.mjs';
+import { observeDevS3Sdk } from '../../../../infra/platform/object-storage/providers/seaweedfs/live-sdk.mjs';
 import { deriveDevS3Tenant } from './dev-s3-tenant.mjs';
 
 const TRANSPORT_TIMEOUT_MS = 60_000;
@@ -28,7 +31,8 @@ function run(command, args, input) {
   if (result.status !== 0) {
     const error = new Error('s3 transport failed');
     error.code = 's3-transport-failed';
-    error.stderr = `${result.stderr ?? ''}`;
+    // Retain only the conflict classification, never subprocess diagnostics.
+    error.stderr = /AlreadyExists|already exists/i.test(result.stderr ?? '') ? 'AlreadyExists' : '';
     throw error;
   }
   return `${result.stdout ?? ''}${result.stderr ?? ''}`;
@@ -88,7 +92,7 @@ function readPresentSecret(body, name) {
   }
   const owner = body.metadata.labels?.['offscreen.dev/owner'] ?? null;
   if (owner !== DEV_S3_OWNER) {
-    return { name, uid, owner };
+    throw new Error('foreign tenant secret');
   }
   const slot = body.metadata.labels?.['offscreen.dev/slot'];
   if (slot !== expectedSlotFromSecretName(name)) {
@@ -158,7 +162,7 @@ export function parseWeedBucketList(text) {
     if (ownerMatch) owner = ownerMatch[1];
     entries.push({ name: match[1], owner });
   }
-  if (rejected && entries.length === 0) {
+  if (rejected || new Set(entries.map((entry) => entry.name)).size !== entries.length) {
     const error = new Error('weed bucket list format is not recognized');
     error.code = 'weed-list-unreadable';
     throw error;
@@ -166,9 +170,23 @@ export function parseWeedBucketList(text) {
   return entries;
 }
 
-export function parseWeedUserList(text) {
+export function parseWeedPolicyInventory(text) {
   const source = String(text ?? '').trim();
   if (!source) return [];
+  const names = [];
+  for (const record of source.split(/^---\s*$/m)) {
+    if (!record.trim()) continue;
+    const match = /^Name: ([a-zA-Z0-9_.-]+)\s*\nContent: (\{[^\n]*\})\s*$/.exec(record.trim());
+    if (!match || names.includes(match[1])) throw new Error('weed policy inventory malformed');
+    parsePolicyDocumentStrict(match[2]);
+    names.push(match[1]);
+  }
+  return names;
+}
+
+export function parseWeedUserList(text) {
+  const source = String(text ?? '').trim();
+  if (!source) throw new Error('weed user inventory missing');
   const start = source.indexOf('[');
   if (start < 0) {
     const error = new Error('weed user list format is not recognized');
@@ -188,9 +206,10 @@ export function parseWeedUserList(text) {
     error.code = 'weed-list-unreadable';
     throw error;
   }
-  return parsed
-    .map((item) => item?.name)
-    .filter((name) => typeof name === 'string' && name.length > 0);
+  const names = parsed.map(item => item?.name);
+  if (names.some(name => typeof name !== 'string' || !name) ||
+      new Set(names).size !== names.length) throw new Error('weed inventory malformed');
+  return names;
 }
 
 /**
@@ -262,7 +281,7 @@ function parseCredentials(text) {
   return null;
 }
 
-function storeSecret(exec, names, credentials) {
+async function storeSecret(exec, names, credentials, write) {
   const manifest = {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -281,7 +300,7 @@ function storeSecret(exec, names, credentials) {
     },
   };
   try {
-    kubectl(['create', '-f', '-'], JSON.stringify(manifest), exec);
+    await write('kubectl', ['--context', DEV_S3_CONTEXT, 'create', '-f', '-'], JSON.stringify(manifest));
   } catch (error) {
     if (String(error.stderr ?? '').match(/AlreadyExists|already exists/i)) {
       const conflict = new Error(
@@ -302,11 +321,48 @@ function storeSecret(exec, names, credentials) {
   return { secret: retained.name, uid: retained.uid };
 }
 
-export function createDevS3LiveAdapter({
+export function createDevS3LiveAdapter(options = {}) {
+  const adapter = createAdapter(options);
+  return {
+    ...adapter,
+    async withCustody(operation) {
+      if (options.exec && options.exec !== run) return operation(adapter);
+      let attempted = false;
+      try {
+        let outcome;
+        await withObjectStorageMutation('dev', async ({ runWrite, identity }) => {
+          if (!identity.targetNamespaceUid || !identity.podUid || !identity.pvcUid || !identity.pvUid) {
+            throw new Error('incomplete provider identity');
+          }
+          const scoped = createAdapter(options, async (command, args, input) => {
+            attempted = true;
+            const result = await runWrite(command, args, { input, timeoutMs: TRANSPORT_TIMEOUT_MS });
+            return result.stdout + result.stderr;
+          });
+          outcome = await operation(scoped);
+          // A read-only refusal is a completed observation, not a completed write.
+          return { ok: outcome.ok || !attempted };
+        }, { run: runPlatformCommand });
+        return outcome;
+      } catch {
+        return {
+          ok: false,
+          mutated: attempted,
+          refusals: [{ id: 'tenant-unknown', detail: 'provider custody refused or incomplete; inspect pending receipt' }],
+        };
+      }
+    },
+  };
+}
+
+function createAdapter({
   exec = run,
   headBucket: headBucketProbe,
   bucketPolicies: bucketPoliciesProbe,
-} = {}) {
+} = {}, guardedWrite) {
+  const write = guardedWrite ?? (exec !== run ? exec : () => {
+    throw new Error('S3 write requires provider custody');
+  });
   return {
     identity() {
       const deploy = JSON.parse(
@@ -354,9 +410,11 @@ export function createDevS3LiveAdapter({
       return found ? { owner: found.owner, name: found.name } : null;
     },
     user(name) {
+      const inventory = parseWeedUserList(weed('s3.user.list\nexit\n', exec));
+      if (!inventory.includes(name)) return null;
       const text = weed(`s3.user.show -name ${name}\nexit\n`, exec);
       const shown = parseWeedUserShow(text);
-      if (!shown || shown.name !== name) return null;
+      if (!shown || shown.name !== name) throw new Error('weed user detail mismatch');
       return { owner: name, ...shown };
     },
     secret(name) {
@@ -364,13 +422,13 @@ export function createDevS3LiveAdapter({
       if (!body) return null;
       return readPresentSecret(body, name);
     },
-    createBucket(names) {
-      weed(`s3.bucket.create -name ${names.bucket}\nexit\n`, exec);
+    async createBucket(names) {
+      await weed(`s3.bucket.create -name ${names.bucket}\nexit\n`, write);
     },
-    provisionUser(names) {
-      const output = weed(
+    async provisionUser(names) {
+      const output = await weed(
         `s3.user.provision -name ${names.user} -bucket ${names.bucket} -role readwrite\nexit\n`,
-        exec,
+        write,
       );
       const credentials = parseCredentials(output);
       if (!credentials) {
@@ -378,12 +436,13 @@ export function createDevS3LiveAdapter({
         error.code = 'credential-capture-failed';
         throw error;
       }
-      return storeSecret(exec, names, credentials);
+      const retained = await storeSecret(exec, names, credentials, write);
+      await weed(`s3.bucket.owner -name ${names.bucket} -owner ${names.user}\nexit\n`, write);
+      return retained;
     },
     policyInventory() {
       const text = weed('s3.policy -list\nexit\n', exec);
-      const matches = String(text ?? '').match(/"([^"]+)"/g) ?? [];
-      return matches.map((item) => item.replaceAll('"', ''));
+      return parseWeedPolicyInventory(text);
     },
     policyDocument(names) {
       const text = weed(
@@ -412,12 +471,12 @@ export function createDevS3LiveAdapter({
       return null;
     },
     groupsEmpty() {
-      const text = weed('s3.user.list -groups\nexit\n', exec);
+      const text = weed('s3.group.list\nexit\n', exec);
       if (/unavailable|not found|error/i.test(text)) return null;
       const parsed = parseWeedUserList(text);
       return parsed.length === 0;
     },
-    readObservation(slotNames) {
+    async readObservation(slotNames) {
       const names = slotNames.policyName
         ? slotNames
         : deriveDevS3Tenant(slotNames.slotId ?? slotNames);
@@ -433,7 +492,8 @@ export function createDevS3LiveAdapter({
         unreadable: true,
       };
       try {
-        const bucket = this.bucket(names.bucket);
+        const buckets = parseWeedBucketList(weed('s3.bucket.list\nexit\n', exec));
+        const bucket = buckets.find(entry => entry.name === names.bucket) ?? null;
         const user = this.user(names.user);
         const secretObj = readSecretObject(exec, names.secret);
         let secret = null;
@@ -451,17 +511,22 @@ export function createDevS3LiveAdapter({
             accessKeyId: decodedAccess,
           };
         }
-        return {
+        const policyInventory = this.policyInventory();
+        const observation = {
           bucket: bucket ? { name: names.bucket, owner: bucket.owner } : null,
           user,
-          policyInventory: this.policyInventory(),
-          policyDocument: this.policyDocument(names),
+          policyInventory,
+          policyDocument: policyInventory.includes(names.policyName) ? this.policyDocument(names) : null,
           groupsEmpty: this.groupsEmpty(),
           secret,
           bucketPolicies: this.bucketPolicies(),
-          headBucket: this.headBucket(names),
+          headBucket: secret ? this.headBucket(names) : null,
           unreadable: false,
         };
+        if (exec === run) {
+          Object.assign(observation, await observeDevS3Sdk(names, observation, buckets.map(entry => entry.name)));
+        }
+        return observation;
       } catch {
         return unreadable;
       }

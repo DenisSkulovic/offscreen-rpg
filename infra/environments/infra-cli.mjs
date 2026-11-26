@@ -325,45 +325,39 @@ export function inventoryKindClusters(run) {
  * @param {InfraProfileId} profileId
  * @param {typeof runPlatformCommand} run
  */
-export function verifyClusterNodesReady(profileId, run) {
+export function verifyClusterNodesReady(profileId, run, { wait = false } = {}) {
   const profile = readPlatformProfile(profileId);
-  const result = run('kubectl', [
-    '--context',
-    profile.contextName,
-    'get',
-    'nodes',
-    '-o',
-    'json',
-  ]);
-  if (!result.ok) {
-    throw new Error('cluster nodes are unreadable');
+  const observe = () => {
+    const result = run('kubectl', [
+      '--context', profile.contextName, 'get', 'nodes', '-o', 'json',
+    ]);
+    if (!result.ok) throw new Error('cluster nodes are unreadable');
+    let body;
+    try { body = JSON.parse(result.stdout ?? '{}'); }
+    catch { throw new Error('cluster nodes response is malformed'); }
+    const items = Array.isArray(body.items) ? body.items : [];
+    if (items.length === 0) throw new Error('cluster has no nodes');
+    return items.every(node => node.status?.conditions?.some(
+      condition => condition.type === 'Ready' && condition.status === 'True',
+    ));
+  };
+  if (observe()) return;
+  if (wait) {
+    const result = run('kubectl', [
+      '--context', profile.contextName, 'wait', '--for=condition=Ready',
+      'nodes', '--all', '--timeout=120s',
+    ], { timeoutMs: 125_000 });
+    if (!result.ok) throw new Error('cluster node readiness wait failed');
+    if (observe()) return;
   }
-  let body;
-  try {
-    body = JSON.parse(result.stdout ?? '{}');
-  } catch {
-    throw new Error('cluster nodes response is malformed');
-  }
-  const items = Array.isArray(body.items) ? body.items : [];
-  if (items.length === 0) {
-    throw new Error('cluster has no nodes');
-  }
-  for (const node of items) {
-    const conditions = Array.isArray(node.status?.conditions)
-      ? node.status.conditions
-      : [];
-    const ready = conditions.find((item) => item?.type === 'Ready');
-    if (ready?.status !== 'True') {
-      throw new Error('cluster node is not Ready');
-    }
-  }
+  throw new Error('cluster node is not Ready');
 }
 
 /**
  * @param {typeof runPlatformCommand} run
  * @param {string} contextName
  */
-export function verifyReleaseLocalPathProvisioner(run, contextName) {
+export function verifyReleaseLocalPathProvisioner(run, contextName, { wait = false } = {}) {
   if (typeof contextName !== 'string' || contextName.length === 0) {
     throw new Error('release context is required');
   }
@@ -389,6 +383,11 @@ export function verifyReleaseLocalPathProvisioner(run, contextName) {
     : [];
   const available = conditions.find((item) => item?.type === 'Available');
   if (available?.status !== 'True') {
+    if (wait) {
+      const result = run('kubectl', ['--context', contextName, '-n', 'local-path-storage', 'wait', '--for=condition=Available', 'deployment/local-path-provisioner', '--timeout=120s'], { timeoutMs: 125_000 });
+      if (!result.ok) throw new Error('local-path provisioner readiness wait failed');
+      return verifyReleaseLocalPathProvisioner(run, contextName);
+    }
     throw new Error('local-path provisioner is not Available');
   }
 }
@@ -668,6 +667,7 @@ export function runInfraUp(input) {
   );
   if (!selection.ok) {
     return {
+      contextName: profile.contextName,
       ok: false,
       exitCode: 2,
       phase: 'selection',
@@ -692,6 +692,7 @@ export function runInfraUp(input) {
     progressReporter?.phaseFail('cluster-inventory');
     process.stderr.write(`cluster inventory: ${inventory.reason}\n`);
     return {
+      contextName: profile.contextName,
       ok: false,
       exitCode: 1,
       phase: 'cluster-inventory',
@@ -723,6 +724,7 @@ export function runInfraUp(input) {
       progressReporter?.phaseFail('cluster-ensure');
       process.stderr.write('cluster ensure failed\n');
       return {
+        contextName: profile.contextName,
         ok: false,
         exitCode: result.status ?? 1,
         phase: 'cluster-ensure',
@@ -730,32 +732,35 @@ export function runInfraUp(input) {
       };
     }
     progressReporter?.phaseOk('cluster-ensure');
-  } else {
-    progressReporter?.phaseStart('cluster-verify');
-    try {
-      assertPlatformTarget(input.profileId, { run });
-      verifyClusterNodesReady(input.profileId, run);
-      if (input.profileId === 'release') {
-        verifyReleaseLocalPathProvisioner(run, profile.contextName);
-      }
-      progressReporter?.phaseOk('cluster-verify');
-      clusterPhases.push('cluster-verify');
-    } catch (error) {
-      progressReporter?.phaseFail('cluster-verify');
-      const message = error instanceof Error ? error.message : String(error);
-      process.stderr.write(`${message}\n`);
-      return {
-        ok: false,
-        exitCode: 1,
-        phase: 'cluster-verify',
-        message,
-        ran: clusterPhases,
-      };
+  }
+
+  progressReporter?.phaseStart('cluster-verify');
+  try {
+    assertPlatformTarget(input.profileId, { run });
+    verifyClusterNodesReady(input.profileId, run, { wait: !clusterPresent });
+    if (input.profileId === 'release') {
+      verifyReleaseLocalPathProvisioner(run, profile.contextName, { wait: !clusterPresent });
     }
+    if (!clusterPresent) assertPlatformTarget(input.profileId, { run });
+    progressReporter?.phaseOk('cluster-verify');
+    clusterPhases.push('cluster-verify');
+  } catch (error) {
+    progressReporter?.phaseFail('cluster-verify');
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`${message}\n`);
+    return {
+      contextName: profile.contextName,
+      ok: false,
+      exitCode: 1,
+      phase: 'cluster-verify',
+      message,
+      ran: clusterPhases,
+    };
   }
 
   if (selection.selected.length === 0) {
     return {
+      contextName: profile.contextName,
       ok: true,
       exitCode: 0,
       phase: 'cluster-ready',
@@ -780,11 +785,13 @@ export function runInfraUp(input) {
 
   if (!receipt.ok) {
     const refusal = receipt.refusals[0];
-    const message = refusal?.message ?? 'platform ensure failed';
+    const failedPhase = receipt.phases.find((phase) => !phase.ok)?.id;
+    const message = refusal?.id ? `platform ensure refused: ${refusal.id}` : `platform ensure failed: ${failedPhase ?? 'unknown phase'}`;
     process.stderr.write(`${message}\n`);
   }
 
   return {
+    contextName: profile.contextName,
     ok: receipt.ok,
     exitCode: receipt.exitCode,
     phase: receipt.ok ? 'complete' : 'platform-ensure',

@@ -150,9 +150,14 @@ class AmqpWire:
                 continue
             if frame_type != 1:
                 raise ProtocolFailure("unexpected-frame-type")
-            if expect_channel is not None and channel != expect_channel:
-                raise ProtocolFailure("wrong-channel")
+            if len(payload) < 4:
+                raise ProtocolFailure("method-truncated")
             class_id, method_id = struct.unpack_from(">HH", payload)
+            if channel == 0 and (class_id, method_id) == (10, 50) and expect_channel not in (None, 0):
+                code, _ = self.parse_close(payload[4:])
+                raise ProtocolFailure(f"connection-close:{code}")
+            if expect_channel is not None and channel != expect_channel:
+                raise ProtocolFailure(f"wrong-channel:expected={expect_channel}:actual={channel}:method={class_id}.{method_id}")
             return channel, class_id, method_id, payload[4:]
 
     def parse_close(self, body: bytes) -> tuple[int, str]:
@@ -179,18 +184,16 @@ class AmqpWire:
         # verify PLAIN and en_US are offered in start-ok fields (bounded scan)
         if b"PLAIN" not in start_body or b"en_US" not in start_body:
             raise ProtocolFailure("auth-mechanism")
-        client_props = pack_longstr(
-            json.dumps(
-                {"capabilities": {"authentication_failure_close": True}},
-                separators=(",", ":"),
-            ).encode()
-        )
+        # AMQP field table: capabilities (F = nested table), boolean (t).
+        capabilities = pack_shortstr("authentication_failure_close") + b"t\x01"
+        properties = pack_shortstr("capabilities") + b"F" + pack_longstr(capabilities)
+        client_props = pack_longstr(properties)
         response = b"\x00" + user.encode() + b"\x00" + password.encode()
         self.send_method(
             0,
             10,
             11,
-            struct.pack(">I", 0) + pack_shortstr("PLAIN") + pack_longstr(response) + client_props,
+            client_props + pack_shortstr("PLAIN") + pack_longstr(response) + pack_shortstr("en_US"),
         )
         try:
             tune = self.expect(deadline_at, 10, 30, 0)
@@ -282,7 +285,7 @@ class AmqpWire:
         if len(payload.encode()) > MAX_PAYLOAD:
             raise ProtocolFailure("payload-length")
         body = payload.encode()
-        flags = 0x02 if mandatory else 0
+        flags = 0x01 if mandatory else 0
         self.send_method(
             self.channel,
             60,
@@ -303,9 +306,9 @@ class AmqpWire:
     def _expect_publish_confirm(self, deadline_at: float) -> None:
         while True:
             _channel, class_id, method_id, body = self.read_method(deadline_at, self.channel)
-            if (class_id, method_id) == (60, 72):
+            if (class_id, method_id) == (60, 50):
                 raise ProtocolFailure("basic-return-then-confirm")
-            if (class_id, method_id) == (60, 71):
+            if (class_id, method_id) == (60, 120):
                 if len(body) < 9:
                     raise ProtocolFailure("nack-shape")
                 raise ProtocolFailure("basic-nack")
@@ -323,21 +326,22 @@ class AmqpWire:
             self.channel,
             60,
             70,
-            pack_shortstr(queue) + bytes([1 if no_ack else 0]),
+            struct.pack(">H", 0) + pack_shortstr(queue) + bytes([1 if no_ack else 0]),
         )
         _channel, class_id, method_id, body = self.read_method(deadline_at, self.channel)
-        if (class_id, method_id) == (60, 71):
+        if (class_id, method_id) == (60, 72):
             return None
-        if (class_id, method_id) != (60, 60):
+        if (class_id, method_id) != (60, 71):
             raise ProtocolFailure("unexpected-get-response")
         index = 0
-        _consumer, index = take_shortstr(body, index)
         delivery_tag = struct.unpack_from(">Q", body, index)[0]
         index += 8
         redelivered = body[index] & 1
         index += 1
         exchange, index = take_shortstr(body, index)
         routing_key, index = take_shortstr(body, index)
+        if exchange != "" or routing_key != queue or len(body) != index + 4:
+            raise ProtocolFailure("get-routing-or-shape")
         _channel, _class_id, _weight, size = self._read_content_header(deadline_at)
         message = self._read_body(deadline_at, size)
         return delivery_tag, redelivered, message.decode()
@@ -546,28 +550,51 @@ def run_durable_get(sock: socket.socket, queue: str, run_id: str) -> int:
     return 0
 
 
+def has_rabbitmq_metric(body: bytes) -> bool:
+    # Require an actual RabbitMQ sample, not a substring in a comment.
+    return any(
+        line.startswith(b"rabbitmq_") and b" " in line
+        for line in body.splitlines()
+    )
+
+
 def probe_management() -> int:
     host = os.environ.get("AMQP_HOST", "rabbitmq")
     user = os.environ["AMQP_USER"]
     password = os.environ["AMQP_PASS"]
+    management_url = f"http://{host}:15672/api/overview"
     auth_handler = urllib.request.HTTPPasswordMgrWithDefaultRealm()
-    auth_handler.add_password(None, f"http://{host}", user, password)
-    opener = urllib.request.build_opener(urllib.request.HTTPBasicAuthHandler(auth_handler))
-    opener.addheaders = [("Accept", "application/json")]
-    try:
-        with opener.open(f"http://{host}:15672/api/overview", timeout=10) as response:
-            if response.status != 200:
-                print("MGMT-STATUS-FAIL", file=sys.stderr)
-                return 1
-        with opener.open(f"http://{host}:15692/metrics", timeout=10) as response:
-            body = response.read(4096)
-            if b"rabbitmq" not in body:
-                print("METRICS-PREFIX-FAIL", file=sys.stderr)
-                return 1
-    except (urllib.error.URLError, TimeoutError, ValueError):
-        print("MGMT-PROBE-FAIL", file=sys.stderr)
-        return 1
-    print("MGMT-OK", flush=True)
+    auth_handler.add_password(None, management_url, user, password)
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({}),
+        urllib.request.HTTPBasicAuthHandler(auth_handler),
+    )
+    metrics_opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    for stage, client, url in (
+        ("MGMT", opener, management_url),
+        ("METRICS", metrics_opener, f"http://{host}:15692/metrics"),
+    ):
+        try:
+            with client.open(url, timeout=10) as response:
+                if response.status != 200:
+                    print(f"{stage}-STATUS-FAIL status={response.status}", file=sys.stderr)
+                    return 1
+                if stage == "METRICS":
+                    limit = 1024 * 1024
+                    body = response.read(limit + 1)
+                    if len(body) > limit:
+                        print("METRICS-SIZE-LIMIT", file=sys.stderr)
+                        return 1
+                    if not has_rabbitmq_metric(body):
+                        print("METRICS-SAMPLE-MISSING", file=sys.stderr)
+                        return 1
+        except urllib.error.HTTPError as error:
+            print(f"{stage}-HTTP-FAIL status={error.code}", file=sys.stderr)
+            return 1
+        except (urllib.error.URLError, TimeoutError, ValueError):
+            print(f"{stage}-TRANSPORT-FAIL", file=sys.stderr)
+            return 1
+        print(f"{stage}-OK", flush=True)
     return 0
 
 

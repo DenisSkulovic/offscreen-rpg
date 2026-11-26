@@ -177,3 +177,25 @@ test('broker chart image pin constant matches R4', () => {
     /^docker\.io\/library\/rabbitmq:4\.3\.4-management@sha256:/,
   );
 });
+
+
+import { discoverApiVersion, rabbitmqTargetFromProfile } from '../inventory.mjs';
+
+test('discovery recognizes actual kubectl NotFound without treating process exit as HTTP status', () => {
+  const target = rabbitmqTargetFromProfile('dev');
+  const probe = (result) => discoverApiVersion(target, 'rabbitmq.com', 'v1beta1', (command, args) => {
+    assert.equal(command, 'kubectl');
+    assert.deepEqual(args, ['--context', target.contextName, '--request-timeout=10s', 'get', '--raw', '/apis/rabbitmq.com/v1beta1']);
+    return { ok: false, status: 1, stdout: '', stderr: '', ...result };
+  });
+  const stderr = 'Error from server (NotFound): the server could not find the requested resource\n';
+  assert.deepEqual(probe({ stderr }), { state: 'absent' });
+  assert.deepEqual(probe({ stderr, timedOut: true }), { state: 'unknown', reason: 'discovery-timeout' });
+  assert.deepEqual(probe({ stderr: 'Error from server (Forbidden): denied' }), { state: 'unknown', reason: 'discovery-denied' });
+  assert.deepEqual(probe({ stderr: 'Error from server (Unauthorized): denied' }), { state: 'unknown', reason: 'discovery-denied' });
+  for (const failure of ['connection refused', 'HTTP 404', 'unexpected NotFound', 'Error from server (InternalError): failed']) {
+    assert.deepEqual(probe({ stderr: failure }), { state: 'unknown', reason: 'discovery-failed' });
+  }
+  assert.deepEqual(probe({ status: 404 }), { state: 'unknown', reason: 'discovery-failed' });
+  assert.deepEqual(probe({ ok: true, status: 0, stdout: JSON.stringify({ kind: 'APIResourceList', groupVersion: 'rabbitmq.com/v1beta1', resources: [{ name: 'rabbitmqclusters' }] }) }), { state: 'present', resources: [{ name: 'rabbitmqclusters' }] });
+});
