@@ -9,3 +9,7 @@ T03 — composition and status. After T02. Anchors: infra/environments/platform-
 T04 — proof and docs. After T03. Anchors: infra/verification/smoke/gateway/backend.py, smoke.sh, setup.sh, docs/runbooks/kubernetes-gateway.md, PROOF.md. Add separate bounded long-stream path on synthetic API (four events 0/15/30/45s); single connection proof, no reconnect, 60s overall deadline, keep quick smoke. Retain overlap refusal and ensure exact owned fixture cleanup instructions. Add deterministic parser/timing tests without actual 45s wait. Update runbook current steps and preserve historical observed results. Run node --test infra/verification/smoke/gateway/tests/*.test.mjs plus new focused tests, bash -n modified shell files, python3 -m py_compile backend.py (remove generated cache), changed-file quality checks. Do not launch cluster. Parent runs combined source checks, records actual receipts and stops for owner live decision.
 
 All tasks: precise diff, test command/result, remaining limitation, no broad architecture research. Serial because shared source/fixtures and Git integration. Parent alone stages/joins; no production or game modifications.
+
+
+## Acceptance corrective tasks (current execution)
+Read [ACCEPTANCE-CORRECTIONS.md](ACCEPTANCE-CORRECTIONS.md) for ordered T05 tasks and source/owner proof split. These supersede the original completion receipt, not the selected design. No heavy live proof by Cursor.
