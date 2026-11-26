@@ -3,7 +3,10 @@ import json, pathlib, secrets, sys, time, urllib.request, urllib.parse, urllib.e
 out=pathlib.Path(sys.argv[1])
 collector,prom,loki,tempo=sys.argv[2:6]
 opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
-replay=json.loads(sys.argv[6]) if len(sys.argv)==7 else None
+replay=json.loads(sys.argv[6]) if len(sys.argv)>=7 and sys.argv[6] else None
+mode=sys.argv[7] if len(sys.argv)==8 else "normal"
+assert mode in ("normal","tempo-outage")
+assert not (replay and mode!="normal")
 run=secrets.token_hex(8)
 trace=secrets.token_hex(16)
 parent=secrets.token_hex(8)
@@ -65,7 +68,7 @@ checks={
 "log":(loki,"/loki/api/v1/query_range",{"query":'{service_name="'+service+'"} |= "'+marker+'"',"start":str(now-60000000000),"end":str(now+60000000000)},logs_check),
 "metric":(prom,"/api/v1/query",{"query":'offscreen_probe_events_total{probe_run="'+run+'"}', **({"time":str(now/1e9+2)} if replay else {})},metrics_check)}
 deadline=time.monotonic()+90
-pending=set(checks)
+pending=set(checks) if mode=="normal" else {"log","metric"}
 while pending and time.monotonic()<deadline:
     for name in sorted(pending):
         base,path,params,check=checks[name]
@@ -78,5 +81,5 @@ while pending and time.monotonic()<deadline:
         except (OSError,ValueError,RuntimeError,urllib.error.URLError) as e:
             (out/f"{name}.error.txt").write_text(str(e))
     if pending: time.sleep(2)
-print("E04-B QUERY" if replay else "E04-A", "PASS" if not pending else "FAIL: "+",".join(sorted(pending)))
+print("E04-C ISOLATION" if mode=="tempo-outage" else ("E04-B QUERY" if replay else "E04-A"), "PASS" if not pending else "FAIL: "+",".join(sorted(pending)))
 sys.exit(bool(pending))
