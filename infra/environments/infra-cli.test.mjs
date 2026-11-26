@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { parse } from 'yaml';
+import { parse, parseAllDocuments, stringify } from 'yaml';
 import { execPath } from 'node:process';
+import { URL } from 'node:url';
 import test from 'node:test';
+import { runPlatformCommand } from '../platform/common/commands.mjs';
+import { renderRedisChart } from '../platform/redis/config.mjs';
+import { redisTargetFromProfile } from '../platform/redis/inventory.mjs';
 import {
   DEV_CLUSTER_CLI,
   RELEASE_CLUSTER_UP,
@@ -318,7 +323,55 @@ function buildRedisObserveRun(profileId, fixtures) {
     return { ok: true, stdout: JSON.stringify(fixture) };
   }
 
+  const target = redisTargetFromProfile(profileId);
+  const legacyInventory =
+    fixtures.deployment != null &&
+    fixtures.deployment?.spec?.selector?.matchLabels?.app === 'redis';
+
   return (command, args) => {
+    if (command === 'helm') {
+      const verb = args[0];
+      if (verb === 'version' && args[1] === '--short') {
+        return cmdOk('v3.22.1\n');
+      }
+      if (verb === 'list') {
+        return cmdOk('[]');
+      }
+    }
+    if (command === 'kubectl' && legacyInventory) {
+      const getIdx = args.indexOf('get');
+      if (getIdx >= 0 && args[getIdx + 1] === 'namespace' && args.includes('name')) {
+        return cmdOk(`namespace/${redisNs}\n`);
+      }
+      if (args.includes('jsonpath={.spec.selector.matchLabels}')) {
+        return cmdOk(JSON.stringify({ app: 'redis' }));
+      }
+      if (args.includes('jsonpath={.spec.selector}')) {
+        return cmdOk(JSON.stringify({ app: 'redis' }));
+      }
+      if (args.includes('jsonpath={.metadata.labels}')) {
+        const labels = { app: 'redis', [target.ownerKey]: target.ownerValue };
+        return cmdOk(JSON.stringify(labels));
+      }
+      const resource = getIdx >= 0 ? args[getIdx + 1] : '';
+      const next = getIdx >= 0 ? args[getIdx + 2] : '';
+      if (
+        (resource === 'secret' || resource === 'configmap') &&
+        next === '-o' &&
+        args[getIdx + 3] === 'name'
+      ) {
+        return cmdOk('');
+      }
+      const out = args[args.indexOf('-o') + 1];
+      if (out === 'name') {
+        const present =
+          (resource === 'deployment' && fixtures.deployment != null) ||
+          (resource === 'service' && fixtures.service != null) ||
+          (resource === 'configmap' && fixtures.configMap != null);
+        const name = args[getIdx + 2];
+        return present ? cmdOk(`${resource}/${name}\n`) : cmdOk('');
+      }
+    }
     if (command === 'kubectl') {
       const joined = args.join(' ');
       if (joined.includes(`namespace ${redisNs}`)) {
@@ -340,6 +393,438 @@ function buildRedisObserveRun(profileId, fixtures) {
     }
     return warm(command, args);
   };
+}
+
+const NATIVE_REDIS_RUN_ID = 'a'.repeat(40);
+const NATIVE_EXPECTED_IMAGE =
+  'docker.io/library/redis@sha256:987c376c727652f99625c7d205a1cba3cb2c53b92b0b62aade2bd48ee1593232';
+const helmProbe = spawnSync('helm', ['version', '--short'], { encoding: 'utf8' });
+const helmPinned =
+  !helmProbe.error && (helmProbe.stdout ?? '').trim().startsWith('v3.22.1');
+
+/**
+ * @param {string} manifest
+ */
+function normalizeRedisServiceManifest(manifest) {
+  const docs = parseAllDocuments(manifest).map((doc) => doc.toJSON());
+  for (const doc of docs) {
+    if (doc?.kind === 'Service' && Array.isArray(doc.spec?.ports)) {
+      doc.spec.ports = doc.spec.ports.map((port) => ({
+        protocol: 'TCP',
+        ...port,
+      }));
+    }
+  }
+  return docs.map((doc) => stringify(doc)).join('---\n');
+}
+
+/** @type {Map<'dev' | 'release', { manifest: string, values: Record<string, unknown> }>} */
+const nativeInstalledByProfile = new Map();
+if (helmPinned) {
+  for (const profileId of /** @type {const} */ (['dev', 'release'])) {
+    let manifest = '';
+    const recordingRun = (command, args, options) => {
+      const result = runPlatformCommand(command, args, options);
+      if (command === 'helm' && args[0] === 'template') {
+        manifest = result.stdout;
+      }
+      return result;
+    };
+    const rendered = renderRedisChart(profileId, { run: recordingRun });
+    nativeInstalledByProfile.set(profileId, {
+      manifest: normalizeRedisServiceManifest(manifest),
+      values: rendered.values,
+    });
+  }
+}
+
+/**
+ * @param {string} stdout
+ * @param {string} [stderr]
+ */
+function cmdOk(stdout = '', stderr = '') {
+  return {
+    ok: true,
+    status: 0,
+    stdout,
+    stderr,
+    timedOut: false,
+    missing: false,
+  };
+}
+
+/**
+ * @param {number} status
+ * @param {string} [stderr]
+ */
+function cmdFail(status = 1, stderr = 'failed') {
+  return {
+    ok: false,
+    status,
+    stdout: '',
+    stderr,
+    timedOut: false,
+    missing: false,
+  };
+}
+
+function nativeInfoBody() {
+  return `# Server\r\nredis_version:8.2.1\r\nrun_id:${NATIVE_REDIS_RUN_ID}\r\n`;
+}
+
+function nativeConfigBody(key, value) {
+  return `${key}\n${value}\n`;
+}
+
+/**
+ * @param {ReturnType<typeof redisTargetFromProfile>} target
+ * @param {{ manifest: string }} installed
+ */
+function nativeLiveBundle(target, installed) {
+  const docs = parseAllDocuments(installed.manifest).map((doc) => doc.toJSON());
+  const manifestDeployment = docs.find((doc) => doc?.kind === 'Deployment');
+  const manifestService = docs.find((doc) => doc?.kind === 'Service');
+  const manifestConfigMap = docs.find((doc) => doc?.kind === 'ConfigMap');
+  assert.ok(manifestDeployment);
+  assert.ok(manifestService);
+  assert.ok(manifestConfigMap);
+  const podUid = 'pod-uid-1';
+  const pod = {
+    metadata: {
+      name: 'redis-pod-1',
+      namespace: target.namespace,
+      uid: podUid,
+      resourceVersion: 'pod-rv-1',
+    },
+    status: {
+      podIP: '10.0.0.7',
+      conditions: [{ type: 'Ready', status: 'True' }],
+      containerStatuses: [
+        {
+          name: 'redis',
+          containerID: 'docker://cid-1',
+          imageID: NATIVE_EXPECTED_IMAGE,
+          restartCount: 0,
+          ready: true,
+          state: { running: { startedAt: '2026-11-26T10:00:00Z' } },
+        },
+      ],
+    },
+  };
+  const serviceUid = 'svc-uid-1';
+  const endpointSlice = {
+    metadata: {
+      name: 'redis-endpoints',
+      uid: 'ep-uid-1',
+      resourceVersion: 'ep-rv-1',
+      ownerReferences: [
+        {
+          apiVersion: 'v1',
+          kind: 'Service',
+          name: 'redis',
+          uid: serviceUid,
+          controller: true,
+          blockOwnerDeletion: true,
+        },
+      ],
+    },
+    addressType: 'IPv4',
+    ports: [{ name: 'redis', protocol: 'TCP', port: 6379 }],
+    endpoints: [
+      {
+        addresses: ['10.0.0.7'],
+        conditions: { ready: true, serving: true, terminating: false },
+        targetRef: {
+          kind: 'Pod',
+          namespace: target.namespace,
+          name: 'redis-pod-1',
+          uid: podUid,
+        },
+        nodeName: 'worker',
+      },
+    ],
+  };
+  const deployment = {
+    ...manifestDeployment,
+    metadata: {
+      ...manifestDeployment.metadata,
+      namespace: target.namespace,
+      uid: 'dep-uid-1',
+      resourceVersion: 'dep-rv-1',
+      generation: 1,
+    },
+    status: {
+      observedGeneration: 1,
+      updatedReplicas: 1,
+      readyReplicas: 1,
+      availableReplicas: 1,
+      replicas: 1,
+    },
+  };
+  return {
+    namespace: {
+      metadata: {
+        name: target.namespace,
+        uid: 'ns-uid-1',
+        resourceVersion: 'ns-rv-1',
+      },
+    },
+    configMap: {
+      ...manifestConfigMap,
+      metadata: {
+        ...manifestConfigMap.metadata,
+        namespace: target.namespace,
+        uid: 'cm-uid-1',
+        resourceVersion: 'cm-rv-1',
+      },
+    },
+    deployment,
+    service: {
+      ...manifestService,
+      metadata: {
+        ...manifestService.metadata,
+        namespace: target.namespace,
+        uid: serviceUid,
+        resourceVersion: 'svc-rv-1',
+      },
+      spec: manifestService.spec,
+    },
+    replicaSets: [
+      {
+        metadata: {
+          name: 'redis-rs-1',
+          uid: 'rs-uid-1',
+          resourceVersion: 'rs-rv-1',
+        },
+      },
+    ],
+    pod,
+    endpointSlices: [endpointSlice],
+  };
+}
+
+/**
+ * @param {'dev' | 'release'} profileId
+ * @param {'ready' | 'absent' | 'legacy' | 'partial' | 'drift' | 'unreadable'} scenario
+ * @param {{ manifest: string, values: Record<string, unknown> }} [installed]
+ */
+function createNativeRedisStatusRun(profileId, scenario, installed) {
+  const target = redisTargetFromProfile(profileId);
+  const warm = profileId === 'dev' ? devWarmRun(true) : releaseWarmRun(true);
+  const bundle =
+    scenario === 'ready' && installed
+      ? nativeLiveBundle(target, installed)
+      : null;
+  let probeIndex = 0;
+  /** @type {Array<[string, string[]]>} */
+  const commands = [];
+
+  const deploymentLabels = {
+    [target.ownerKey]: target.ownerValue,
+    'app.kubernetes.io/name': 'redis',
+    'app.kubernetes.io/instance': 'redis',
+  };
+  const deploymentSelectors =
+    scenario === 'legacy'
+      ? { app: 'redis' }
+      : {
+          'app.kubernetes.io/name': 'redis',
+          'app.kubernetes.io/instance': 'redis',
+        };
+  const serviceSelectors = { ...deploymentSelectors };
+
+  const helmListRow = {
+    name: 'redis',
+    namespace: target.namespace,
+    revision: '1',
+    status: 'deployed',
+    chart: 'offscreen-redis-specimen-0.1.0',
+  };
+
+  const flags = {
+    namespacePresent: scenario !== 'absent',
+    secrets:
+      scenario === 'legacy' || scenario === 'absent'
+        ? []
+        : ['sh.helm.release.v1.redis.v1'],
+    deployment: scenario === 'legacy' || scenario === 'partial' || scenario === 'ready' || scenario === 'drift',
+    service: scenario === 'partial' || scenario === 'ready' || scenario === 'drift',
+    configMap: scenario === 'ready' || scenario === 'drift',
+    endpointsPresent: scenario === 'ready' || scenario === 'drift',
+    helmList:
+      scenario === 'partial' || scenario === 'ready' || scenario === 'drift'
+        ? [helmListRow]
+        : [],
+    listFail: scenario === 'unreadable',
+    listStderr: 'Forbidden',
+  };
+
+  const helmManifest = installed?.manifest ?? '';
+  const helmValues =
+    scenario === 'drift' && installed
+      ? { drifted: true }
+      : (installed?.values ?? {});
+  const helmTemplate = installed?.manifest ?? '';
+
+  const protocolSteps = [
+    () => cmdOk(nativeInfoBody()),
+    () => cmdOk(nativeInfoBody()),
+    () => cmdOk('PONG\n'),
+    () => cmdOk(nativeConfigBody('maxmemory', '33554432')),
+    () => cmdOk(nativeConfigBody('maxmemory-policy', 'allkeys-lru')),
+    () => cmdOk(nativeConfigBody('save', '')),
+    () => cmdOk(nativeConfigBody('appendonly', 'no')),
+    () => cmdOk(nativeConfigBody('maxclients', '10000')),
+    () => cmdOk(nativeConfigBody('maxmemory-clients', '0')),
+    () => cmdOk(nativeInfoBody()),
+    () => cmdOk(nativeInfoBody()),
+  ];
+
+  /**
+   * @param {string} command
+   * @param {string[]} args
+   */
+  const run = (command, args) => {
+    commands.push([command, args]);
+    if (command === 'helm') {
+      const verb = args[0];
+      if (verb === 'version' && args[1] === '--short') {
+        return cmdOk('v3.22.1\n');
+      }
+      if (verb === 'lint' || verb === 'template') {
+        return cmdOk(helmTemplate);
+      }
+      if (verb === 'list') {
+        return cmdOk(JSON.stringify(flags.helmList));
+      }
+      if (verb === 'get' && args[1] === 'manifest') {
+        return cmdOk(helmManifest);
+      }
+      if (verb === 'get' && args[1] === 'values') {
+        return cmdOk(JSON.stringify(helmValues));
+      }
+      if (verb === 'history') {
+        return cmdOk(JSON.stringify([{ revision: 1, status: 'deployed' }]));
+      }
+      return cmdFail(1, 'unexpected helm');
+    }
+
+    if (command === 'kubectl' && bundle && args.includes('exec')) {
+      const reply = protocolSteps[probeIndex]?.() ?? cmdOk('');
+      probeIndex += 1;
+      return reply;
+    }
+
+    if (command === 'kubectl' && bundle) {
+      const resourceIdx = args.indexOf('get') + 1;
+      const resourceKind = args[resourceIdx];
+      const resourceName = args[resourceIdx + 1];
+      const output = args[args.indexOf('-o') + 1];
+      if (args.includes('get') && resourceKind === 'namespace' && output === 'json') {
+        return cmdOk(JSON.stringify(bundle.namespace));
+      }
+      if (args.includes('get') && resourceKind === 'configmap' && resourceName === 'redis-config' && output === 'json') {
+        return cmdOk(JSON.stringify(bundle.configMap));
+      }
+      if (args.includes('get') && resourceKind === 'deployment' && resourceName === 'redis' && output === 'json') {
+        return cmdOk(JSON.stringify(bundle.deployment));
+      }
+      if (args.includes('get') && resourceKind === 'service' && resourceName === 'redis' && output === 'json') {
+        return cmdOk(JSON.stringify(bundle.service));
+      }
+      if (args.includes('replicaset')) {
+        return cmdOk(JSON.stringify({ items: bundle.replicaSets }));
+      }
+      if (args.includes('pods') && args.includes('-l')) {
+        return cmdOk(JSON.stringify({ items: [bundle.pod] }));
+      }
+      if (args.includes('endpointslice')) {
+        return cmdOk(JSON.stringify({ items: bundle.endpointSlices }));
+      }
+    }
+
+    if (command === 'kubectl') {
+      if (args.includes('namespace') && args.includes('get')) {
+        if (!flags.namespacePresent) {
+          return cmdFail(1, 'NotFound');
+        }
+        return cmdOk(`namespace/${target.namespace}\n`);
+      }
+
+      const getIdx = args.indexOf('get');
+      const resource = getIdx >= 0 ? args[getIdx + 1] : '';
+      const next = getIdx >= 0 ? args[getIdx + 2] : '';
+      if (
+        (resource === 'secret' || resource === 'configmap') &&
+        next === '-o' &&
+        args[getIdx + 3] === 'name'
+      ) {
+        if (flags.listFail) {
+          return cmdFail(1, flags.listStderr);
+        }
+        if (resource === 'configmap') {
+          return cmdOk('');
+        }
+        const labelIdx = args.indexOf('-l');
+        const names =
+          labelIdx >= 0 && args[labelIdx + 1] === 'name=redis'
+            ? flags.secrets
+            : flags.secrets;
+        return cmdOk(
+          names.map((name) => `secret/${name}`).join('\n') +
+            (names.length ? '\n' : ''),
+        );
+      }
+
+      if (args.includes('jsonpath={.metadata.labels}')) {
+        const name = args[args.indexOf('get') + 2];
+        if (args.includes('secret')) {
+          return cmdOk(
+            JSON.stringify({ owner: 'helm', name: 'redis', status: 'deployed' }),
+          );
+        }
+        if (args.includes('configmap') && name === 'redis-config' && flags.configMap) {
+          return cmdOk(JSON.stringify(deploymentLabels));
+        }
+        if (
+          (args.includes('deployment') && flags.deployment) ||
+          (args.includes('service') && flags.service)
+        ) {
+          return cmdOk(JSON.stringify(deploymentLabels));
+        }
+        return cmdOk('{}');
+      }
+
+      if (args.includes('jsonpath={.spec.selector.matchLabels}')) {
+        return cmdOk(JSON.stringify(deploymentSelectors));
+      }
+
+      if (args.includes('jsonpath={.spec.selector}')) {
+        return cmdOk(JSON.stringify(serviceSelectors));
+      }
+
+      if (args.includes('endpoints') && args.includes('jsonpath={.subsets}')) {
+        return cmdOk(
+          flags.endpointsPresent ? '[{"addresses":[{"ip":"10.0.0.1"}]}]' : '',
+        );
+      }
+
+      const reserved = args[getIdx + 1];
+      const reservedName = args[getIdx + 2];
+      const out = args[args.indexOf('-o') + 1];
+      const present =
+        (reserved === 'deployment' && flags.deployment) ||
+        (reserved === 'service' && flags.service) ||
+        (reserved === 'configmap' && flags.configMap);
+      if (out === 'name' && reservedName !== '-o') {
+        return present ? cmdOk(`${reserved}/${reservedName}\n`) : cmdOk('');
+      }
+    }
+
+    return warm(command, args);
+  };
+
+  return { run, commands };
 }
 
 test('parseInfraCliArgs rejects unknown commands, missing env, and positionals', () => {
@@ -407,6 +892,7 @@ test('default and explicit --json stdout stay equivalent', () => {
   assert.equal(baseline.exitCode, 0);
   assert.equal(explicit.exitCode, 0);
   assert.equal(defaultOut.join(''), jsonOut.join(''));
+  // eslint-disable-next-line no-control-regex -- assert CLI default output is not colorized
   assert.doesNotMatch(defaultOut.join(''), /\x1b\[[0-9;]*m/);
 });
 
@@ -448,6 +934,7 @@ test('human status for dev and release avoids ANSI on stdout', () => {
   const devText = out.join('');
   assert.match(devText, /env: dev/);
   assert.match(devText, /cluster: ABSENT/);
+  // eslint-disable-next-line no-control-regex -- assert human status output is not colorized
   assert.equal(/\x1b\[[0-9;]*m/.test(devText), false);
 
   out.length = 0;
@@ -464,6 +951,7 @@ test('human status for dev and release avoids ANSI on stdout', () => {
   const releaseText = out.join('');
   assert.match(releaseText, /env: release/);
   assert.match(releaseText, /cluster: ABSENT/);
+  // eslint-disable-next-line no-control-regex -- assert human status output is not colorized
   assert.equal(/\x1b\[[0-9;]*m/.test(releaseText), false);
 });
 
@@ -699,89 +1187,117 @@ test('status performs read-only kind and kubectl observation', () => {
   assert.equal(/helm upgrade/i.test(joined), false);
 });
 
-test('status reports dev redis absent when deployment and service are missing', () => {
-  const run = buildRedisObserveRun('dev', {
-    namespace: null,
-    deployment: null,
-    service: null,
-    configMap: null,
-  });
-  const result = runInfraStatus({
-    profileId: 'dev',
-    services: 'redis',
-    run,
-  });
-  assert.equal(result.ok, true);
-  assert.equal(result.services.redis.state, 'not-installed');
+test('legacy redis observe fixtures never report installed', () => {
+  for (const profileId of /** @type {const} */ (['dev', 'release'])) {
+    const legacyFixtures = {
+      deployment: redisDeploymentObject(profileId),
+      service: redisServiceObject(profileId),
+      configMap: redisConfigMapObject(profileId),
+    };
+    const mapped = observeSelectedServiceState(profileId, 'redis', {
+      run: buildRedisObserveRun(profileId, legacyFixtures),
+    });
+    assert.equal(mapped.state, 'not-ready');
+    assert.notEqual(mapped.state, 'installed');
+  }
 });
 
-test('redis status uses shared readiness for dev and release profiles', () => {
-  const readyFixtures = {
-    deployment: redisDeploymentObject('dev'),
-    service: redisServiceObject('dev'),
-    configMap: redisConfigMapObject('dev'),
-  };
-  const devInstalled = observeSelectedServiceState('dev', 'redis', {
-    run: buildRedisObserveRun('dev', readyFixtures),
-  });
-  assert.equal(devInstalled.state, 'installed');
+test(
+  'redis status maps native readiness for dev and release',
+  { skip: !helmPinned || nativeInstalledByProfile.size < 2 },
+  () => {
+    const cases = /** @type {const} */ ([
+      ['ready', 'installed'],
+      ['absent', 'not-installed'],
+      ['legacy', 'not-ready'],
+      ['partial', 'not-ready'],
+      ['drift', 'not-ready'],
+      ['unreadable', 'unreadable'],
+    ]);
 
-  const releaseReady = {
-    deployment: redisDeploymentObject('release'),
-    service: redisServiceObject('release'),
-    configMap: redisConfigMapObject('release'),
-  };
-  const releaseInstalled = observeSelectedServiceState('release', 'redis', {
-    run: buildRedisObserveRun('release', releaseReady),
-  });
-  assert.equal(releaseInstalled.state, 'installed');
+    for (const profileId of /** @type {const} */ (['dev', 'release'])) {
+      const installed = nativeInstalledByProfile.get(profileId);
+      assert.ok(installed);
 
-  const devForeign = observeSelectedServiceState('dev', 'redis', {
-    run: buildRedisObserveRun('dev', {
-      ...readyFixtures,
-      deployment: redisDeploymentObject('dev', { foreign: true }),
-    }),
-  });
-  assert.equal(devForeign.state, 'not-ready');
-  assert.match(devForeign.detail ?? '', /foreign-owned/i);
+      for (const [scenario, expected] of cases) {
+        const { run } = createNativeRedisStatusRun(
+          profileId,
+          scenario,
+          scenario === 'ready' || scenario === 'drift' ? installed : undefined,
+        );
+        const mapped = observeSelectedServiceState(profileId, 'redis', { run });
+        assert.equal(
+          mapped.state,
+          expected,
+          `${profileId} ${scenario} should map to ${expected} (${mapped.detail ?? ''})`,
+        );
+        if (scenario === 'legacy' || scenario === 'partial') {
+          assert.notEqual(mapped.state, 'installed');
+          assert.notEqual(mapped.state, 'not-installed');
+        }
+      }
+    }
 
-  const devStale = observeSelectedServiceState('dev', 'redis', {
-    run: buildRedisObserveRun('dev', {
-      ...readyFixtures,
-      deployment: redisDeploymentObject('dev', { staleGeneration: true }),
-    }),
-  });
-  assert.equal(devStale.state, 'not-ready');
-  assert.match(devStale.detail ?? '', /not ready/i);
+    const devReady = createNativeRedisStatusRun(
+      'dev',
+      'ready',
+      nativeInstalledByProfile.get('dev'),
+    );
+    const releaseReady = createNativeRedisStatusRun(
+      'release',
+      'ready',
+      nativeInstalledByProfile.get('release'),
+    );
+    assert.equal(
+      observeSelectedServiceState('dev', 'redis', { run: devReady.run }).state,
+      'installed',
+    );
+    assert.equal(
+      observeSelectedServiceState('release', 'redis', {
+        run: releaseReady.run,
+      }).state,
+      'installed',
+    );
+  },
+);
 
-  const devMissingConfig = observeSelectedServiceState('dev', 'redis', {
-    run: buildRedisObserveRun('dev', {
-      ...readyFixtures,
-      configMap: redisConfigMapObject('dev', { missingData: true }),
-    }),
-  });
-  assert.equal(devMissingConfig.state, 'not-ready');
-  assert.match(devMissingConfig.detail ?? '', /configuration is missing/i);
+test(
+  'redis status path issues no helm install or kubectl apply/delete',
+  { skip: !helmPinned },
+  () => {
+    const installed = nativeInstalledByProfile.get('dev');
+    assert.ok(installed);
+    const { run, commands } = createNativeRedisStatusRun('dev', 'ready', installed);
+    const result = runInfraStatus({
+      profileId: 'dev',
+      services: 'redis',
+      run,
+    });
+    assert.equal(result.ok, true);
+    assert.equal(result.services.redis.state, 'installed');
+  const joined = commands
+    .map(([cmd, args]) => `${cmd} ${args.join(' ')}`)
+    .join('\n');
+  assert.equal(/helm\s+install/i.test(joined), false);
+  assert.equal(/\bapply\b/i.test(joined), false);
+  assert.equal(/\bdelete\b/i.test(joined), false);
+  },
+);
 
-  const devUnreadable = observeSelectedServiceState('dev', 'redis', {
-    run: buildRedisObserveRun('dev', {
-      ...readyFixtures,
-      configMap: 'unreadable',
-    }),
-  });
-  assert.equal(devUnreadable.state, 'unreadable');
-  assert.match(devUnreadable.detail ?? '', /unreadable/i);
-
-  const releasePartial = observeSelectedServiceState('release', 'redis', {
-    run: buildRedisObserveRun('release', {
-      deployment: redisDeploymentObject('release'),
-      service: redisServiceObject('release'),
-      configMap: null,
-    }),
-  });
-  assert.equal(releasePartial.state, 'not-ready');
-  assert.doesNotMatch(releasePartial.detail ?? '', /absent/i);
-});
+test(
+  'status reports redis absent through native inventory',
+  { skip: !helmPinned },
+  () => {
+    const { run } = createNativeRedisStatusRun('dev', 'absent');
+    const result = runInfraStatus({
+      profileId: 'dev',
+      services: 'redis',
+      run,
+    });
+    assert.equal(result.ok, true);
+    assert.equal(result.services.redis.state, 'not-installed');
+  },
+);
 
 test('inventoryKindClusters requires exact kind success', () => {
   const unreadable = inventoryKindClusters(() => ({

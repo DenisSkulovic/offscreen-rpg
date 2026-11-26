@@ -13,7 +13,6 @@ import { observeDevPostgresReady } from '../platform/postgres/readiness.mjs';
 import { RELEASE_CNPG_CLUSTER } from '../platform/postgres/config.mjs';
 import { assessCnpgClusterTopologyReadiness } from '../platform/postgres/cluster-readiness.mjs';
 import { observeTemporalReady, observeTemporalRelease } from '../platform/temporal/readiness.mjs';
-import { observeDevRedisReady } from '../platform/redis/dev-install.mjs';
 import { observeRedisReady } from '../platform/redis/readiness.mjs';
 import {
   BROKER_NAME,
@@ -412,6 +411,24 @@ function deploymentIsReady(deployment) {
 }
 
 /**
+ * @param {{ ok: boolean, state?: string, detail?: string }} observation
+ */
+function redisReadinessToServiceState(observation) {
+  const detail = observation.detail;
+  const state = observation.state;
+  if (state === 'ready') {
+    return { state: 'installed', detail };
+  }
+  if (state === 'absent') {
+    return { state: 'not-installed', detail };
+  }
+  if (state === 'unreadable') {
+    return { state: 'unreadable', detail };
+  }
+  return { state: 'not-ready', detail };
+}
+
+/**
  * @param {{ ok: boolean, detail?: string }} observation
  */
 function devReadinessToServiceState(observation) {
@@ -519,7 +536,7 @@ function observeReleaseServiceState(serviceId, deps = {}) {
   }
 
   if (serviceId === 'redis') {
-    return devReadinessToServiceState(observeRedisReady('release', deps));
+    return redisReadinessToServiceState(observeRedisReady('release', deps));
   }
 
   if (serviceId === 'rabbitmq') {
@@ -597,7 +614,7 @@ export function observeSelectedServiceState(profileId, serviceId, deps = {}) {
       return devReadinessToServiceState(observeTemporalReady('dev', deps));
     }
     if (serviceId === 'redis') {
-      return devReadinessToServiceState(observeDevRedisReady(deps));
+      return redisReadinessToServiceState(observeRedisReady('dev', deps));
     }
     return {
       state: 'unsupported',
