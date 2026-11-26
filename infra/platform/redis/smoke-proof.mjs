@@ -479,8 +479,9 @@ async function readSingletonEndpoint(
     'kubectl',
     [
       ...kubectlScopeArgs(target, 'get'),
-      'endpoints',
-      SERVICE_NAME,
+      'endpointslices.discovery.k8s.io',
+      '-l',
+      'kubernetes.io/service-name=redis',
       '-o',
       'json',
     ],
@@ -495,7 +496,7 @@ async function readSingletonEndpoint(
   }
   const trimmed = (resolved.stdout ?? '').trim();
   if (trimmed.length === 0) {
-    return { ok: true, state: 'absent', count: 0 };
+    return { ok: false, state: 'unreadable', reason: 'endpoints-json' };
   }
   let body;
   try {
@@ -503,16 +504,37 @@ async function readSingletonEndpoint(
   } catch {
     return { ok: false, state: 'unreadable', reason: 'endpoints-json' };
   }
-  const subsets = Array.isArray(body?.subsets) ? body.subsets : [];
+  if (body?.apiVersion !== 'v1' || body?.kind !== 'List' || !Array.isArray(body.items)) {
+    return { ok: false, state: 'unreadable', reason: 'endpoints-list-shape' };
+  }
   /** @type {Array<{ uid?: string, ip: string }>} */
   const addresses = [];
-  for (const subset of subsets) {
-    const list = Array.isArray(subset?.addresses) ? subset.addresses : [];
-    for (const entry of list) {
-      addresses.push({
-        uid: entry?.targetRef?.uid,
-        ip: String(entry?.ip ?? ''),
-      });
+  for (const slice of body.items) {
+    if (
+      slice?.apiVersion !== 'discovery.k8s.io/v1' ||
+      slice?.kind !== 'EndpointSlice' ||
+      slice?.metadata?.namespace !== target.namespace ||
+      slice?.metadata?.labels?.['kubernetes.io/service-name'] !== SERVICE_NAME ||
+      slice?.addressType !== 'IPv4' ||
+      !Array.isArray(slice.endpoints)
+    ) {
+      return { ok: false, state: 'unreadable', reason: 'endpoints-slice-shape' };
+    }
+    for (const entry of slice.endpoints) {
+      if (!Array.isArray(entry?.addresses) || entry.addresses.length !== 1 ||
+          entry.targetRef?.kind !== 'Pod' || entry.targetRef?.namespace !== target.namespace ||
+          typeof entry.targetRef?.uid !== 'string' ||
+          typeof entry.conditions?.ready !== 'boolean') {
+        return { ok: false, state: 'unreadable', reason: 'endpoint-entry-shape' };
+      }
+      if (entry.conditions.ready !== true || entry.conditions.terminating === true) continue;
+      if (entry.conditions.serving !== true ||
+          !Array.isArray(slice.ports) || slice.ports.length !== 1 ||
+          slice.ports[0]?.name !== 'redis' || slice.ports[0]?.port !== 6379 ||
+          slice.ports[0]?.protocol !== 'TCP') {
+        return { ok: false, state: 'unreadable', reason: 'endpoint-ready-shape' };
+      }
+      addresses.push({ uid: entry.targetRef.uid, ip: entry.addresses[0] });
     }
   }
   if (addresses.length === 0) {
@@ -595,7 +617,9 @@ async function waitForEndpointRecovery(
   while (Date.now() < deadline) {
     const server = await readServerPodReady(runner, target, serverPodName);
     if (!server.ok) {
-      return { ok: false, reason: server.reason ?? 'server-not-ready' };
+      if (server.reason !== 'server-pod-not-ready') return { ok: false, reason: server.reason ?? 'server-not-ready' };
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      continue;
     }
     const endpoint = await readSingletonEndpoint(
       runner,
@@ -603,7 +627,8 @@ async function waitForEndpointRecovery(
       server.uid,
       server.podIP,
     );
-    if (endpoint.ok && endpoint.state === 'ready') {
+    if (!endpoint.ok) return { ok: false, reason: endpoint.reason };
+    if (endpoint.state === 'ready') {
       return { ok: true, server };
     }
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -633,7 +658,7 @@ async function verifyNamespaceAbsent(runner, target, budgetMs) {
       { timeoutMs: KUBECTL_READ_MS },
     );
     const resolved = await Promise.resolve(result);
-    if (!resolved.ok && !resolved.timedOut) {
+    if (!resolved.ok || resolved.timedOut || resolved.missing || (resolved.stderr ?? '').trim()) {
       return {
         ok: false,
         uncertain: true,
@@ -959,7 +984,10 @@ async function listRedisServerPods(runner, target) {
   } catch {
     return { ok: false, reason: 'pods-json' };
   }
-  const items = Array.isArray(body?.items) ? body.items : [];
+  if (!Array.isArray(body?.items) || body.items.some((pod) => !pod?.metadata?.name || !pod?.metadata?.uid)) {
+    return { ok: false, reason: 'pods-list-shape' };
+  }
+  const items = body.items;
   return {
     ok: true,
     pods: items.map((pod) => ({
@@ -1204,7 +1232,13 @@ export async function runRedisSmokeProof(target, profileId, deps = {}) {
     return { ok: false, detail: 'client-count-refused', state: 'refused' };
   }
 
-  const clientReady = await readClientPodReady(readRun, target, clientUid);
+  const clientDeadline = Date.now() + Math.max(0, Math.min(60_000, remainingMs() - CLEANUP_RESERVE_MS));
+  let clientReady = { ok: false, reason: 'client-pod-not-ready' };
+  while (Date.now() < clientDeadline) {
+    clientReady = await readClientPodReady(readRun, target, clientUid);
+    if (clientReady.ok || clientReady.reason !== 'client-pod-not-ready') break;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
   if (!clientReady.ok) {
     return {
       ok: false,
@@ -1558,18 +1592,19 @@ export async function runRedisSmokeProof(target, profileId, deps = {}) {
     readRun,
     target,
     (pods) => pods.length === 0,
-    ENDPOINT_CLEAR_MS,
+    Math.max(0, Math.min(ENDPOINT_CLEAR_MS, remainingMs() - CLEANUP_RESERVE_MS)),
   );
   if (!noPods.ok) {
     return { ok: false, detail: 'proof-scale-zero-pods', state: 'refused' };
   }
 
-  const zeroEndpoints = await readSingletonEndpoint(
-    readRun,
-    target,
-    serverReady.uid,
-    serverReady.podIP,
-  );
+  const zeroDeadline = Date.now() + Math.max(0, Math.min(ENDPOINT_CLEAR_MS, remainingMs() - CLEANUP_RESERVE_MS));
+  let zeroEndpoints = { ok: false, reason: 'proof-endpoints-not-zero', state: 'unreadable', count: -1 };
+  while (Date.now() < zeroDeadline) {
+    zeroEndpoints = await readSingletonEndpoint(readRun, target, serverReady.uid, serverReady.podIP);
+    if (!zeroEndpoints.ok || zeroEndpoints.state === 'absent') break;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
   if (!zeroEndpoints.ok) {
     return {
       ok: false,
@@ -1641,7 +1676,7 @@ export async function runRedisSmokeProof(target, profileId, deps = {}) {
     readRun,
     target,
     (pods) => pods.length === 1,
-    ROLLOUT_WAIT_MS,
+    Math.max(0, Math.min(ROLLOUT_WAIT_MS, remainingMs() - CLEANUP_RESERVE_MS)),
   );
   if (!onePod.ok) {
     return { ok: false, detail: 'proof-scale-up-pods', state: 'refused' };
@@ -1655,7 +1690,7 @@ export async function runRedisSmokeProof(target, profileId, deps = {}) {
     readRun,
     target,
     newServerPod,
-    ENDPOINT_RECOVERY_MS,
+    Math.max(0, Math.min(ENDPOINT_RECOVERY_MS, remainingMs() - CLEANUP_RESERVE_MS)),
   );
   if (!recovered.ok) {
     return {
@@ -1738,6 +1773,26 @@ export async function runRedisSmokeProof(target, profileId, deps = {}) {
     };
   }
 
+  const postClient = await readClientPodReady(readRun, target, clientUid);
+  if (!postClient.ok) return { ok: false, detail: postClient.reason, state: 'refused' };
+  const recoveryInfo = await execClientRedisCli(target, CLIENT_POD_NAME, serviceHost, ['INFO', 'server'], readRun, REDIS_EXEC_MS);
+  const recoveryInfoParsed = parseInfoServerReply(recoveryInfo.stdout ?? '');
+  if (!recoveryInfo.ok || (recoveryInfo.stderr ?? '').trim() || !recoveryInfoParsed.ok || recoveryInfoParsed.runId !== newRunId.runId) {
+    return { ok: false, detail: 'proof-recovery-run-id-agreement', state: 'refused' };
+  }
+  const recoverySet = await writeRun('kubectl', [
+    ...kubectlScopeArgs(target, 'exec'), CLIENT_POD_NAME, '-c', REDIS_CONTAINER,
+    '--', 'redis-cli', '-e', '--raw', '-h', serviceHost, '-p', '6379',
+    'SET', TTL_KEY, ttlValue, 'EX', String(TTL_SECONDS),
+  ], { timeoutMs: REDIS_EXEC_MS });
+  if (!recoverySet.ok || (recoverySet.stderr ?? '').trim() || !parseRedisOkReply(recoverySet.stdout ?? '').ok) {
+    return { ok: false, detail: 'proof-recovery-set', state: 'refused' };
+  }
+  const recoveryGet = await execClientRedisCli(target, CLIENT_POD_NAME, serviceHost, ['GET', TTL_KEY], readRun, REDIS_EXEC_MS);
+  if (!recoveryGet.ok || (recoveryGet.stderr ?? '').trim() || parseRedisBulkReply(recoveryGet.stdout ?? '').value !== ttlValue) {
+    return { ok: false, detail: 'proof-recovery-get', state: 'refused' };
+  }
+
   const helmRevision = await readHelmRevision(readRun, target);
   if (!helmRevision.ok) {
     return { ok: false, detail: 'proof-helm-revision', state: 'refused' };
@@ -1781,8 +1836,8 @@ export async function runRedisSmokeProof(target, profileId, deps = {}) {
     runIds: { before: preRunId.runId, after: newRunId.runId },
     receipt: {
       baselineMetadata,
-      foreignContextInventoryEqual: deps.foreignContextInventoryEqual ?? true,
-      volumePreservationVerified: deps.volumePreservationVerified ?? true,
+      foreignContextInventoryEqual: deps.foreignContextInventoryEqual ?? null,
+      volumePreservationVerified: deps.volumePreservationVerified ?? null,
     },
   };
 }

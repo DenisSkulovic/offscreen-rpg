@@ -279,24 +279,18 @@ export function buildHappyProofRunner(target) {
       }
       return ok(namespaceJson());
     }
-    if (args.includes('endpoints') && args.includes('json')) {
-      if (scaleReplicas === 0) {
-        return ok(JSON.stringify({ subsets: [] }));
-      }
-      return ok(
-        JSON.stringify({
-          subsets: [
-            {
-              addresses: [
-                {
-                  ip: SERVER_POD_IP,
-                  targetRef: { uid: serverPodUid },
-                },
-              ],
-            },
-          ],
-        }),
-      );
+    if (args.includes('endpointslices.discovery.k8s.io') && args.includes('json')) {
+      return ok(JSON.stringify({
+        apiVersion: 'v1', kind: 'List',
+        items: scaleReplicas === 0 ? [] : [{
+          apiVersion: 'discovery.k8s.io/v1', kind: 'EndpointSlice',
+          metadata: { namespace: target.namespace, labels: { 'kubernetes.io/service-name': 'redis' } },
+          addressType: 'IPv4',
+          ports: [{ name: 'redis', port: 6379, protocol: 'TCP' }],
+          endpoints: [{ addresses: [SERVER_POD_IP], conditions: { ready: true, serving: true, terminating: false },
+            targetRef: { kind: 'Pod', namespace: target.namespace, uid: serverPodUid } }],
+        }],
+      }));
     }
     if (
       args.includes('json') &&
@@ -628,9 +622,8 @@ test('zero endpoints is distinct from endpoints API failure', async () => {
   const { run: happyRun, runWrite } = runner;
   const run = (command, args) => {
     if (
-      args.includes('endpoints') &&
-      args.includes('json') &&
-      args.includes('redis')
+      args.includes('endpointslices.discovery.k8s.io') &&
+      args.includes('json')
     ) {
       return fail(1, 'API unavailable');
     }
@@ -767,4 +760,26 @@ test('cleanup permits only the exact successful core Endpoints warning', async (
     assert.equal(result.ok, expected, JSON.stringify(result));
     assert.equal(deleted, expected);
   }
+});
+
+test('client startup polls same UID and timeout absence is never success', async () => {
+  const target = { ...releaseTarget, namespace: PROOF_NAMESPACE };
+  const runner = buildHappyProofRunner(target);
+  let reads = 0;
+  const result = await runRedisSmokeProof(target, 'release', {
+    ...proofDeps(target, runner),
+    run: (command, args) => {
+      if (args.includes('get') && args.includes('pod') && args.includes('redis-client') && ++reads === 1) {
+        return ok(JSON.stringify({ metadata: { uid: CLIENT_UID }, status: { conditions: [] } }));
+      }
+      if (args.includes('namespace') && args.includes('--ignore-not-found')) {
+        return { ...fail(1, ''), timedOut: true, status: null };
+      }
+      return runner.run(command, args);
+    },
+  });
+  assert.ok(reads >= 2);
+  assert.equal(result.ok, false);
+  assert.equal(result.retainReceipt, true);
+  assert.equal(result.detail, 'namespace-absent-unreadable');
 });
