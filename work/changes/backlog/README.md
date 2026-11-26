@@ -28,3 +28,5 @@
 **2026-11-26:** VER04 deferred to [platform operations](platform-operations/2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md); outstanding DB10 proof retained, execution commission withdrawn.
 
 **2026-11-26:** VER05 deferred alongside VER04 to [platform operations](platform-operations/2026-11-25--ver05-db-replicated-topology-programme/CHANGE.md); replication/failover and resource isolation requirements retained, execution commission withdrawn.
+
+**2026-11-26:** VER07 deferred to [platform operations](platform-operations/2026-11-25--ver07-cache-mechanism-programme/CHANGE.md); all cache runtime proof retained, execution commission withdrawn.

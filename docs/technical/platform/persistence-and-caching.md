@@ -94,3 +94,5 @@ CACHE01 adds a typed core and codecs beside the legacy Redis JSON adapter (`crea
 ### Physical Redis isolation
 
 Separate Redis instances only where an identified workload needs distinct eviction policy, resource budget or failure isolation. Package boundaries alone do not justify separate pools. Named-pool provisioning is not currently selected; future demand must be designed against the native Redis lifecycle rather than reviving INF60's retired custom create-only CLI.
+
+**VER07 disposition (2026-11-26):** Deferred to [platform backlog](../../../work/changes/backlog/platform-operations/2026-11-25--ver07-cache-mechanism-programme/CHANGE.md); all mechanism, load and fault acceptance remains outstanding, no current dispatch readiness. VER08 depends on VER07 source realization. Disposable Redis application proof is independent of native platform provisioning.

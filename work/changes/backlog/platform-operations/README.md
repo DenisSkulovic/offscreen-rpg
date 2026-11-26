@@ -41,3 +41,5 @@ INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execut
 - [VER04 database transaction, migration and recovery programme](2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md): deferred; owns transferred DB10 proof, no current commission. Refresh current DB/runtime and resource contracts when selected for dedicated reliability verification.
 
 - [VER05 replicated PostgreSQL topology verification](2026-11-25--ver05-db-replicated-topology-programme/CHANGE.md): deferred; VER04 source prerequisite and native PostgreSQL provisioning refresh required before owner-selected promotion. No current commission.
+
+- [VER07 cache mechanism, load and fault acceptance](2026-11-25--ver07-cache-mechanism-programme/CHANGE.md): deferred; all runtime acceptance oracles preserved, no current commission. Refresh cache APIs and resource contracts before owner-selected promotion.

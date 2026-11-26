@@ -1,6 +1,8 @@
+> VER07 source prerequisite is unsatisfied following owner deferral on 2026-11-26. No dispatch while this dependency remains unmet.
+
 # VER08 | Bounded dispatch
 
-VER02 and VER07 source joined, current DB03/04/05 schema ownership integrated, DB migration registry checks pass. No DB10 live prerequisite. MODEL=Composer Standard; one child at a time. Commands from root. Read named anchors and normative contract; no research swarm. 
+VER02 source joined; VER07 deferred, source prerequisite unsatisfied; current DB03/04/05 schema ownership integrated, DB migration registry checks pass. No DB10 live prerequisite. MODEL=Composer Standard; one child at a time. Commands from root. Read named anchors and normative contract; no research swarm. 
 
 T01 synthetic SQL origin: tools/verification/suites/packages/cache/scenarios/sql-origin.mjs, public @offscreen/db and @offscreen/cache, VER02 owned PostgreSQL, VER06 owned Redis. Use fresh disposable DB table cache_origin(owner,id,revision,value) and independent observer; parameterized SQL owner-scoped preflight, repeatable-read build returns observed revision. Compare disabled, cold, warm across two independent Node processes, version update and forced race (barrier between preflight and build; update commit then release), actual cache keys built identity only; owner denied before lookup, no stale authoritative command. 100 requests fixed 95 warm/5 cold then Redis stop same workload, measure actual SQL loads, active DB queries, per-process bulkhead max4, typed overload, no unbounded fallback; exact result for every success, no claim 20x measured unless counts support. Restart Redis and fresh identities recover. No full app, Temporal, S3, providers. SQL authoritative writes unchanged. Separate latency distributions and origin amplification, report actual PostgreSQL connections not guessed. 
    

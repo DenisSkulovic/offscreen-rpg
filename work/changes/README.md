@@ -360,7 +360,7 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 
 ## Cache reconciliation (2026-11-25)
 
-Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. CACHE04/CACHE08 source Done; CACHE07 superseded; live acceptance remains NOT-RUN. [Verification programme](../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). [VER06](archive/2026-11/platform-operations/2026-11-25--ver06-cache-resource-and-harness/CHANGE.md) source Done after VER01/02; VER07 after VER06/CACHE08; VER08 after VER07/02. Use `pnpm verify package cache`; no legacy live command, no global queue change.
+Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. CACHE04/CACHE08 source Done; CACHE07 superseded; live acceptance remains NOT-RUN. [Verification programme](../undertakings/storyteller-workshop/VERIFICATION-PROGRAMME.md). [VER06](archive/2026-11/platform-operations/2026-11-25--ver06-cache-resource-and-harness/CHANGE.md) source Done after VER01/02; VER07 deferred to platform-operations backlog; VER08 cannot dispatch until VER07 source prerequisite is realized and commission reconciled. Use `pnpm verify package cache`; no legacy live command, no global queue change.
 
 ## Shared PostgreSQL topology (2026-11-25)
 

@@ -1,3 +1,5 @@
+> Deferred by owner 2026-11-26. Historical task plan only; no current dispatch readiness. All acceptance oracles retained. Refresh current cache public APIs, harness and resource contracts before promotion.
+
 # VER07 | Bounded dispatch
 
 VER06 and CACHE08 source joined; no PostgreSQL required. Own Cache suite only. MODEL=Composer Standard; one child at a time. Commands from root. Read named anchors and normative contract; no research swarm. 
