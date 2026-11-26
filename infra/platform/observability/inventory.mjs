@@ -226,50 +226,72 @@ function readNamespaceObservation(identity, run, deadline, now) {
  * @param {() => number} now
  */
 function listNamespacedObjects(identity, resource, run, deadline, now) {
-  /** @type {object[]} */
+  const endpoints = {
+    serviceaccount: ['/api/v1', 'serviceaccounts'],
+    configmap: ['/api/v1', 'configmaps'],
+    secret: ['/api/v1', 'secrets'],
+    service: ['/api/v1', 'services'],
+    deployment: ['/apis/apps/v1', 'deployments'],
+    statefulset: ['/apis/apps/v1', 'statefulsets'],
+    persistentvolumeclaim: ['/api/v1', 'persistentvolumeclaims'],
+    replicaset: ['/apis/apps/v1', 'replicasets'],
+    pod: ['/api/v1', 'pods'],
+    endpointslice: ['/apis/discovery.k8s.io/v1', 'endpointslices'],
+    resourcequota: ['/api/v1', 'resourcequotas'],
+    limitrange: ['/api/v1', 'limitranges'],
+    job: ['/apis/batch/v1', 'jobs'],
+    cronjob: ['/apis/batch/v1', 'cronjobs'],
+    daemonset: ['/apis/apps/v1', 'daemonsets'],
+    role: ['/apis/rbac.authorization.k8s.io/v1', 'roles'],
+    rolebinding: ['/apis/rbac.authorization.k8s.io/v1', 'rolebindings'],
+    ingress: ['/apis/networking.k8s.io/v1', 'ingresses'],
+    networkpolicy: ['/apis/networking.k8s.io/v1', 'networkpolicies'],
+  };
+  const endpoint = endpoints[resource];
+  if (!endpoint) throwUnreadable('unknown-resource');
+  const [api, plural] = endpoint;
+  const path = `${api}/namespaces/${encodeURIComponent(identity.namespace)}/${plural}`;
   const items = [];
+  const seenTokens = new Set();
   let continueToken = '';
   do {
     assertDeadline(deadline, now);
-    const args = [
+    const query = new URLSearchParams({ limit: String(PER_KIND_LIMIT) });
+    if (continueToken) query.set('continue', continueToken);
+    const result = run('kubectl', [
       '--kubeconfig',
       identity.snapshotPath,
       '--context',
       identity.contextName,
-      '-n',
-      identity.namespace,
       '--request-timeout=10s',
       'get',
-      resource,
-      '--limit',
-      String(PER_KIND_LIMIT),
-      '-o',
-      'json',
-    ];
-    if (continueToken) {
-      args.push('--continue', continueToken);
-    }
-    const result = run('kubectl', args, {
-      timeoutMs: remainingMs(deadline, now),
-    });
+      '--raw',
+      `${path}?${query}`,
+    ], { timeoutMs: remainingMs(deadline, now) });
     refuseRead(result, resource);
-    /** @type {{ items?: object[], metadata?: { continue?: string }}} */
+    assertDeadline(deadline, now);
     let body;
     try {
       body = JSON.parse(result.stdout);
     } catch {
       throwUnreadable(`${resource}-json`);
     }
-    const page = Array.isArray(body.items) ? body.items : [];
-    if (items.length + page.length > TOTAL_OBJECT_LIMIT) {
+    if (!Array.isArray(body?.items) || body.items.length > PER_KIND_LIMIT) {
+      throwUnreadable('pagination-invalid');
+    }
+    if (items.length + body.items.length > TOTAL_OBJECT_LIMIT) {
       throwUnreadable('pagination-overflow');
     }
-    items.push(...page);
+    items.push(...body.items);
     continueToken = body.metadata?.continue ?? '';
+    if (typeof continueToken !== 'string' || seenTokens.has(continueToken)) {
+      throwUnreadable('pagination-invalid');
+    }
     if (continueToken) {
-      if (page.length !== PER_KIND_LIMIT) {
-        throwUnreadable('pagination-invalid');
+      if (items.length >= TOTAL_OBJECT_LIMIT || seenTokens.size >= TOTAL_OBJECT_LIMIT) {
+        throwUnreadable('pagination-overflow');
       }
+      seenTokens.add(continueToken);
     }
   } while (continueToken);
   return items;
@@ -476,6 +498,7 @@ export function collectInventory(identity, artifacts, deps = {}) {
       }
       for (const item of items) {
         const key = objectKey(item.kind, item.metadata?.name);
+        if (Object.hasOwn(objects, key)) throwUnreadable('duplicate-object');
         objects[key] = sanitizeListedObject(item);
       }
     }
