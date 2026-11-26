@@ -12,7 +12,7 @@ Unaccepted designs and investigations that still need an owner decision, selecte
 
 | Item | Status |
 | --- | --- |
-| [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R3 borrow-first agent runtime research and paired experiment proposal; grouped package map; no framework or implementation commissioned |
+| [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
 | [RabbitMQ platform](open/rabbitmq-platform/README.md) | R10 independently defended and owner accepted; source Change commissioned, retained for acceptance traceability |
 | [Object storage platform](open/object-storage-platform/README.md) | R9 defended/owner accepted; canonical promoted, source Change commissioned; retained for acceptance traceability; occupied admission separately gated |
 | [PostgreSQL platform renewal](open/postgres-platform/README.md) | Structural design accepted and native baseline integrated on main; residual fault-path/lock proof remains open; retained for acceptance traceability |

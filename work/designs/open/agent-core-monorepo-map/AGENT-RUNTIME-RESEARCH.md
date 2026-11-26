@@ -1,5 +1,7 @@
 # Agent runtime research | R3, 2026-11-27
 
+**R4 update:** [technology-selection dossiers](technology-selection/README.md) supersede the shortlist and version-evidence standing below. Four integration manifests now inspected at an immutable upstream SHA; Strands promoted to primary cohort; OpenAI nested-agent documentation/source version skew identified. Preserve R3 as historical initial research.
+
 Scope: TypeScript/Node, existing Temporal infrastructure, clean-slate generic agent engine. Documentation research only, not a framework selection. Current main 1bf121b488b798f57d1f9f0d738d0f6ba0ce4f11; worker and workflows manifests pin Temporal 1.24.0. Exact current integration peer versions, licenses, release artifacts and compatibility with that baseline remain unverified (raw upstream manifest retrieval failed); resolve before installing or claiming compatibility. No packages installed, no provider calls, no cluster changes.
 
 ## Leading finding
