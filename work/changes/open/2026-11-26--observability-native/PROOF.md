@@ -27,3 +27,5 @@ Fresh release runtime, hostile tenant isolation, prolonged saturation, crash per
 Cursor: A1–A5 and A12 focused tests, A11 source fixture, short subprocess tests; build tools for owner. ChatGPT/owner: A6–A10 actual runtime and conditional A11 read-only preview. A9 requires isolated host/VM and explicit authorization; no availability claim. Exact commands and cleanup preconditions remain to be finalized by planner. All implementation acceptance NOT RUN.
 
 Focused source commands and owned test files are now selected in TASKS.md; actual heavy proof commands and target availability still need final planner review. No proof executed.
+
+Detailed selected proof tooling and owner command sequence: [OWNER-ACCEPTANCE.md](OWNER-ACCEPTANCE.md). T07 implements it; no experiment scripts copied as public proof. Public plan/ensure/status CLI syntax and isolated target availability remain to be verified before final commission.
