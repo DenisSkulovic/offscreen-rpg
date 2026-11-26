@@ -1,3 +1,4 @@
+import { previewBaselineEnsure } from './preview.mjs';
 import { runPlatformCommand } from '../../common/commands.mjs';
 import { renderPlatformDocuments } from '../../common/render.mjs';
 import { formatManifestDocuments } from '../../common/manifest-output.mjs';
@@ -75,7 +76,7 @@ export function assessDevCnpg(probe) {
       ['compatible', 'ready', 'pending'].includes(value) ? 'owned' :
       value === 'incompatible' ? 'foreign' : 'unknown';
     return {
-      refusals: state.refusals,
+      refusals: Array.isArray(state.refusals) ? state.refusals : [{ id: 'invalid-observation', detail: 'Missing refusal classification' }],
       pin: probe.pin,
       namespace: project(state.namespace),
       cluster: project(state.cluster),
@@ -265,22 +266,5 @@ export function statusDevCnpg(probe) {
  * @param {{ authorize?: boolean, operatorManifestSha256?: string, failAfterOperator?: boolean, failOperatorWaits?: boolean, run?: typeof runPlatformCommand }} [options]
  */
 export function ensureDevCnpg(probe, options = {}) {
-  const plan = planDevCnpg(probe, options);
-  const refusals = [...plan.refusals];
-  if (!options.authorize) refusals.push({ id: 'ensure-not-authorized', detail: 'Ensure not authorized' });
-  if (options.operatorManifestSha256 && options.operatorManifestSha256 !== probe.pin?.sha256)
-    refusals.push({ id: 'operator-manifest-sha-mismatch', detail: 'Manifest does not match pin' });
-  // This is a pure preview, never a receipt or an executable mutation plan.
-  if (!probe.fullAssessment)
-    refusals.push({ id: 'full-observation-required', detail: 'Projected observations cannot authorize baseline creation' });
-  const actions = [];
-  if (!refusals.length) {
-    const state = probe.fullAssessment;
-    if (state.operator === 'absent') actions.push({ op: 'apply-operator' });
-    else actions.push({ op: 'verify-operator' });
-    if (state.namespace === 'absent') actions.push({ op: 'create-namespace' });
-    if (state.cluster === 'absent') actions.push({ op: 'create-cluster' });
-    actions.push({ op: 'wait-cluster-ready' });
-  }
-  return { ...plan, mode: 'ensure', readOnly: true, ok: refusals.length === 0, mutated: false, refusals, actions };
+  return previewBaselineEnsure(planDevCnpg(probe, options), probe, options);
 }
