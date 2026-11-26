@@ -277,7 +277,17 @@ export function captureIdentity(profileId, contextName, deps = {}) {
   const expectedCluster = kindKubeconfigClusterName(profile.clusterName);
   const configView = run(
     'kubectl',
-    ['--context', contextName, 'config', 'view', '--minify', '-o', 'json'],
+    [
+      '--context',
+      contextName,
+      'config',
+      'view',
+      '--minify',
+      '--raw',
+      '--flatten',
+      '-o',
+      'json',
+    ],
     {
       timeoutMs: Math.min(
         PREFLIGHT_COMMAND_TIMEOUT_MS,
