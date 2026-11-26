@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
-import { runPlatformCommand } from '../../../platform/common/commands.mjs';
+import { assertPlatformTarget, runPlatformCommand } from '../../../platform/common/commands.mjs';
 import { readPlatformProfile } from '../../../platform/common/profile.mjs';
 import { BROKER_NAME } from '../../../platform/rabbitmq/inventory.mjs';
 
@@ -70,8 +70,9 @@ export function createKubectlProofRunner(context, ns) {
           if (!got.ok) {
             return { ok: false, stderr: got.stderr };
           }
-          const key = kind === 'ns' ? 'namespaceUid' : `${kind}Uid`;
+          const key = kind === 'ns' ? 'namespaceUid' : kind === 'rabbitmqcluster' ? 'crUid' : `${kind}Uid`;
           identities[key] = got.stdout.trim();
+          if (!identities[key]) return { ok: false };
         }
         return { ok: true, identities };
       }
@@ -88,55 +89,36 @@ export function createKubectlProofRunner(context, ns) {
             String(request.name),
             `--from-file=amqp_smoke.py=${join(MODULE_ROOT, 'amqp_smoke.py')}`,
             `--from-file=worker_loss.py=${join(MODULE_ROOT, 'worker_loss.py')}`,
+            '-o', 'json',
           ],
           { timeoutMs: API_TIMEOUT_MS },
         );
-        if (!created.ok) {
-          return { ok: false, stderr: created.stderr };
-        }
-        const uid = runPlatformCommand(
-          'kubectl',
-          [
-            '--context',
-            context,
-            '-n',
-            ns,
-            'get',
-            'configmap',
-            String(request.name),
-            '-o',
-            'jsonpath={.metadata.uid}',
-          ],
-          { timeoutMs: API_TIMEOUT_MS },
-        );
-        return { ok: true, uid: uid.stdout.trim(), stdout: created.stdout };
+        if (!created.ok) return { ok: false, lostResponse: true };
+        try {
+          const object = JSON.parse(created.stdout);
+          const uid = object.metadata?.uid;
+          if (object.kind !== 'ConfigMap' || object.metadata?.name !== request.name ||
+              object.metadata?.namespace !== ns || typeof uid !== 'string' || !uid)
+            return { ok: false, lostResponse: true };
+          return { ok: true, uid };
+        } catch { return { ok: false, lostResponse: true }; }
       }
       case 'pod-create': {
         const manifest = buildPodManifest(ns, request);
         const created = runPlatformCommand(
           'kubectl',
-          ['--context', context, '-n', ns, 'create', '-f', '-'],
+          ['--context', context, '-n', ns, 'create', '-f', '-', '-o', 'json'],
           { input: manifest, timeoutMs: API_TIMEOUT_MS },
         );
-        if (!created.ok) {
-          return { ok: false, stderr: created.stderr };
-        }
-        const uid = runPlatformCommand(
-          'kubectl',
-          [
-            '--context',
-            context,
-            '-n',
-            ns,
-            'get',
-            'pod',
-            String(request.name),
-            '-o',
-            'jsonpath={.metadata.uid}',
-          ],
-          { timeoutMs: API_TIMEOUT_MS },
-        );
-        return { ok: true, uid: uid.stdout.trim(), stdout: created.stdout };
+        if (!created.ok) return { ok: false, lostResponse: true };
+        try {
+          const object = JSON.parse(created.stdout);
+          const uid = object.metadata?.uid;
+          if (object.kind !== 'Pod' || object.metadata?.name !== request.name ||
+              object.metadata?.namespace !== ns || typeof uid !== 'string' || !uid)
+            return { ok: false, lostResponse: true };
+          return { ok: true, uid };
+        } catch { return { ok: false, lostResponse: true }; }
       }
       case 'pod-wait': {
         const deadline = performance.now() + Number(request.timeoutMs ?? 120_000);
@@ -176,6 +158,24 @@ export function createKubectlProofRunner(context, ns) {
           ['--context', context, '-n', ns, 'logs', `pod/${request.name}`],
           { timeoutMs: API_TIMEOUT_MS },
         );
+      case 'smoke-fixture-delete': {
+        const kind = request.kind;
+        const name = String(request.name);
+        const uid = String(request.uid);
+        if (context !== 'kind-offscreen-dev' || ns !== 'offscreen-dev-rabbitmq' ||
+            !/^[0-9a-f-]{36}$/.test(uid) ||
+            !(kind === 'pods' && /^rabbitmq-proof-[0-9a-f]{16}-(smoke|wrong-password)$/.test(name) ||
+              kind === 'configmaps' && /^rabbitmq-proof-[0-9a-f]{16}$/.test(name)))
+          return { ok: false };
+        const uri = `/api/v1/namespaces/${ns}/${kind}/${name}`;
+        const deleted = runPlatformCommand('kubectl', ['--context', context, 'delete', '--raw', uri, '-f', '-'], {
+          input: JSON.stringify({ apiVersion: 'v1', kind: 'DeleteOptions', preconditions: { uid }, gracePeriodSeconds: 0 }),
+          timeoutMs: API_TIMEOUT_MS,
+        });
+        if (!deleted.ok) return { ok: false };
+        const absent = runPlatformCommand('kubectl', ['--context', context, '-n', ns, 'get', kind, name, '--ignore-not-found', '-o', 'json'], { timeoutMs: API_TIMEOUT_MS });
+        return { ok: absent.ok && absent.stdout.trim() === '' };
+      }
       case 'pod-delete': {
         const grace = Number(request.gracePeriod ?? 5);
         const args = [
@@ -349,6 +349,8 @@ spec:
 }
 
 async function runLiveProof({ mode, profile, context }) {
+  if (mode !== 'smoke' || profile !== 'dev' || context !== 'kind-offscreen-dev') return { ok: false, phase: 'refused', reason: 'live-proof-mode-or-context-not-accepted' };
+  assertPlatformTarget('dev');
   const platform = readPlatformProfile(profile);
   const ns = platform.namespaces.rabbitmq;
   const { dir, receiptPath } = createReceiptDirectory(REPO_ROOT);
