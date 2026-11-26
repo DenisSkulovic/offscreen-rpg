@@ -5,7 +5,7 @@ import { baselineCnpgClusterName } from '../config.mjs';
 import { readPlatformProfile } from '../../common/profile.mjs';
 import { assessClusterSpec } from './compatibility.mjs';
 import { createBaselineCustody } from './custody.mjs';
-import { loadOperatorArtifact } from './operator.mjs';
+import { loadOperatorArtifact, operatorIdentity } from './operator.mjs';
 import { collectBaselineObservation, assessBaselineObservation, observeWritablePrimary } from './observation.mjs';
 
 const manager = profileId => profileId === 'dev' ? 'offscreen-dev-cnpg' : 'offscreen-release-cnpg';
@@ -44,6 +44,19 @@ function confirmedIdentity(object, expected) {
     typeof object.metadata.uid === 'string' && object.metadata.uid.length > 0;
 }
 
+/** Require a complete native acknowledgment; no inferred success from exit code. */
+export function acknowledgeOperatorApply(result, inventory) {
+  if (!result.ok) return false;
+  const body = parseObject(result);
+  const objects = body?.kind === 'List' ? body.items : null;
+  if (!Array.isArray(objects) || objects.length !== inventory.length) return false;
+  const expected = new Set(inventory.map(entry => entry.id));
+  for (const object of objects) {
+    if (!object?.metadata?.uid || !expected.delete(operatorIdentity(object))) return false;
+  }
+  return expected.size === 0;
+}
+
 /** Shared native baseline worker. No existing-object mutation or write retries. */
 export function ensureBaseline(profileId, deps = {}) {
   const custody = deps.custody ?? createBaselineCustody();
@@ -73,8 +86,9 @@ export function ensureBaseline(profileId, deps = {}) {
     let assessed = assessBaselineObservation(observed);
     if (assessed.refusals.length) return receipt(false, assessed.refusals);
     const initialNamespaceUid = observed.namespace.object?.metadata.uid;
-    const initialClusterUid = observed.cluster.object?.metadata.uid;
-    const initialInstances = assessed.observedInstances;
+    let initialClusterUid = observed.cluster.object?.metadata.uid;
+    let initialInstances = assessed.observedInstances;
+    const initialClusterUnknown = assessed.cluster === 'unreadable';
     let locked = false;
     const requiresWrite = state => state.operator === 'absent' || state.namespace === 'absent' || state.cluster === 'absent';
     if (requiresWrite(assessed)) {
@@ -94,11 +108,12 @@ export function ensureBaseline(profileId, deps = {}) {
       stage = 'operator';
       writeInFlight = true;
       actions.push({ op: 'apply-operator', outcome: 'attempted' });
-      const applied = kubectl(['apply', '--server-side', '--field-manager=' + manager(profileId), '-f', '-'],
+      const applied = kubectl(['apply', '--server-side', '--field-manager=' + manager(profileId), '-f', '-', '-o', 'json'],
         { input: artifact.body, timeoutMs: 180000, mutation: true });
       writeInFlight = false;
-      actions[actions.length - 1].outcome = applied.ok ? 'acknowledged' : 'unknown';
-      if (!applied.ok) return refuse('operator-apply-unknown', 'Operator installation outcome unknown; re-observe explicitly', 'unknown');
+      const acknowledged = acknowledgeOperatorApply(applied, artifact.inventory);
+      actions[actions.length - 1].outcome = acknowledged ? 'acknowledged' : 'unknown';
+      if (!acknowledged) return refuse('operator-apply-unknown', 'Operator installation outcome unknown; re-observe explicitly', 'unknown');
       confirmedMutations.push({ op: 'apply-operator', identities: artifact.inventory.map(entry => entry.id) });
     }
 
@@ -136,6 +151,23 @@ export function ensureBaseline(profileId, deps = {}) {
       return { object };
     }
 
+    if (initialClusterUnknown) {
+      // CRD establishment was pending, not evidence of absence. Re-observe under
+      // custody before any creation; never treat an unreadable object as absent.
+      if (assessed.cluster === 'absent' && !locked) {
+        if (deps.maintenance !== true) return refuse('maintenance-required', 'Owner maintenance required');
+        custody.acquire();
+        locked = true;
+        if (!(deps.memoryAdmitted ?? memoryAdmitted)()) return refuse('insufficient-memory', 'Host memory admission failed');
+        observed = collect();
+        assessed = assessBaselineObservation(observed);
+        if (assessed.refusals.length) return receipt(false, assessed.refusals);
+        if (assessed.operator !== 'ready' || assessed.cluster !== 'absent')
+          return refuse('identity-changed', 'Baseline changed while acquiring custody');
+      }
+      initialClusterUid = observed.cluster.object?.metadata.uid;
+      initialInstances = assessed.observedInstances;
+    }
     if (initialNamespaceUid !== observed.namespace.object?.metadata.uid ||
       initialClusterUid !== observed.cluster.object?.metadata.uid ||
       (initialInstances !== undefined && assessed.observedInstances !== initialInstances))
