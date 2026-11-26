@@ -16,7 +16,7 @@ export function observeDevPostgresReady({ run = runPlatformCommand } = {}) {
     const result = observeWritablePrimary('dev', { run });
     return result.ok ? { ok: true, primaryPod: result.primaryPod } : result;
   } catch {
-    return { ok: false, detail: 'shared CNPG target or primary observation unavailable' };
+    return { ok: false, detail: 'shared CNPG target or primary observation unreadable' };
   }
 }
 

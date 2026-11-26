@@ -167,8 +167,14 @@ export function observeWritablePrimary(profileId, { run = runPlatformCommand } =
   const name = baselineCnpgClusterName(profileId);
   const read = (resource, objectName, namespace) => readBaselineObject(profileId, resource, objectName, namespace, run).object;
   const fail = detail => ({ ok: false, detail });
-  const namespace = read('namespace', ns, undefined);
-  const cluster = read('cluster.postgresql.cnpg.io', name, ns);
+  const namespaceObservation = readBaselineObject(profileId, 'namespace', ns, undefined, run);
+  if (namespaceObservation.state !== 'present')
+    return fail('shared CNPG namespace is ' + namespaceObservation.state);
+  const clusterObservation = readBaselineObject(profileId, 'cluster.postgresql.cnpg.io', name, ns, run);
+  if (clusterObservation.state !== 'present')
+    return fail('shared CNPG cluster is ' + clusterObservation.state);
+  const namespace = namespaceObservation.object;
+  const cluster = clusterObservation.object;
   const assessment = assessBaselineObservation({ profile, operator: { state: 'ready' },
     namespace: namespace ? { state: 'present', object: namespace } : { state: 'unreadable' },
     cluster: cluster ? { state: 'present', object: cluster } : { state: 'unreadable' } });

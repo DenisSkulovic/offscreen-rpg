@@ -34,7 +34,8 @@ function kubectlConfigJson(profile, port) {
     clusters: [
       { name: clusterName, cluster: { server: `https://127.0.0.1:${port}` } },
     ],
-    contexts: [{ name: contextName, context: { cluster: clusterName } }],
+    contexts: [{ name: contextName, context: { cluster: clusterName, user: contextName } }],
+    users: [{ name: contextName, user: {} }],
     'current-context': contextName,
   });
 }

@@ -7,3 +7,7 @@ Commissioned by owner 2026-11-26, direct ChatGPT implementation; target main de2
 Shared native worker, observation and compatibility policy, custody, public adapters and initial test migrations are committed on the Change branch. Source acceptance has not been executed. Exact upstream operator artifact must be placed at `infra/platform/postgres/vendor/cnpg-1.30.2.yaml` and independently verified against `operator.pin` before runtime use. Do not substitute regenerated YAML. The maintenance gate is `OFFSCREEN_POSTGRES_MAINTENANCE=authorized` for creation only, representing owner-confirmed quiescence of topology, tenant, Temporal and other baseline writers. It is not permission to delete or repair existing objects.
 
 Remaining proof: vendor inventory compatibility against measured specimens, all affected source tests, worker acknowledgment/unknown/collision/no-op paths, disposable native installation and repeat invocation. No live proof or main integration claimed.
+
+## Source acceptance checkpoint
+
+Owner ran the focused suite at b127bb0: 173/173 pass, vendor committed. Broader suite: 426/432 pass; status regression traced to loss of absent/unreadable distinction and old kubeconfig fixture. Corrected here; rerun pending. Five other failures involve move-map, image-loading and retired tenant proof paths; compare against main before attributing them to this change. Runtime acceptance remains blocked pending isolated target proof.
