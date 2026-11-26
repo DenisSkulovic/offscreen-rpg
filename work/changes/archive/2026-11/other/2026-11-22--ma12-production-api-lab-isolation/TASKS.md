@@ -1,3 +1,5 @@
+> Historical source scope closed by owner 2026-11-27. Legacy artifact-specific acceptance retired; no dispatch or new PASS. Existing design/evidence retained.
+
 # MA12 | bounded Cursor tasks
 
 Branch linked `change/ma12-production-api-lab-isolation` from current undertaking HEAD; run change-branch guard. Parent implements T01→T05 and sends tested branch SHA to batch custodian without independently merging.

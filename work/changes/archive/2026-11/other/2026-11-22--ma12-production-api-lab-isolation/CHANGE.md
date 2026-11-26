@@ -1,6 +1,6 @@
 # MA12 | Remove developer Lab code from production API runtime
 
-**State: READY, parallel lane C.** Current source inspected at `d3ba291763de`, integration branch `undertaking/storyteller-workshop`. This is a real package graph and deployment isolation change, not a renaming exercise.
+**State:** Done (historical source scope; owner closure 2026-11-27). Current main manifests inspected at `4574db0ab19de2d7254afca0c2faf19a2123697e`: `@offscreen/api-lab` depends on API and Lab Support, while production API declares neither Lab package as a direct dependency. Legacy artifact-specific acceptance retired ahead of monorepo redesign. No new build, graph, artifact or runtime PASS; existing source untouched. Earlier planning below is historical, not dispatchable.
 
 **Observed defect:** `apps/api/src/app.ts` imports Lab Support at top-level even if `developerTools=false`; `apps/api/package.json` requires Lab Support in production. Four Chamber/QA Nest controllers in three API files depend on Lab implementation. Production bootstrap `src/main.ts` does not activate developerTools, but the Lab dependency is still present in the production install.
 
@@ -15,3 +15,7 @@
 **Done when:** production API manifest and source have zero Lab runtime dependencies; ordinary API build and auth still pass, Lab factory preserves all old authenticated dev endpoints and test harnesses, graph one-way `api-lab -> api`, and no new provider/DB unsafe operation. Production image dependency removal must be verified or explicitly NOT RUN, not assumed.
 
 [Source map](SOURCE-MAP.md) · [Execution](EXECUTION.md) · [Tasks](TASKS.md) · [Proof](PROOF.md).
+
+## Closure receipt
+
+Source evidence: [production API manifest](../../../../../../apps/api/package.json) and [outer Lab manifest](../../../../../../tools/api-lab/package.json). These establish direct dependency direction, not complete transitive artifact certification. Preserve one-way developer/production separation across source imports, runtime dependency closure, packaging and exposure in the redesigned architecture. Experimental/developer tooling may depend on production; production runtime must not depend on experimental tooling or implicitly enable developer capabilities. Preserve authorization and tenant isolation. Retire the old artifact-specific acceptance matrix; do not create a replacement packet or modify source. Original record: `4574db0ab19de2d7254afca0c2faf19a2123697e:work/changes/open/2026-11-22--ma12-production-api-lab-isolation/CHANGE.md`.

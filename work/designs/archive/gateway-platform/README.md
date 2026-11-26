@@ -1,6 +1,6 @@
-# Gateway platform renewal — R5 workshop
+# Gateway platform renewal | archived design
 
-Owner: architecture planner with repository owner. Integration baseline `7d073df9066ff7b618e9e22ae26ed0680def9bf0` on main. Status: owner-selected structural target R5; independent committee explicitly waived by owner on 2026-11-26. Source-only Change planned; live operations held.
+**State: Accepted and promoted; archived by owner 2026-11-27.** R5 owner-selected local structural scope; independent committee explicitly waived for this scope only. Existing release compatibility and isolated fresh/repeat installation, attachment refusal and synthetic SSE accepted under the implementation Change. [Canonical runbook and selected target](../../../../docs/runbooks/kubernetes-gateway.md) · [Open Change](../../../changes/open/2026-11-26--gateway-native-baseline/CHANGE.md) · [Original complete design](https://github.com/DenisSkulovic/offscreen-rpg/tree/f767ed67f406427044f540bb2a30db7d46ef5980/work/designs/open/gateway-platform). Historical R1–R5 research, experiments and proposals below are retained without upgrading historical evidence or dispatch authority. No change to implementation gates or specimen cleanup.
 
 ## Intent and posture
 Evolutionary renewal: retain native Gateway API and official Traefik Helm chart if pinned artifacts and live behavior support them. One local release edge, HTTP/ClusterIP and loopback-only host access; ordinary dev slots need no gateway by default. Future TLS/hostname/replica support through native configuration, not a service mesh, external API management or bespoke routing controller. Application authentication and webhook verification remain application responsibilities.

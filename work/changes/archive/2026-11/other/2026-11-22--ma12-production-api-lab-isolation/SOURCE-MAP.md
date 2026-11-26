@@ -1,3 +1,5 @@
+> Historical source scope closed by owner 2026-11-27. Legacy artifact-specific acceptance retired; no dispatch or new PASS. Existing design/evidence retained.
+
 # MA12 | current code and exact migration
 
 `apps/api/src/app.ts`: top-level Lab imports lines 74–82; optional developerTools + qaContext + chamberStorytellerControl around 173–194; fixtureSourceCanRespond injection around 221; four dev controller list around 265; CHAMBER, QA_JOURNEYS, CHAMBER_LAB providers around 348–383. Remove those imports while leaving createApp production setup, auth origin/CSRF, cache close and story authority unchanged. `apps/api/src/main.ts` currently passes no developerTools.

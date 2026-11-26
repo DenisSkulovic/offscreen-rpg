@@ -15,3 +15,5 @@ Run actual authenticated multi-owner scripted games on distinct application Pods
 
 ## Dependencies and exclusions
 Requires TURN03 joined cold-kind PASS, K8S10 one-fault baseline and WR10/WR11 integrated fake-provider path. Coordinate with SCALE02 stateful HA, SIM01 provider simulator and LOAD01 stress/autoscale. No new provider calls, cluster mutation, commercial infrastructure, full production HA claim or code implementation authorized by this packet.
+
+**Dependency reconciliation (2026-11-27):** TURN03 is cancelled. Historical requirements to pass its legacy scripted scenario are retired. Re-evaluate this work against the redesigned monorepo before owner selection; derive appropriate normal-path acceptance and resource/authority prerequisites from that architecture. This neither authorizes dispatch nor grants acceptance credit. Existing independent security and data-integrity requirements remain. [Historical TURN03](../../../archive/2026-11/distributed/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md).

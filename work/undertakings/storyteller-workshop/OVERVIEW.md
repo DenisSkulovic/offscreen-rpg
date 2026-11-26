@@ -5,7 +5,7 @@
 | Track | Complete | Remaining | Judgment |
 | --- | ---: | ---: | --- |
 | Architecture / developer workflow | ~75% | ~25% | ■■■■■■■■■■■■■■■□□□□□ Package ownership, library, DB/cache and infra foundations; composition and admission remain |
-| Storyteller / player journey | ~40% | ~60% | ■■■■■■■■□□□□□□□□□□□□ TURN03 real distributed authenticated scene2/fork not accepted |
+| Storyteller / player journey | ~40% | ~60% | ■■■■■■■■□□□□□□□□□□□□ Legacy TURN03 cancelled; redesigned acceptance not yet defined |
 | Distributed operations | ~30% | ~70% | ■■■■■■□□□□□□□□□□□□□□ Selective runtime, monitoring, release, restore, fault/load proof |
 | Overall | **~45%** | **~55%** | ■■■■■■■■■□□□□□□□□□□□ Horizontal foundations, not shipping readiness |
 
@@ -29,7 +29,7 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 1. INF49 composition source Done; INF50 residual regressions source Done; INF47 historical CLI source Done.
 2. Explicit operator monitoring activation and live historical query acceptance (separately authorized).
 3. INF38 selective dev; INF48 storage backlog; DB schema/runtime source Done through DB10 source join; DB10 live disposable proof gated. No live DB permission implied.
-4. INF29/DXK09 live lifecycle evidence using INF52 programmes (`--live` separately authorized); then TURN03 real ordinary player scene2 and historical fork.
+4. INF29/DXK09 live lifecycle evidence using INF52 programmes (`--live` separately authorized); then define integrated acceptance against the redesigned architecture.
 5. Release, fault, restore and scale acceptance separately gated.
 
 Finish line: ordinary authenticated player creates story, resolves scene, reaches scene2, forks and continues coherently with durable evidence; local dev operations are bounded and boring. Main trunk promotion is not product acceptance. Prior overview recoverable at audited SHA; dated checkpoints remain in UNDERTAKING and PROGRAM.
@@ -53,4 +53,6 @@ Finish line: ordinary authenticated player creates story, resolves scene, reache
 
 - 2026-11-26: Object storage R9 independently defended and owner accepted; [OBJECT-STORAGE-NATIVE](../../changes/open/2026-11-26--object-storage-native/CHANGE.md) source commissioned, heavy acceptance NOT RUN, occupied admission separately gated. No outcome credit; estimates unchanged (~75/40/30/45, ±20pp).
 
-**2026-11-26:** K8S10 moved to backlog by owner. Existing harness retained; fresh TURN03 PASS and refreshed plan before recommission, no live fault authorization.
+**2026-11-26:** K8S10 moved to backlog by owner. Existing harness retained; redesigned normal-path acceptance and refreshed plan before recommission, no live fault authorization.
+
+**2026-11-27 owner disposition:** TURN03 cancelled by owner 2026-11-27 because the monorepo and agent runtime will be fundamentally redesigned. Legacy scripted-path proof and architecture-specific recovery matrix are retired, not transferred as pending requirements. Historical evidence retained; no PASS inferred, existing implementation untouched. Future acceptance must be designed against the new architecture; preserve authorization, private data isolation, authoritative state integrity, idempotency, financial safety and truthful evidence. No dispatch or live authorization. Earlier TURN03 schedules and dependency gates are historical.

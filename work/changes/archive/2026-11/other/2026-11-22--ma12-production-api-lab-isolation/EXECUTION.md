@@ -1,3 +1,5 @@
+> Historical source scope closed by owner 2026-11-27. Legacy artifact-specific acceptance retired; no dispatch or new PASS. Existing design/evidence retained.
+
 # MA12 | fixed one-way Nest composition algorithm
 
 1. Add `apps/api/src/lab-host-contract.ts` with type `ApiOptionalExtension = {controllers: Type<unknown>[]; providers: Provider[]; fixtureSourceCanRespond?: <existing Story Engine callback signature>}`. Re-export `IdentityService` and `OPENINGS` through this narrow API-owned entry. Add export subpath in API manifest. Use type-only dependencies from Nest/Story Engine, **no** Lab Support.
