@@ -15,6 +15,10 @@ import {
   renderPlatformDocuments,
 } from '../platform/common/render.mjs';
 import {
+  lintRedisChart,
+  renderRedisChart,
+} from '../platform/redis/config.mjs';
+import {
   MIN_HOST_MEMORY_MIB,
   parseMeminfoMiB,
 } from '../clusters/kind/manager/host-probe.mjs';
@@ -100,7 +104,6 @@ const GATEWAY_TRAEFIK_DIGEST =
 const DEV_ENSURE_ENV = Object.freeze({
   cnpg: { OFFSCREEN_DEV_CNPG_ENSURE: 'authorized' },
   'object-storage': { OFFSCREEN_DEV_S3_ENSURE: 'authorized' },
-  redis: { OFFSCREEN_DEV_REDIS_ENSURE: 'authorized' },
 });
 
 const DEV_CLI = Object.freeze({
@@ -112,14 +115,12 @@ const DEV_CLI = Object.freeze({
     REPO_ROOT,
     'tools/dev-environments/src/adapters/dev-object-store-bootstrap-cli.mjs',
   ),
-  redis: join(REPO_ROOT, 'infra/platform/redis/dev-install.mjs'),
 });
 
 const RELEASE_INSTALL = Object.freeze({
   postgres: join(REPO_ROOT, 'infra/platform/postgres/install.sh'),
   'object-storage': join(REPO_ROOT, 'infra/platform/object-storage/install.sh'),
   gateway: join(REPO_ROOT, 'infra/platform/gateway/install.sh'),
-  redis: join(REPO_ROOT, 'infra/platform/redis/install.sh'),
   rabbitmq: join(REPO_ROOT, 'infra/platform/rabbitmq/install.sh'),
   observability: join(REPO_ROOT, 'infra/platform/observability/install.sh'),
 });
@@ -307,6 +308,21 @@ export function corePhases(profileId, command, selectedServices) {
       });
       continue;
     }
+    if (logicalId === 'redis') {
+      phases.push({
+        id: 'redis',
+        argv: [
+          process.execPath,
+          join(REPO_ROOT, 'infra/platform/redis/install.mjs'),
+          subcommand,
+          profileId,
+          readPlatformProfile(profileId).contextName,
+        ],
+        env: mutate ? { OFFSCREEN_REDIS_ENSURE: 'authorized' } : undefined,
+        mutate,
+      });
+      continue;
+    }
     if (profileId === 'dev') {
       if (logicalId === 'postgres') {
         phases.push({
@@ -323,13 +339,6 @@ export function corePhases(profileId, command, selectedServices) {
             command === 'ensure'
               ? { ...DEV_ENSURE_ENV['object-storage'] }
               : undefined,
-          mutate,
-        });
-      } else if (logicalId === 'redis') {
-        phases.push({
-          id: 'redis',
-          argv: [process.execPath, DEV_CLI.redis, subcommand],
-          env: command === 'ensure' ? { ...DEV_ENSURE_ENV.redis } : undefined,
           mutate,
         });
       }
@@ -371,7 +380,11 @@ function plannedPreflightSteps(profileId, command, selectedServices) {
   /** @type {string[]} */
   const steps = ['target', 'memory'];
   const chartServices = selectedChartServices(selectedServices);
-  if (profileId === 'release' || selectedServices.includes('temporal')) {
+  if (
+    profileId === 'release' ||
+    selectedServices.includes('temporal') ||
+    selectedServices.includes('redis')
+  ) {
     steps.push('helm');
   }
   if (chartServices.length > 0) {
@@ -417,6 +430,11 @@ export function runChartRenderPreflight(
 ) {
   const run = deps.run ?? runPlatformCommand;
   for (const service of selectedChartServices(selectedServices)) {
+    if (service === 'redis') {
+      lintRedisChart(profileId, { run });
+      renderRedisChart(profileId, { run });
+      continue;
+    }
     lintPlatformChart({ service, profile: profileId }, { run });
     renderPlatformDocuments(
       { service, profile: profileId, section: 'all' },
@@ -547,8 +565,12 @@ export function runEnsurePreflight(profileId, command, deps = {}) {
     steps.push('memory');
 
     const chartServices = selectedChartServices(selectedServices);
-    if (selectedServices.includes('temporal') ||
-        (profileId === 'release' && (chartServices.length > 0 || selectedServices.includes('gateway')))) {
+    if (
+      selectedServices.includes('temporal') ||
+      selectedServices.includes('redis') ||
+      (profileId === 'release' &&
+        (chartServices.length > 0 || selectedServices.includes('gateway')))
+    ) {
       activeStep = 'helm';
       progress?.phaseStart('preflight:helm');
       assertHelmAvailable({ run });
@@ -690,15 +712,34 @@ export function redactPlatformReceipt(receipt) {
 }
 
 /**
+ * @param {string | undefined} phaseId
+ * @param {string[]} argv
+ * @returns {number | undefined}
+ */
+export function platformRunnerSpawnTimeout(phaseId, argv) {
+  if (phaseId === 'redis' && argv[2] === 'ensure') {
+    return undefined;
+  }
+  if (['cnpg', 'postgres'].includes(phaseId)) {
+    return 1_830_000;
+  }
+  if (phaseId === 'temporal') {
+    return 1_200_000;
+  }
+  return 600_000;
+}
+
+/**
  * @param {string[]} argv
  * @param {{ env?: Record<string, string>, phaseId?: string }} [options]
  * @returns {{ ok: boolean, status: number | null, stdout: string, stderr: string }}
  */
 export function defaultPlatformRunner(argv, options = {}) {
+  const timeout = platformRunnerSpawnTimeout(options.phaseId, argv);
   const result = spawnSync(argv[0], argv.slice(1), {
     encoding: 'utf8',
     env: { ...process.env, ...(options.env ?? {}) },
-    timeout: ['cnpg', 'postgres'].includes(options.phaseId) ? 1_830_000 : options.phaseId === 'temporal' ? 1_200_000 : 600_000,
+    ...(timeout === undefined ? {} : { timeout }),
     ...(['cnpg', 'postgres'].includes(options.phaseId) ? { killSignal: 'SIGKILL' } : {}),
     maxBuffer: 8 * 1024 * 1024,
     windowsHide: true,

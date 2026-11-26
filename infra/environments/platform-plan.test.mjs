@@ -1,19 +1,18 @@
 import assert from 'node:assert/strict';
-import { dirname, join } from 'node:path';
+import process from 'node:process';
+import { join } from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 import {
   OPTIONAL_EXCLUDED_SERVICES,
   REPO_ROOT,
   buildPlatformPlan,
   parsePlatformServiceSelection,
+  platformRunnerSpawnTimeout,
   runChartRenderPreflight,
   runEnsurePreflight,
   runGatewayInstallPreflight,
   runPlatformPlan,
 } from './platform-plan.mjs';
-
-const here = dirname(fileURLToPath(import.meta.url));
 
 test('dev and release plans keep the core service order with absolute entrypoints', () => {
   const dev = buildPlatformPlan({ profileId: 'dev', command: 'plan' });
@@ -76,38 +75,72 @@ test('none selection yields empty phases and no ensure preflight', () => {
   assert.equal(ensure.phases.length, 0);
 });
 
-test('dev redis-only selection uses dev-install argv', () => {
-  const plan = buildPlatformPlan({
-    profileId: 'dev',
-    command: 'plan',
-    services: 'redis',
-  });
-  assert.equal(plan.ok, true);
-  assert.deepEqual(plan.selectedServices, ['redis']);
-  assert.equal(plan.phases.length, 1);
-  assert.equal(plan.phases[0].id, 'redis');
-  assert.deepEqual(plan.phases[0].argv, [
-    process.execPath,
-    join(REPO_ROOT, 'infra/platform/redis/dev-install.mjs'),
-    'plan',
-  ]);
-});
+test('dev and release redis phases use native install.mjs argv', () => {
+  const redisInstall = join(REPO_ROOT, 'infra/platform/redis/install.mjs');
+  for (const profileId of ['dev', 'release']) {
+    const context =
+      profileId === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
+    const plan = buildPlatformPlan({
+      profileId,
+      command: 'plan',
+      services: 'redis',
+    });
+    assert.equal(plan.ok, true);
+    assert.deepEqual(plan.selectedServices, ['redis']);
+    assert.equal(plan.phases.length, 1);
+    const phase = plan.phases[0];
+    assert.equal(phase.id, 'redis');
+    assert.deepEqual(phase.argv, [
+      process.execPath,
+      redisInstall,
+      'plan',
+      profileId,
+      context,
+    ]);
+    assert.equal(phase.env, undefined);
+    const joined = phase.argv.join(' ');
+    assert.equal(joined.includes('dev-install.mjs'), false);
+    assert.equal(joined.includes('install.sh'), false);
 
-test('release redis-only selection uses the optional installer argv', () => {
-  const plan = buildPlatformPlan({
+    const ensure = buildPlatformPlan({
+      profileId,
+      command: 'ensure',
+      services: 'redis',
+      confirmation: context,
+    });
+    assert.equal(ensure.ok, true);
+    assert.deepEqual(ensure.phases[0].argv.slice(0, 3), [
+      process.execPath,
+      redisInstall,
+      'ensure',
+    ]);
+    assert.equal(ensure.phases[0].env?.OFFSCREEN_REDIS_ENSURE, 'authorized');
+    assert.equal(
+      ensure.phases[0].env?.OFFSCREEN_DEV_REDIS_ENSURE,
+      undefined,
+    );
+    assert.ok(ensure.preflight.includes('helm'));
+  }
+  const releasePlan = buildPlatformPlan({
     profileId: 'release',
     command: 'plan',
     services: 'redis',
   });
-  assert.equal(plan.ok, true);
-  assert.deepEqual(plan.selectedServices, ['redis']);
-  assert.equal(plan.phases.length, 1);
-  assert.equal(plan.phases[0].id, 'redis');
-  assert.deepEqual(plan.phases[0].argv, [
-    'bash',
-    join(REPO_ROOT, 'infra/platform/redis/install.sh'),
-  ]);
-  assert.deepEqual(plan.excludedOptional, ['rabbitmq', 'observability']);
+  assert.deepEqual(releasePlan.excludedOptional, ['rabbitmq', 'observability']);
+});
+
+test('redis ensure runner drops supervisor timeout but plan keeps one', () => {
+  const redisInstall = join(REPO_ROOT, 'infra/platform/redis/install.mjs');
+  const planArgv = [process.execPath, redisInstall, 'plan', 'dev', 'kind-offscreen-dev'];
+  const ensureArgv = [
+    process.execPath,
+    redisInstall,
+    'ensure',
+    'dev',
+    'kind-offscreen-dev',
+  ];
+  assert.equal(platformRunnerSpawnTimeout('redis', planArgv), 600_000);
+  assert.equal(platformRunnerSpawnTimeout('redis', ensureArgv), undefined);
 });
 
 test('explicit mixed selection reorders to the canonical catalog', () => {
@@ -178,7 +211,8 @@ test('chart render preflight touches only selected services', () => {
 test('ensure preflight skips unselected chart services', () => {
   /** @type {string[]} */
   const helmLintTargets = [];
-  const run = (command, args) => {
+  let legacyJsonChartTemplates = 0;
+  const run = (command, args, options) => {
     if (command === 'kind' && args[0] === 'get') {
       return { ok: true, stdout: 'offscreen-release\n' };
     }
@@ -216,13 +250,32 @@ test('ensure preflight skips unselected chart services', () => {
     if (command === 'helm' && args[0] === 'version') {
       return { ok: true, stdout: 'v3.22.1\n', stderr: '' };
     }
+    if (command === 'helm' && args[0] === 'version' && args.includes('--short')) {
+      return { ok: true, stdout: 'v3.22.1\n', stderr: '' };
+    }
     if (command === 'helm' && args[0] === 'template') {
+      if (args.includes('-') && typeof options?.input === 'string') {
+        legacyJsonChartTemplates += 1;
+      }
       return {
         ok: true,
-        stdout: `${JSON.stringify({
-          kind: 'Namespace',
-          metadata: { name: 'lab-a' },
-        })}\n`,
+        stdout: [
+          '---',
+          'kind: ConfigMap',
+          'metadata:',
+          '  name: redis-config',
+          '  namespace: lab-a',
+          '---',
+          'kind: Deployment',
+          'metadata:',
+          '  name: redis',
+          '  namespace: lab-a',
+          '---',
+          'kind: Service',
+          'metadata:',
+          '  name: redis',
+          '  namespace: lab-a',
+        ].join('\n'),
       };
     }
     if (command === 'helm' && args[0] === 'lint') {
@@ -238,14 +291,31 @@ test('ensure preflight skips unselected chart services', () => {
     selectedServices: ['redis'],
   });
   assert.equal(pre.ok, true);
-  assert.equal(helmLintTargets.length, 1);
-  assert.match(helmLintTargets[0], /redis\/chart$/);
+  assert.equal(legacyJsonChartTemplates, 0);
+  assert.equal(helmLintTargets.length, 2);
   assert.equal(
     helmLintTargets.some((path) =>
       /(?:postgres|temporal|object-storage)\/chart$/.test(path),
     ),
     false,
   );
+});
+
+test('release redis plan stays preview-only without runner calls', () => {
+  const plan = buildPlatformPlan({
+    profileId: 'release',
+    command: 'plan',
+    services: 'redis',
+  });
+  let calls = 0;
+  const receipt = runPlatformPlan(plan, () => {
+    calls += 1;
+    return { ok: true };
+  });
+  assert.equal(receipt.ok, true);
+  assert.equal(calls, 0);
+  assert.equal(receipt.skipped.length, 1);
+  assert.equal(receipt.phases[0]?.detail, 'preview-only');
 });
 
 test('parsePlatformServiceSelection rejects duplicates and alias mixing', () => {
@@ -313,11 +383,12 @@ test('a second phase failure skips the remaining phases without rollback', () =>
 
 test('core plans never include fixture, tenant, or optional service phases', () => {
   const forbidden =
-    /fixture|tenant|redis|rabbitmq|observabilit|content-bootstrap|cluster-up/i;
+    /fixture|tenant|rabbitmq|observabilit|content-bootstrap|cluster-up/i;
   for (const profileId of ['dev', 'release']) {
     const plan = buildPlatformPlan({ profileId, command: 'plan' });
     for (const phase of plan.phases) {
       assert.equal(forbidden.test(phase.id), false);
+      assert.notEqual(phase.id, 'redis');
       assert.equal(forbidden.test(phase.argv.join(' ')), false);
     }
     assert.equal(
