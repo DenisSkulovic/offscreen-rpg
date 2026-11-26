@@ -33,46 +33,28 @@ const ASSERT_EXACTLY_ONCE = join(
  * @param {string} context
  * @param {string} ns
  */
-export function createKubectlProofRunner(context, ns) {
+export function createKubectlProofRunner(context, ns, { run = runPlatformCommand } = {}) {
   /** @type {import('./proof-host.mjs').ProofRunner & { calls: import('./proof-host.mjs').ProofOp[] }} */
   const runner = (request) => {
     runner.calls.push(request);
     switch (request.op) {
       case 'capture-identities': {
         const items = [
-          ['namespace', 'ns', ns],
-          ['rabbitmqcluster', BROKER_NAME, BROKER_NAME],
-          ['service', BROKER_NAME, BROKER_NAME],
-          [
-            'secret',
-            `${BROKER_NAME}-default-user`,
-            `${BROKER_NAME}-default-user`,
-          ],
+          ['namespaceUid', 'namespace', ns, false],
+          ['crUid', 'rabbitmqclusters.rabbitmq.com', BROKER_NAME, true],
+          ['serviceUid', 'service', BROKER_NAME, true],
+          ['secretUid', 'secret', `${BROKER_NAME}-default-user`, true],
         ];
-        /** @type {Record<string, string>} */
         const identities = { vhost: '/' };
-        for (const [, kind, name] of items) {
-          const got = runPlatformCommand(
+        for (const [key, kind, name, namespaced] of items) {
+          const got = run(
             'kubectl',
-            [
-              '--context',
-              context,
-              '-n',
-              ns,
-              'get',
-              kind,
-              name,
-              '-o',
-              'jsonpath={.metadata.uid}',
-            ],
+            ['--context', context, ...(namespaced ? ['-n', ns] : []),
+              'get', kind, name, '-o', 'jsonpath={.metadata.uid}'],
             { timeoutMs: API_TIMEOUT_MS },
           );
-          if (!got.ok) {
-            return { ok: false, stderr: got.stderr };
-          }
-          const key = kind === 'ns' ? 'namespaceUid' : kind === 'rabbitmqcluster' ? 'crUid' : `${kind}Uid`;
+          if (!got.ok || !got.stdout.trim()) return { ok: false, reason: `identity-read-${key}` };
           identities[key] = got.stdout.trim();
-          if (!identities[key]) return { ok: false };
         }
         return { ok: true, identities };
       }
