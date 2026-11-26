@@ -1,7 +1,9 @@
 # Object storage platform | R9 second-defense candidate
 
 2026-11-26 · integration main `88b6ebae6acb1664c8c571aadd8cc4385dbb40eb` · designer ChatGPT.
-**State: revised after independent pass 01, self-defended for bounded structural scope, awaiting independent pass 02 and owner acceptance.** No implementation or migration authorized. Next review: independent committee, 2026-11-26.
+**State: DEFENDED by independent pass 02; owner accepted 2026-11-26 and selected target promoted.** No implementation or migration authorized. Next review: source implementation receipt and structural acceptance.
+
+Canonical authority: [native object storage](../../../../docs/technical/platform/object-storage-infrastructure.md). [Implementation Change](../../../changes/open/2026-11-26--object-storage-native/CHANGE.md). Actual occupied admission still gated. [Pass 02](committee/pass-02.md) committed at abf279fe586a9b2d99c6b554e9e62e68bc2b4dc3.
 
 ## Normative reading order
 

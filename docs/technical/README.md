@@ -50,6 +50,7 @@ flowchart LR
 | How is local Temporal deployed, persisted and operated? | [Temporal infrastructure](platform/temporal-infrastructure.md) · [operator runbook](../runbooks/kubernetes-temporal.md) |
 | Who owns SQL declarations and database execution? | [Database infrastructure and domain persistence](platform/database-infrastructure.md) |
 | How are exceptional local data repairs catalogued and targeted? | [Controlled database operations](platform/database-operations.md). Operator tool in `tools/db-operations`; not application runtime. Live proof separately gated. |
+| How is local object storage provisioned and portable S3 bound? | [Native local object storage](platform/object-storage-infrastructure.md). Selected target, implementation pending. |
 | Where does durable state live? | [Data and persistence](platform/data-and-persistence.md) |
 | May a cache replace the durable record? | [Redis boundary](platform/persistence-and-caching.md#redis-boundary). Optional acceleration. PostgreSQL remains the record |
 | How does a command survive retry? | [Execution and delivery](platform/execution-and-delivery.md) |

@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+[OBJECT-STORAGE-NATIVE](open/2026-11-26--object-storage-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and occupied legacy admission separately gated.
+
 [INF51 autonomous verification](archive/2026-11/platform-operations/2026-11-24--inf51-autonomous-verification/CHANGE.md) — Done source, full lifecycle transferred to [INF52](archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) (source Done; live NOT-RUN).
 
 **Consolidation:** [INF49](archive/2026-11/platform-operations/2026-11-24--inf49-monitor-composition/CHANGE.md) composition source Done · [INF50](archive/2026-11/platform-operations/2026-11-24--inf50-infrastructure-correctness/CHANGE.md) residual regression source Done · [INF47](archive/2026-11/platform-operations/2026-11-24--inf47-historical-observability-queries/CHANGE.md) historical CLI source Done · [INF48](backlog/platform-operations/2026-11-24--inf48-storage-lifecycle/CHANGE.md) Proposed. [Plan](../undertakings/storyteller-workshop/CONSOLIDATION.md). No live permission.
