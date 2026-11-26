@@ -1,0 +1,198 @@
+import { readFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
+import { renderPlatformDocuments } from '../../common/render.mjs';
+import { baselineCnpgClusterName } from '../config.mjs';
+import { readPlatformProfile } from '../../common/profile.mjs';
+import { assessClusterSpec } from './compatibility.mjs';
+import { createBaselineCustody } from './custody.mjs';
+import { loadOperatorArtifact } from './operator.mjs';
+import { collectBaselineObservation, assessBaselineObservation, observeWritablePrimary } from './observation.mjs';
+
+const manager = profileId => profileId === 'dev' ? 'offscreen-dev-cnpg' : 'offscreen-release-cnpg';
+
+function renderBaseline(profileId, run) {
+  const profile = readPlatformProfile(profileId);
+  const render = section => renderPlatformDocuments({ service: 'postgres', profile: profileId, section }, { run });
+  const namespaces = render('namespace');
+  const clusters = render('cluster');
+  const namespace = namespaces[0];
+  const cluster = clusters[0];
+  if (namespaces.length !== 1 || clusters.length !== 1 ||
+    namespace?.apiVersion !== 'v1' || namespace.kind !== 'Namespace' ||
+    namespace.metadata?.name !== profile.namespaces.postgres ||
+    cluster?.apiVersion !== 'postgresql.cnpg.io/v1' || cluster.kind !== 'Cluster' ||
+    cluster.metadata?.name !== baselineCnpgClusterName(profileId) ||
+    cluster.metadata?.namespace !== profile.namespaces.postgres)
+    throw new Error('Rendered baseline identity mismatch');
+  return { namespace, cluster };
+}
+
+function memoryAdmitted() {
+  const available = /^MemAvailable:\s+(\d+)\s+kB$/m.exec(readFileSync('/proc/meminfo', 'utf8'));
+  return available !== null && Number(available[1]) >= 4194304;
+}
+
+function parseObject(result) {
+  if (!result.ok) return null;
+  try { return JSON.parse(result.stdout); } catch { return null; }
+}
+
+function confirmedIdentity(object, expected) {
+  return object?.apiVersion === expected.apiVersion && object.kind === expected.kind &&
+    object.metadata?.name === expected.metadata.name &&
+    object.metadata?.namespace === expected.metadata.namespace &&
+    typeof object.metadata.uid === 'string' && object.metadata.uid.length > 0;
+}
+
+/** Shared native baseline worker. No existing-object mutation or write retries. */
+export function ensureBaseline(profileId, deps = {}) {
+  const custody = deps.custody ?? createBaselineCustody();
+  const run = custody.run;
+  const actions = [];
+  const confirmedMutations = [];
+  let stage = 'preflight';
+  let outcome = 'refused';
+  let writeInFlight = false;
+  const receipt = (ok, refusals = [], extra = {}) => ({
+    ok, stage, outcome, confirmedMutations, actions, refusals,
+    mutated: confirmedMutations.length > 0, ...extra,
+  });
+  const refuse = (id, detail, state = 'refused') => {
+    outcome = state;
+    return receipt(false, [{ id, detail }]);
+  };
+  try {
+    if (deps.authorized !== true) return refuse('ensure-not-authorized', 'Baseline ensure requires explicit authorization');
+    const artifact = deps.artifact ?? loadOperatorArtifact({ path: deps.operatorManifestPath });
+    const profile = readPlatformProfile(profileId);
+    const rendered = renderBaseline(profileId, run);
+    const collect = () => collectBaselineObservation(profileId, { artifact, run });
+    const kubectl = (args, options) => run('kubectl', ['--context', profile.contextName, ...args], options);
+    const config = parseObject(kubectl(['config', 'view', '--minify', '-o', 'json']));
+    if (!config || config.users?.some(u => u.user?.exec || u.user?.['auth-provider']) ||
+      config.clusters?.some(c => c.cluster?.['proxy-url']))
+      return refuse('unsafe-kubeconfig', 'External authentication or proxy refused');
+
+    stage = 'observe';
+    let observed = collect();
+    let assessed = assessBaselineObservation(observed);
+    if (assessed.refusals.length) return receipt(false, assessed.refusals);
+    const requiresWrite = state => state.operator === 'absent' || state.namespace === 'absent' || state.cluster === 'absent';
+    if (requiresWrite(assessed)) {
+      if (deps.maintenance !== true) return refuse('maintenance-required', 'Owner maintenance quiescence required for baseline creation');
+      stage = 'lock';
+      custody.acquire();
+      if (!(deps.memoryAdmitted ?? memoryAdmitted)()) return refuse('insufficient-memory', 'Host memory admission failed');
+      stage = 'observe';
+      observed = collect();
+      assessed = assessBaselineObservation(observed);
+      if (assessed.refusals.length) return receipt(false, assessed.refusals);
+    }
+
+    if (assessed.operator === 'absent') {
+      stage = 'operator';
+      writeInFlight = true;
+      const applied = kubectl(['apply', '--server-side', '--field-manager=' + manager(profileId), '-f', '-'],
+        { input: artifact.body, timeoutMs: 180000, mutation: true });
+      writeInFlight = false;
+      actions.push({ op: 'apply-operator', outcome: applied.ok ? 'acknowledged' : 'unknown' });
+      if (!applied.ok) return refuse('operator-apply-unknown', 'Operator installation outcome unknown; re-observe explicitly', 'unknown');
+      confirmedMutations.push({ op: 'apply-operator', identities: artifact.inventory.map(entry => entry.id) });
+    }
+
+    stage = 'operator';
+    const operatorDeadline = custody.remaining();
+    do {
+      observed = collect();
+      assessed = assessBaselineObservation(observed);
+      // A freshly acknowledged multi-object installation may still be converging,
+      // but an incomplete inventory is never a reason to replay the manifest.
+      if (assessed.refusals.length) return receipt(false, assessed.refusals);
+      if (assessed.operator === 'ready') break;
+      if (assessed.operator !== 'pending') return refuse('operator-not-ready', 'Operator inventory is not complete');
+      custody.sleep(5000);
+    } while (custody.remaining() > 0 && operatorDeadline - custody.remaining() < 420000);
+    if (assessed.operator !== 'ready') return refuse('operator-readiness-failed', 'Operator readiness deadline exhausted', 'failed');
+    actions.push({ op: 'verify-operator', outcome: 'ready' });
+
+    function create(expected, op) {
+      if (deps.maintenance !== true) return { error: 'maintenance-required', state: 'refused' };
+      writeInFlight = true;
+      const result = kubectl(['create', '-f', '-', '-o', 'json'], {
+        input: JSON.stringify(expected), timeoutMs: 60000, mutation: true,
+      });
+      writeInFlight = false;
+      const object = parseObject(result);
+      if (!confirmedIdentity(object, expected)) {
+        const collision = !result.ok && result.status === 1 && /\(AlreadyExists\)/.test(result.stderr);
+        actions.push({ op, outcome: collision ? 'refused' : 'unknown' });
+        return { error: collision ? 'already-exists' : 'creation-unknown', state: collision ? 'refused' : 'unknown' };
+      }
+      actions.push({ op, outcome: 'acknowledged' });
+      confirmedMutations.push({ op, kind: object.kind, name: object.metadata.name, uid: object.metadata.uid });
+      return { object };
+    }
+
+    let namespaceUid = observed.namespace.object?.metadata.uid;
+    let clusterUid = observed.cluster.object?.metadata.uid;
+    if (assessed.namespace === 'absent') {
+      stage = 'namespace';
+      const created = create(rendered.namespace, 'create-namespace');
+      if (created.error) return refuse(created.error, 'Namespace creation stopped', created.state);
+      namespaceUid = created.object.metadata.uid;
+    }
+
+    stage = 'observe';
+    observed = collect();
+    assessed = assessBaselineObservation(observed);
+    if (assessed.refusals.length) return receipt(false, assessed.refusals);
+    if (observed.namespace.object?.metadata.uid !== namespaceUid || assessed.namespace !== 'compatible' ||
+      assessed.operator !== 'ready' || (clusterUid && observed.cluster.object?.metadata.uid !== clusterUid))
+      return refuse('identity-changed', 'Baseline changed before admission probe');
+
+    stage = 'cluster';
+    const probe = structuredClone(rendered.cluster);
+    probe.metadata.name = 'offscreen-pg-admission-' + randomBytes(8).toString('hex');
+    const admitted = parseObject(kubectl(['create', '--dry-run=server', '-f', '-', '-o', 'json'],
+      { input: JSON.stringify(probe), timeoutMs: 30000 }));
+    if (!admitted || admitted.kind !== 'Cluster' || admitted.apiVersion !== probe.apiVersion ||
+      admitted.metadata?.name !== probe.metadata.name || admitted.metadata?.namespace !== probe.metadata.namespace ||
+      !assessClusterSpec(profileId, admitted.spec, { exactInstances: true }).ok)
+      return refuse('admission-probe-failed', 'Trusted Cluster admission reference mismatch');
+    actions.push({ op: 'verify-admission', outcome: 'ready' });
+
+    if (assessed.cluster === 'absent') {
+      const created = create(rendered.cluster, 'create-cluster');
+      if (created.error) return refuse(created.error, 'Cluster creation stopped', created.state);
+      clusterUid = created.object.metadata.uid;
+    }
+
+    stage = 'readiness';
+    const readinessStart = custody.remaining();
+    do {
+      observed = collect();
+      assessed = assessBaselineObservation(observed);
+      if (assessed.refusals.length) return receipt(false, assessed.refusals);
+      if (observed.namespace.object?.metadata.uid !== namespaceUid || observed.cluster.object?.metadata.uid !== clusterUid)
+        return refuse('identity-changed', 'Baseline UID changed during readiness');
+      if (assessed.operator === 'ready' && assessed.cluster === 'ready') {
+        const ready = observeWritablePrimary(profileId, { run });
+        if (ready.ok && ready.namespaceUid === namespaceUid && ready.clusterUid === clusterUid) {
+          if (custody.remaining() < 1) break;
+          actions.push({ op: 'wait-cluster-ready', outcome: 'ready' });
+          if (!confirmedMutations.length) actions.push({ op: 'noop', outcome: 'ready' });
+          outcome = 'ready';
+          return receipt(true, [], { instances: assessed.observedInstances, phase: observed.cluster.object.status.phase,
+            primaryPod: ready.primaryPod, readiness: { ok: true, stage: 'ready', primaryPod: ready.primaryPod } });
+        }
+      }
+      custody.sleep(5000);
+    } while (custody.remaining() > 0 && readinessStart - custody.remaining() < 600000);
+    return refuse('cluster-readiness-failed', 'Writable primary readiness deadline exhausted', 'failed');
+  } catch {
+    return refuse('baseline-worker-failed', 'Baseline worker stopped; inspect stage and re-observe',
+      writeInFlight ? 'unknown' : 'failed');
+  } finally {
+    custody.close();
+  }
+}
