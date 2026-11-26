@@ -30,7 +30,7 @@ test('dev and release plans keep the core service order with absolute entrypoint
     assert.equal(phase.argv[1]?.startsWith('/'), true);
     assert.equal(phase.argv[2], 'plan');
   }
-  assert.deepEqual(dev.excludedOptional, ['redis']);
+  assert.deepEqual(dev.excludedOptional, ['redis', 'rabbitmq']);
 
   const release = buildPlatformPlan({ profileId: 'release', command: 'plan' });
   assert.equal(release.ok, true);
@@ -45,7 +45,10 @@ test('dev and release plans keep the core service order with absolute entrypoint
     ['postgres', 'object-storage', 'temporal', 'gateway'],
   );
   for (const phase of release.phases) {
-    assert.equal(phase.argv[0], phase.id === 'temporal' ? process.execPath : 'bash');
+    assert.equal(
+      phase.argv[0],
+      phase.id === 'temporal' ? process.execPath : 'bash',
+    );
     assert.equal(
       phase.argv[1]?.startsWith(join(REPO_ROOT, 'infra/platform')),
       true,
@@ -115,10 +118,7 @@ test('dev and release redis phases use native install.mjs argv', () => {
       'ensure',
     ]);
     assert.equal(ensure.phases[0].env?.OFFSCREEN_REDIS_ENSURE, 'authorized');
-    assert.equal(
-      ensure.phases[0].env?.OFFSCREEN_DEV_REDIS_ENSURE,
-      undefined,
-    );
+    assert.equal(ensure.phases[0].env?.OFFSCREEN_DEV_REDIS_ENSURE, undefined);
     assert.ok(ensure.preflight.includes('helm'));
   }
   const releasePlan = buildPlatformPlan({
@@ -131,7 +131,13 @@ test('dev and release redis phases use native install.mjs argv', () => {
 
 test('redis ensure runner drops supervisor timeout but plan keeps one', () => {
   const redisInstall = join(REPO_ROOT, 'infra/platform/redis/install.mjs');
-  const planArgv = [process.execPath, redisInstall, 'plan', 'dev', 'kind-offscreen-dev'];
+  const planArgv = [
+    process.execPath,
+    redisInstall,
+    'plan',
+    'dev',
+    'kind-offscreen-dev',
+  ];
   const ensureArgv = [
     process.execPath,
     redisInstall,
@@ -161,18 +167,95 @@ test('explicit mixed selection reorders to the canonical catalog', () => {
   );
 });
 
-test('dev refuses unsupported gateway and rabbitmq before planning', () => {
-  for (const services of ['gateway', 'rabbitmq']) {
-    const plan = buildPlatformPlan({
-      profileId: 'dev',
-      command: 'plan',
-      services,
-    });
-    assert.equal(plan.ok, false);
-    assert.equal(plan.refusals[0]?.id, 'unsupported-service');
-    assert.equal(plan.phases.length, 0);
-    assert.equal(plan.selectedServices.length, 0);
-  }
+test('dev refuses unsupported gateway before planning', () => {
+  const plan = buildPlatformPlan({
+    profileId: 'dev',
+    command: 'plan',
+    services: 'gateway',
+  });
+  assert.equal(plan.ok, false);
+  assert.equal(plan.refusals[0]?.id, 'unsupported-service');
+  assert.equal(plan.phases.length, 0);
+  assert.equal(plan.selectedServices.length, 0);
+});
+
+test('dev rabbitmq plan dispatches install.mjs read-only census', () => {
+  const rabbitmqInstall = join(
+    REPO_ROOT,
+    'infra/platform/rabbitmq/install.mjs',
+  );
+  const plan = buildPlatformPlan({
+    profileId: 'dev',
+    command: 'plan',
+    services: 'rabbitmq',
+  });
+  assert.equal(plan.ok, true);
+  assert.equal(plan.phases.length, 1);
+  assert.equal(plan.phases[0].id, 'rabbitmq');
+  assert.deepEqual(plan.phases[0].argv.slice(0, 4), [
+    process.execPath,
+    rabbitmqInstall,
+    'plan',
+    'dev',
+  ]);
+  assert.equal(plan.phases[0].mutate, false);
+  assert.equal(plan.phases[0].env, undefined);
+});
+
+test('rabbitmq ensure runner drops supervisor timeout but plan keeps one', () => {
+  const rabbitmqInstall = join(
+    REPO_ROOT,
+    'infra/platform/rabbitmq/install.mjs',
+  );
+  const planArgv = [
+    process.execPath,
+    rabbitmqInstall,
+    'plan',
+    'release',
+    'kind-offscreen-release',
+  ];
+  const ensureArgv = [
+    process.execPath,
+    rabbitmqInstall,
+    'ensure',
+    'release',
+    'kind-offscreen-release',
+  ];
+  assert.equal(platformRunnerSpawnTimeout('rabbitmq', planArgv), 600_000);
+  assert.equal(platformRunnerSpawnTimeout('rabbitmq', ensureArgv), undefined);
+});
+
+test('release rabbitmq plan stays preview-only without runner calls', () => {
+  const plan = buildPlatformPlan({
+    profileId: 'release',
+    command: 'plan',
+    services: 'rabbitmq',
+  });
+  let calls = 0;
+  const receipt = runPlatformPlan(plan, () => {
+    calls += 1;
+    return { ok: true };
+  });
+  assert.equal(receipt.ok, true);
+  assert.equal(calls, 0);
+  assert.equal(receipt.skipped.length, 1);
+  assert.equal(receipt.phases[0]?.detail, 'preview-only');
+});
+
+test('rabbitmq output loss after worker start is possible mutation', () => {
+  const plan = buildPlatformPlan({
+    profileId: 'dev',
+    command: 'ensure',
+    services: 'rabbitmq',
+    confirmation: 'kind-offscreen-dev',
+  });
+  const receipt = runPlatformPlan(plan, (argv, options) => {
+    assert.equal(options?.phaseId, 'rabbitmq');
+    return { ok: false, status: null, stdout: '', stderr: '' };
+  });
+  assert.equal(receipt.ok, false);
+  assert.equal(receipt.phases[0]?.mutation, 'possible');
+  assert.match(receipt.phases[0]?.detail ?? '', /worker-receipt-missing/);
 });
 
 test('chart render preflight touches only selected services', () => {
@@ -197,7 +280,9 @@ test('chart render preflight touches only selected services', () => {
     }
     return { ok: true, stdout: '', stderr: '' };
   };
-  runChartRenderPreflight('dev', ['postgres', 'temporal'], { run: fixtureHelm });
+  runChartRenderPreflight('dev', ['postgres', 'temporal'], {
+    run: fixtureHelm,
+  });
   assert.equal(linted.length, 1);
   assert.match(linted[0], /postgres\/chart$/);
   assert.equal(rendered.length, 1);
@@ -242,7 +327,8 @@ test('ensure preflight skips unselected chart services', () => {
         stdout: JSON.stringify({
           metadata: {
             labels: { 'offscreen.rpg/lab': 'disposable' },
-            name: 'offscreen-release-system', uid: 'release-baseline-uid',
+            name: 'offscreen-release-system',
+            uid: 'release-baseline-uid',
           },
         }),
       };
@@ -250,7 +336,11 @@ test('ensure preflight skips unselected chart services', () => {
     if (command === 'helm' && args[0] === 'version') {
       return { ok: true, stdout: 'v3.22.1\n', stderr: '' };
     }
-    if (command === 'helm' && args[0] === 'version' && args.includes('--short')) {
+    if (
+      command === 'helm' &&
+      args[0] === 'version' &&
+      args.includes('--short')
+    ) {
       return { ok: true, stdout: 'v3.22.1\n', stderr: '' };
     }
     if (command === 'helm' && args[0] === 'template') {
@@ -389,7 +479,10 @@ test('core plans never include fixture, tenant, or optional service phases', () 
     for (const phase of plan.phases) {
       assert.equal(forbidden.test(phase.id), false);
       assert.notEqual(phase.id, 'redis');
-      assert.equal(forbidden.test(phase.argv.join(' ')), false);
+      const argvText = phase.argv
+        .map((part) => String(part).replace(REPO_ROOT, ''))
+        .join(' ');
+      assert.equal(forbidden.test(argvText), false);
     }
     assert.equal(
       plan.phases.some((phase) => phase.argv.join(' ').includes('up.sh')),
@@ -414,7 +507,6 @@ test('release plan mode leaves install scripts preview-only', () => {
   );
 });
 
-
 test('gateway preflight verifies native pins without host image or Helm repo', () => {
   assert.doesNotThrow(() => runGatewayInstallPreflight());
   const run = (command) => {
@@ -434,8 +526,14 @@ test('gateway preflight verifies native pins without host image or Helm repo', (
 
 test('both Temporal profiles select the same native installer and exact confirmation', () => {
   for (const profileId of ['dev', 'release']) {
-    const context = profileId === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
-    const plan = buildPlatformPlan({ profileId, command: 'ensure', services: 'temporal', confirmation: context });
+    const context =
+      profileId === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
+    const plan = buildPlatformPlan({
+      profileId,
+      command: 'ensure',
+      services: 'temporal',
+      confirmation: context,
+    });
     assert.equal(plan.ok, true);
     assert.equal(plan.phases.length, 1);
     const phase = plan.phases[0];

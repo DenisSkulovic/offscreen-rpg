@@ -1,382 +1,70 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import process from 'node:process';
 import test from 'node:test';
 import {
-  BROKER_IMAGE,
-  BROKER_NAME,
-  CLIENT_USER,
-  DEFINITIONS_CONFIGMAP,
-  NAMESPACE,
-  OPERATOR_IMAGE,
-  POD_NAME,
-  SECRET_NAME,
-  brokerMatchesExpected,
-  readDefinitionsBytes,
-  readExpectedQueues,
-  runRabbitmqReleaseInstall,
-} from '../release-install.mjs';
+  ensureRabbitmqInstall,
+  planRabbitmqInstall,
+  rabbitmqInstallResult,
+  runRabbitmqInstallLifecycle,
+} from '../install.mjs';
 
-const definitionsBytes = readDefinitionsBytes();
-const expectedQueues = readExpectedQueues();
-
-/** @param {Record<string, object | 'absent' | 'unreadable'>} inventory */
-function inventoryRead(inventory) {
-  return ({ resource, name, namespace }) => {
-    const key = namespace
-      ? `${resource}/${namespace}/${name}`
-      : `${resource}//${name}`;
-    const entry = inventory[key];
-    if (entry === 'unreadable') {
-      return { state: 'unreadable', reason: 'kubectl get failed' };
-    }
-    if (!entry || entry === 'absent') {
-      return { state: 'absent' };
-    }
-    return { state: 'present', object: entry };
-  };
-}
-
-function okBroker(overrides = {}) {
-  return {
-    apiVersion: 'rabbitmq.com/v1beta1',
-    kind: 'RabbitmqCluster',
-    metadata: { name: BROKER_NAME, namespace: NAMESPACE },
-    spec: {
-      replicas: 1,
-      image: BROKER_IMAGE,
-      persistence: { storageClassName: 'local-path', storage: '1Gi' },
-    },
-    status: {
-      conditions: [{ type: 'AllReplicasReady', status: 'True' }],
-    },
-    ...overrides,
-  };
-}
-
-const readyInventory = {
-  'deployment/rabbitmq-system/rabbitmq-cluster-operator': {
-    spec: { template: { spec: { containers: [{ image: OPERATOR_IMAGE }] } } },
-  },
-  'certificate/rabbitmq-system/cluster-operator-serving-cert': { metadata: { name: 'cluster-operator-serving-cert' } },
-  'issuer/rabbitmq-system/selfsigned-issuer': { metadata: { name: 'selfsigned-issuer' } },
-  'namespace//messaging': {
-    metadata: {
-      name: NAMESPACE,
-      labels: { 'offscreen.rpg/lab': 'disposable' },
-    },
-  },
-  [`configmap/${NAMESPACE}/${DEFINITIONS_CONFIGMAP}`]: {
-    data: { 'definitions.json': definitionsBytes.toString('utf8') },
-  },
-  [`secret/${NAMESPACE}/${SECRET_NAME}`]: { metadata: { name: SECRET_NAME } },
-  [`rabbitmqcluster/${NAMESPACE}/${BROKER_NAME}`]: okBroker(),
-  [`pod/${NAMESPACE}/${POD_NAME}`]: { metadata: { name: POD_NAME } },
-};
-
-function queueStdout() {
-  return {
-    ok: true,
-    stdout: JSON.stringify(expectedQueues),
-    stderr: '',
-  };
-}
-
-test('reentry performs no delete and no import', async () => {
-  const calls = [];
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true,
-    skipVendorVerify: true,
-    readObject: inventoryRead(readyInventory),
-    renderDocuments: (section) => {
-      if (section === 'namespace') {
-        return [{ kind: 'Namespace', metadata: { name: NAMESPACE } }];
-      }
-      return [
-        {
-          kind: 'RabbitmqCluster',
-          metadata: { name: BROKER_NAME, namespace: NAMESPACE },
-        },
-      ];
-    },
-    run: (command, args, options) => {
-      calls.push({ command, args, input: options?.input ?? '' });
-      const joined = args.join(' ');
-      if (joined.includes('list_queues')) return queueStdout();
-      if (joined.includes('list_users')) {
-        return { ok: true, stdout: `${CLIENT_USER}\t[administrator]\n` };
-      }
-      if (joined.includes('definitions import')) {
-        return { ok: false, stderr: 'import should not run on reentry' };
-      }
-      return { ok: true, stdout: '', stderr: '' };
-    },
-    waitReplicas: () => true,
-  });
-  assert.equal(result.ok, true);
-  assert.equal(
-    calls.some((call) => call.args.includes('delete')),
-    false,
-  );
-  assert.equal(
-    calls.some((call) => JSON.stringify(call.args).includes('import')),
-    false,
-  );
-  assert.equal(
-    result.actions.some((action) => action.op === 'reentry-verify-queues'),
-    true,
-  );
-  assert.equal(result.mutated, false);
-});
-
-test('bad vendor digest refuses with zero mutations', async () => {
-  const calls = [];
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true,
-    verifyVendor: () => {
-      throw new Error('manifest sha256 mismatch');
-    },
-    readObject: inventoryRead({}),
-    run: (command, args) => {
-      calls.push({ command, args });
-      return { ok: true, stdout: '', stderr: '' };
+test('plan refuses context mismatch before inventory IO', () => {
+  const result = planRabbitmqInstall('dev', 'kind-offscreen-release', {
+    skipTargetAssert: true,
+    run: () => {
+      throw new Error('inventory IO should not run');
     },
   });
   assert.equal(result.ok, false);
-  assert.equal(result.refusals[0]?.id, 'vendor-digest-mismatch');
-  assert.equal(result.mutated, false);
-  assert.equal(calls.length, 0);
+  assert.equal(result.mutation, 'none');
+  assert.equal(result.reasonCode, 'context-mismatch');
 });
 
-test('foreign broker refuses', async () => {
-  const inventory = {
-    ...readyInventory,
-    [`rabbitmqcluster/${NAMESPACE}/${BROKER_NAME}`]: okBroker({
-      spec: {
-        replicas: 1,
-        image: 'docker.io/library/rabbitmq:3.13-management',
-        persistence: { storageClassName: 'local-path', storage: '1Gi' },
+test('ensure refuses missing authorization before lock', () => {
+  const prior = process.env.OFFSCREEN_RABBITMQ_ENSURE;
+  delete process.env.OFFSCREEN_RABBITMQ_ENSURE;
+  try {
+    const result = ensureRabbitmqInstall('dev', 'kind-offscreen-dev');
+    assert.equal(result.ok, false);
+    assert.equal(result.reasonCode, 'ensure-not-authorized');
+    assert.equal(result.mutation, 'none');
+    assert.equal(result.state, 'refused');
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_RABBITMQ_ENSURE;
+    else process.env.OFFSCREEN_RABBITMQ_ENSURE = prior;
+  }
+});
+
+test('lifecycle plan command stays read-only', () => {
+  const code = runRabbitmqInstallLifecycle(
+    ['plan', 'dev', 'kind-offscreen-release'],
+    {
+      skipTargetAssert: true,
+      run: () => {
+        throw new Error('plan must not touch cluster');
       },
-    }),
-  };
-  const calls = [];
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true,
-    skipVendorVerify: true,
-    readObject: inventoryRead(inventory),
-    renderDocuments: (section) =>
-      section === 'namespace'
-        ? [{ kind: 'Namespace', metadata: { name: NAMESPACE } }]
-        : [
-            {
-              kind: 'RabbitmqCluster',
-              metadata: { name: BROKER_NAME, namespace: NAMESPACE },
-            },
-          ],
-    run: (command, args) => {
-      calls.push({ command, args });
-      return { ok: true, stdout: '', stderr: '' };
     },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.refusals.at(-1)?.id, 'foreign-broker');
-  assert.equal(
-    calls.some((call) => JSON.stringify(call.args).includes('apply')),
+  );
+  assert.equal(code, 2);
+});
+
+test('typed receipt preserves refusal versus possible mutation', () => {
+  const refusal = rabbitmqInstallResult(
     false,
+    'dev',
+    'authorization',
+    'refused',
+    'none',
+    'ensure-not-authorized',
   );
-});
-
-test('unreadable broker read refuses without mutation', async () => {
-  const inventory = {
-    ...readyInventory,
-    [`rabbitmqcluster/${NAMESPACE}/${BROKER_NAME}`]: 'unreadable',
-  };
-  const calls = [];
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true,
-    skipVendorVerify: true,
-    readObject: inventoryRead(inventory),
-    renderDocuments: (section) =>
-      section === 'namespace'
-        ? [{ kind: 'Namespace', metadata: { name: NAMESPACE } }]
-        : [
-            {
-              kind: 'RabbitmqCluster',
-              metadata: { name: BROKER_NAME, namespace: NAMESPACE },
-            },
-          ],
-    run: (command, args) => {
-      calls.push({ command, args });
-      return { ok: true, stdout: '', stderr: '' };
-    },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.refusals[0]?.id, 'broker-unreadable');
-  assert.equal(calls.some(call => call.args.includes('apply') || call.args.includes('create')), false);
-});
-
-test('missing secret when broker data exists refuses', async () => {
-  const inventory = {
-    ...readyInventory,
-    [`secret/${NAMESPACE}/${SECRET_NAME}`]: 'absent',
-  };
-  const calls = [];
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true,
-    skipVendorVerify: true,
-    readObject: inventoryRead(inventory),
-    renderDocuments: (section) =>
-      section === 'namespace'
-        ? [{ kind: 'Namespace', metadata: { name: NAMESPACE } }]
-        : [
-            {
-              kind: 'RabbitmqCluster',
-              metadata: { name: BROKER_NAME, namespace: NAMESPACE },
-            },
-          ],
-    run: (command, args) => {
-      calls.push({ command, args });
-      return { ok: true, stdout: '', stderr: '' };
-    },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.refusals[0]?.id, 'missing-secret-with-data');
-  assert.equal(
-    calls.some((call) => call.args.includes('create')),
+  assert.equal(refusal.mutation, 'none');
+  const uncertain = rabbitmqInstallResult(
     false,
+    'dev',
+    'launcher',
+    'failed',
+    'possible',
+    'worker-receipt-missing',
   );
-});
-
-test('changed definitions bytes refuse with migration-needed', async () => {
-  const inventory = {
-    ...readyInventory,
-    [`configmap/${NAMESPACE}/${DEFINITIONS_CONFIGMAP}`]: {
-      data: { 'definitions.json': '{"vhosts":[], "queues":[]}' },
-    },
-  };
-  const calls = [];
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true,
-    skipVendorVerify: true,
-    readObject: inventoryRead(inventory),
-    renderDocuments: (section) =>
-      section === 'namespace'
-        ? [{ kind: 'Namespace', metadata: { name: NAMESPACE } }]
-        : [
-            {
-              kind: 'RabbitmqCluster',
-              metadata: { name: BROKER_NAME, namespace: NAMESPACE },
-            },
-          ],
-    run: (command, args) => {
-      calls.push({ command, args });
-      return { ok: true, stdout: '', stderr: '' };
-    },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.refusals[0]?.id, 'definitions-migration-needed');
-  assert.equal(
-    calls.some((call) => JSON.stringify(call.args).includes('apply')),
-    false,
-  );
-});
-
-test('failed broker webhook means no broker apply', async () => {
-  const inventory = {
-    ...readyInventory,
-    [`rabbitmqcluster/${NAMESPACE}/${BROKER_NAME}`]: 'absent',
-    [`pod/${NAMESPACE}/${POD_NAME}`]: 'absent',
-  };
-  const calls = [];
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true,
-    skipVendorVerify: true,
-    brokerWebhookAlwaysFails: true,
-    readObject: inventoryRead(inventory),
-    renderDocuments: (section) =>
-      section === 'namespace'
-        ? [{ kind: 'Namespace', metadata: { name: NAMESPACE } }]
-        : [
-            {
-              kind: 'RabbitmqCluster',
-              metadata: { name: BROKER_NAME, namespace: NAMESPACE },
-            },
-          ],
-    run: (command, args) => {
-      calls.push({ command, args });
-      return { ok: true, stdout: '', stderr: '' };
-    },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.refusals[0]?.id, 'broker-webhook-failed');
-  assert.equal(calls.filter((call) => call.args[0] === 'apply').length, 0);
-});
-
-test('brokerMatchesExpected accepts pinned lab broker fields', () => {
-  assert.equal(brokerMatchesExpected(okBroker()), true);
-  assert.equal(
-    createHash('sha256').update(definitionsBytes).digest('hex').length,
-    64,
-  );
-});
-
-
-test('fresh operator installation waits for cert-manager before applying operator', async () => {
-  const calls = [];
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true,
-    skipVendorVerify: true,
-    readObject: inventoryRead({}),
-    run(command, args) {
-      calls.push(args.join(' '));
-      if (args.includes('rollout') && args.includes('deployment/cert-manager-webhook')) return { ok: false };
-      return { ok: true, stdout: '' };
-    },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.mutated, true);
-  assert.equal(result.refusals[0].id, 'cert-manager-not-ready');
-  assert.ok(calls.some(line => line.includes('certificates.cert-manager.io')));
-  assert.ok(!calls.some(line => line.includes('cluster-operator-v2.23.3.yml')));
-});
-
-
-test('partial operator install reconciles missing certificate before broker admission', async () => {
-  const inventory = { ...readyInventory };
-  delete inventory['certificate/rabbitmq-system/cluster-operator-serving-cert'];
-  const calls = [];
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true,
-    skipVendorVerify: true,
-    readObject: inventoryRead(inventory),
-    run(command, args) {
-      calls.push(args.join(' '));
-      if (args.includes('certificate/cluster-operator-serving-cert')) return { ok: false };
-      return { ok: true, stdout: '' };
-    },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.mutated, true);
-  assert.equal(result.refusals[0].id, 'operator-not-ready');
-  assert.ok(calls.some(line => line.includes('apply') && line.includes('cluster-operator-v2.23.3.yml')));
-  assert.ok(!calls.some(line => line.includes('list_queues')));
-});
-
-
-test('queue JSON rejects malformed observation without changing broker', async () => {
-  const result = await runRabbitmqReleaseInstall({
-    authorize: true, skipVendorVerify: true,
-    readObject: inventoryRead(readyInventory),
-    renderDocuments: section => [{ kind: section === 'namespace' ? 'Namespace' : 'RabbitmqCluster' }],
-    run(command, args) {
-      if (args.includes('list_queues')) {
-        assert.ok(args.includes('--formatter=json'));
-        return { ok: true, stdout: 'name durable type\\nlab.durable true classic' };
-      }
-      assert.ok(!args.includes('apply') && !args.includes('create'));
-      return { ok: true, stdout: '' };
-    },
-    waitReplicas: () => true,
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.refusals[0].id, 'list-queues-failed');
+  assert.equal(uncertain.mutation, 'possible');
 });

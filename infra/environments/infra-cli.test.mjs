@@ -824,23 +824,30 @@ function createNativeRedisStatusRun(profileId, scenario, installed) {
           }),
         );
       }
-      if (outputFlag === 'json' && gotten === 'endpointslices.discovery.k8s.io') {
-        return cmdOk(JSON.stringify({
-          apiVersion: 'v1',
-          kind: 'List',
-          items: flags.endpointsPresent
-            ? [{
-                apiVersion: 'discovery.k8s.io/v1',
-                kind: 'EndpointSlice',
-                metadata: {
-                  name: 'redis-fixture',
-                  namespace: target.namespace,
-                  labels: { 'kubernetes.io/service-name': 'redis' },
-                },
-                endpoints: [],
-              }]
-            : [],
-        }));
+      if (
+        outputFlag === 'json' &&
+        gotten === 'endpointslices.discovery.k8s.io'
+      ) {
+        return cmdOk(
+          JSON.stringify({
+            apiVersion: 'v1',
+            kind: 'List',
+            items: flags.endpointsPresent
+              ? [
+                  {
+                    apiVersion: 'discovery.k8s.io/v1',
+                    kind: 'EndpointSlice',
+                    metadata: {
+                      name: 'redis-fixture',
+                      namespace: target.namespace,
+                      labels: { 'kubernetes.io/service-name': 'redis' },
+                    },
+                    endpoints: [],
+                  },
+                ]
+              : [],
+          }),
+        );
       }
 
       if (
@@ -1088,7 +1095,7 @@ test('human refusal uses formatter stdout without dispatch stderr', () => {
   /** @type {string[]} */
   const stderr = [];
   const human = runInfraCliArgv(
-    ['plan', '--env', 'dev', '--services', 'rabbitmq', '--human'],
+    ['plan', '--env', 'dev', '--services', 'gateway', '--human'],
     {
       io: {
         write: (chunk) => stdout.push(chunk),
@@ -1103,7 +1110,7 @@ test('human refusal uses formatter stdout without dispatch stderr', () => {
   stdout.length = 0;
   stderr.length = 0;
   const json = runInfraCliArgv(
-    ['plan', '--env', 'dev', '--services', 'rabbitmq'],
+    ['plan', '--env', 'dev', '--services', 'gateway'],
     {
       io: {
         write: (chunk) => stdout.push(chunk),
@@ -1442,10 +1449,21 @@ test('inventoryKindClusters requires exact kind success', () => {
 test('invalid plan selection exits 2', () => {
   const preview = buildInfraEnsurePreview({
     profileId: 'dev',
-    services: 'rabbitmq',
+    services: 'gateway',
   });
   assert.equal(preview.ok, false);
   assert.equal(preview.exitCode, 2);
+});
+
+test('dev rabbitmq ensure preview lists native install phase', () => {
+  const preview = buildInfraEnsurePreview({
+    profileId: 'dev',
+    services: 'rabbitmq',
+  });
+  assert.equal(preview.ok, true);
+  assert.deepEqual(preview.selectedServices, ['rabbitmq']);
+  assert.equal(preview.phases[0]?.id, 'rabbitmq');
+  assert.match(preview.phases[0]?.argv.join(' '), /rabbitmq\/install\.mjs/);
 });
 
 test('release postgres status uses topology alignment, not Ready alone', () => {
@@ -1654,20 +1672,26 @@ test('release gateway status uses class, deployment, service, and gateway readin
     status: { conditions: [cond('Accepted')] },
   });
   const deployment = JSON.stringify({
-    metadata: { name: 'lab-gateway-traefik', namespace: HELM_NAMESPACE, generation },
+    metadata: {
+      name: 'lab-gateway-traefik',
+      namespace: HELM_NAMESPACE,
+      generation,
+    },
     spec: {
       replicas: 1,
       template: {
         spec: {
-          containers: [{
-            image: `docker.io/traefik@${IMAGE_DIGEST}`,
-            args: [
-              '--providers.kubernetesgateway',
-              '--entryPoints.web.transport.respondingTimeouts.readTimeout=60s',
-              '--entryPoints.web.transport.respondingTimeouts.writeTimeout=0s',
-              '--entryPoints.web.transport.respondingTimeouts.idleTimeout=180s',
-            ],
-          }],
+          containers: [
+            {
+              image: `docker.io/traefik@${IMAGE_DIGEST}`,
+              args: [
+                '--providers.kubernetesgateway',
+                '--entryPoints.web.transport.respondingTimeouts.readTimeout=60s',
+                '--entryPoints.web.transport.respondingTimeouts.writeTimeout=0s',
+                '--entryPoints.web.transport.respondingTimeouts.idleTimeout=180s',
+              ],
+            },
+          ],
         },
       },
     },
@@ -1690,15 +1714,21 @@ test('release gateway status uses class, deployment, service, and gateway readin
   });
   const gateway = (conditions, listenerConditions = conditions) =>
     JSON.stringify({
-      metadata: { name: GATEWAY_NAME, namespace: LAB_EDGE_NAMESPACE, generation },
+      metadata: {
+        name: GATEWAY_NAME,
+        namespace: LAB_EDGE_NAMESPACE,
+        generation,
+      },
       spec: {
         gatewayClassName: GATEWAY_CLASS_NAME,
-        listeners: [{
-          name: 'web',
-          port: 8000,
-          protocol: 'HTTP',
-          allowedRoutes: { namespaces: { from: 'Same' } },
-        }],
+        listeners: [
+          {
+            name: 'web',
+            port: 8000,
+            protocol: 'HTTP',
+            allowedRoutes: { namespaces: { from: 'Same' } },
+          },
+        ],
       },
       status: {
         conditions,
@@ -1717,7 +1747,9 @@ test('release gateway status uses class, deployment, service, and gateway readin
     const namespaced = args[4] === '-n';
     const namespace = namespaced ? args[5] : undefined;
     const name = namespaced ? args[6] : args[4];
-    const key = namespace ? `${resource}/${namespace}/${name}` : `${resource}/${name}`;
+    const key = namespace
+      ? `${resource}/${namespace}/${name}`
+      : `${resource}/${name}`;
     if (responses[key] === undefined) {
       return { ok: true, stdout: '' };
     }
@@ -1739,7 +1771,8 @@ test('release gateway status uses class, deployment, service, and gateway readin
     'installed',
   );
   assert.equal(
-    observeSelectedServiceState('release', 'gateway', { run: respond({}) }).state,
+    observeSelectedServiceState('release', 'gateway', { run: respond({}) })
+      .state,
     'not-installed',
   );
   assert.equal(
@@ -1778,29 +1811,13 @@ test('release gateway status uses class, deployment, service, and gateway readin
   );
 });
 
-test('release RabbitMQ absent CRD is not-installed, permission failure remains unreadable', () => {
-  const run = (command, args) => {
-    assert.equal(command, 'kubectl');
-    assert.deepEqual(args, [
-      '--context',
-      'kind-offscreen-release',
-      'get',
-      'customresourcedefinition',
-      'rabbitmqclusters.rabbitmq.com',
-      '--ignore-not-found',
-      '-o',
-      'json',
-    ]);
-    return { ok: true, stdout: '' };
-  };
-  assert.equal(
-    observeSelectedServiceState('release', 'rabbitmq', { run }).state,
-    'not-installed',
-  );
-  assert.equal(
-    observeSelectedServiceState('release', 'rabbitmq', {
-      run: () => ({ ok: false, stdout: '', stderr: 'Forbidden' }),
-    }).state,
-    'unreadable',
-  );
+test('rabbitmq observer maps unreadable inventory to unreadable service state', () => {
+  for (const profileId of ['dev', 'release']) {
+    assert.equal(
+      observeSelectedServiceState(profileId, 'rabbitmq', {
+        run: () => ({ ok: false, stdout: '', stderr: 'Forbidden' }),
+      }).state,
+      'unreadable',
+    );
+  }
 });

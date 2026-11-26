@@ -14,10 +14,7 @@ import {
   lintPlatformChart,
   renderPlatformDocuments,
 } from '../platform/common/render.mjs';
-import {
-  lintRedisChart,
-  renderRedisChart,
-} from '../platform/redis/config.mjs';
+import { lintRedisChart, renderRedisChart } from '../platform/redis/config.mjs';
 import {
   MIN_HOST_MEMORY_MIB,
   parseMeminfoMiB,
@@ -52,6 +49,7 @@ const DEV_SUPPORTED_SERVICES = new Set([
   'object-storage',
   'temporal',
   'redis',
+  'rabbitmq',
 ]);
 
 /** @typedef {'plan' | 'ensure'} PlatformCommand */
@@ -118,7 +116,6 @@ const RELEASE_INSTALL = Object.freeze({
   postgres: join(REPO_ROOT, 'infra/platform/postgres/install.sh'),
   'object-storage': join(REPO_ROOT, 'infra/platform/object-storage/install.sh'),
   gateway: join(REPO_ROOT, 'infra/platform/gateway/install.sh'),
-  rabbitmq: join(REPO_ROOT, 'infra/platform/rabbitmq/install.sh'),
   observability: join(REPO_ROOT, 'infra/platform/observability/install.sh'),
 });
 
@@ -320,6 +317,21 @@ export function corePhases(profileId, command, selectedServices) {
       });
       continue;
     }
+    if (logicalId === 'rabbitmq') {
+      phases.push({
+        id: 'rabbitmq',
+        argv: [
+          process.execPath,
+          join(REPO_ROOT, 'infra/platform/rabbitmq/install.mjs'),
+          subcommand,
+          profileId,
+          readPlatformProfile(profileId).contextName,
+        ],
+        env: mutate ? { OFFSCREEN_RABBITMQ_ENSURE: 'authorized' } : undefined,
+        mutate,
+      });
+      continue;
+    }
     if (profileId === 'dev') {
       if (logicalId === 'postgres') {
         phases.push({
@@ -361,7 +373,10 @@ export function corePhases(profileId, command, selectedServices) {
  */
 function selectedChartServices(selectedServices) {
   return selectedServices.filter(
-    (service) => service !== 'gateway' && service !== 'temporal' && PLATFORM_SERVICES.has(service),
+    (service) =>
+      service !== 'gateway' &&
+      service !== 'temporal' &&
+      PLATFORM_SERVICES.has(service),
   );
 }
 
@@ -380,7 +395,8 @@ function plannedPreflightSteps(profileId, command, selectedServices) {
   if (
     profileId === 'release' ||
     selectedServices.includes('temporal') ||
-    selectedServices.includes('redis')
+    selectedServices.includes('redis') ||
+    selectedServices.includes('rabbitmq')
   ) {
     steps.push('helm');
   }
@@ -508,6 +524,7 @@ export function runEnsurePreflight(profileId, command, deps = {}) {
     if (
       selectedServices.includes('temporal') ||
       selectedServices.includes('redis') ||
+      selectedServices.includes('rabbitmq') ||
       (profileId === 'release' &&
         (chartServices.length > 0 || selectedServices.includes('gateway')))
     ) {
@@ -657,7 +674,7 @@ export function redactPlatformReceipt(receipt) {
  * @returns {number | undefined}
  */
 export function platformRunnerSpawnTimeout(phaseId, argv) {
-  if (phaseId === 'redis' && argv[2] === 'ensure') {
+  if ((phaseId === 'redis' || phaseId === 'rabbitmq') && argv[2] === 'ensure') {
     return undefined;
   }
   if (['cnpg', 'postgres'].includes(phaseId)) {
@@ -680,7 +697,9 @@ export function defaultPlatformRunner(argv, options = {}) {
     encoding: 'utf8',
     env: { ...process.env, ...(options.env ?? {}) },
     ...(timeout === undefined ? {} : { timeout }),
-    ...(['cnpg', 'postgres'].includes(options.phaseId) ? { killSignal: 'SIGKILL' } : {}),
+    ...(['cnpg', 'postgres'].includes(options.phaseId)
+      ? { killSignal: 'SIGKILL' }
+      : {}),
     maxBuffer: 8 * 1024 * 1024,
     windowsHide: true,
   });
@@ -694,6 +713,46 @@ export function defaultPlatformRunner(argv, options = {}) {
     stdout: result.stdout ?? '',
     stderr: result.stderr ?? '',
   };
+}
+
+/**
+ * @param {{ ok: boolean, stdout?: string, stderr?: string }} result
+ */
+function parseRabbitmqPhaseReceipt(result) {
+  const line = String(result.stdout ?? '')
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .at(-1);
+  if (!line) {
+    return {
+      ok: false,
+      detail: 'worker-receipt-missing',
+      mutation: 'possible',
+    };
+  }
+  try {
+    const parsed = JSON.parse(line);
+    if (parsed?.schema !== 1) {
+      return {
+        ok: false,
+        detail: parsed?.reasonCode ?? 'worker-receipt-malformed',
+        mutation: 'possible',
+      };
+    }
+    return {
+      ok: parsed.ok === true,
+      detail: parsed.reasonCode,
+      mutation: parsed.mutation,
+      state: parsed.state,
+    };
+  } catch {
+    return {
+      ok: false,
+      detail: 'worker-receipt-malformed',
+      mutation: 'possible',
+    };
+  }
 }
 
 /**
@@ -781,6 +840,45 @@ export function runPlatformPlan(plan, runner, deps = {}) {
     progress?.phaseStart(phase.id);
     const result = runner(phase.argv, { env, phaseId: phase.id });
     ran.push(phase);
+    if (phase.id === 'rabbitmq') {
+      const typed = parseRabbitmqPhaseReceipt(result);
+      if (!typed.ok) {
+        progress?.phaseFail(phase.id);
+        phaseReceipts.push({
+          id: phase.id,
+          ok: false,
+          detail: String(typed.detail ?? `${phase.id} failed`).slice(0, 500),
+          mutation: typed.mutation,
+          state: typed.state,
+        });
+        for (const remaining of plan.phases.slice(
+          plan.phases.indexOf(phase) + 1,
+        )) {
+          skipped.push(remaining);
+        }
+        return {
+          ok: false,
+          exitCode:
+            result.status == null || result.status === undefined
+              ? 1
+              : result.status,
+          ran,
+          skipped,
+          phases: phaseReceipts,
+          refusals: [],
+          rollback: false,
+        };
+      }
+      progress?.phaseOk(phase.id);
+      phaseReceipts.push({
+        id: phase.id,
+        ok: true,
+        detail: typed.detail,
+        mutation: typed.mutation,
+        state: typed.state,
+      });
+      continue;
+    }
     if (!result.ok) {
       progress?.phaseFail(phase.id);
       const detail =

@@ -12,13 +12,13 @@ import { observeDevObjectStoreReady } from '../platform/object-storage/readiness
 import { observeDevPostgresReady } from '../platform/postgres/readiness.mjs';
 import { RELEASE_CNPG_CLUSTER } from '../platform/postgres/config.mjs';
 import { assessCnpgClusterTopologyReadiness } from '../platform/postgres/cluster-readiness.mjs';
-import { observeTemporalReady, observeTemporalRelease } from '../platform/temporal/readiness.mjs';
+import {
+  observeTemporalReady,
+  observeTemporalRelease,
+} from '../platform/temporal/readiness.mjs';
 import { observeGatewayStatus } from '../platform/gateway/install.mjs';
 import { observeRedisReady } from '../platform/redis/readiness.mjs';
-import {
-  BROKER_NAME,
-  NAMESPACE as RABBITMQ_NAMESPACE,
-} from '../platform/rabbitmq/release-install.mjs';
+import { observeRabbitmqReady } from '../platform/rabbitmq/readiness.mjs';
 import {
   buildPlatformPlan,
   defaultPlatformRunner,
@@ -414,6 +414,24 @@ function deploymentIsReady(deployment) {
 /**
  * @param {{ ok: boolean, state?: string, detail?: string }} observation
  */
+function rabbitmqReadinessToServiceState(observation) {
+  const detail = observation.detail ?? observation.reason;
+  const state = observation.state;
+  if (observation.ok) {
+    return { state: 'installed', detail };
+  }
+  if (state === 'absent') {
+    return { state: 'not-installed', detail };
+  }
+  if (state === 'legacy_occupied' || state === 'foreign') {
+    return { state: 'not-installed', detail: detail ?? state };
+  }
+  if (state === 'unreadable') {
+    return { state: 'unreadable', detail };
+  }
+  return { state: 'not-ready', detail };
+}
+
 function redisReadinessToServiceState(observation) {
   const detail = observation.detail;
   const state = observation.state;
@@ -509,9 +527,13 @@ function observeReleaseServiceState(serviceId, deps = {}) {
   if (serviceId === 'temporal') {
     const release = observeTemporalRelease('release', { run });
     if (release.state === 'absent') return { state: 'not-installed' };
-    if (release.state === 'unreadable') return { state: 'unreadable', detail: release.detail };
+    if (release.state === 'unreadable')
+      return { state: 'unreadable', detail: release.detail };
     const readiness = observeTemporalReady('release', { run });
-    return { state: readiness.ok ? 'installed' : 'not-ready', detail: readiness.detail };
+    return {
+      state: readiness.ok ? 'installed' : 'not-ready',
+      detail: readiness.detail,
+    };
   }
 
   if (serviceId === 'gateway') {
@@ -520,31 +542,6 @@ function observeReleaseServiceState(serviceId, deps = {}) {
 
   if (serviceId === 'redis') {
     return redisReadinessToServiceState(observeRedisReady('release', deps));
-  }
-
-  if (serviceId === 'rabbitmq') {
-    const crd = read(
-      'customresourcedefinition',
-      'rabbitmqclusters.rabbitmq.com',
-    );
-    if (crd.state === 'unreadable') {
-      return { state: 'unreadable', detail: 'RabbitMQ CRD observation failed' };
-    }
-    if (crd.state === 'absent') {
-      return { state: 'not-installed', detail: 'RabbitMQ CRD absent' };
-    }
-    const broker = read('rabbitmqcluster', BROKER_NAME, RABBITMQ_NAMESPACE);
-    if (broker.state === 'unreadable') {
-      return { state: 'unreadable', detail: broker.reason };
-    }
-    if (broker.state === 'absent') {
-      return { state: 'not-installed' };
-    }
-    const clusterStatus = broker.object?.status?.conditions ?? [];
-    const ready = clusterStatus.some(
-      (item) => item?.type === 'AllReplicasReady' && item?.status === 'True',
-    );
-    return { state: ready ? 'installed' : 'not-ready' };
   }
 
   if (serviceId === 'observability') {
@@ -592,17 +589,28 @@ export function observeSelectedServiceState(profileId, serviceId, deps = {}) {
     }
     if (serviceId === 'temporal') {
       const release = observeTemporalRelease('dev', deps);
-      if (release.state === 'absent') return { state: 'not-installed', detail: release.detail };
-      if (release.state === 'unreadable') return { state: 'unreadable', detail: release.detail };
+      if (release.state === 'absent')
+        return { state: 'not-installed', detail: release.detail };
+      if (release.state === 'unreadable')
+        return { state: 'unreadable', detail: release.detail };
       return devReadinessToServiceState(observeTemporalReady('dev', deps));
     }
     if (serviceId === 'redis') {
       return redisReadinessToServiceState(observeRedisReady('dev', deps));
     }
+    if (serviceId === 'rabbitmq') {
+      return rabbitmqReadinessToServiceState(observeRabbitmqReady('dev', deps));
+    }
     return {
       state: 'unsupported',
       detail: `${serviceId} is not supported on profile dev`,
     };
+  }
+
+  if (serviceId === 'rabbitmq') {
+    return rabbitmqReadinessToServiceState(
+      observeRabbitmqReady('release', deps),
+    );
   }
 
   return observeReleaseServiceState(serviceId, deps);
