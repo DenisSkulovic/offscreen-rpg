@@ -382,8 +382,8 @@ function createInventoryHarness(scenario = {}) {
 
     if (args.includes('endpointslices.discovery.k8s.io')) {
       return ok(JSON.stringify({
-          apiVersion: 'discovery.k8s.io/v1',
-          kind: 'EndpointSliceList',
+          apiVersion: 'v1',
+          kind: 'List',
           items: scenario.endpointsPresent
             ? [{
                 apiVersion: 'discovery.k8s.io/v1',

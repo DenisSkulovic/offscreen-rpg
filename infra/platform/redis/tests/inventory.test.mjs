@@ -219,8 +219,8 @@ function createHarness(scenario = {}) {
         return fail(1, 'Forbidden');
       }
       return ok(JSON.stringify({
-          apiVersion: 'discovery.k8s.io/v1',
-          kind: 'EndpointSliceList',
+          apiVersion: 'v1',
+          kind: 'List',
           items: scenario.endpointsPresent
             ? [{
                 apiVersion: 'discovery.k8s.io/v1',

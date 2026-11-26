@@ -372,6 +372,11 @@ function buildRedisObserveRun(profileId, fixtures) {
       }
       const resource = getIdx >= 0 ? args[getIdx + 1] : '';
       const next = getIdx >= 0 ? args[getIdx + 2] : '';
+      if (resource === 'endpointslices.discovery.k8s.io') {
+        return cmdOk(
+          JSON.stringify({ apiVersion: 'v1', kind: 'List', items: [] }),
+        );
+      }
       if (
         (resource === 'secret' || resource === 'configmap') &&
         next === '-o' &&
@@ -813,8 +818,8 @@ function createNativeRedisStatusRun(profileId, scenario, installed) {
       }
       if (outputFlag === 'json' && gotten === 'endpointslices.discovery.k8s.io') {
         return cmdOk(JSON.stringify({
-          apiVersion: 'discovery.k8s.io/v1',
-          kind: 'EndpointSliceList',
+          apiVersion: 'v1',
+          kind: 'List',
           items: flags.endpointsPresent
             ? [{
                 apiVersion: 'discovery.k8s.io/v1',

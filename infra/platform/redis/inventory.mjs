@@ -666,8 +666,8 @@ function readEndpointsPresence(run, target) {
   }
   if (
     !parsed ||
-    parsed.kind !== 'EndpointSliceList' ||
-    parsed.apiVersion !== 'discovery.k8s.io/v1' ||
+    parsed.kind !== 'List' ||
+    parsed.apiVersion !== 'v1' ||
     !Array.isArray(parsed.items)
   ) {
     return { state: 'unreadable', reason: 'endpoints-identity' };
