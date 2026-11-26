@@ -1,0 +1,63 @@
+# DESIGN ONLY, dev profile. Validate tagged schema/config; not a deployment.
+fullnameOverride: obs-loki
+deploymentMode: Monolithic
+loki:
+  auth_enabled: false
+  analytics: {reporting_enabled: false}
+  commonConfig: {replication_factor: 1}
+  storage: {type: filesystem}
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index: {prefix: index_, period: 24h}
+  limits_config:
+    retention_period: 72h
+    allow_structured_metadata: true
+    otlp_config:
+      resource_attributes:
+        ignore_defaults: true
+        attributes_config:
+          - action: index_label
+            attributes: [deployment.environment.name, service.namespace, service.name]
+  compactor:
+    retention_enabled: true
+    delete_request_store: filesystem
+singleBinary:
+  automountServiceAccountToken: false
+  replicas: 1
+  sidecar: false
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {memory: 512Mi}
+  persistence:
+    enabled: true
+    storageClass: standard
+    size: 5Gi
+    whenScaled: Retain
+    whenDeleted: Retain
+read: {replicas: 0}
+write: {replicas: 0}
+backend: {replicas: 0}
+gateway: {enabled: false}
+lokiCanary: {enabled: false}
+test: {enabled: false}
+chunksCache: {enabled: false}
+resultsCache: {enabled: false}
+ruler: {enabled: false}
+rollout_operator: {enabled: false}
+
+serviceAccount:
+  automountServiceAccountToken: false
+sidecar:
+  rules:
+    enabled: false
+
+defaults:
+  automountServiceAccountToken: false
+rbac:
+  namespaced: true
+memcached:
+  enabled: false

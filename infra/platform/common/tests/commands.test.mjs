@@ -184,6 +184,7 @@ test('readPlatformProfile accepts dev and release with frozen fields', () => {
     objectStorage: 'offscreen-dev-objects',
     redis: 'offscreen-dev-redis',
     rabbitmq: 'offscreen-dev-rabbitmq',
+    observability: 'offscreen-dev-observability',
   });
 
   const release = readPlatformProfile('release');
@@ -196,6 +197,7 @@ test('readPlatformProfile accepts dev and release with frozen fields', () => {
     objectStorage: 'lab-objects',
     redis: 'lab-a',
     rabbitmq: 'offscreen-rabbitmq',
+    observability: 'offscreen-observability',
   });
 });
 

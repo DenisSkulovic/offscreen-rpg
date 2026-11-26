@@ -1,8 +1,0 @@
-{{- include "platform-observability.validate" . -}}
-{{- $section := default "all" .Values.section -}}
-{{- $ctx := . -}}
-{{- if eq $section "all" -}}
-{{- include "platform-observability.jsonFrom" (dict "name" "platform-observability.doc.configmap" "ctx" $ctx) -}}
-{{- include "platform-observability.jsonFrom" (dict "name" "platform-observability.doc.deployment" "ctx" $ctx) -}}
-{{- include "platform-observability.jsonFrom" (dict "name" "platform-observability.doc.service" "ctx" $ctx) -}}
-{{- end -}}

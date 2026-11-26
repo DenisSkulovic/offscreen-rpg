@@ -37,7 +37,11 @@ test('dev and release plans keep the core service order with absolute entrypoint
       assert.equal(phase.argv[3], 'dev');
     }
   }
-  assert.deepEqual(dev.excludedOptional, ['redis', 'rabbitmq']);
+  assert.deepEqual(dev.excludedOptional, [
+    'redis',
+    'rabbitmq',
+    'observability',
+  ]);
 
   const release = buildPlatformPlan({ profileId: 'release', command: 'plan' });
   assert.equal(release.ok, true);
@@ -163,6 +167,10 @@ test('redis ensure runner drops supervisor timeout but plan keeps one', () => {
 });
 
 test('explicit mixed selection reorders to the canonical catalog', () => {
+  const observabilityInstall = join(
+    REPO_ROOT,
+    'infra/platform/observability/install.mjs',
+  );
   const plan = buildPlatformPlan({
     profileId: 'release',
     command: 'plan',
@@ -178,6 +186,15 @@ test('explicit mixed selection reorders to the canonical catalog', () => {
     plan.phases.map((phase) => phase.id),
     ['postgres', 'temporal', 'observability'],
   );
+  const obsPhase = plan.phases[2];
+  assert.deepEqual(obsPhase.argv, [
+    process.execPath,
+    observabilityInstall,
+    'plan',
+    'release',
+    'kind-offscreen-release',
+  ]);
+  assert.equal(obsPhase.argv.includes('install.sh'), false);
 });
 
 test('dev refuses unsupported gateway before planning', () => {
@@ -606,6 +623,113 @@ test('dev object-storage-only ensure includes helm preflight and postgres-only d
   });
   assert.equal(postgres.ok, true);
   assert.equal(postgres.preflight.includes('helm'), false);
+});
+
+test('dev explicit observability and all selections route native install.mjs', () => {
+  const observabilityInstall = join(
+    REPO_ROOT,
+    'infra/platform/observability/install.mjs',
+  );
+  for (const services of ['observability', 'all']) {
+    const plan = buildPlatformPlan({
+      profileId: 'dev',
+      command: 'ensure',
+      services,
+      confirmation: 'kind-offscreen-dev',
+    });
+    assert.equal(plan.ok, true);
+    const obs = plan.phases.find((phase) => phase.id === 'observability');
+    assert.ok(obs, services);
+    assert.deepEqual(obs.argv, [
+      process.execPath,
+      observabilityInstall,
+      'ensure',
+      'dev',
+      'kind-offscreen-dev',
+    ]);
+    assert.equal(obs.env?.OFFSCREEN_OBSERVABILITY_ENSURE, 'authorized');
+    assert.ok(plan.preflight.includes('helm'));
+  }
+});
+
+test('default core plans still omit observability', () => {
+  for (const profileId of ['dev', 'release']) {
+    const plan = buildPlatformPlan({ profileId, command: 'plan' });
+    assert.equal(
+      plan.phases.some((phase) => phase.id === 'observability'),
+      false,
+    );
+    assert.ok(plan.excludedOptional.includes('observability'));
+  }
+});
+
+test('observability ensure runner is timeout-exempt only for exact native argv', () => {
+  const observabilityInstall = join(
+    REPO_ROOT,
+    'infra/platform/observability/install.mjs',
+  );
+  const exactEnsure = [
+    process.execPath,
+    observabilityInstall,
+    'ensure',
+    'dev',
+    'kind-offscreen-dev',
+  ];
+  assert.equal(
+    platformRunnerSpawnTimeout('observability', exactEnsure),
+    undefined,
+  );
+  assert.equal(
+    platformRunnerSpawnTimeout('observability', [
+      process.execPath,
+      observabilityInstall,
+      'plan',
+      'dev',
+      'kind-offscreen-dev',
+    ]),
+    600_000,
+  );
+  assert.equal(
+    platformRunnerSpawnTimeout('observability', [
+      process.execPath,
+      observabilityInstall,
+      'ensure',
+      'dev',
+      'kind-offscreen-lab',
+    ]),
+    600_000,
+  );
+  assert.equal(
+    platformRunnerSpawnTimeout('postgres', [
+      process.execPath,
+      observabilityInstall,
+      'ensure',
+      'dev',
+      'kind-offscreen-dev',
+    ]),
+    1_830_000,
+  );
+});
+
+test('observability ensure with malformed child receipt returns public exit 1', () => {
+  const plan = buildPlatformPlan({
+    profileId: 'dev',
+    command: 'ensure',
+    services: 'observability',
+    confirmation: 'kind-offscreen-dev',
+  });
+  const receipt = runPlatformPlan(plan, (argv, options) => {
+    assert.equal(options?.phaseId, 'observability');
+    return {
+      ok: true,
+      status: 0,
+      stdout: '{"not":"a-receipt"}\n',
+      stderr: '',
+    };
+  });
+  assert.equal(receipt.ok, false);
+  assert.equal(receipt.exitCode, 1);
+  assert.match(receipt.phases[0]?.detail ?? '', /invalid-receipt/);
 });
 
 test('platformRunnerSpawnTimeout leaves object-storage unbounded and honors core budgets', () => {

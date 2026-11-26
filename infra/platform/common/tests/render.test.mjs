@@ -337,3 +337,34 @@ test('verifyManifestBytes used for fixture bytes sanity', () => {
   const digest = createHash('sha256').update(body).digest('hex');
   assert.equal(digest.length, 64);
 });
+
+test('assertPlatformRenderRequest rejects legacy observability registry', () => {
+  assert.throws(
+    () => assertPlatformRenderRequest('observability', 'dev', 'all'),
+    /unsupported service/,
+  );
+  assert.throws(
+    () => assertPlatformRenderRequest('observability', 'release', 'all'),
+    /unsupported service/,
+  );
+});
+
+test('cli render observability uses native bundle on both profiles', () => {
+  for (const profile of ['dev', 'release']) {
+    const result = spawnCli(['render', 'observability', profile, 'all']);
+    assert.equal(result.status, 0, result.stderr);
+    const docs = result.stdout
+      .split('\n---\n')
+      .map((section) => section.trim())
+      .filter(Boolean)
+      .map((section) => JSON.parse(section.replace(/^---\n?/, '')));
+    assert.ok(docs.length > 0);
+    assert.ok(
+      docs.every(
+        (doc) =>
+          typeof doc.metadata?.namespace === 'string' &&
+          doc.metadata.namespace.includes('observability'),
+      ),
+    );
+  }
+});

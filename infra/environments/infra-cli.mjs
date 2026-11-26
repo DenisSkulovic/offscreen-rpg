@@ -19,6 +19,7 @@ import {
 import { observeGatewayStatus } from '../platform/gateway/install.mjs';
 import { observeRedisReady } from '../platform/redis/readiness.mjs';
 import { observeRabbitmqReady } from '../platform/rabbitmq/readiness.mjs';
+import { observeObservability } from '../platform/observability/readiness.mjs';
 import {
   buildPlatformPlan,
   defaultPlatformRunner,
@@ -329,24 +330,44 @@ export function verifyClusterNodesReady(profileId, run, { wait = false } = {}) {
   const profile = readPlatformProfile(profileId);
   const observe = () => {
     const result = run('kubectl', [
-      '--context', profile.contextName, 'get', 'nodes', '-o', 'json',
+      '--context',
+      profile.contextName,
+      'get',
+      'nodes',
+      '-o',
+      'json',
     ]);
     if (!result.ok) throw new Error('cluster nodes are unreadable');
     let body;
-    try { body = JSON.parse(result.stdout ?? '{}'); }
-    catch { throw new Error('cluster nodes response is malformed'); }
+    try {
+      body = JSON.parse(result.stdout ?? '{}');
+    } catch {
+      throw new Error('cluster nodes response is malformed');
+    }
     const items = Array.isArray(body.items) ? body.items : [];
     if (items.length === 0) throw new Error('cluster has no nodes');
-    return items.every(node => node.status?.conditions?.some(
-      condition => condition.type === 'Ready' && condition.status === 'True',
-    ));
+    return items.every((node) =>
+      node.status?.conditions?.some(
+        (condition) =>
+          condition.type === 'Ready' && condition.status === 'True',
+      ),
+    );
   };
   if (observe()) return;
   if (wait) {
-    const result = run('kubectl', [
-      '--context', profile.contextName, 'wait', '--for=condition=Ready',
-      'nodes', '--all', '--timeout=120s',
-    ], { timeoutMs: 125_000 });
+    const result = run(
+      'kubectl',
+      [
+        '--context',
+        profile.contextName,
+        'wait',
+        '--for=condition=Ready',
+        'nodes',
+        '--all',
+        '--timeout=120s',
+      ],
+      { timeoutMs: 125_000 },
+    );
     if (!result.ok) throw new Error('cluster node readiness wait failed');
     if (observe()) return;
   }
@@ -357,7 +378,11 @@ export function verifyClusterNodesReady(profileId, run, { wait = false } = {}) {
  * @param {typeof runPlatformCommand} run
  * @param {string} contextName
  */
-export function verifyReleaseLocalPathProvisioner(run, contextName, { wait = false } = {}) {
+export function verifyReleaseLocalPathProvisioner(
+  run,
+  contextName,
+  { wait = false } = {},
+) {
   if (typeof contextName !== 'string' || contextName.length === 0) {
     throw new Error('release context is required');
   }
@@ -384,8 +409,22 @@ export function verifyReleaseLocalPathProvisioner(run, contextName, { wait = fal
   const available = conditions.find((item) => item?.type === 'Available');
   if (available?.status !== 'True') {
     if (wait) {
-      const result = run('kubectl', ['--context', contextName, '-n', 'local-path-storage', 'wait', '--for=condition=Available', 'deployment/local-path-provisioner', '--timeout=120s'], { timeoutMs: 125_000 });
-      if (!result.ok) throw new Error('local-path provisioner readiness wait failed');
+      const result = run(
+        'kubectl',
+        [
+          '--context',
+          contextName,
+          '-n',
+          'local-path-storage',
+          'wait',
+          '--for=condition=Available',
+          'deployment/local-path-provisioner',
+          '--timeout=120s',
+        ],
+        { timeoutMs: 125_000 },
+      );
+      if (!result.ok)
+        throw new Error('local-path provisioner readiness wait failed');
       return verifyReleaseLocalPathProvisioner(run, contextName);
     }
     throw new Error('local-path provisioner is not Available');
@@ -413,6 +452,26 @@ function deploymentIsReady(deployment) {
 /**
  * @param {{ ok: boolean, state?: string, detail?: string }} observation
  */
+/**
+ * @param {{ state?: string, reasonCode?: string, pending?: boolean, detail?: string }} observation
+ */
+export function observabilityReadinessToServiceState(observation) {
+  const detail = observation.detail ?? observation.reasonCode;
+  if (observation.pending === true) {
+    return { state: 'not-ready', detail: detail ?? 'pending' };
+  }
+  if (observation.state === 'ready') {
+    return { state: 'installed', detail };
+  }
+  if (observation.state === 'absent') {
+    return { state: 'not-installed', detail };
+  }
+  if (observation.state === 'unreadable') {
+    return { state: 'unreadable', detail };
+  }
+  return { state: 'not-ready', detail };
+}
+
 function rabbitmqReadinessToServiceState(observation) {
   const detail = observation.detail ?? observation.reason;
   const state = observation.state;
@@ -526,22 +585,6 @@ function observeReleaseServiceState(serviceId, deps = {}) {
     return redisReadinessToServiceState(observeRedisReady('release', deps));
   }
 
-  if (serviceId === 'observability') {
-    const deployment = read('deployment', 'otel-collector', 'lab-a');
-    const service = read('service', 'otel-collector', 'lab-a');
-    if (deployment.state === 'unreadable' || service.state === 'unreadable') {
-      return { state: 'unreadable' };
-    }
-    if (deployment.state === 'absent' && service.state === 'absent') {
-      return { state: 'not-installed' };
-    }
-    const ready =
-      deployment.state === 'present' &&
-      deploymentIsReady(deployment.object) &&
-      service.state === 'present';
-    return { state: ready ? 'installed' : 'not-ready' };
-  }
-
   return { state: 'unreadable', detail: `unknown service: ${serviceId}` };
 }
 
@@ -598,10 +641,29 @@ export function observeSelectedServiceState(profileId, serviceId, deps = {}) {
     if (serviceId === 'rabbitmq') {
       return rabbitmqReadinessToServiceState(observeRabbitmqReady('dev', deps));
     }
+    if (serviceId === 'observability') {
+      return observabilityReadinessToServiceState(
+        observeObservability('dev', {
+          run: deps.run,
+          verifyArchive: false,
+          ...deps.observability,
+        }),
+      );
+    }
     return {
       state: 'unsupported',
       detail: `${serviceId} is not supported on profile dev`,
     };
+  }
+
+  if (serviceId === 'observability') {
+    return observabilityReadinessToServiceState(
+      observeObservability('release', {
+        run: deps.run,
+        verifyArchive: false,
+        ...deps.observability,
+      }),
+    );
   }
 
   if (serviceId === 'rabbitmq') {
@@ -700,9 +762,25 @@ export function runInfraUp(input) {
       ran: [],
     };
   }
+  const clusterPresent = inventory.clusters.includes(profile.clusterName);
+
+  if (!clusterPresent && selection.selected.includes('observability')) {
+    progressReporter?.phaseFail('cluster-inventory');
+    const message =
+      'Refusing observability ensure: cluster is missing. Use --services none to bootstrap the cluster first.';
+    process.stderr.write(`${message}\n`);
+    return {
+      contextName: profile.contextName,
+      ok: false,
+      exitCode: 1,
+      phase: 'cluster-inventory',
+      message,
+      ran: [],
+    };
+  }
+
   progressReporter?.phaseOk('cluster-inventory');
 
-  const clusterPresent = inventory.clusters.includes(profile.clusterName);
   /** @type {string[]} */
   const clusterPhases = [];
 
@@ -735,11 +813,17 @@ export function runInfraUp(input) {
   }
 
   progressReporter?.phaseStart('cluster-verify');
+  const waitForBootstrapReadiness =
+    !clusterPresent && !selection.selected.includes('observability');
   try {
     assertPlatformTarget(input.profileId, { run });
-    verifyClusterNodesReady(input.profileId, run, { wait: !clusterPresent });
+    verifyClusterNodesReady(input.profileId, run, {
+      wait: waitForBootstrapReadiness,
+    });
     if (input.profileId === 'release') {
-      verifyReleaseLocalPathProvisioner(run, profile.contextName, { wait: !clusterPresent });
+      verifyReleaseLocalPathProvisioner(run, profile.contextName, {
+        wait: waitForBootstrapReadiness,
+      });
     }
     if (!clusterPresent) assertPlatformTarget(input.profileId, { run });
     progressReporter?.phaseOk('cluster-verify');
@@ -786,7 +870,9 @@ export function runInfraUp(input) {
   if (!receipt.ok) {
     const refusal = receipt.refusals[0];
     const failedPhase = receipt.phases.find((phase) => !phase.ok)?.id;
-    const message = refusal?.id ? `platform ensure refused: ${refusal.id}` : `platform ensure failed: ${failedPhase ?? 'unknown phase'}`;
+    const message = refusal?.id
+      ? `platform ensure refused: ${refusal.id}`
+      : `platform ensure failed: ${failedPhase ?? 'unknown phase'}`;
     process.stderr.write(`${message}\n`);
   }
 

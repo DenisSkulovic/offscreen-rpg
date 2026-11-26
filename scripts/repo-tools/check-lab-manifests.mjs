@@ -21,6 +21,7 @@ import {
   assertHelmAvailable,
   renderWorkloadDocuments,
 } from '../../infra/workloads/render.mjs';
+import { loadArtifacts } from '../../infra/platform/observability/artifacts.mjs';
 
 const REPO_ROOT = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -64,8 +65,16 @@ const PLATFORM_SECTIONS_BY_SERVICE = {
   'object-storage': ['all', 'namespace', 'workloads'],
   redis: ['all'],
   rabbitmq: ['all', 'namespace', 'broker'],
-  observability: ['all'],
 };
+
+/** Validated via validateNativeObservabilityManifests, not the raw YAML scan. */
+export const NATIVE_OBSERVABILITY_VALUES_PATHS = Object.freeze([
+  'infra/platform/observability/specimens/collector.yaml',
+  'infra/platform/observability/specimens/prometheus.yaml',
+  'infra/platform/observability/specimens/loki.yaml',
+  'infra/platform/observability/specimens/tempo.yaml',
+  'infra/platform/observability/specimens/grafana.yaml',
+]);
 
 const PYTHON_PARSE = `
 import pathlib
@@ -143,7 +152,18 @@ function isYamlFile(name) {
 /**
  * @param {string} filePath
  */
+export function isExcludedFromNativeObservabilityValues(filePath) {
+  const relative = path.relative(REPO_ROOT, path.resolve(filePath));
+  return NATIVE_OBSERVABILITY_VALUES_PATHS.includes(relative);
+}
+
+/**
+ * @param {string} filePath
+ */
 export function isExcludedFromRawYamlScan(filePath) {
+  if (isExcludedFromNativeObservabilityValues(filePath)) {
+    return true;
+  }
   const resolved = path.resolve(filePath);
   const parts = resolved.split(path.sep);
   const templatesIdx = parts.lastIndexOf('templates');
@@ -359,13 +379,53 @@ export function validatePlatformHelmManifests() {
 }
 
 /**
- * @returns {{ helmVersion: string, releaseDocumentCount: number, devSlotCounts: Record<string, number>, platform: ReturnType<typeof validatePlatformHelmManifests> }}
+ * @returns {{ profiles: Record<'dev' | 'release', { releases: number, documents: number, releaseDocuments: Record<string, number> }> }}
+ */
+export function validateNativeObservabilityManifests() {
+  /** @type {Record<'dev' | 'release', { releases: number, documents: number, releaseDocuments: Record<string, number> }>} */
+  const profiles = {};
+
+  for (const profileId of /** @type {const} */ (['dev', 'release'])) {
+    const loaded = loadArtifacts(profileId);
+    if (loaded.releases.length !== 5) {
+      throw new Error(
+        `expected five native observability releases for ${profileId}, got ${loaded.releases.length}`,
+      );
+    }
+    /** @type {Record<string, number>} */
+    const releaseDocuments = {};
+    for (const release of loaded.releases) {
+      releaseDocuments[release.name] = release.documents.length;
+      if (
+        typeof release.sha256 !== 'string' ||
+        release.sha256.length === 0 ||
+        typeof release.expectedImage?.canonicalReference !== 'string' ||
+        !release.expectedImage.canonicalReference.includes('@sha256:')
+      ) {
+        throw new Error(
+          `native observability digest contract missing for ${release.name} (${profileId})`,
+        );
+      }
+    }
+    profiles[profileId] = {
+      releases: loaded.releases.length,
+      documents: loaded.documents.length,
+      releaseDocuments,
+    };
+  }
+
+  return { profiles };
+}
+
+/**
+ * @returns {{ helmVersion: string, releaseDocumentCount: number, devSlotCounts: Record<string, number>, platform: ReturnType<typeof validatePlatformHelmManifests>, nativeObservability: ReturnType<typeof validateNativeObservabilityManifests> }}
  */
 export function validateHelmManifests() {
   const helmVersion = assertHelmAvailable();
   const workload = validateWorkloadHelmManifests();
   const platform = validatePlatformHelmManifests();
-  return { helmVersion, ...workload, platform };
+  const nativeObservability = validateNativeObservabilityManifests();
+  return { helmVersion, ...workload, platform, nativeObservability };
 }
 
 /**
@@ -418,8 +478,11 @@ function main(argv = process.argv.slice(2)) {
     result.helm && result.helm.platform.services.length > 0
       ? `; platform charts ${result.helm.platform.services.join(', ')}`
       : '';
+  const nativeObservabilitySuffix = result.helm?.nativeObservability
+    ? '; native observability dev+release (five archives each)'
+    : '';
   const helmSuffix = result.helm
-    ? `; helm ${result.helm.helmVersion} lint/template release + dev-1/dev-2 (${result.helm.releaseDocumentCount} release docs)${platformSuffix}`
+    ? `; helm ${result.helm.helmVersion} lint/template release + dev-1/dev-2 (${result.helm.releaseDocumentCount} release docs)${platformSuffix}${nativeObservabilitySuffix}`
     : '';
   console.log(
     `Parsed ${result.fileCount} lab Kubernetes manifest file(s) under ${result.roots.join(', ')}${helmSuffix}`,

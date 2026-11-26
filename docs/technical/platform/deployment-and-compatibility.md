@@ -144,7 +144,7 @@ The laboratory can run one CloudNativePG primary in namespace `lab-postgres` on 
 
 ## Observability
 
-Selected signal list. Observer services stay planned. OpenTelemetry stays planned on [Recommendation](./topology.md#recommendation). This page has no inspected proof that an observer service is deployed and tested. Demonstrated coverage is [capability coverage](../../../STATUS.md#capability-coverage).
+Selected signal list for the **game** remains planned. OpenTelemetry stays planned on [Recommendation](./topology.md#recommendation). Separately, the **native local platform** five-release stack (Prometheus, Loki, Tempo, Collector, Grafana) is the selected Kubernetes optional service under [Native observability infrastructure](./observability-native-infrastructure.md); it does not enroll application telemetry and live acceptance remains **NOT RUN**. Historical single-collector lab proof is preserved at [immutable dossier @ 7bbdb6d9](https://github.com/DenisSkulovic/offscreen-rpg/tree/7bbdb6d9a4a0cbe2ad22d74c4a335a57eb7191e3/work/designs/open/observability-platform). Demonstrated coverage for application observers is still [capability coverage](../../../STATUS.md#capability-coverage).
 
 Correlate request, story, command, decision, generation operation, Temporal Workflow ID/Run ID, Activity and delivery identifiers. Structured logs report state transitions and failure categories without exposing secrets or raw private story content by default. Use replay-aware workflow logging to avoid misleading duplicate logs. Trace slow paths across command receipt, Temporal task wait, context assembly, model attempts and commit.
 

@@ -100,6 +100,35 @@ test('parseVerifyArgs accepts source and strict --json', () => {
   assert.equal(parsed.json, true);
 });
 
+test('parseVerifyArgs accepts diagnostic --observability and rejects misuse', () => {
+  const parsed = parseVerifyArgs([
+    '--suite',
+    'diagnostic',
+    '--observability',
+    '--json',
+  ]);
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.observability, true);
+  assert.deepEqual(parseVerifyArgs(['--suite', 'source', '--observability']), {
+    ok: false,
+    exitCode: 2,
+    message: '--observability is only valid with diagnostic suite',
+  });
+  assert.deepEqual(
+    parseVerifyArgs([
+      '--suite',
+      'diagnostic',
+      '--observability',
+      '--observability',
+    ]),
+    {
+      ok: false,
+      exitCode: 2,
+      message: 'duplicate --observability option',
+    },
+  );
+});
+
 test('parseVerifyArgs rejects smoke/full and unknown options', () => {
   assert.deepEqual(parseVerifyArgs(['--suite', 'smoke']), {
     ok: false,

@@ -1,244 +1,539 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import process from 'node:process';
 import test from 'node:test';
 
-const observabilityDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const installPath = join(observabilityDir, 'install.sh');
-const smokeHops = join(
-  observabilityDir,
-  '../../verification/smoke/observability/hops.yaml',
-);
+import { readKindProfile } from '../../../clusters/kind/manager/config.mjs';
+import { readPlatformProfile } from '../../common/profile.mjs';
+import { loadArtifacts } from '../artifacts.mjs';
+import { GRAFANA_ADMIN_SECRET } from '../inventory.mjs';
+import {
+  assertPhaseBudget,
+  helmInstallArgv,
+  PHASE_TIMEOUT_MS,
+  runObservability,
+  runObservabilityEnsure,
+  verifyCompletedPhasePrefix,
+  WORKER_BUDGET_MS,
+} from '../install.mjs';
+import { buildCompleteDevSnapshot } from './snapshot-fixtures.mjs';
 
-/** @typedef {'ok' | 'unreadable' | 'foreign' | 'foreign-ns'} ContextMode */
+const devKind = readKindProfile('dev');
+const devProfile = readPlatformProfile('dev');
+const artifacts = loadArtifacts('dev', { verifyArchive: false });
 
-/** @param {{ contextMode?: ContextMode, labAAbsent?: boolean }} [options] */
-function stubBinDir({ contextMode = 'ok', labAAbsent = true } = {}) {
-  const binDir = mkdtempSync(join(tmpdir(), 'observability-install-guard-'));
-  const writeStub = (name, body) => {
-    const path = join(binDir, name);
-    writeFileSync(path, body, 'utf8');
-    chmodSync(path, 0o755);
-    return path;
+/**
+ * @param {object} base
+ */
+function absentSnapshot(base = {}) {
+  return {
+    profileId: 'dev',
+    namespace: { absent: true },
+    objects: {},
+    helmReleases: [],
+    helmManifests: {},
+    persistentVolumes: [],
+    legacy: [],
+    pending: false,
+    pendingValid: true,
+    ...base,
   };
-
-  writeStub(
-    'docker',
-    `#!/usr/bin/env bash
-set -euo pipefail
-if [[ "\${1:-}" == "image" && "\${2:-}" == "inspect" ]]; then
-  echo "otel/opentelemetry-collector:0.165.0@sha256:34b24b740c3c88d3467740e8642a397c13898ef76d7295c5425164c482ed1b73"
-  exit 0
-fi
-if [[ "\${1:-}" == "run" ]]; then
-  echo "otelcol version 0.165.0"
-  exit 0
-fi
-if [[ "\${1:-}" == "save" ]]; then exit 0; fi
-if [[ "\${1:-}" == "ps" ]]; then
-  echo "offscreen-release-control-plane 127.0.0.1:6443->6443/tcp"
-  exit 0
-fi
-if [[ "\${1:-}" == "exec" ]]; then exit 0; fi
-echo "unexpected docker: $*" >&2
-exit 2
-`,
-  );
-
-  writeStub(
-    'kind',
-    `#!/usr/bin/env bash
-set -euo pipefail
-if [[ "\${1:-}" == "get" && "\${2:-}" == "clusters" ]]; then
-  echo offscreen-release
-  exit 0
-fi
-if [[ "\${1:-}" == "get" && "\${2:-}" == "nodes" ]]; then
-  echo offscreen-release-control-plane
-  exit 0
-fi
-if [[ "\${1:-}" == "version" ]]; then
-  echo kind v0.33.0
-  exit 0
-fi
-echo "unexpected kind: $*" >&2
-exit 2
-`,
-  );
-
-  const nsAbsentFlag = labAAbsent ? '1' : '0';
-  const nsLabel = contextMode === 'foreign-ns' ? 'foreign' : 'disposable';
-
-  const contextBlock =
-    contextMode === 'unreadable' || contextMode === 'foreign-ns'
-      ? contextMode === 'unreadable'
-        ? `exit 1`
-        : `echo kind-offscreen-release
-  exit 0`
-      : contextMode === 'foreign'
-        ? `echo kind-other-cluster
-  exit 0`
-        : `echo kind-offscreen-release
-  exit 0`;
-
-  const applyLog = join(binDir, 'apply-log');
-  writeFileSync(applyLog, '', 'utf8');
-
-  writeStub(
-    'kubectl',
-    `#!/usr/bin/env bash
-set -euo pipefail
-joined="$*"
-if [[ "\${1:-}" == "--context" && "\${3:-}" == "config" && "\${4:-}" == "get-contexts" ]]; then
-  ${contextBlock}
-fi
-if [[ "\${1:-}" == "config" && "\${2:-}" == "get-contexts" ]]; then
-  ${contextBlock}
-fi
-if [[ "\${1:-}" == "version" ]]; then
-  echo '{"clientVersion":{"gitVersion":"v1.37.2"}}'
-  exit 0
-fi
-if [[ "$joined" == *"version --client=true -o json"* ]]; then
-  echo '{"clientVersion":{"gitVersion":"v1.37.2"}}'
-  exit 0
-fi
-if [[ "$joined" == *"config view --minify -o json"* ]]; then
-  cat <<'JSON'
-{"contexts":[{"context":{"cluster":"offscreen-release","user":"kind-offscreen-release"}}],"clusters":[{"name":"offscreen-release","cluster":{"server":"https://127.0.0.1:6443"}}]}
-JSON
-  exit 0
-fi
-if [[ "$joined" == *"get namespace lab-a"* ]]; then
-  if [[ "${nsAbsentFlag}" == "1" ]]; then
-    exit 0
-  fi
-  echo "namespace/lab-a"
-  exit 0
-fi
-if [[ "$joined" == *"jsonpath={.metadata.labels.offscreen\\\\.rpg/lab}"* ]]; then
-  echo "${nsLabel}"
-  exit 0
-fi
-if [[ "$joined" == *"get namespace lab-postgres"* ]]; then
-  cat <<'JSON'
-{"metadata":{"name":"lab-postgres","namespace":"lab-postgres","labels":{"offscreen.rpg/lab":"disposable"}}}
-JSON
-  exit 0
-fi
-if [[ "$joined" == *" apply "* || "$joined" == *" apply" ]]; then
-  for arg in "$@"; do
-    echo "$arg" >> "${applyLog}"
-  done
-  exit 0
-fi
-if [[ "$joined" == *"rollout status deployment/otel-collector"* ]]; then exit 0; fi
-if [[ "$joined" == *"get svc otel-collector"* ]]; then
-  echo ClusterIP
-  exit 0
-fi
-if [[ "$joined" == *"get pod -l app=otel-collector"* ]]; then
-  echo "docker.io/otel/opentelemetry-collector@sha256:34b24b740c3c88d3467740e8642a397c13898ef76d7295c5425164c482ed1b73"
-  exit 0
-fi
-if [[ "$joined" == *"get svc -A"* ]]; then
-  echo "lab-a otel-collector ClusterIP"
-  exit 0
-fi
-echo "unexpected kubectl: $*" >&2
-exit 2
-`,
-  );
-
-  return { binDir, applyLog };
 }
 
-test('verification hops.yaml keeps synthetic hop deployments', () => {
-  const text = readFileSync(smokeHops, 'utf8');
-  assert.match(text, /name:\s*hop-a/);
-  assert.match(text, /name:\s*hop-b/);
-  assert.doesNotMatch(text, /kind:\s*ConfigMap/);
+/**
+ * @param {string[]} phases
+ */
+function snapshotForPhases(phases) {
+  if (!phases.includes('namespace')) {
+    return absentSnapshot();
+  }
+  const complete = buildCompleteDevSnapshot(artifacts);
+  /** @type {Record<string, object>} */
+  const objects = {};
+  const releaseNames = new Set(
+    phases.filter((phase) => phase.startsWith('obs-')),
+  );
+  if (
+    phases.includes('secret') &&
+    complete.objects[`Secret/${GRAFANA_ADMIN_SECRET}`]
+  ) {
+    objects[`Secret/${GRAFANA_ADMIN_SECRET}`] =
+      complete.objects[`Secret/${GRAFANA_ADMIN_SECRET}`];
+  }
+  for (const row of artifacts.expectedInventory.direct) {
+    if (!releaseNames.has(row[4])) {
+      continue;
+    }
+    const key = `${row[1]}/${row[3]}`;
+    if (complete.objects[key]) {
+      objects[key] = complete.objects[key];
+    }
+  }
+  for (const row of artifacts.expectedInventory.generatedClaims) {
+    if (!releaseNames.has(row[4])) {
+      continue;
+    }
+    const key = `${row[1]}/${row[3]}`;
+    if (complete.objects[key]) {
+      objects[key] = complete.objects[key];
+    }
+  }
+  if (releaseNames.size > 0) {
+    for (const release of releaseNames) {
+      const secretName = `sh.helm.release.v1.${release}.v1`;
+      if (complete.objects[`Secret/${secretName}`]) {
+        objects[`Secret/${secretName}`] =
+          complete.objects[`Secret/${secretName}`];
+      }
+    }
+  }
+  return {
+    ...complete,
+    namespace: {
+      absent: false,
+      uid: complete.namespace.uid,
+      object: {
+        metadata: {
+          name: devProfile.namespaces.observability,
+          labels: {
+            [devProfile.ownerLabel]: devProfile.ownerValue,
+          },
+        },
+      },
+    },
+    objects,
+    helmReleases: complete.helmReleases.filter((row) =>
+      releaseNames.has(row.name),
+    ),
+    pending: false,
+    pendingValid: true,
+  };
+}
+
+/**
+ * @param {{ failAt?: string, calls?: { command: string, args: string[] }[], outputs?: string[] }} [options]
+ */
+function makeEnsureDeps(options = {}) {
+  let phase = 0;
+  /** @type {{ command: string, args: string[] }[]} */
+  const calls = options.calls ?? [];
+  const outputs = options.outputs ?? [];
+  let clock = 0;
+  const complete = snapshotForPhases([
+    'namespace',
+    'secret',
+    'obs-prometheus',
+    'obs-loki',
+    'obs-tempo',
+    'obs-collector',
+    'obs-grafana',
+  ]);
+  const stages = [
+    absentSnapshot(),
+    snapshotForPhases(['namespace']),
+    snapshotForPhases(['namespace', 'secret']),
+    snapshotForPhases(['namespace', 'secret', 'obs-prometheus']),
+    snapshotForPhases(['namespace', 'secret', 'obs-prometheus', 'obs-loki']),
+    snapshotForPhases([
+      'namespace',
+      'secret',
+      'obs-prometheus',
+      'obs-loki',
+      'obs-tempo',
+    ]),
+    snapshotForPhases([
+      'namespace',
+      'secret',
+      'obs-prometheus',
+      'obs-loki',
+      'obs-tempo',
+      'obs-collector',
+    ]),
+    complete,
+  ];
+
+  const identity = {
+    profile: devProfile,
+    profileId: 'dev',
+    contextName: devKind.contextName,
+    clusterName: devProfile.clusterName,
+    namespace: devProfile.namespaces.observability,
+    snapshotPath: '/tmp/observability-fake-kubeconfig',
+    tuple: {
+      profileId: 'dev',
+      contextName: devKind.contextName,
+      clusterName: devProfile.clusterName,
+      port: 24443,
+      dockerControlPlaneId: 'cp',
+      kubeSystemUid: 'kube-system',
+      baselineUid: 'baseline',
+      targetNamespaceUid: null,
+    },
+    cleanup: () => ({ ok: true }),
+  };
+
+  const custody = {
+    fd: 9,
+    cancelled: false,
+    cancel() {
+      this.cancelled = true;
+    },
+    begin() {},
+    advance() {},
+    clear() {},
+    close() {},
+  };
+
+  return {
+    verifyArchive: false,
+    now: () => clock,
+    captureIdentity: async () => identity,
+    acquireCustody: async () => custody,
+    readPending: () => ({ pending: false, valid: true }),
+    collectInventorySnapshot: () => stages[Math.min(phase, stages.length - 1)],
+    recheckIdentity: () => ({ ok: true }),
+    runMutation: async (command, args) => {
+      calls.push({ command, args: args.slice() });
+      if (
+        options.failAt &&
+        calls.length === 1 &&
+        options.failAt === 'namespace'
+      ) {
+        return {
+          ok: false,
+          stdout: '',
+          exitCode: 1,
+          signal: null,
+          timedOut: false,
+        };
+      }
+      if (command === 'helm' && options.failHelmAt != null) {
+        const helmCalls = calls.filter(
+          (call) => call.command === 'helm',
+        ).length;
+        if (helmCalls === options.failHelmAt) {
+          return {
+            ok: false,
+            stdout: '',
+            exitCode: 1,
+            signal: null,
+            timedOut: false,
+          };
+        }
+      }
+      if (command === 'helm') {
+        const slowMs = options.helmDurationMs ?? 1;
+        clock += slowMs;
+      } else {
+        clock += 1;
+      }
+      phase += 1;
+      outputs.push(`${command} ${args.join(' ')}`);
+      return {
+        ok: true,
+        stdout: '',
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+      };
+    },
+    finalObservation: () => ({
+      state: 'ready',
+      reasonCode: 'ready',
+      pending: false,
+      snapshot: complete,
+    }),
+    get calls() {
+      return calls;
+    },
+    advanceClock(ms) {
+      clock += ms;
+    },
+    get clock() {
+      return clock;
+    },
+  };
+}
+
+test('ensure refuses missing authorization before lock', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  try {
+    const receipt = await runObservabilityEnsure('dev', devKind.contextName, {
+      verifyArchive: false,
+      captureIdentity: async () => {
+        throw new Error('should not capture');
+      },
+    });
+    assert.equal(receipt.reasonCode, 'ensure-not-authorized');
+    assert.equal(receipt.mutation, 'none');
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    } else {
+      process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+    }
+  }
 });
 
-test('install.sh ensures lab-a before rendered collector manifest', () => {
-  const text = readFileSync(installPath, 'utf8');
-  assert.match(text, /ensure-lab-namespace\.sh/);
-  assert.match(text, /ensure_lab_namespace lab-a/);
+test('failed namespace phase stops before later mutations', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps({ failAt: 'namespace' });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, false);
+    assert.deepEqual(receipt.completedPhases, []);
+    assert.equal(deps.calls.length, 1);
+    assert.equal(deps.calls[0]?.command, 'kubectl');
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    } else {
+      process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+    }
+  }
 });
 
-test('install.sh stub run applies lab-a namespace manifest before collector', () => {
-  const { binDir, applyLog } = stubBinDir({ labAAbsent: true });
-  const result = spawnSync('bash', [installPath], {
-    encoding: 'utf8',
-    env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
-  });
-  assert.equal(result.status, 0, result.stderr);
-  const applied = readFileSync(applyLog, 'utf8');
-  assert.match(applied, /lab-a-namespace\.yaml/);
+test('failed helm phase retains prefix and skips later helm calls', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps({ failHelmAt: 3 });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, false);
+    assert.deepEqual(receipt.completedPhases, [
+      'namespace',
+      'secret',
+      'obs-prometheus',
+      'obs-loki',
+    ]);
+    const helmCalls = deps.calls.filter((call) => call.command === 'helm');
+    assert.equal(helmCalls.length, 3);
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    } else {
+      process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+    }
+  }
 });
 
-test('install.sh refuses foreign lab-a namespace label', () => {
-  const { binDir, applyLog } = stubBinDir({
-    contextMode: 'foreign-ns',
-    labAAbsent: false,
-  });
-  const result = spawnSync('bash', [installPath], {
-    encoding: 'utf8',
-    env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
-  });
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /foreign or missing lab label/);
-  assert.equal(readFileSync(applyLog, 'utf8').trim(), '');
+test('helm install argv preserves helmValueArgs parity with render', () => {
+  const release = artifacts.releases[0];
+  const argv = helmInstallArgv(
+    {
+      snapshotPath: '/tmp/kubeconfig',
+      contextName: devKind.contextName,
+      namespace: devProfile.namespaces.observability,
+    },
+    release,
+  );
+  for (const arg of release.helmValueArgs) {
+    assert.ok(argv.includes(arg), `missing helm value arg ${arg}`);
+  }
+  assert.equal(argv.at(-2), '--timeout');
+  assert.equal(argv.at(-1), '180s');
+  assert.ok(!argv.includes('--atomic'));
+  assert.ok(!argv.includes('--cleanup-on-fail'));
 });
 
-test('install.sh does not reference synthetic smoke fixtures', () => {
-  const text = readFileSync(installPath, 'utf8');
-  assert.doesNotMatch(text, /VERIFICATION_OBS_ROOT/);
-  assert.doesNotMatch(text, /synthetic-hop/);
-  assert.doesNotMatch(text, /hop\.py/);
-  assert.doesNotMatch(text, /hops\.yaml/);
-  assert.doesNotMatch(text, /PYTHON_IMAGE/);
-  assert.doesNotMatch(text, /(source|\.\/|bash ).*verification\/smoke/);
-  assert.doesNotMatch(text, /(source|\.\/|bash ).*setup\.sh/);
-  assert.doesNotMatch(text, /(source|\.\/|bash ).*smoke\.sh/);
-  assert.doesNotMatch(text, /helm upgrade/);
-  assert.match(text, /render observability release all/);
-  assert.match(text, /chart\/files\/collector-config\.yaml/);
+test('five slow helm calls still fit the 1500s worker budget', () => {
+  let now = 0;
+  const helmDuration = 250_000;
+  for (const phase of [
+    'namespace',
+    'secret',
+    'obs-prometheus',
+    'obs-loki',
+    'obs-tempo',
+    'obs-collector',
+    'obs-grafana',
+  ]) {
+    assert.doesNotThrow(() => assertPhaseBudget(WORKER_BUDGET_MS - now, phase));
+    now += PHASE_TIMEOUT_MS[phase] ?? 0;
+    if (phase.startsWith('obs-')) {
+      assert.ok(now <= WORKER_BUDGET_MS);
+    }
+  }
+  now += helmDuration;
+  assert.ok(now < WORKER_BUDGET_MS);
 });
 
-test('install.sh stub run applies rendered collector only, not smoke fixtures', () => {
-  const { binDir, applyLog } = stubBinDir();
-  const result = spawnSync('bash', [installPath], {
-    encoding: 'utf8',
-    env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
-  });
-  assert.equal(result.status, 0, result.stderr);
-  const applied = readFileSync(applyLog, 'utf8');
-  assert.doesNotMatch(applied, /hops\.yaml/);
-  assert.doesNotMatch(applied, /hop\.py/);
-  assert.doesNotMatch(applied, /verification\/smoke\/observability/);
-  assert.doesNotMatch(applied, /collector\.yaml/);
+test('ensure output never contains generated admin secret material', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps();
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    const joined = JSON.stringify(receipt);
+    for (const call of deps.calls) {
+      assert.ok(!call.args.some((arg) => arg.includes('admin-password=')));
+    }
+    assert.ok(!joined.includes('admin-password'));
+    if (receipt.ok) {
+      assert.equal(receipt.mutation, 'confirmed');
+    }
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    } else {
+      process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+    }
+  }
 });
 
-test('install.sh refuses when kubectl context is unreadable', () => {
-  const { binDir } = stubBinDir({ contextMode: 'unreadable' });
-  const result = spawnSync('bash', [installPath], {
-    encoding: 'utf8',
-    env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
-  });
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /unreadable or absent/);
+test('stale identity is refused before writes proceed', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps();
+    let recheckCount = 0;
+    deps.recheckIdentity = () => {
+      recheckCount += 1;
+      if (recheckCount === 1) {
+        return { ok: true };
+      }
+      return { ok: false, reason: 'identity-changed' };
+    };
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.reasonCode, 'identity-changed');
+    assert.equal(deps.calls.length, 1);
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    } else {
+      process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+    }
+  }
 });
 
-test('install.sh refuses when kubectl context is foreign', () => {
-  const { binDir } = stubBinDir({ contextMode: 'foreign' });
-  const result = spawnSync('bash', [installPath], {
-    encoding: 'utf8',
-    env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
-  });
-  assert.notEqual(result.status, 0);
-  assert.match(result.stderr, /unreadable or absent/);
+test('foreign pending refuses at admission', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps();
+    deps.foreignPendingAtAdmission = true;
+    deps.collectInventorySnapshot = () =>
+      absentSnapshot({ pending: true, pendingValid: true });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.reasonCode, 'pending');
+    assert.equal(receipt.mutation, 'none');
+    assert.equal(deps.calls.length, 0);
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    } else {
+      process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+    }
+  }
+});
+
+test('own pending finalization succeeds when shape is ready', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps();
+    deps.finalObservation = () => ({
+      state: 'ready',
+      reasonCode: 'pending',
+      pending: true,
+      snapshot: buildCompleteDevSnapshot(artifacts),
+    });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, true);
+    assert.equal(receipt.mutation, 'confirmed');
+    assert.equal(receipt.pending, false);
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    } else {
+      process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+    }
+  }
+});
+
+test('foreign pending refuses during finalization even when shape is ready', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps();
+    deps.foreignPendingAtFinalize = true;
+    deps.finalObservation = () => ({
+      state: 'ready',
+      reasonCode: 'pending',
+      pending: true,
+      snapshot: buildCompleteDevSnapshot(artifacts),
+    });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.reasonCode, 'pending');
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    } else {
+      process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+    }
+  }
+});
+
+test('phase-prefix acceptance allows partial snapshot only', () => {
+  const partial = snapshotForPhases(['namespace', 'secret', 'obs-prometheus']);
+  const pass = verifyCompletedPhasePrefix(
+    partial,
+    artifacts,
+    ['namespace', 'secret', 'obs-prometheus'],
+    devProfile,
+  );
+  assert.equal(pass.ok, true);
+  const fail = verifyCompletedPhasePrefix(
+    partial,
+    artifacts,
+    ['namespace', 'secret', 'obs-prometheus', 'obs-loki'],
+    devProfile,
+  );
+  assert.equal(fail.ok, false);
+});
+
+test('plan and status stay read-only', async () => {
+  const receipt = await runObservability(
+    'plan',
+    'dev',
+    'kind-offscreen-release',
+    {
+      verifyArchive: false,
+      run: () => {
+        throw new Error('plan must not invoke cluster IO');
+      },
+    },
+  );
+  assert.equal(receipt.reasonCode, 'context-mismatch');
+  assert.equal(receipt.mutation, 'none');
 });
