@@ -9,7 +9,12 @@ import {
   runPlatformCommand,
 } from '../../platform/common/commands.mjs';
 import { readPlatformProfile } from '../../platform/common/profile.mjs';
+import { statusObjectStorage } from '../../platform/object-storage/providers/seaweedfs/install.mjs';
 import { RELEASE_CNPG_CLUSTER } from '../../platform/postgres/config.mjs';
+import {
+  readValidatedReleaseBindingFile,
+  resolveReleaseNativeObjectStorageBinding,
+} from './binding.mjs';
 
 const PROFILE_ID = 'release';
 const LAB_LABEL_KEY = 'offscreen.rpg/lab';
@@ -31,14 +36,17 @@ const TOKEN_KEYS = Object.freeze([
   'game-authority-executor-token',
 ]);
 const RUNTIME_DETERMINISTIC_KEYS = Object.freeze([
-  'access-key-id',
-  'secret-access-key',
   'better-auth-secret',
   'github-client-id',
   'github-client-secret',
 ]);
 const GAME_DB_NAME = 'game-db';
 const GAME_RUNTIME_NAME = 'game-runtime';
+const GAME_S3_NAME = 'game-s3';
+const S3_DETERMINISTIC_KEYS = Object.freeze([
+  'access-key-id',
+  'secret-access-key',
+]);
 const BACKING_PG_SECRET = 'lab-pg-app';
 const BACKING_S3_SECRET = 'object-store-s3';
 const GATEWAY_NAME = 'lab-edge';
@@ -174,9 +182,7 @@ export function reconcileTokenFields(snapshots, keys) {
       observed.add(snapshot[key]);
     }
     if (observed.size > 1) {
-      throw credentialRefusal(
-        `credential field mismatch: ${key}`,
-      );
+      throw credentialRefusal(`credential field mismatch: ${key}`);
     }
     if (observed.size === 1) {
       const [value] = observed;
@@ -206,11 +212,9 @@ function ensureAppNamespace(run, contextName, namespace) {
   if (!dry.ok) {
     throw credentialRefusal('could not render release namespace');
   }
-  const apply = run(
-    'kubectl',
-    ['--context', contextName, 'apply', '-f', '-'],
-    { input: dry.stdout },
-  );
+  const apply = run('kubectl', ['--context', contextName, 'apply', '-f', '-'], {
+    input: dry.stdout,
+  });
   if (!apply.ok) {
     throw credentialRefusal('could not ensure release namespace');
   }
@@ -261,8 +265,10 @@ function createOpaqueSecret(run, contextName, namespace, name, stringData) {
 /**
  * @typedef {{
  *   repoRoot: string,
+ *   bindingPath?: string,
  *   run?: typeof runPlatformCommand,
  *   randomToken?: () => string,
+ *   statusObjectStorage?: typeof statusObjectStorage,
  * }} EnsureReleaseCredentialsInput
  */
 
@@ -272,6 +278,35 @@ function createOpaqueSecret(run, contextName, namespace, name, stringData) {
 export function ensureReleaseCredentials(input) {
   const run = input.run ?? runPlatformCommand;
   const rand = input.randomToken ?? (() => randomBytes(24).toString('hex'));
+  const observeObjectStorage =
+    input.statusObjectStorage ??
+    ((profileId, deps = {}) => statusObjectStorage(profileId, deps));
+  const objectStorageStatus = observeObjectStorage(PROFILE_ID, { run });
+  if (objectStorageStatus.state !== 'native-noop') {
+    throw credentialRefusal('release object storage is not native-noop');
+  }
+
+  const bindingPath =
+    input.bindingPath ?? process.env.OFFSCREEN_RELEASE_OBJECT_STORAGE_BINDING;
+  const binding = bindingPath
+    ? readValidatedReleaseBindingFile(bindingPath)
+    : resolveReleaseNativeObjectStorageBinding();
+  const expectedBinding = resolveReleaseNativeObjectStorageBinding();
+  if (JSON.stringify(binding) !== JSON.stringify(expectedBinding)) {
+    throw credentialRefusal('release object storage binding mismatch');
+  }
+  if (
+    binding.credentials.mode !== 'secret' ||
+    !binding.credentials.secretName
+  ) {
+    throw credentialRefusal(
+      'release object storage binding requires a secret ref',
+    );
+  }
+  if (binding.credentials.secretName !== GAME_S3_NAME) {
+    throw credentialRefusal('release object storage binding secret mismatch');
+  }
+
   const profile = readPlatformProfile(PROFILE_ID);
   const approved = assertApprovedLocalEnv(parseRootDotEnv(input.repoRoot));
 
@@ -326,28 +361,49 @@ export function ensureReleaseCredentials(input) {
   }
   // The database operator, not our release installer, owns this generated Secret.
   const pgNamespace = readPlatformObject(
-    { profileId: PROFILE_ID, resource: 'namespace', name: profile.namespaces.postgres },
+    {
+      profileId: PROFILE_ID,
+      resource: 'namespace',
+      name: profile.namespaces.postgres,
+    },
     { run },
   );
-  if (pgNamespace.state !== 'present' ||
-      pgNamespace.object.metadata?.labels?.[LAB_LABEL_KEY] !== LAB_LABEL_VALUE) {
+  if (
+    pgNamespace.state !== 'present' ||
+    pgNamespace.object.metadata?.labels?.[LAB_LABEL_KEY] !== LAB_LABEL_VALUE
+  ) {
     throw credentialRefusal('release PostgreSQL namespace ownership mismatch');
   }
   const pgCluster = readPlatformObject(
-    { profileId: PROFILE_ID, resource: 'cluster.postgresql.cnpg.io',
-      name: RELEASE_CNPG_CLUSTER, namespace: profile.namespaces.postgres },
+    {
+      profileId: PROFILE_ID,
+      resource: 'cluster.postgresql.cnpg.io',
+      name: RELEASE_CNPG_CLUSTER,
+      namespace: profile.namespaces.postgres,
+    },
     { run },
   );
-  const clusterUid = pgCluster.state === 'present' ? pgCluster.object.metadata?.uid : null;
+  const clusterUid =
+    pgCluster.state === 'present' ? pgCluster.object.metadata?.uid : null;
   const pgMetadata = pgBacking.object.metadata;
   const owner = pgMetadata?.ownerReferences;
-  if (typeof clusterUid !== 'string' || !clusterUid ||
-      pgMetadata?.labels?.['cnpg.io/cluster'] !== RELEASE_CNPG_CLUSTER ||
-      !Array.isArray(owner) || !owner.some(ref =>
+  if (
+    typeof clusterUid !== 'string' ||
+    !clusterUid ||
+    pgMetadata?.labels?.['cnpg.io/cluster'] !== RELEASE_CNPG_CLUSTER ||
+    !Array.isArray(owner) ||
+    !owner.some(
+      (ref) =>
         ref.apiVersion === 'postgresql.cnpg.io/v1' &&
-        ref.kind === 'Cluster' && ref.name === RELEASE_CNPG_CLUSTER &&
-        ref.uid === clusterUid && ref.controller === true)) {
-    throw credentialRefusal('lab-postgres/lab-pg-app CNPG controller ownership mismatch');
+        ref.kind === 'Cluster' &&
+        ref.name === RELEASE_CNPG_CLUSTER &&
+        ref.uid === clusterUid &&
+        ref.controller === true,
+    )
+  ) {
+    throw credentialRefusal(
+      'lab-postgres/lab-pg-app CNPG controller ownership mismatch',
+    );
   }
   const backingUri = decodeSecretStringData(pgBacking.object).uri;
   if (!backingUri) {
@@ -369,7 +425,13 @@ export function ensureReleaseCredentials(input) {
   if (s3Backing.state === 'absent') {
     throw credentialRefusal('object-store-s3 is missing access keys.');
   }
-  if (s3Backing.object.metadata?.labels?.[LAB_LABEL_KEY] !== LAB_LABEL_VALUE) {
+  // The native installer creates this admin Secret with no app lab label.
+  // Identity is the profile namespace plus the reserved name, not that label.
+  const adminMeta = s3Backing.object.metadata ?? {};
+  if (
+    adminMeta.name !== BACKING_S3_SECRET ||
+    adminMeta.namespace !== profile.namespaces.objectStorage
+  ) {
     throw credentialRefusal('lab-objects/object-store-s3 ownership mismatch');
   }
   const backingS3 = decodeSecretStringData(s3Backing.object);
@@ -381,11 +443,14 @@ export function ensureReleaseCredentials(input) {
   const gameDbByNs = new Map();
   /** @type {Map<string, { state: 'absent' } | { state: 'present', uid: string, fields: Record<string, string> } | { state: 'unreadable' }>} */
   const gameRuntimeByNs = new Map();
+  /** @type {Map<string, { state: 'absent' } | { state: 'present', uid: string, fields: Record<string, string> } | { state: 'unreadable' }>} */
+  const gameS3ByNs = new Map();
 
   for (const namespace of APP_NAMESPACES) {
     for (const [secretName, store] of [
       [GAME_DB_NAME, gameDbByNs],
       [GAME_RUNTIME_NAME, gameRuntimeByNs],
+      [GAME_S3_NAME, gameS3ByNs],
     ]) {
       const read = readPlatformObject(
         {
@@ -424,9 +489,11 @@ export function ensureReleaseCredentials(input) {
   }
 
   if (
-    [...gameDbByNs.values(), ...gameRuntimeByNs.values()].some(
-      (item) => item.state === 'unreadable',
-    )
+    [
+      ...gameDbByNs.values(),
+      ...gameRuntimeByNs.values(),
+      ...gameS3ByNs.values(),
+    ].some((item) => item.state === 'unreadable')
   ) {
     throw credentialRefusal('projected secret unreadable');
   }
@@ -449,9 +516,39 @@ export function ensureReleaseCredentials(input) {
   const runtimeTokens = reconcileTokenFields(presentRuntime, TOKEN_KEYS);
 
   /** @type {Record<string, string>} */
-  const canonicalRuntime = {
+  const canonicalS3 = {
     'access-key-id': backingS3['access-key-id'],
     'secret-access-key': backingS3['secret-access-key'],
+  };
+
+  const presentS3 = APP_NAMESPACES.map((ns) => {
+    const item = gameS3ByNs.get(ns);
+    return item?.state === 'present' ? item.fields : null;
+  });
+  for (const fields of presentS3) {
+    if (!fields) continue;
+    const mismatch = mismatchedFieldNames(
+      fields,
+      canonicalS3,
+      S3_DETERMINISTIC_KEYS,
+    );
+    if (mismatch.length > 0) {
+      throw credentialRefusal(
+        `credential field mismatch: ${mismatch.join(', ')}`,
+      );
+    }
+    const extraKeys = Object.keys(fields).filter(
+      (key) => !S3_DETERMINISTIC_KEYS.includes(key),
+    );
+    if (extraKeys.length > 0) {
+      throw credentialRefusal(
+        `credential field mismatch: ${extraKeys.join(', ')}`,
+      );
+    }
+  }
+
+  /** @type {Record<string, string>} */
+  const canonicalRuntime = {
     'better-auth-secret': approved.BETTER_AUTH_SECRET,
     'github-client-id': approved.GITHUB_CLIENT_ID,
     'github-client-secret': approved.GITHUB_CLIENT_SECRET,
@@ -466,11 +563,10 @@ export function ensureReleaseCredentials(input) {
 
   for (const fields of presentRuntime) {
     if (!fields) continue;
-    const mismatch = mismatchedFieldNames(
-      fields,
-      canonicalRuntime,
-      [...RUNTIME_DETERMINISTIC_KEYS, ...TOKEN_KEYS],
-    );
+    const mismatch = mismatchedFieldNames(fields, canonicalRuntime, [
+      ...RUNTIME_DETERMINISTIC_KEYS,
+      ...TOKEN_KEYS,
+    ]);
     if (mismatch.length > 0) {
       throw credentialRefusal(
         `credential field mismatch: ${mismatch.join(', ')}`,
@@ -486,6 +582,7 @@ export function ensureReleaseCredentials(input) {
   for (const namespace of APP_NAMESPACES) {
     const db = gameDbByNs.get(namespace);
     const rt = gameRuntimeByNs.get(namespace);
+    const s3 = gameS3ByNs.get(namespace);
 
     if (db?.state === 'absent') {
       createOpaqueSecret(
@@ -508,6 +605,17 @@ export function ensureReleaseCredentials(input) {
       );
       mutations.push('kubectl');
     }
+
+    if (s3?.state === 'absent') {
+      createOpaqueSecret(
+        run,
+        profile.contextName,
+        namespace,
+        GAME_S3_NAME,
+        canonicalS3,
+      );
+      mutations.push('kubectl');
+    }
   }
 
   return {
@@ -515,6 +623,7 @@ export function ensureReleaseCredentials(input) {
     mutations: mutations.length,
     database: canonicalDatabase,
     runtimeFieldNames: Object.keys(canonicalRuntime),
+    s3FieldNames: Object.keys(canonicalS3),
   };
 }
 
