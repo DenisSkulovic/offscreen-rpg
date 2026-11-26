@@ -1,8 +1,10 @@
+> Deferred by owner 2026-11-26. Historical design/evidence only; no current dispatch or live permission. Refresh against current source after TURN03 passes and owner selects this work.
+
 > **Source-rebased readiness, 22b46a828b56a8b3094bfab30162d5718c406e22:** T01–T04 implementation is READY once TURN03 produces a genuine cold-kind PASS artifact. T05 Pod deletion remains separately permission-gated. No Cursor commission may interpret packet readiness as authorization to mutate Kubernetes.
 
 # K8S10 | resilience proof catalog and falsification matrix
 
-**Status:** source/contract and T01–T03 unit oracles implemented; **T02b real-Kubernetes-shape preflight guard 43/43 local Node22 test PASS** at `14e2bf33` (2026-11-20), but **real kind plan, Pod deletion and app-game recovery NOT-RUN**. Historical Rabbit consumer redelivery in [CHANGE](CHANGE.md) and [runbook](../../../../docs/runbooks/kubernetes-fault.md) is independent. Source baseline 584b594 is historical. [Execution](EXECUTION.md) is the proposed implementation contract. No row here is an authorization to inject faults.
+**Status:** source/contract and T01–T03 unit oracles implemented; **T02b real-Kubernetes-shape preflight guard 43/43 local Node22 test PASS** at `14e2bf33` (2026-11-20), but **real kind plan, Pod deletion and app-game recovery NOT-RUN**. Historical Rabbit consumer redelivery in [CHANGE](CHANGE.md) and [runbook](../../../../../docs/runbooks/kubernetes-fault.md) is independent. Source baseline 584b594 is historical. [Execution](EXECUTION.md) is the proposed implementation contract. No row here is an authorization to inject faults.
 
 ## What constitutes a trustworthy experiment
 

@@ -32,3 +32,5 @@
 **2026-11-26:** VER07 deferred to [platform operations](platform-operations/2026-11-25--ver07-cache-mechanism-programme/CHANGE.md); all cache runtime proof retained, execution commission withdrawn.
 
 **2026-11-26:** VER08 deferred alongside VER07 to [platform operations](platform-operations/2026-11-25--ver08-cache-sql-origin-programme/CHANGE.md); SQL-origin and Story snapshot security/correctness proof retained, commission withdrawn.
+
+**2026-11-26:** K8S10 deferred to [platform operations](platform-operations/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md); historical source/evidence and outstanding game fault acceptance retained.

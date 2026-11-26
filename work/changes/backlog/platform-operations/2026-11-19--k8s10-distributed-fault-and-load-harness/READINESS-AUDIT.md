@@ -1,3 +1,5 @@
+> Deferred by owner 2026-11-26. Historical design/evidence only; no current dispatch or live permission. Refresh against current source after TURN03 passes and owner selects this work.
+
 # K8S10 readiness audit
 
 **Baseline:** `22b46a828b56a8b3094bfab30162d5718c406e22`.

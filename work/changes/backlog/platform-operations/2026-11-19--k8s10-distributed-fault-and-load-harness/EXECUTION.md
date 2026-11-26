@@ -1,6 +1,8 @@
+> Deferred by owner 2026-11-26. Historical design/evidence only; no current dispatch or live permission. Refresh against current source after TURN03 passes and owner selects this work.
+
 # K8S10 | controlled random Pod kills against a zero-provider campaign
 
-**Profile:** RELEASE/PROOF. **Planning only**, inspected source 584b594. **Current status:** K8S10's first Rabbit-consumer-loss case passed; the following app-chaos phases are **proposed/unselected** and require real TURN02/TURN03 application release. This is not a command to execute a destructive experiment. [Architecture narrative and diagrams](../../../../docs/architecture/09-chaos-and-zero-token-play.md) and [source map](SOURCE-MAP.md).
+**Profile:** RELEASE/PROOF. **Planning only**, inspected source 584b594. **Current status:** K8S10's first Rabbit-consumer-loss case passed; the following app-chaos phases are **proposed/unselected** and require real TURN02/TURN03 application release. This is not a command to execute a destructive experiment. [Architecture narrative and diagrams](../../../../../docs/architecture/09-chaos-and-zero-token-play.md) and [source map](SOURCE-MAP.md).
 
 ## Design decision: a bot plus a reliable oracle, not just a killer script
 

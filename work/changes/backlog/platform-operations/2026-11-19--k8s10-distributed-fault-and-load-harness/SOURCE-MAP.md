@@ -1,8 +1,10 @@
+> Deferred by owner 2026-11-26. Historical design/evidence only; no current dispatch or live permission. Refresh against current source after TURN03 passes and owner selects this work.
+
 # K8S10 | existing fault source and zero-provider campaign opportunity
 
 **Profile:** STATE/PROOF. **Inspected baseline:** Git snapshot 584b594, 2026-11-19, plus the preceding K8S10 receipt; the newer design docs are not a verified runtime run. **Existing K8S10 is Implementing**, with only its *Rabbit consumer loss* slice selected/passed. Game-level monkey is **not selected/implemented** by adding these files.
 
-**2026-11-20 source update:** A current TURN02 release [overlay](../../../../infra/workloads/release/workers.yaml) **does exist**, contrary to this November 19 snapshot's statement. Its Pod template has the eligibility marker, its Pod is owned by a ReplicaSet, and its image is a local `:turn02` tag with the Pod's runtime digest as the actual identity. The earlier K8S10 selector/preflight was unable to prove that hierarchy and erroneously demanded digest-in-Deployment. Source commit `14e2bf33` fixes the read-only guard; all four chaos test suites locally **43/43 PASS** on Node 22, no cluster. **Not** a live kind plan or real fault proof. [Next T04a/T04b](TASKS.md#2026-11-20-source-backed-status-correction-and-next-gates) distinguishes plan-readiness from mutation authorization.
+**2026-11-20 source update:** A current TURN02 release [overlay](../../../../../infra/workloads/release/workers.yaml) **does exist**, contrary to this November 19 snapshot's statement. Its Pod template has the eligibility marker, its Pod is owned by a ReplicaSet, and its image is a local `:turn02` tag with the Pod's runtime digest as the actual identity. The earlier K8S10 selector/preflight was unable to prove that hierarchy and erroneously demanded digest-in-Deployment. Source commit `14e2bf33` fixes the read-only guard; all four chaos test suites locally **43/43 PASS** on Node 22, no cluster. **Not** a live kind plan or real fault proof. [Next T04a/T04b](TASKS.md#2026-11-20-source-backed-status-correction-and-next-gates) distinguishes plan-readiness from mutation authorization.
 
 ## Do not rebuild what we already have
 
@@ -38,7 +40,7 @@ A genuine game-chaos driver requires BOOT03 GA start, STORY02 private custody, S
 - **No app product endpoint:** the driving client uses **existing authenticated public routes** and supported Storyteller scripted task creation. No debug `POST /chaos/kill-any-pod` API. The independent oracle reads authenticated snapshots plus read-only diagnostic SQL and S3 hashes from the disposable lab.
 - **Fixtures:** real owned opening candidate + pinned packages, one or more legal visible decisions with stable operation IDs, exact checkpoint and manifest hashes, conflicting replay negative; use existing SCRIPTED fixture adapter and result validation.
 - **Provider dispatch tripwire:** no live policy, key, secret or provider adapter in those Pods; a test-injected provider stub that **throws on invoke** at a composition seam and an observed count of outbound attempts=0. With kind default CNI, *do not assume NetworkPolicy is enforced*. A reviewed CNI may support a verified deny-everything-but-app-endpoints policy later.
-- **Evidence:** `docs/observability/evaluations/` dated run artifacts, current `STATUS`/Change receipt **only on actual execution**. The [observability evidence model](../../../../docs/technical/observability/identities-and-evidence.md) separates durable forensic records from operational telemetry; apply redaction and access constraints to any run receipt.
+- **Evidence:** `docs/observability/evaluations/` dated run artifacts, current `STATUS`/Change receipt **only on actual execution**. The [observability evidence model](../../../../../docs/technical/observability/identities-and-evidence.md) separates durable forensic records from operational telemetry; apply redaction and access constraints to any run receipt.
 
 ## Exact risks to avoid
 

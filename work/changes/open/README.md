@@ -47,7 +47,6 @@
 | [WR10 private Writer protocol](2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) | Commissioned wave / GA–Worker provider boundary |
 | [MA12 API Lab isolation](2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) | Commissioned wave / production API workspace closure |
 | [TURN03 cold distributed game proof](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) | Commissioned proof, true cold-kind gates unresolved |
-| [K8S10 bounded fault proof](2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md) | Immediate dependent on TURN03; real one-Pod mutation still separately authorized |
 | [CL01 terminal player](2026-11-22--cl01-terminal-player-client/CHANGE.md) | Next-wave dependent on MA12 source rebase |
 
 ## Existing incomplete or terminal-reconciliation obligations

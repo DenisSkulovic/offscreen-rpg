@@ -45,3 +45,5 @@ INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execut
 - [VER07 cache mechanism, load and fault acceptance](2026-11-25--ver07-cache-mechanism-programme/CHANGE.md): deferred; all runtime acceptance oracles preserved, no current commission. Refresh cache APIs and resource contracts before owner-selected promotion.
 
 - [VER08 SQL-origin cache and Story snapshot acceptance](2026-11-25--ver08-cache-sql-origin-programme/CHANGE.md): deferred; all security/correctness proof retained, no current commission. VER07 source prerequisite and current consumer/resource refresh required before owner-selected promotion.
+
+- [K8S10 distributed fault and load harness](2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md): deferred; existing implementation and receipts retained; fresh TURN03 PASS, current release ownership and owner-selected refreshed plan required. No commission or live mutation permission.
