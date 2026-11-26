@@ -1,3 +1,5 @@
+> Source scope closed by owner 2026-11-26. Historical design/evidence only; no dispatch, new PASS or paid permission.
+
 # WR10 | bounded Composer parent, exact negative proofs
 
 **Setup:** linked `change/wr10-private-writer-round-protocol` worktree from current `undertaking/storyteller-workshop` HEAD; run `node scripts/repo-tools/change-branch-guard.mjs --change WR10 --target undertaking/storyteller-workshop`. This parent only changes Writer/GA/Worker private-client/Contract paths listed in CHANGE. One child at a time T01→T04. **No independent merge into undertaking while other batch parents run**; the named central custodian joins later.

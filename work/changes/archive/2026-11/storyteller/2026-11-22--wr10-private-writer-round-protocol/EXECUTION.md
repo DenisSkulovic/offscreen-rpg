@@ -1,3 +1,5 @@
+> Source scope closed by owner 2026-11-26. Historical design/evidence only; no dispatch, new PASS or paid permission.
+
 # WR10 | selected two-phase protocol, durable ordering and exact refusal behavior
 
 ## Protocol schemas (new `@offscreen/contracts/writer-round-private-custody`)

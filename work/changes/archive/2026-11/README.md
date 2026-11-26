@@ -357,3 +357,5 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [WR05 umbrella](storyteller/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) (superseded 2026-11-26; successor slices Done, integrated proof separate).
 
 - [WR09 umbrella](storyteller/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) (superseded 2026-11-26; provider safety and acceptance retained by successor owners).
+
+- [WR10](storyteller/2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) (Done source scope 2026-11-26; security/financial acceptance retained).

@@ -1,3 +1,5 @@
+> Source scope closed by owner 2026-11-26. Historical design/evidence only; no dispatch, new PASS or paid permission.
+
 # WR10 | readiness and falsifiable source contract
 
 **Source inspected** `d3ba2917`: GA private HTTP role server/custody; executor no-SQL bootstrap; v1 generation task (distinct identity); WR09A custody helper ordering and WR09B reader/decision interpreter; provider transport; contracts; existing integration tests. No code/proof executed by planner.

@@ -1,6 +1,6 @@
 # WR10 | Private split-custody Writer round: Game Authority owns money, execution Worker owns provider I/O
 
-**State: IMPLEMENTED, awaiting the central `undertaking/storyteller-workshop` join.** Built from rechecked HEAD `bc562b77663472c8cccdd1bb68f79a00bddb619a`. Source-inspected planning snapshot was `d3ba291763de26a0135c1ad84b077bf4f1c153a8`; integration target remains `undertaking/storyteller-workshop`. This branch is not joined. This is a **substantial first distributed Writer vertical**, not a claim that player Launch is now model-powered. No actual provider request, live key, paid grant, player enablement, database reset or production deployment is authorized.
+**State:** Done (integrated source scope; explicit owner closure 2026-11-26). Current main source inspected at `1571170a1bb173c44f3c6dc85e802d968a81851e`: GA private seam and Worker execution adapter exist, using `@offscreen/game-authority-protocol/writer-round-private-custody`. WR10B owns provider-free Temporal orchestration; WR11 owns authorized continuation; actual funded and integrated gameplay proof separate. No new runtime test or paid authorization. Historical branch/commission instructions below are not dispatchable.
 
 ## Architectural decision
 
@@ -20,3 +20,5 @@ Build a **versioned, private two-phase Writer round protocol**, invoked by an al
 [Source map](SOURCE-MAP.md) · [selected execution](EXECUTION.md) · [bounded tasks](TASKS.md) · [proof](PROOF.md).
 
 **WR09 umbrella reconciliation (2026-11-26):** WR09 retired as superseded; this packet retains its existing selected ownership and safety/acceptance obligations. No expanded source scope, dispatch or paid authorization follows from retirement. See permanent capability catalog for residual provider proof.
+
+**Closure receipt:** Retain original PROOF matrix and successor evidence; exact actor/role/mission/context/ordinal/revision/attempt and policy pins, decimal money and reservation math, wire and response hashes, bounded body, atomic response-pointer/accounting, rollback, replay and concurrent prepare refusal, no resend after ambiguity, no executor general SQL/object-store/publish credentials, no private payload or key in logs/history. Current source presence verified, tests not rerun. Funded proof remains separately gated. Original packet recovery: `1571170a1bb173c44f3c6dc85e802d968a81851e:work/changes/open/2026-11-22--wr10-private-writer-round-protocol/CHANGE.md`.
