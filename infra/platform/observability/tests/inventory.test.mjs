@@ -130,10 +130,15 @@ test('collectInventory throws unreadable on pagination overflow', () => {
           missing: false,
         };
       }
+      if (resource === '--raw') {
+        assert.deepEqual(args.slice(0, 4), [
+          '--kubeconfig', identity.snapshotPath, '--context', identity.contextName,
+        ]);
+      }
       if (
         command === 'kubectl' &&
-        resource === 'configmap' &&
-        args.includes('--limit')
+        resource === '--raw' &&
+        args.some((arg) => arg.includes('/configmaps?'))
       ) {
         return okJson({
           items: huge,
@@ -270,4 +275,41 @@ test('failed namespace read with empty streams never proves absence', () => {
     }),
     /unreadable: namespace/,
   );
+});
+
+test('collectInventory follows encoded continuation and retains both pages', () => {
+  const identity = fakeIdentity();
+  const artifacts = loadArtifacts('dev', { verifyArchive: false });
+  const token = 'page+/= &';
+  const calls = [];
+  const snapshot = collectInventory(identity, artifacts, {
+    now: () => 0,
+    deadline: 60_000,
+    readPending: () => ({ pending: false, valid: true }),
+    run(command, args) {
+      if (command === 'helm') return okJson([]);
+      if (args.includes('namespace')) {
+        return okJson({ kind: 'Namespace', metadata: { name: identity.namespace, uid: 'ns' } });
+      }
+      if (args.includes('--raw')) {
+        const url = new URL(args.at(-1), 'https://example.invalid');
+        assert.equal(url.searchParams.get('limit'), '100');
+        if (url.pathname.endsWith('/configmaps')) {
+          calls.push(url.searchParams.get('continue'));
+          const second = calls.length === 2;
+          return okJson({
+            items: [{ kind: 'ConfigMap', metadata: { name: second ? 'b' : 'a', namespace: identity.namespace } }],
+            metadata: { continue: second ? '' : token },
+          });
+        }
+        return okJson({ items: [], metadata: {} });
+      }
+      if (args.includes('pv')) return okJson({ items: [] });
+      if (args.includes('--ignore-not-found')) return { ...okJson(null), stdout: '' };
+      throw new Error('unexpected command');
+    },
+  });
+  assert.deepEqual(calls, [null, token]);
+  assert.ok(snapshot.objects['ConfigMap/a']);
+  assert.ok(snapshot.objects['ConfigMap/b']);
 });
