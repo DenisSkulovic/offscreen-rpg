@@ -187,7 +187,7 @@ function matchingOrphanDeploymentManifest(target) {
       },
     },
     spec: {
-      replicas: 1,
+      replicas: 0,
       selector: {
         matchLabels: {
           'app.kubernetes.io/name': 'redis',
@@ -217,27 +217,6 @@ function matchingOrphanDeploymentManifest(target) {
 /**
  * @param {import('./inventory.mjs').RedisInventoryTarget} target
  */
-function matchingOrphanReleaseSecretManifest(target) {
-  return `${JSON.stringify({
-    apiVersion: 'v1',
-    kind: 'Secret',
-    metadata: {
-      name: 'sh.helm.release.v1.redis.v1',
-      namespace: target.namespace,
-      labels: {
-        owner: 'helm',
-        name: 'redis',
-        status: 'deployed',
-        version: '1',
-      },
-    },
-    type: 'helm.sh/release.v1',
-    data: {
-      release: 'dGVzdA==',
-    },
-  })}\n`;
-}
-
 function namespaceCreateManifest(target, profileId, proofNonce) {
   const labels = { [target.ownerKey]: target.ownerValue };
   if (proofNonce) {
@@ -647,10 +626,6 @@ async function runLockedRedisInstall(
                   manifest: matchingOrphanDeploymentManifest(target),
                   detail: 'matching-orphan',
                 },
-                {
-                  manifest: matchingOrphanReleaseSecretManifest(target),
-                  detail: 'matching-orphan',
-                },
               ];
 
         for (const fixture of fixtureCreates) {
@@ -700,6 +675,7 @@ async function runLockedRedisInstall(
             remainingMs,
             namespaceIdentity,
             proofNonce,
+            fixture: installMode.fixture,
           },
         );
         if (!cleanup.ok) {

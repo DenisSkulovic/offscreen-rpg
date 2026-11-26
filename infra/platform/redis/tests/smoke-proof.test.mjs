@@ -803,3 +803,31 @@ test('malformed null endpoint slice with non-null ports refuses before scale', a
   assert.equal(result.detail, 'endpoints-slice-shape');
   assert.equal(runner.commands.some(([, args]) => args.includes('scale')), false);
 });
+
+test('release connection refusal accepted but generic errors and timeouts are not', () => {
+  const stderr = 'Could not connect to Redis at redis.proof.svc:6379:Connection refused\ncommand terminated with exit code 1';
+  assert.equal(classifyScaleZeroOutage(fail(1, stderr), '').kind, 'transport-outage');
+  assert.equal(classifyScaleZeroOutage({ ...fail(1, stderr), timedOut: true }, '').kind, 'api-exec-failure');
+  assert.equal(classifyScaleZeroOutage(fail(1, 'API Connection refused'), '').kind, 'api-exec-failure');
+  assert.equal(validateCleanupInventory(['secret/sh.helm.release.v1.redis.v1.bad']).ok, false);
+  assert.equal(validateCleanupInventory(['secret/sh.helm.release.v1.redis.v1.bad'], 'malformed-secret').ok, true);
+});
+
+test('outage retry requires actual refusal after a timed-out exec', async () => {
+  const target = { ...releaseTarget, namespace: PROOF_NAMESPACE };
+  const runner = buildHappyProofRunner(target);
+  let timedOut = false;
+  const result = await runRedisSmokeProof(target, 'release', {
+    ...proofDeps(target, runner),
+    run: (command, args) => {
+      const response = runner.run(command, args);
+      if (!timedOut && args.includes('PING') && response.stderr.includes('Could not connect')) {
+        timedOut = true;
+        return { ...fail(1, ''), timedOut: true, status: null };
+      }
+      return response;
+    },
+  });
+  assert.equal(timedOut, true);
+  assert.equal(result.ok, true, JSON.stringify(result));
+});

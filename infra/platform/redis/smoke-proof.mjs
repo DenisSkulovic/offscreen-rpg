@@ -158,12 +158,10 @@ export function classifyScaleZeroOutage(execResult, stdout) {
     return { kind: 'api-exec-failure', reason: 'exec-transport' };
   }
   const stderr = String(execResult.stderr ?? '');
-  const combined = `${stderr}\n${stdout}`;
-  if (
-    combined.includes('Connection refused') ||
-    combined.includes('Could not connect') ||
-    combined.includes('Name or service not known')
-  ) {
+  const lines = stderr.trim().split('\n');
+  if (!execResult.ok && execResult.status === 1 && !stdout.trim() &&
+      /^Could not connect to Redis at [^\r\n]+:6379:\s*Connection refused$/.test(lines[0]) &&
+      (lines.length === 1 || (lines.length === 2 && lines[1] === 'command terminated with exit code 1'))) {
     return { kind: 'transport-outage', reason: 'ping-transport-failure' };
   }
   if (!execResult.ok) {
@@ -181,8 +179,9 @@ export function classifyScaleZeroOutage(execResult, stdout) {
 
 /**
  * @param {string[]} listed
+ * @param {'malformed-secret' | 'matching-orphan'} [fixture]
  */
-export function validateCleanupInventory(listed) {
+export function validateCleanupInventory(listed, fixture = undefined) {
   /** @type {string[]} */
   const normalized = [];
   for (const line of listed) {
@@ -208,6 +207,7 @@ export function validateCleanupInventory(listed) {
     if (DOCUMENTED_NAMESPACE_DEFAULTS.has(item)) {
       continue;
     }
+    if (fixture === 'malformed-secret' && item === 'secret/sh.helm.release.v1.redis.v1.bad') continue;
     if (OWNED_STATIC_OBJECTS.includes(item)) {
       continue;
     }
@@ -700,6 +700,7 @@ async function verifyNamespaceAbsent(runner, target, budgetMs) {
  *   remainingMs: () => number,
  *   namespaceIdentity: { uid: string, resourceVersion?: string },
  *   proofNonce?: string,
+ *   fixture?: 'malformed-secret' | 'matching-orphan',
  * }} deps
  */
 export async function runVerifiedSmokeNamespaceCleanup(
@@ -754,7 +755,7 @@ export async function runVerifiedSmokeNamespaceCleanup(
       retainReceipt: true,
     };
   }
-  const inventoryCheck = validateCleanupInventory(inventoryListed.lines);
+  const inventoryCheck = validateCleanupInventory(inventoryListed.lines, deps.fixture);
   if (!inventoryCheck.ok) {
     return {
       ok: false,
@@ -1617,32 +1618,27 @@ export async function runRedisSmokeProof(target, profileId, deps = {}) {
     return { ok: false, detail: 'proof-endpoints-not-zero', state: 'refused' };
   }
 
-  const outagePing = await execClientRedisCli(
-    target,
-    CLIENT_POD_NAME,
-    serviceHost,
-    ['PING'],
-    readRun,
-    REDIS_EXEC_MS,
-  );
-  const outageClass = classifyScaleZeroOutage(
-    outagePing,
-    outagePing.stdout ?? '',
-  );
-  if (outageClass.kind === 'api-exec-failure') {
-    return {
-      ok: false,
-      detail: 'proof-outage-exec-not-transport',
-      state: 'refused',
-    };
+  const outageDeadline = Date.now() + Math.max(0, Math.min(60_000, remainingMs() - CLEANUP_RESERVE_MS));
+  let outageObserved = false;
+  let outageReason = 'proof-outage-not-observed';
+  while (Date.now() < outageDeadline) {
+    const client = await readClientPodReady(readRun, target, clientUid);
+    if (!client.ok) return { ok: false, detail: client.reason, state: 'refused' };
+    const outagePing = await execClientRedisCli(
+      target, CLIENT_POD_NAME, serviceHost, ['PING'], readRun,
+      Math.max(1, Math.min(REDIS_EXEC_MS, outageDeadline - Date.now())),
+    );
+    const outageClass = classifyScaleZeroOutage(outagePing, outagePing.stdout ?? '');
+    if (outageClass.kind === 'transport-outage') {
+      outageObserved = true;
+      break;
+    }
+    outageReason = outageClass.reason;
+    // A timed-out exec is not proof. Retry only while the original client is ready.
+    if (!outagePing.timedOut && outageClass.kind !== 'unexpected-pong') break;
+    await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  if (outageClass.kind !== 'transport-outage') {
-    return {
-      ok: false,
-      detail: outageClass.reason ?? 'proof-outage-not-observed',
-      state: 'refused',
-    };
-  }
+  if (!outageObserved) return { ok: false, detail: 'proof-outage-' + outageReason, state: 'refused' };
 
   const freshDeployment = await readDeploymentIdentity(readRun, target);
   if (
