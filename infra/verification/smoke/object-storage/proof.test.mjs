@@ -3,7 +3,11 @@ import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { PROOF_NAMESPACE_PATTERN, runObjectStorageProof } from './proof.mjs';
+import {
+  decideProofNamespaceCleanup,
+  PROOF_NAMESPACE_PATTERN,
+  runObjectStorageProof,
+} from './proof.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PROOF_SCRIPT = join(HERE, 'proof.mjs');
@@ -154,6 +158,94 @@ test('spawned proof.mjs with --profile release --live exits 2 with empty stdout'
 
 const MUTATION_ARG_PATTERN =
   /\b(apply|create|delete|patch|replace|install|upgrade)\b/i;
+
+const PROOF_NS = 'offscreen-s3-proof-0123456789abcdef0123456789abcdef';
+const TEST_UID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890';
+
+test('decideProofNamespaceCleanup: cleanup not requested refuses without request', () => {
+  const result = decideProofNamespaceCleanup({
+    cleanupRequested: false,
+    namespace: PROOF_NS,
+    expectedUid: TEST_UID,
+    observedUid: TEST_UID,
+    uncertainMutation: false,
+  });
+  assert.equal(result.action, 'refuse');
+  assert.equal(result.reason, 'cleanup-not-requested');
+  assert.ok(!('request' in result));
+});
+
+test('decideProofNamespaceCleanup: uncertainMutation refuses uncertain-mutation', () => {
+  const result = decideProofNamespaceCleanup({
+    cleanupRequested: true,
+    namespace: PROOF_NS,
+    expectedUid: TEST_UID,
+    observedUid: TEST_UID,
+    uncertainMutation: true,
+  });
+  assert.equal(result.action, 'refuse');
+  assert.equal(result.reason, 'uncertain-mutation');
+  assert.ok(!('request' in result));
+});
+
+test('decideProofNamespaceCleanup: non-proof namespace refuses namespace-not-proof', () => {
+  const result = decideProofNamespaceCleanup({
+    cleanupRequested: true,
+    namespace: 'kube-system',
+    expectedUid: TEST_UID,
+    observedUid: TEST_UID,
+    uncertainMutation: false,
+  });
+  assert.equal(result.action, 'refuse');
+  assert.equal(result.reason, 'namespace-not-proof');
+  assert.ok(!('request' in result));
+});
+
+test('decideProofNamespaceCleanup: differing uids refuses uid-mismatch', () => {
+  const result = decideProofNamespaceCleanup({
+    cleanupRequested: true,
+    namespace: PROOF_NS,
+    expectedUid: TEST_UID,
+    observedUid: '00000000-0000-0000-0000-000000000000',
+    uncertainMutation: false,
+  });
+  assert.equal(result.action, 'refuse');
+  assert.equal(result.reason, 'uid-mismatch');
+  assert.ok(!('request' in result));
+});
+
+test('decideProofNamespaceCleanup: missing observedUid refuses uid-mismatch', () => {
+  const result = decideProofNamespaceCleanup({
+    cleanupRequested: true,
+    namespace: PROOF_NS,
+    expectedUid: TEST_UID,
+    observedUid: undefined,
+    uncertainMutation: false,
+  });
+  assert.equal(result.action, 'refuse');
+  assert.equal(result.reason, 'uid-mismatch');
+  assert.ok(!('request' in result));
+});
+
+test('decideProofNamespaceCleanup: valid proof namespace and matching uids returns uid-preconditioned delete', () => {
+  const result = decideProofNamespaceCleanup({
+    cleanupRequested: true,
+    namespace: PROOF_NS,
+    expectedUid: TEST_UID,
+    observedUid: TEST_UID,
+    uncertainMutation: false,
+  });
+  assert.equal(result.action, 'delete');
+  assert.equal(result.request.namespace, PROOF_NS);
+  assert.equal(result.request.body.preconditions.uid, TEST_UID);
+  assert.deepEqual(Object.keys(result.request.body).sort(), [
+    'apiVersion',
+    'kind',
+    'preconditions',
+  ]);
+  assert.equal(result.request.body.apiVersion, 'v1');
+  assert.equal(result.request.body.kind, 'DeleteOptions');
+});
 
 test('--profile dev --plan with platformRun: native plan JSON, no mutation verbs', async () => {
   /** @type {string[][]} */

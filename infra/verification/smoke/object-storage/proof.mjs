@@ -93,6 +93,43 @@ export function createProofNamespace() {
 }
 
 /**
+ * @param {{ cleanupRequested: boolean, namespace: string, expectedUid: string | undefined, observedUid: string | undefined, uncertainMutation: boolean }} input
+ * @returns {{ action: 'refuse', reason: string } | { action: 'delete', request: { namespace: string, body: { apiVersion: string, kind: string, preconditions: { uid: string } } } }}
+ */
+export function decideProofNamespaceCleanup(input) {
+  if (input.cleanupRequested !== true) {
+    return { action: 'refuse', reason: 'cleanup-not-requested' };
+  }
+  if (input.uncertainMutation === true) {
+    return { action: 'refuse', reason: 'uncertain-mutation' };
+  }
+  if (!PROOF_NAMESPACE_PATTERN.test(input.namespace)) {
+    return { action: 'refuse', reason: 'namespace-not-proof' };
+  }
+  const { expectedUid, observedUid } = input;
+  if (
+    typeof expectedUid !== 'string' ||
+    expectedUid.length === 0 ||
+    typeof observedUid !== 'string' ||
+    observedUid.length === 0 ||
+    expectedUid !== observedUid
+  ) {
+    return { action: 'refuse', reason: 'uid-mismatch' };
+  }
+  return {
+    action: 'delete',
+    request: {
+      namespace: input.namespace,
+      body: {
+        apiVersion: 'v1',
+        kind: 'DeleteOptions',
+        preconditions: { uid: expectedUid },
+      },
+    },
+  };
+}
+
+/**
  * @param {string[]} args
  * @param {{
  *   plan?: (profile: string) => void | Promise<void>,
