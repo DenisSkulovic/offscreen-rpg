@@ -1,38 +1,24 @@
-# Object storage platform | design workshop R1
+# Object storage platform | R7 defense candidate
 
-2026-11-26 · Planner: ChatGPT · baseline main `88b6ebae6acb1664c8c571aadd8cc4385dbb40eb`.
-State: proposed, source-inspected initial checkpoint; not approved, implemented or live-proven. Next review: 2026-11-26, binding/consumer inventory and concrete configuration specimen. Scope: local Kind dev and release plus a provider-neutral external binding seam, not actual hosted deployment.
+2026-11-26 · integration main `88b6ebae6acb1664c8c571aadd8cc4385dbb40eb` · designer ChatGPT.
+**State: self-defended, awaiting independent committee and owner acceptance.** No implementation or migration authorized. Next review: independent committee, 2026-11-26.
 
-## Intent and target
+## Normative reading order
 
-Owner explicitly values S3 interoperability, not SeaweedFS engineering. Clean-slate provider boundary with evolutionary preservation of working data, resource identities and consumers. S3 data plane is stable; provisioning/control plane is provider-specific. Retain one weed mini process, one PVC, one ClusterIP Service, Recreate, existing namespace/name/selector and security context, existing 4.54 pin unless evidence requires change. No operator, HA, replication, gateway, backup platform, vendor-neutral IAM framework or automatic migration. Local release is not production.
+- [R7 defense and final scope](DEFENSE.md): controlling final choices, proof matrix, source retirement and self-defense.
+- [R6 integration](INTEGRATION.md): detailed render, runtime, credential and custody contracts, as amended by R7.
+- [R5 target](TARGET.md): lifecycle and architecture, subordinate to R6/R7 where amended.
+- [R4 compatibility](COMPATIBILITY.md): owner live SDK receipt, 12/12 checks and 4/4 cleanup calls, limits.
+- [R3 inventory](INVENTORY.md): existing clusters and startup provisioning defect.
+- [R2 bindings](BINDINGS.md): initial source mapping and research, historical where superseded.
+- R1 initial design retained in Git history at be4d3d8767f06da7e0932a45cd8de2421e223547.
 
-Three responsibilities: (1) environment binding supplies endpoint (optional for AWS), region, bucket, prefix, explicit addressing mode, credential source (secret refs or SDK credential chain); (2) lifecycle owns slot identity, non-destructive reuse/refusal, bucket separation, access proof and park preservation; (3) local Seaweed provider owns native installation and vendor provisioning. External mode consumes pre-provisioned binding; no in-cluster provider deployment, no provider admin calls or cloud creation. Initially only local mode is implemented; external binding specimen/source checks are not hosted proof. No fallback to local store on S3 failure. No direct public canonical document access.
+## Selected candidate
 
-## Initial source findings
+S3 data-plane portability; SeaweedFS 4.54 only a minimal local provider. One native Helm chart, one PVC, one deployment, one ClusterIP. One provider administration owner and per-context mutation guard. Existing compatible legacy installation observed and reused without Helm adoption; eleven dev tenant identities and two existing PVCs retained. Shared resolved S3 binding across workloads and fixture jobs; application runtime checks bucket access but does not provision. Fresh release scoped credential, legacy release explicitly retains existing compatibility binding; no automatic rotation. External preprovisioned binding supported at source/config seam only, not a deployed hosted profile. AWS SDK verification, no custom signing. No provider operator, HA, cloud provisioning abstraction, migration or data deletion.
 
-- packages/object-storage/src/s3-object-storage.ts already has optional endpoint/credentials, forcePathStyle, prefix and AWS SDK v3; preserve port. putIfAbsent sends IfNoneMatch '*'; exists uses HEAD; ensureBucket is bootstrap-only but treats BucketAlreadyExists as owned (unsafe for generic external provisioning; do not use for external adoption). Existing 409 conflict handling and missing-object classification need focused review, not a broad package rewrite.
-- packages/documents/src/document-store-config.ts accepts existing OFFSCREEN_DOCUMENT_S3_* names; custom endpoint currently forces path style even if flag is explicitly false. Proposed compatibility: omitted flag keeps existing default; explicit true/false controls addressing, reject invalid flag. Explicit paired static keys or SDK default chain; session token/workload identity compatibility must be checked at composition root. Do not invent parallel env namespace unless necessary.
-- infra/platform/object-storage/chart/templates/_helpers.tpl wraps YAML into JSON, branches on mode; store.yaml emits sections. Existing topology is already appropriate, simplify to ordinary native resources only after auditing shared render consumers. profiles/development.yaml and release.yaml use different namespace/storageClass; preserve identities and storage semantics. PVC 2Gi and current resource settings retained provisionally, not production sizing.
-- infra/platform/object-storage/dev-bootstrap.mjs owns plan/refusals/readiness, dev-host-probe.mjs and release-install.mjs require complete follow-up audit. Do not remove ownership/preflight checks mechanically.
-- tools/dev-environments/src/adapters/dev-s3-tenant.mjs derives slot bucket/user/secret and directly checks Seaweed image/PVC/commands; live adapter imports Seaweed constants, parses weed shell output and provisions users. Keep slot identity and refusal semantics; local provider owns vendor-specific checks. Existing access() returns deferred; distinguish infrastructure readiness from usable tenant proof. Do not silently broaden shared credentials or repair ambiguous partial identities.
-- infra/environments/release/credentials.mjs expects local backing object-store-s3 Secret and copies its key fields into app runtime secrets. Decouple storage binding from unrelated OAuth/database credential reconciliation; local admin not workload credential. Existing release credential migration separately gated; don't rotate or delete.
-- infra/environments/platform-plan.mjs selects object-storage for both local profiles and dispatches dev CLI versus release installer. Inspect lifecycle integration before choosing exact native Helm install route; no new universal orchestrator.
-- docs/runbooks/kubernetes-object-storage.md has historical pod replacement proof and outdated wording that game is not connected; reconcile against actual workload wiring, not assumptions. docs/technical/platform/data-and-persistence.md#selected-document-store owns immutable bytes, fail-closed storage and explicit migration.
+## Evidence and gates
 
-## Provisional connection specimen (not new env API)
+Owner observed both local providers running, pinned image, PVCs bound, no listed Helm releases. Owner SDK experiment against two existing dev tenants passed conditional writes, one winner among eight simultaneous writes, authentication and cross-tenant denial. No fresh Helm installation, new scoped release identity, guard implementation, hosted or migrated deployment tested. R7 specifies required source and isolated live structural proof.
 
-Local dev: endpoint http://object-store.offscreen-dev-objects.svc:8333; slot bucket offscreen-dev-N; region us-east-1; path style true; scoped secret.
-Local release: endpoint http://object-store.lab-objects.svc:8333; bucket lab-objects (verify actual consumers); region us-east-1; path style true; scoped application secret.
-AWS: omit endpoint; assigned bucket and region; path style false; SDK default chain, no local admin Secret. Other external S3: explicit HTTPS endpoint, provider-appropriate addressing, externally supplied credential source. These are illustrative binding values, not authorized runtime changes.
-No provider proxy/ExternalName needed for SDK direct endpoint selection; no DNS alias that changes signed host or TLS identity.
-
-## Research and proof design
-
-AWS S3 official conditional writes https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html and SDK v3 PutObject https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/s3/command/PutObjectCommand/ (retrieved 2026-11-26): 412 existing key, possible 409 concurrent conflict. Do not treat every 409 as existing; bounded retry or typed transient failure, no overwrite. HEAD https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html: missing returns 403 without ListBucket; choose scoped permissions and do not map forbidden to missing. Seaweed upstream https://github.com/seaweedfs/seaweedfs/blob/master/README.md (current master, not tag-matched) describes weed mini; existing pinned chart and historical runbook provide baseline, not new runtime proof. Tag-matched provisioning and conditional operation details still to verify.
-
-Reusable provider-neutral S3 contract proof using existing SDK, dedicated owned test prefix/bucket and scoped credentials: new put, identical/different conditional put refused, concurrent unique key only one success (no deletes racing), original bytes intact, missing classification, invalid creds denied, cross-slot denial, transport failure no fallback. Local-only proof: repeat ensure preserves PVC/secret identity, Pod replacement preserves object with owner-authorized UID fence; no cluster deletion. External specimen: no local provision/admin dependency; static source/config checks now, real external acceptance separately authorized. No destructive migration or paid calls.
-
-## Next decision
-
-Trace actual runtime env injection, all tenant callers, platform ensure/readiness/verification and release secrets; compare native Helm installation/adoption against current shared renderer contract and prior platform changes. Verify pinned provider capabilities and determine cheapest safe scoped provisioning; preserve current tenant data and identity. Freeze exact interface, proof tiers and cutover/refusal before self-defense and independent committee as current rules require. No Change packets yet.
+Self-defense verdict DEFENDED for fresh local structural renewal, read-only compatible legacy continuity and source-level provider-neutral binding. Destructive adoption/cutover, existing release credential migration and actual external hosted deployment separately gated. Independent committee must commit verdict against frozen candidate SHA before owner acceptance or implementation packet planning. No further designer edits during review.
