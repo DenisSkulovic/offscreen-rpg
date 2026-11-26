@@ -44,8 +44,7 @@
 
 | Change | Why it remains open |
 | --- | --- |
-| [MA12 API Lab isolation](2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) | Commissioned wave / production API workspace closure |
-| [CL01 terminal player](2026-11-22--cl01-terminal-player-client/CHANGE.md) | Next-wave dependent on MA12 source rebase |
+| [CL01 terminal player](2026-11-22--cl01-terminal-player-client/CHANGE.md) | Historical next-wave dependency; redesign determines current applicability |
 
 ## Existing incomplete or terminal-reconciliation obligations
 

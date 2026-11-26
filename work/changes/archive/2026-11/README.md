@@ -365,3 +365,5 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [TURN03](distributed/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) (Cancelled 2026-11-27; legacy scripted proof retired, historical evidence retained).
 
 - [DIST03](distributed/2026-11-19--dist03-game-authority-private-boundary/CHANGE.md) (Superseded 2026-11-27; legacy extraction acceptance retired).
+
+- [MA12](other/2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) (Done historical source scope 2026-11-27; legacy artifact proof retired).

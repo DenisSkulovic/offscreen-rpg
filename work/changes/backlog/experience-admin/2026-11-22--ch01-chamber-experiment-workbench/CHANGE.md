@@ -16,7 +16,7 @@ A scene-20 scenario must **not** mean fabricating inconsistent committed-history
 
 ## Reuse and topology
 
-`@offscreen/lab-support` already exposes Chamber, LiveWorkbench/QA journeys and memory/creative/retrieval evals. MA12 is extracting outer `@offscreen/api-lab`; CH01 must stay on **outer Lab** side rather than reintroduce Lab dependencies to production API. AI02 transcript and AI03 Admin inspector can share a read-only **projection/format**, but Chamber's scenario mutators are not Admin customer-data access. Terminal CL01 can become an optional experiment driver but doesn't create a second Game Authority.
+`@offscreen/lab-support` already exposes Chamber, LiveWorkbench/QA journeys and memory/creative/retrieval evals. MA12 historical source scope is closed; outer `@offscreen/api-lab` exists; CH01 must stay on **outer Lab** side rather than reintroduce Lab dependencies to production API. AI02 transcript and AI03 Admin inspector can share a read-only **projection/format**, but Chamber's scenario mutators are not Admin customer-data access. Terminal CL01 can become an optional experiment driver but doesn't create a second Game Authority.
 
 The fixture may exercise actual same application/GA/outbox/Temporal code on disposable SQL/kind; lightweight fake-transport runs are the default. No paid OpenRouter call unless EV01 zero-cost preflight passes **and the user explicitly authorizes that exact call**. The experiment running service, Chamber UI and eventual Admin recipe editor must be separate authorization domains.
 
@@ -36,3 +36,5 @@ The fixture may exercise actual same application/GA/outbox/Temporal code on disp
 - Ensure one deterministic seeded scene-20 fixture and correct root/fork replay; same scenario+recipe produces matching compiled request SHA when compiler version retained; no claim model output is deterministic.
 - Integration with EV01 experiment ledger and CFG01 policy resolver must be source-confirmed. Old Chamber routes preserved.
 - No live release, new account billing, unbounded scenario seeding, unrestricted privileged staff mode or provider spend. **PROPOSED only.**
+
+**2026-11-27:** Re-evaluate Chamber and developer-tool ownership against redesigned monorepo; retain one-way production/developer isolation. MA12 legacy artifact proof is retired, not a prerequisite.
