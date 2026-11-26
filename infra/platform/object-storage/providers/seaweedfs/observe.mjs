@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { isDeepStrictEqual } from 'node:util';
 import { join } from 'node:path';
 import { parse, parseAllDocuments } from 'yaml';
 import {
@@ -62,9 +63,6 @@ export function isObjectStoreHelmStorageName(name) {
  * @param {'dev' | 'release'} profileId
  */
 function loadNativeProfileValues(profileId) {
-  const chartPath = resolvePlatformChartPath('object-storage');
-  const base =
-    parse(readFileSync(join(chartPath, 'values.yaml'), 'utf8')) ?? {};
   const overlay =
     parse(
       readFileSync(
@@ -72,7 +70,7 @@ function loadNativeProfileValues(profileId) {
         'utf8',
       ),
     ) ?? {};
-  return { ...base, ...overlay };
+  return overlay;
 }
 
 /**
@@ -92,7 +90,7 @@ function valuesExactlyEqual(actual, expected) {
     return false;
   }
   for (const key of expectedKeys) {
-    if (JSON.stringify(actual[key]) !== JSON.stringify(expected[key])) {
+    if (!isDeepStrictEqual(actual[key], expected[key])) {
       return false;
     }
   }
@@ -1083,9 +1081,9 @@ function validateLiveStructuralChain(chain) {
   }
   const endpoint = endpoints[0];
   if (
-    endpoint.ready !== true ||
-    endpoint.serving !== true ||
-    endpoint.terminating === true
+    endpoint.conditions?.ready !== true ||
+    endpoint.conditions?.serving !== true ||
+    endpoint.conditions?.terminating === true
   ) {
     return { ok: false, reason: 'object-store endpoint readiness mismatch' };
   }
