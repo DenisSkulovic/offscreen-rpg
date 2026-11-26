@@ -13,7 +13,7 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 
 ## Achieved and unresolved
 
-- Redis native R9 structural architecture independently defended and owner accepted; [implementation draft](../../changes/open/2026-11-26--redis-native-baseline/CHANGE.md) not ready pending planner audit. INF60 suspended. No runtime or outcome credit; estimates unchanged.
+- Redis native R9 structural architecture independently defended and owner accepted; [implementation packet](../../changes/open/2026-11-26--redis-native-baseline/CHANGE.md) source commissioned; live and integration held. INF60 suspended. No runtime or outcome credit; estimates unchanged.
 
 - Library and domain ownership improved; generic contracts workspace removed. Five recognized Authority-to-Writer exceptions remain.
 - Cache original eight Changes archived; CACHE04 source Done, CACHE07 superseded, CACHE08 source Done (runtime residuals; package fakes). VER06 source Done (owned Redis resource + harness migration + `pnpm verify package cache` source); live Redis/SQL acceptance remains VER07/VER08. No outcome credit.
