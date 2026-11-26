@@ -210,7 +210,7 @@ export async function ensureDevS3Tenant({ slotId, authorizeLive, adapter }) {
   if (binding) return binding;
   const names = deriveDevS3Tenant(slotId);
 
-  const preliminary = readObservationFromAdapter(adapter, names);
+  const preliminary = await readObservationFromAdapter(adapter, names);
   if (preliminary.user && !preliminary.secret) {
     const secret = adapter.secret(names.secret);
     const retained = secret ? [{ name: secret.name, uid: secret.uid }] : [];
@@ -230,7 +230,7 @@ export async function ensureDevS3Tenant({ slotId, authorizeLive, adapter }) {
       if (typeof adapter.writeFresh === 'function') {
         return adapter.writeFresh(tenant);
       }
-      const before = readObservationFromAdapter(adapter, names);
+      const before = await readObservationFromAdapter(adapter, names);
       const classified = classifyTenantObservation(tenant, before);
       if (classified.state !== 'absent') {
         return { ok: false, mutated: false, reason: 'write-refused' };
@@ -252,7 +252,7 @@ export async function ensureDevS3Tenant({ slotId, authorizeLive, adapter }) {
     });
   }
 
-  const observation = readObservationFromAdapter(adapter, names);
+  const observation = await readObservationFromAdapter(adapter, names);
   const after = adapter.access?.(names);
   if (result.state === 'reuse' && observation.headBucket !== 'ok') {
     return stopped('scope-not-enforced', names.bucket, {
