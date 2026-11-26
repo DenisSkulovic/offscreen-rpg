@@ -831,3 +831,23 @@ test('outage retry requires actual refusal after a timed-out exec', async () => 
   assert.equal(timedOut, true);
   assert.equal(result.ok, true, JSON.stringify(result));
 });
+
+test('post-scale-up Service PING tolerates dataplane convergence but requires PONG', async () => {
+  const target = { ...releaseTarget, namespace: PROOF_NAMESPACE };
+  const runner = buildHappyProofRunner(target);
+  let injected = false;
+  const result = await runRedisSmokeProof(target, 'release', {
+    ...proofDeps(target, runner),
+    run: (command, args) => {
+      const response = runner.run(command, args);
+      if (!injected && args.includes('redis-client') && args.includes('PING') &&
+          runner.commands.some(([, argv]) => argv.includes('--replicas=1'))) {
+        injected = true;
+        return fail(1, 'Could not connect to Redis at redis.proof.svc:6379:Connection refused');
+      }
+      return response;
+    },
+  });
+  assert.equal(injected, true);
+  assert.equal(result.ok, true, JSON.stringify(result));
+});

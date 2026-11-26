@@ -1736,16 +1736,25 @@ export async function runRedisSmokeProof(target, profileId, deps = {}) {
     return { ok: false, detail: 'proof-new-run-id', state: 'refused' };
   }
 
-  const recoveryPing = await execClientRedisCli(
-    target,
-    CLIENT_POD_NAME,
-    serviceHost,
-    ['PING'],
-    readRun,
-    REDIS_EXEC_MS,
-  );
-  const recoveryParsed = parsePingReply(recoveryPing.stdout ?? '');
-  if (!recoveryPing.ok || !recoveryParsed.ok) {
+  const recoveryDeadline = Date.now() + Math.max(0, Math.min(60_000, remainingMs() - CLEANUP_RESERVE_MS));
+  let recoveryConfirmed = false;
+  while (Date.now() < recoveryDeadline) {
+    const client = await readClientPodReady(readRun, target, clientUid);
+    if (!client.ok) return { ok: false, detail: client.reason, state: 'refused' };
+    const ping = await execClientRedisCli(
+      target, CLIENT_POD_NAME, serviceHost, ['PING'], readRun,
+      Math.max(1, Math.min(REDIS_EXEC_MS, recoveryDeadline - Date.now())),
+    );
+    if (ping.ok && !(ping.stderr ?? '').trim() && parsePingReply(ping.stdout ?? '').ok) {
+      recoveryConfirmed = true;
+      break;
+    }
+    if (!ping.timedOut && classifyScaleZeroOutage(ping, ping.stdout ?? '').kind !== 'transport-outage') {
+      break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  if (!recoveryConfirmed) {
     return { ok: false, detail: 'proof-recovery-ping', state: 'refused' };
   }
 
