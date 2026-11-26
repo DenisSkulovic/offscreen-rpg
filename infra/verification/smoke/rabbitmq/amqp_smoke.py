@@ -150,9 +150,14 @@ class AmqpWire:
                 continue
             if frame_type != 1:
                 raise ProtocolFailure("unexpected-frame-type")
-            if expect_channel is not None and channel != expect_channel:
-                raise ProtocolFailure("wrong-channel")
+            if len(payload) < 4:
+                raise ProtocolFailure("method-truncated")
             class_id, method_id = struct.unpack_from(">HH", payload)
+            if channel == 0 and (class_id, method_id) == (10, 50) and expect_channel not in (None, 0):
+                code, _ = self.parse_close(payload[4:])
+                raise ProtocolFailure(f"connection-close:{code}")
+            if expect_channel is not None and channel != expect_channel:
+                raise ProtocolFailure(f"wrong-channel:expected={expect_channel}:actual={channel}:method={class_id}.{method_id}")
             return channel, class_id, method_id, payload[4:]
 
     def parse_close(self, body: bytes) -> tuple[int, str]:
@@ -280,7 +285,7 @@ class AmqpWire:
         if len(payload.encode()) > MAX_PAYLOAD:
             raise ProtocolFailure("payload-length")
         body = payload.encode()
-        flags = 0x02 if mandatory else 0
+        flags = 0x01 if mandatory else 0
         self.send_method(
             self.channel,
             60,
@@ -301,9 +306,9 @@ class AmqpWire:
     def _expect_publish_confirm(self, deadline_at: float) -> None:
         while True:
             _channel, class_id, method_id, body = self.read_method(deadline_at, self.channel)
-            if (class_id, method_id) == (60, 72):
+            if (class_id, method_id) == (60, 50):
                 raise ProtocolFailure("basic-return-then-confirm")
-            if (class_id, method_id) == (60, 71):
+            if (class_id, method_id) == (60, 120):
                 if len(body) < 9:
                     raise ProtocolFailure("nack-shape")
                 raise ProtocolFailure("basic-nack")
@@ -321,21 +326,22 @@ class AmqpWire:
             self.channel,
             60,
             70,
-            pack_shortstr(queue) + bytes([1 if no_ack else 0]),
+            struct.pack(">H", 0) + pack_shortstr(queue) + bytes([1 if no_ack else 0]),
         )
         _channel, class_id, method_id, body = self.read_method(deadline_at, self.channel)
-        if (class_id, method_id) == (60, 71):
+        if (class_id, method_id) == (60, 72):
             return None
-        if (class_id, method_id) != (60, 60):
+        if (class_id, method_id) != (60, 71):
             raise ProtocolFailure("unexpected-get-response")
         index = 0
-        _consumer, index = take_shortstr(body, index)
         delivery_tag = struct.unpack_from(">Q", body, index)[0]
         index += 8
         redelivered = body[index] & 1
         index += 1
         exchange, index = take_shortstr(body, index)
         routing_key, index = take_shortstr(body, index)
+        if exchange != "" or routing_key != queue or len(body) != index + 4:
+            raise ProtocolFailure("get-routing-or-shape")
         _channel, _class_id, _weight, size = self._read_content_header(deadline_at)
         message = self._read_body(deadline_at, size)
         return delivery_tag, redelivered, message.decode()
