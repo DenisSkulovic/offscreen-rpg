@@ -167,6 +167,20 @@ export function parseWeedBucketList(text) {
   return entries;
 }
 
+export function parseWeedPolicyInventory(text) {
+  const source = String(text ?? '').trim();
+  if (!source) return [];
+  const names = [];
+  for (const record of source.split(/^---\s*$/m)) {
+    if (!record.trim()) continue;
+    const match = /^Name: ([a-zA-Z0-9_.-]+)\s*\nContent: (\{[^\n]*\})\s*$/.exec(record.trim());
+    if (!match || names.includes(match[1])) throw new Error('weed policy inventory malformed');
+    parsePolicyDocumentStrict(match[2]);
+    names.push(match[1]);
+  }
+  return names;
+}
+
 export function parseWeedUserList(text) {
   const source = String(text ?? '').trim();
   if (!source) throw new Error('weed user inventory missing');
@@ -382,12 +396,13 @@ export function createDevS3LiveAdapter({
         error.code = 'credential-capture-failed';
         throw error;
       }
-      return storeSecret(exec, names, credentials);
+      const retained = storeSecret(exec, names, credentials);
+      weed(`s3.bucket.owner -name ${names.bucket} -owner ${names.user}\nexit\n`, exec);
+      return retained;
     },
     policyInventory() {
       const text = weed('s3.policy -list\nexit\n', exec);
-      const matches = String(text ?? '').match(/"([^"]+)"/g) ?? [];
-      return matches.map((item) => item.replaceAll('"', ''));
+      return parseWeedPolicyInventory(text);
     },
     policyDocument(names) {
       const text = weed(
