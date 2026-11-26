@@ -1,5 +1,7 @@
 # Kubernetes gateway
 
+**Selected renewal target (2026-11-26; implementation pending):** retain release identity, native Traefik/Gateway API, vendored verified chart and full twelve-object standard bundle, local HTTP/ClusterIP and default 60s read / 0s write / 180s idle for SSE. Reuse matching shared bundle without writes; refuse partial or incompatible inventory. No production exposure or automatic adoption. Existing procedure below remains legacy until GATEWAY-NATIVE lands; historical proof is unchanged. [Change](../../work/changes/open/2026-11-26--gateway-native-baseline/CHANGE.md).
+
 Disposable Gateway API edge for the [educational laboratory](../technical/platform/topology.md#distributed-learning-target). This is not the game, not Compose, and not [First hosted deployment](../technical/platform/deployment-and-compatibility.md#first-hosted-deployment). The cluster procedure remains [Kubernetes lab](kubernetes-lab.md).
 
 ## What this procedure is

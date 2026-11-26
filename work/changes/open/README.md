@@ -1,5 +1,7 @@
 # Open Changes | current and near-term
 
+[GATEWAY-NATIVE](2026-11-26--gateway-native-baseline/CHANGE.md): owner-selected local gateway renewal, source-only ready upon dispatch; live and join held. Independent committee waived for this scope. No queue change.
+
 [REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): defended structural renewal, source implementation READY WITH EXPLICIT LIMITS; live and integration held. INF60 suspended. No queue change.
 
 ## Database platform redesign

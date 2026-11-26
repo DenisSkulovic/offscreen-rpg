@@ -1,0 +1,9 @@
+# GATEWAY-NATIVE | Native local gateway renewal
+
+Status: **READY WITH EXPLICIT LIMITS for source implementation upon owner dispatch.** Owner selected R5 and explicitly waived independent committee on 2026-11-26. Integration main; inspected baseline 7d073df9066ff7b618e9e22ae26ed0680def9bf0; dedicated branch change/gateway-native-baseline and linked worktree. One parent, serial bounded Composer tasks; coordinate shared platform-plan/status files with Redis/other active changes before edits/join. No global queue change. No cluster mutations, upgrades, deletes or port-forwards commissioned by this packet.
+
+Authority: [R5 design](../../../../work/designs/open/gateway-platform/README.md) and [local gateway target](../../../../docs/runbooks/kubernetes-gateway.md). [Tasks](TASKS.md) · [Execution and source map](EXECUTION.md) · [Proof](PROOF.md).
+
+Outcome: checksum-verified vendored native chart/bundle, one installer, no host Docker image/Helm alias prerequisite, local streaming-compatible defaults, truthful readiness, repeat-safe bundle reuse. Preserve lab-gateway/gateway-system, lab-traefik, lab-edge/lab-edge, listener web and Service port 80, same namespace attachment, application routes and DNS. No production hosting, dev gateway, namespace rename, controller upgrade or application edits.
+
+Parent: check latest main, active worktrees and competing platform-plan/status edits; run repository branch guard for GATEWAY-NATIVE; dispatch T01 then T02 then T03 then T04. Run focused source proofs and real Helm render. Source-only join may be proposed after passing proofs and shared-file reconciliation; HOLD actual join until owner accepts source receipt and live upgrade timing. Keep Change open until accepted live scope or explicit owner disposition. No live proof claims. No sibling auto-start.
