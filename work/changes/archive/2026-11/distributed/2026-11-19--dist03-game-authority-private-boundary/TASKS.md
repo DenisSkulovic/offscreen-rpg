@@ -1,3 +1,6 @@
+> **Terminal owner disposition:** Superseded by owner 2026-11-27 in preparation for monorepo redesign. Historical narrow scripted resolution/snapshot extraction and Compose compatibility acceptance retired; no live PASS inferred. Existing implementation untouched. Preserve single authoritative mutation ownership, authenticated private boundaries, trusted actor provenance, authorization and tenant isolation, transactional integrity and idempotency. Future service topology and acceptance must derive from new architecture. No dispatch.
+> Earlier readiness, branch and acceptance instructions below are historical only.
+
 # DIST03 | Composer verification of existing GA boundary
 
 **Baseline:** 584b594. **State:** implemented one seam on a branch and merged into current source; packet still open for receipt/closure. **Scope receipt (T02, 2026-11-20, HEAD `ec73a535`):** DIST03 is only owned snapshot read plus one scripted resolution admission on private HTTP. It is not “all game authority is now separate.” **Model:** Composer Standard, VERIFY first. **Source:** `apps/game-authority/src/{application,server,bootstrap/main}.ts`, `apps/api/src/modules/stories/{controller,game-authority-client}.ts`, `apps/game-authority/test/story-seam.test.ts`.
@@ -47,6 +50,6 @@ Source may already route or mock start on the client for coordination; that does
 
 **Blocker:** In-process resolution no-fallback **PASS** at HEAD (`game-authority-seam.test.mjs` **6/6**). **Two-process private HTTP with disposable DB — NOT-RUN** (Change stays open).
 
-Canonical [topology](../../../../docs/technical/platform/topology.md#distributed-learning-target) and [STATUS.md](../../../../STATUS.md) name this narrow seam only; they do not claim cluster deploy or migrated start/publication.
+Canonical [topology](../../../../../../docs/technical/platform/topology.md#distributed-learning-target) and [STATUS.md](../../../../../../STATUS.md) name this narrow seam only; they do not claim cluster deploy or migrated start/publication.
 
 No Grok needed merely to check bearer-token routing or a two-process HTTP test.
