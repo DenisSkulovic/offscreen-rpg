@@ -2,6 +2,8 @@
 
 **Status: technical recommendation, 2026-11-15; not installed or authorized.** This is the **operational** sibling of [durable evidence](./identities-and-evidence.md), not its replacement and not a deployed monitoring stack. It remains under `docs/technical` because the documentation architecture names this path. That placement does not install the stack. The 2026-11-15 source inventory is an evidence run, not this contract. No monitoring service and no paid observability account are authorized.
 
+**Selected local platform boundary (2026-11-26):** [native observability infrastructure](../platform/observability-native-infrastructure.md) owns the independently defended optional five-release foundation. Implementation and live acceptance remain pending. The application instrumentation recommendations below remain proposals; durable evidence is unchanged. Historical source observations below are dated, not current inventory.
+
 ## Owner map
 
 Telemetry stays on this page. A noninstalled observer stack stays planned. Durable forensic evidence and provenance stay distinct from lossy telemetry.

@@ -4,4 +4,4 @@ State: **Proposed — planner readiness incomplete; not commissioned.** RELEASE 
 
 [Tasks](TASKS.md) · [Source map](SOURCE-MAP.md) · [Execution](EXECUTION.md) · [Proof](PROOF.md) · [Readiness](READINESS.md). Main integration; proposed branch change/observability-native, dedicated linked worktree, one serial parent. Cursor owns source and focused checks only; ChatGPT/owner own heavy A6–A11. Stop IMPLEMENTED — ACCEPTANCE PENDING, no join until proof or explicit owner exception. Preserve other services, host monitoring and domain evidence. No paid calls.
 
-Promotion requires canonical documentation reconciliation, full line-level caller audit, precise task/test commands and G0–G7 pass. This draft does not authorize dispatch. Retire after accepted proof and documentation reconciliation.
+Selected platform authority: [native observability infrastructure](../../../../docs/technical/platform/observability-native-infrastructure.md). Promotion still requires related-document reconciliation, full line-level caller audit, precise task/test commands and G0–G7 pass. This draft does not authorize dispatch. Retire after accepted proof and documentation reconciliation.

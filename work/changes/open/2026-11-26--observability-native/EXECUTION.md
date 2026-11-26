@@ -1,5 +1,7 @@
 # Execution reference — draft
 
+Canonical selected platform contract: [native observability infrastructure](../../../../docs/technical/platform/observability-native-infrastructure.md). The copied reference below is retained pending final packet compression; canonical precedence governs. R30 full text is included in the canonical owner.
+
 Pinned [dossier](https://github.com/DenisSkulovic/offscreen-rpg/tree/7bbdb6d9a4a0cbe2ad22d74c4a335a57eb7191e3/work/designs/open/observability-platform/); R34 observation precedence > R33 > R30 > TARGET; exact specimens, amendments and experiment harnesses remain immutable authority candidates until canonical promotion. The text below preserves selected design contracts, not proof of source implementation.
 
 # Normative candidate | optional local observability foundation
