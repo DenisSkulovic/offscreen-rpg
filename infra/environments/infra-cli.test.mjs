@@ -1185,13 +1185,14 @@ test('up cold dev path invokes dev-cli ensure when cluster is absent', () => {
   const result = runInfraUp({
     profileId: 'dev',
     services: 'none',
-    run: () => ({ ok: true, stdout: '' }),
+    run: devWarmRun(false),
     runner: (argv) => {
       runnerCalls.push(argv);
       return { ok: true, status: 0 };
     },
   });
   assert.equal(result.ok, true);
+  assert.deepEqual(result.ran, ['cluster-ensure', 'cluster-verify']);
   assert.deepEqual(runnerCalls, [[execPath, DEV_CLUSTER_CLI, 'ensure']]);
 });
 
@@ -1219,13 +1220,14 @@ test('up cold release path invokes up.sh when cluster is absent', () => {
   const result = runInfraUp({
     profileId: 'release',
     services: 'none',
-    run: () => ({ ok: true, stdout: '' }),
+    run: releaseWarmRun(false),
     runner: (argv) => {
       runnerCalls.push(argv);
       return { ok: true, status: 0 };
     },
   });
   assert.equal(result.ok, true);
+  assert.deepEqual(result.ran, ['cluster-ensure', 'cluster-verify']);
   assert.deepEqual(runnerCalls, [['bash', RELEASE_CLUSTER_UP]]);
 });
 
@@ -1248,6 +1250,28 @@ test('up warm release with services skips up.sh', () => {
   );
   assert.deepEqual(result.ran, ['cluster-verify']);
 });
+
+for (const profileId of ['dev', 'release']) {
+  test(`up cold ${profileId} refuses an unready foundation before platform ensure`, () => {
+    const healthy = profileId === 'dev' ? devWarmRun(false) : releaseWarmRun(false);
+    const calls = [];
+    const result = runInfraUp({
+      profileId,
+      services: 'core',
+      run: (command, args) =>
+        command === 'kubectl' && args.includes('nodes')
+          ? { ok: true, stdout: JSON.stringify({ items: [] }) }
+          : healthy(command, args),
+      runner: (argv) => {
+        calls.push(argv);
+        return { ok: true, status: 0 };
+      },
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.phase, 'cluster-verify');
+    assert.equal(calls.length, 1);
+  });
+}
 
 test('up cluster ensure failure stops before platform calls', () => {
   /** @type {string[][]} */
