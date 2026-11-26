@@ -121,3 +121,13 @@ test('verifyInfraPins rejects invalid release topology against canonical profile
   const badRole = readInfraPinFiles().kindYamlText.replace('role: worker', 'role: extra-control-plane');
   assert.ok(verifyInfraPins(badRole, libShText).some((refusal) => refusal.id === 'pin-drift-kind-role'));
 });
+test('absent release creation permits a different current context without weakening other guards', () => {
+  const options = { createAbsentRelease: true };
+  const probes = healthyProbes({ currentContext: 'kind-offscreen-dev' });
+  assert.equal(runStackPreflight(probes, options).ok, true);
+  assert.equal(runStackPreflight(probes).ok, false);
+  assert.equal(runStackPreflight({ ...probes, ownedClusterExists: true }, options).ok, false);
+  assert.equal(runStackPreflight({ ...probes, ownedClusterExists: undefined }, options).ok, false);
+  assert.equal(runStackPreflight({ ...probes, apiPort: { occupied: true, ownedByCluster: false } }, options).ok, false);
+  assert.equal(runStackPreflight({ ...probes, memAvailableKib: 0 }, options).ok, false);
+});
