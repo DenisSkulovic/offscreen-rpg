@@ -87,6 +87,13 @@ class AmqpSmokeTests(unittest.TestCase):
             wire.read_method(wire.clock() + 1, 1)
         self.assertEqual(ctx.exception.stage, "connection-close:503")
 
+    def test_rabbitmq_metrics_after_runtime_prefix(self):
+        prefix = b"erlang_vm_memory_bytes 42\n" * 300
+        self.assertGreater(len(prefix), 4096)
+        self.assertTrue(amqp_smoke.has_rabbitmq_metric(prefix + b"rabbitmq_connections 1\n"))
+        self.assertFalse(amqp_smoke.has_rabbitmq_metric(prefix + b"# HELP rabbitmq_connections comment\n"))
+        self.assertFalse(amqp_smoke.has_rabbitmq_metric(b"<html>rabbitmq</html>"))
+
     def test_declare_mode_cannot_publish(self):
         self.assertTrue(amqp_smoke.declare_has_publish_path("declare", ["x", "declare", "publish"]))
 
