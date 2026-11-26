@@ -26,3 +26,5 @@
 **2026-11-22 promotion:** HR01/HR02/HR03 were promoted together to the near-term Open set. Execution remains subject to the actual post-CL01/WR11 source gates in [the next-wave plan](../../undertakings/storyteller-workshop/NEXT-WAVE.md).
 
 **2026-11-26:** VER04 deferred to [platform operations](platform-operations/2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md); outstanding DB10 proof retained, execution commission withdrawn.
+
+**2026-11-26:** VER05 deferred alongside VER04 to [platform operations](platform-operations/2026-11-25--ver05-db-replicated-topology-programme/CHANGE.md); replication/failover and resource isolation requirements retained, execution commission withdrawn.

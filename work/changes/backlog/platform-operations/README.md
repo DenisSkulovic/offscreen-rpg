@@ -39,3 +39,5 @@ INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execut
 - [INF38 selective application profiles](2026-11-24--inf38-selective-dev-profiles/CHANGE.md): deferred, selected design retained; no current commission. Refresh when selective activation is needed.
 
 - [VER04 database transaction, migration and recovery programme](2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md): deferred; owns transferred DB10 proof, no current commission. Refresh current DB/runtime and resource contracts when selected for dedicated reliability verification.
+
+- [VER05 replicated PostgreSQL topology verification](2026-11-25--ver05-db-replicated-topology-programme/CHANGE.md): deferred; VER04 source prerequisite and native PostgreSQL provisioning refresh required before owner-selected promotion. No current commission.

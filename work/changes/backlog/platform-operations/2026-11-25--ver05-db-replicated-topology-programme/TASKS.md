@@ -1,3 +1,5 @@
+> Deferred by owner 2026-11-26. Historical task plan only; no current commission. Refresh native PostgreSQL provisioning and ownership seams after VER04 source joins and before promotion.
+
 > VER04 source prerequisite is unsatisfied following owner deferral on 2026-11-26. No dispatch while this dependency remains unmet.
 
 # VER05 | Bounded Composer tasks
