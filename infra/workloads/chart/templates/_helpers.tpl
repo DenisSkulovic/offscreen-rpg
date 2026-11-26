@@ -27,7 +27,7 @@
 {{- if not $b.schemaReady -}}{{- fail "schemaReady must be true" -}}{{- end -}}
 {{- if not $b.dbSecret -}}{{- fail "missing bindings.dbSecret" -}}{{- end -}}
 {{- if not $b.appSecret -}}{{- fail "missing bindings.appSecret" -}}{{- end -}}
-{{- if not $b.s3Secret -}}{{- fail "missing bindings.s3Secret" -}}{{- end -}}
+{{- if not $b.objectStorage -}}{{- fail "missing bindings.objectStorage" -}}{{- end -}}
 {{- if ne (int .Values.replicas) 1 -}}{{- fail "development requires replicas=1" -}}{{- end -}}
 {{- if .Values.replicasByRole -}}
 {{- range $role, $count := .Values.replicasByRole -}}
@@ -39,6 +39,46 @@
 {{- if gt (len .Values.bindings) 0 -}}{{- fail "release profile does not accept bindings" -}}{{- end -}}
 {{- end -}}
 {{- else -}}{{- fail "invalid mode" -}}{{- end -}}
+{{- end -}}
+
+{{- define "offscreen-app.env.s3" -}}
+{{- $os := . -}}
+{{- $bucket := required "objectStorage.bucket" $os.bucket -}}
+{{- $region := required "objectStorage.region" $os.region -}}
+{{- if kindIs "invalid" $os.forcePathStyle -}}{{- fail "objectStorage.forcePathStyle must be a boolean" -}}{{- end -}}
+{{- $cred := required "objectStorage.credentials" $os.credentials -}}
+{{- $mode := required "objectStorage.credentials.mode" $cred.mode -}}
+{{- if and (ne $mode "secret") (ne $mode "default-chain") -}}{{- fail "invalid objectStorage.credentials.mode" -}}{{- end -}}
+{{- if and (eq $mode "secret") (not $cred.secretName) -}}{{- fail "objectStorage.credentials.secretName is required" -}}{{- end -}}
+{{- if and (eq $mode "default-chain") $cred.secretName -}}{{- fail "objectStorage.credentials.secretName is not valid for default-chain" -}}{{- end -}}
+- name: OFFSCREEN_DOCUMENT_STORE
+  value: "s3"
+- name: OFFSCREEN_DOCUMENT_S3_BUCKET
+  value: {{ $bucket | quote }}
+- name: OFFSCREEN_DOCUMENT_S3_REGION
+  value: {{ $region | quote }}
+{{- if $os.endpoint }}
+- name: OFFSCREEN_DOCUMENT_S3_ENDPOINT
+  value: {{ $os.endpoint | quote }}
+{{- end }}
+{{- if $os.prefix }}
+- name: OFFSCREEN_DOCUMENT_S3_PREFIX
+  value: {{ $os.prefix | quote }}
+{{- end }}
+- name: OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE
+  value: {{ ternary "true" "false" $os.forcePathStyle | quote }}
+{{- if eq $mode "secret" }}
+- name: OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ $cred.secretName | quote }}
+      key: access-key-id
+- name: OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ $cred.secretName | quote }}
+      key: secret-access-key
+{{- end }}
 {{- end -}}
 
 {{- define "offscreen-app.roleReplicas" -}}
@@ -442,18 +482,7 @@ spec:
             -
               name: "GAME_AUTHORITY_ORIGIN"
               value: {{ .Values.release.authorityOrigin | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_STORE"
-              value: "s3"
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_BUCKET"
-              value: {{ .Values.release.s3Bucket | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_ENDPOINT"
-              value: {{ .Values.release.s3Endpoint | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE"
-              value: {{ .Values.release.s3ForcePathStyle | quote }}
+            {{- include "offscreen-app.env.s3" .Values.release.objectStorage | nindent 12 }}
             -
               name: "OFFSCREEN_DEFAULT_RULE_ROOT_HASH"
               value: {{ .Values.release.ruleRootHash | quote }}
@@ -463,18 +492,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.release.dbSecret | quote }}
                   key: "uri"
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID"
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.release.runtimeSecret | quote }}
-                  key: "access-key-id"
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY"
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.release.runtimeSecret | quote }}
-                  key: "secret-access-key"
             -
               name: "GAME_AUTHORITY_SERVICE_TOKEN"
               valueFrom:
@@ -564,33 +581,10 @@ spec:
             -
               name: "OFFSCREEN_WRITER_EXECUTION_MODE"
               value: {{ .Values.release.writerExecutionMode | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_STORE"
-              value: "s3"
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_BUCKET"
-              value: {{ .Values.release.s3Bucket | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_ENDPOINT"
-              value: {{ .Values.release.s3Endpoint | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE"
-              value: {{ .Values.release.s3ForcePathStyle | quote }}
+            {{- include "offscreen-app.env.s3" .Values.release.objectStorage | nindent 12 }}
             -
               name: "OFFSCREEN_DEFAULT_RULE_ROOT_HASH"
               value: {{ .Values.release.ruleRootHash | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID"
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.release.runtimeSecret | quote }}
-                  key: "access-key-id"
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY"
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.release.runtimeSecret | quote }}
-                  key: "secret-access-key"
             -
               name: "GAME_AUTHORITY_SERVICE_TOKEN"
               valueFrom:
@@ -795,30 +789,7 @@ spec:
             -
               name: "STORYTELLER_DISTRIBUTED_V1"
               value: {{ .Values.release.relayDistributed | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_STORE"
-              value: "s3"
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_BUCKET"
-              value: {{ .Values.release.s3Bucket | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_ENDPOINT"
-              value: {{ .Values.release.s3Endpoint | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE"
-              value: {{ .Values.release.s3ForcePathStyle | quote }}
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID"
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.release.runtimeSecret | quote }}
-                  key: "access-key-id"
-            -
-              name: "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY"
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.release.runtimeSecret | quote }}
-                  key: "secret-access-key"
+            {{- include "offscreen-app.env.s3" .Values.release.objectStorage | nindent 12 }}
           securityContext:
             {{- include "offscreen-app.release.security.container" . | nindent 12 }}
           resources:
@@ -916,27 +887,12 @@ spec:
   value: "0.0.0.0"
 - name: API_PORT
   value: {{ .Values.catalog.httpPorts.api | quote }}
-- name: OFFSCREEN_DOCUMENT_STORE
-  value: {{ .Values.dev.documentStore | quote }}
-- name: OFFSCREEN_DOCUMENT_S3_BUCKET
-  value: {{ .Values.bindings.s3Bucket | quote }}
-- name: OFFSCREEN_DOCUMENT_S3_ENDPOINT
-  value: {{ .Values.bindings.s3Endpoint | quote }}
+{{- include "offscreen-app.env.s3" .Values.bindings.objectStorage | nindent 0 }}
 - name: DATABASE_URL
   valueFrom:
     secretKeyRef:
       name: {{ .Values.bindings.dbSecret }}
       key: uri
-- name: OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.bindings.s3Secret }}
-      key: access-key-id
-- name: OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.bindings.s3Secret }}
-      key: secret-access-key
 - name: GAME_AUTHORITY_SERVICE_TOKEN
   valueFrom:
     secretKeyRef:
@@ -1022,31 +978,16 @@ spec:
   value: {{ .Values.bindings.receiptDir | quote }}
 - name: DB_POOL_MAX
   value: {{ .Values.bindings.dbPoolMax | quote }}
-- name: OFFSCREEN_DOCUMENT_STORE
-  value: {{ .Values.dev.documentStore | quote }}
+{{- include "offscreen-app.env.s3" .Values.bindings.objectStorage | nindent 0 }}
 - name: GAME_AUTHORITY_HOST
   value: "0.0.0.0"
 - name: GAME_AUTHORITY_PORT
   value: {{ .Values.catalog.httpPorts.authority | quote }}
-- name: OFFSCREEN_DOCUMENT_S3_BUCKET
-  value: {{ .Values.bindings.s3Bucket | quote }}
-- name: OFFSCREEN_DOCUMENT_S3_ENDPOINT
-  value: {{ .Values.bindings.s3Endpoint | quote }}
 - name: DATABASE_URL
   valueFrom:
     secretKeyRef:
       name: {{ .Values.bindings.dbSecret }}
       key: uri
-- name: OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.bindings.s3Secret }}
-      key: access-key-id
-- name: OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.bindings.s3Secret }}
-      key: secret-access-key
 - name: GAME_AUTHORITY_SERVICE_TOKEN
   valueFrom:
     secretKeyRef:
@@ -1261,31 +1202,16 @@ spec:
   value: {{ .Values.bindings.receiptDir | quote }}
 - name: DB_POOL_MAX
   value: {{ .Values.bindings.dbPoolMax | quote }}
-- name: OFFSCREEN_DOCUMENT_STORE
-  value: {{ .Values.dev.documentStore | quote }}
+{{- include "offscreen-app.env.s3" .Values.bindings.objectStorage | nindent 0 }}
 - name: TEMPORAL_ADDRESS
   value: {{ .Values.bindings.temporalAddress | quote }}
 - name: TEMPORAL_NAMESPACE
   value: {{ .Values.bindings.temporalNamespace | quote }}
-- name: OFFSCREEN_DOCUMENT_S3_BUCKET
-  value: {{ .Values.bindings.s3Bucket | quote }}
-- name: OFFSCREEN_DOCUMENT_S3_ENDPOINT
-  value: {{ .Values.bindings.s3Endpoint | quote }}
 - name: DATABASE_URL
   valueFrom:
     secretKeyRef:
       name: {{ .Values.bindings.dbSecret }}
       key: uri
-- name: OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.bindings.s3Secret }}
-      key: access-key-id
-- name: OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.bindings.s3Secret }}
-      key: secret-access-key
 {{- end -}}
 
 {{- define "offscreen-app.doc.deployment.game-relay.dev" -}}

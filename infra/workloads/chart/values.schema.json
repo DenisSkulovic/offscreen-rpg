@@ -45,13 +45,36 @@
         "gamePort": { "type": "integer", "minimum": 1, "maximum": 65535 },
         "cookiePrefix": { "type": "string", "minLength": 1 },
         "dbPoolMax": { "type": "integer", "minimum": 1 },
-        "s3Bucket": { "type": "string", "minLength": 1 },
-        "s3Endpoint": { "type": "string", "minLength": 1 },
+        "objectStorage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bucket", "region", "forcePathStyle", "credentials"],
+          "properties": {
+            "bucket": { "type": "string", "minLength": 1 },
+            "region": { "type": "string", "minLength": 1 },
+            "endpoint": { "type": "string", "minLength": 1 },
+            "prefix": { "type": "string", "minLength": 1 },
+            "forcePathStyle": { "type": "boolean" },
+            "credentials": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["mode"],
+              "properties": {
+                "mode": { "type": "string", "enum": ["secret", "default-chain"] },
+                "secretName": { "type": "string", "minLength": 1 }
+              },
+              "if": {
+                "properties": { "mode": { "const": "secret" } },
+                "required": ["mode"]
+              },
+              "then": { "required": ["secretName"] }
+            }
+          }
+        },
         "temporalAddress": { "type": "string", "minLength": 1 },
         "temporalNamespace": { "type": "string", "minLength": 1 },
         "dbSecret": { "type": "string", "minLength": 1 },
         "appSecret": { "type": "string", "minLength": 1 },
-        "s3Secret": { "type": "string", "minLength": 1 },
         "receiptDir": { "type": "string", "minLength": 1 },
         "images": {
           "type": "object",
@@ -83,13 +106,11 @@
               "gamePort",
               "cookiePrefix",
               "dbPoolMax",
-              "s3Bucket",
-              "s3Endpoint",
+              "objectStorage",
               "temporalAddress",
               "temporalNamespace",
               "dbSecret",
               "appSecret",
-              "s3Secret",
               "receiptDir",
               "images",
               "schemaReady",

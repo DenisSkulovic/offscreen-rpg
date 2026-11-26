@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { renderWorkloadDocuments } from '../render.mjs';
+import { validateObjectStorageBinding } from '../../platform/object-storage/binding.mjs';
 import { deriveDevWorkloadBindings } from './helpers/dev-bindings.mjs';
 import { documentKey, helmTemplate, parseHelmJsonDocuments } from './helpers/helm-render.mjs';
 import {
@@ -264,7 +265,7 @@ test('trimmed profiles: six roles, migration, identities unchanged', () => {
   assert.equal(deploymentContainer(api).ports[0].containerPort, 3001);
   assert.equal(web.spec.template.spec.securityContext.runAsUser, 1001);
   assert.equal(api.spec.template.spec.securityContext.runAsUser, 1000);
-  assert.deepEqual(secretEnvNames(api), ['game-db/uri', 'game-runtime/access-key-id', 'game-runtime/better-auth-secret', 'game-runtime/game-authority-service-token', 'game-runtime/github-client-id', 'game-runtime/github-client-secret', 'game-runtime/secret-access-key']);
+  assert.deepEqual(secretEnvNames(api), ['game-db/uri', 'game-runtime/better-auth-secret', 'game-runtime/game-authority-service-token', 'game-runtime/github-client-id', 'game-runtime/github-client-secret', 'game-s3/access-key-id', 'game-s3/secret-access-key']);
 
   const devOverlay = deriveDevWorkloadBindings('dev-1', 3100);
   const devAll = render('development', { section: 'all', ...devOverlay });
@@ -280,4 +281,56 @@ test('trimmed profiles: six roles, migration, identities unchanged', () => {
   const devApi = devAll.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api');
   assert.equal(deploymentContainer(devApi).image, 'offscreen-dev-workspace:dev-1-api');
   assert.deepEqual(secretEnvNames(devApi), ['dev-1-app/better-auth-secret', 'dev-1-app/game-authority-service-token', 'dev-1-app/github-client-id', 'dev-1-app/github-client-secret', 'dev-1-run-auth/uri', 'dev-1-s3/access-key-id', 'dev-1-s3/secret-access-key']);
+});
+
+function deploymentEnv(doc) {
+  return deploymentContainer(doc).env ?? [];
+}
+
+function envLiteral(doc, name) {
+  return deploymentEnv(doc).find((item) => item.name === name);
+}
+
+test('objectStorage helper: web has no S3 credentials', () => {
+  const releaseAll = render('release', { section: 'all' });
+  const web = releaseAll.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-web');
+  const envText = JSON.stringify(deploymentEnv(web));
+  assert.doesNotMatch(envText, /OFFSCREEN_DOCUMENT_S3_/);
+  assert.doesNotMatch(envText, /secretKeyRef/);
+
+  const devAll = render('development', { section: 'all', ...deriveDevWorkloadBindings('dev-1', 3100) });
+  const devWeb = devAll.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-web');
+  const devEnvText = JSON.stringify(deploymentEnv(devWeb));
+  assert.doesNotMatch(devEnvText, /OFFSCREEN_DOCUMENT_S3_/);
+  assert.doesNotMatch(devEnvText, /secretKeyRef/);
+});
+
+test('objectStorage helper: api exposes region and path-style secret binding', () => {
+  const api = render('release', { section: 'edge' }).find(
+    (doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api',
+  );
+  assert.equal(envLiteral(api, 'OFFSCREEN_DOCUMENT_S3_REGION')?.value, 'us-east-1');
+  assert.equal(envLiteral(api, 'OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE')?.value, 'true');
+  assert.equal(
+    envLiteral(api, 'OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID')?.valueFrom?.secretKeyRef?.name,
+    'game-s3',
+  );
+});
+
+test('external objectStorage overlay renders https endpoint without access-key env', () => {
+  const overlay = deriveDevWorkloadBindings('dev-1', 3100);
+  overlay.bindings.objectStorage = validateObjectStorageBinding({
+    bucket: 'external-bucket',
+    region: 'eu-west-1',
+    endpoint: 'https://s3.example.com',
+    forcePathStyle: false,
+    credentials: { mode: 'default-chain' },
+  });
+  const rendered = render('development', { section: 'all', ...overlay });
+  const api = rendered.find((doc) => doc.kind === 'Deployment' && doc.metadata.name === 'game-api');
+  assert.equal(envLiteral(api, 'OFFSCREEN_DOCUMENT_S3_ENDPOINT')?.value, 'https://s3.example.com');
+  assert.equal(envLiteral(api, 'OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE')?.value, 'false');
+  const names = deploymentEnv(api).map((item) => item.name);
+  assert.ok(!names.includes('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID'));
+  assert.ok(!names.includes('OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY'));
 });

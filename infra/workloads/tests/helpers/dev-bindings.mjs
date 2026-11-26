@@ -1,6 +1,13 @@
-import { DEV_POD_RUNTIME_RECEIPT_DIR, deriveSlotCookiePrefix } from '../../../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
+import {
+  DEV_POD_RUNTIME_RECEIPT_DIR,
+  deriveSlotCookiePrefix,
+} from '../../../../tools/dev-environments/src/rendering/dev-slot-app-graph.mjs';
+import { localObjectStorageBinding } from '../../../platform/object-storage/binding.mjs';
 import { DEV_S3_NAMESPACE } from '../../../platform/object-storage/dev-bootstrap.mjs';
-import { DEV_SQL_POOL_MAX, deriveDevSqlTenant } from '../../../../tools/dev-environments/src/rendering/dev-sql-tenant-contract.mjs';
+import {
+  DEV_SQL_POOL_MAX,
+  deriveDevSqlTenant,
+} from '../../../../tools/dev-environments/src/rendering/dev-sql-tenant-contract.mjs';
 import { deriveDevS3Tenant } from '../../../../tools/dev-environments/src/adapters/dev-s3-tenant.mjs';
 
 export function deriveDevWorkloadBindings(slotId, gamePort) {
@@ -19,13 +26,15 @@ export function deriveDevWorkloadBindings(slotId, gamePort) {
       gamePort,
       cookiePrefix: deriveSlotCookiePrefix(slotId),
       dbPoolMax: DEV_SQL_POOL_MAX,
-      s3Bucket: s3.bucket,
-      s3Endpoint,
+      objectStorage: localObjectStorageBinding({
+        bucket: s3.bucket,
+        endpoint: s3Endpoint,
+        secretName: s3.secret,
+      }),
       temporalAddress: temporal,
       temporalNamespace: namespace,
       dbSecret: sql.runtimeSecret,
       appSecret: `${sql.slotId}-app`,
-      s3Secret: s3.secret,
       receiptDir: DEV_POD_RUNTIME_RECEIPT_DIR,
       images: {
         web: imageFor('web'),
