@@ -1,0 +1,67 @@
+# DESIGN ONLY. Fresh phase, not for existing tenants.
+# Source Secrets dev-42-mig-auth and dev-42-run-auth must exist first.
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: dev-42-mig
+  namespace: offscreen-dev-postgres
+  labels:
+    offscreen.dev/owner: offscreen-dev
+    offscreen.dev/slot: dev-42
+spec:
+  cluster:
+    name: dev-pg
+  name: dev_42_mig
+  login: false
+  inherit: false
+  superuser: false
+  createdb: false
+  createrole: false
+  replication: false
+  bypassrls: false
+  inRoles: []
+  databaseRoleReclaimPolicy: retain
+  passwordSecret:
+    name: dev-42-mig-auth
+  connectionLimit: 2
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: DatabaseRole
+metadata:
+  name: dev-42-run
+  namespace: offscreen-dev-postgres
+  labels:
+    offscreen.dev/owner: offscreen-dev
+    offscreen.dev/slot: dev-42
+spec:
+  cluster:
+    name: dev-pg
+  name: dev_42_run
+  login: false
+  inherit: false
+  superuser: false
+  createdb: false
+  createrole: false
+  replication: false
+  bypassrls: false
+  inRoles: []
+  databaseRoleReclaimPolicy: retain
+  passwordSecret:
+    name: dev-42-run-auth
+  connectionLimit: 8
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: dev-42
+  namespace: offscreen-dev-postgres
+  labels:
+    offscreen.dev/owner: offscreen-dev
+    offscreen.dev/slot: dev-42
+spec:
+  cluster:
+    name: dev-pg
+  name: dev_42
+  owner: dev_42_mig
+  allowConnections: false
+  databaseReclaimPolicy: retain
