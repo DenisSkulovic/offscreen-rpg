@@ -31,3 +31,7 @@ Select controlled replacement at original DNS identity conditional on fresh quie
 ## R7
 
 [MIGRATION.md](MIGRATION.md) supersedes preliminary cutover sequence. [OBSERVER.md](OBSERVER.md) owns the explicit render and verification integration map. No migration authorized.
+
+## R8 caller evidence
+
+See [readback results](experiments/lifecycle/readback-results.md) and [observer integration closure](OBSERVER.md). Preserve diagnostic and source registration and existing public entrypoints. Legacy cutover separately gated; no automatic migration.
