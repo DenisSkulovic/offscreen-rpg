@@ -1,6 +1,7 @@
 import { performance } from 'node:perf_hooks';
 import { assertPlatformTarget, runPlatformCommand, PLATFORM_COMMAND_TIMEOUT_MS } from '../common/commands.mjs';
-import { observeWritablePrimary } from './bootstrap/observation.mjs';
+import { readPlatformProfile } from '../common/profile.mjs';
+import { observeWritablePrimary, assertBaselineKubeconfig } from './bootstrap/observation.mjs';
 
 export const DEV_POSTGRES_READINESS_POLL_MS = 5000;
 export const DEV_POSTGRES_READINESS_TIMEOUT_MS = 480000;
@@ -10,6 +11,7 @@ export const DEV_POSTGRES_COMMAND_TIMEOUT_MS = PLATFORM_COMMAND_TIMEOUT_MS;
 /** Narrow slot-startup readiness contract; no full operator inventory scan. */
 export function observeDevPostgresReady({ run = runPlatformCommand } = {}) {
   try {
+    assertBaselineKubeconfig(readPlatformProfile('dev'), run);
     assertPlatformTarget('dev', { run });
     const result = observeWritablePrimary('dev', { run });
     return result.ok ? { ok: true, primaryPod: result.primaryPod } : result;

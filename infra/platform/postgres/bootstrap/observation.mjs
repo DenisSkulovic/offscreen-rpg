@@ -78,8 +78,26 @@ function competingOperator(profile, run) {
   return found ? 'present' : 'absent';
 }
 
+/** Reject external credential execution before any API request. */
+export function assertBaselineKubeconfig(profile, run) {
+  const result = run('kubectl', ['--context', profile.contextName, 'config', 'view', '--minify', '-o', 'json']);
+  if (!result.ok) throw new Error('Kubeconfig unavailable');
+  const config = JSON.parse(result.stdout);
+  if (!Array.isArray(config.users) || config.users.length !== 1 ||
+    !Array.isArray(config.clusters) || config.clusters.length !== 1 ||
+    !Array.isArray(config.contexts) || config.contexts.length !== 1 ||
+    config.contexts[0].name !== profile.contextName ||
+    config.contexts[0].context?.user !== config.users[0].name ||
+    config.contexts[0].context?.cluster !== config.clusters[0].name ||
+    config.users[0].user?.exec || config.users[0].user?.['auth-provider'] ||
+    config.clusters[0].cluster?.['proxy-url'] ||
+    config.clusters[0].cluster?.['insecure-skip-tls-verify'] === true)
+    throw new Error('Unsafe PostgreSQL kubeconfig');
+}
+
 export function collectBaselineObservation(profileId, { artifact, run = runPlatformCommand } = {}) {
   const profile = readPlatformProfile(profileId);
+  assertBaselineKubeconfig(profile, run);
   const target = assertPlatformTarget(profileId, { run });
   const observations = new Map();
   for (const entry of artifact.inventory) {
