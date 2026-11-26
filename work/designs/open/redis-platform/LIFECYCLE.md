@@ -60,3 +60,7 @@ Exact-version upstream source inspected 2026-11-26 via GitHub:
 - https://helm.sh/docs/v3/helm/helm_install/ version 3.22.1: --wait/--timeout, --atomic and --take-ownership; latter two not used. Exact chart render and disposable runtime tests remain unexecuted.
 
 Selection retained for fresh local pools with cooperating-writer discipline; no unconditional guarantee against concurrent arbitrary writers between precheck and Helm's own adoption check. This scope limitation must be defended explicitly; if unacceptable, choose guarded kubectl create-only instead. Runtime proof must include matching-metadata orphan and partial-install scenarios. Legacy cutover still gated.
+
+## R5 decision after native experiment
+
+[Release lifecycle experiment](experiments/lifecycle/results.md) passed all scoped checks. Select native Helm for fresh local pools as candidate architecture. No arbitrary-writer safety, full compatibility or migration claim. Continue with [integration and cutover](INTEGRATION.md); formal defense remains pending.

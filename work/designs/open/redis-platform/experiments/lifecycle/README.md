@@ -16,3 +16,7 @@ Run from the repository root, using a temporary extraction of this dossier from 
 Limits: guard is a small specimen, not full production compatibility comparator; no production upgrade, adoption, or claim against arbitrary competing writers. PING originates in Redis Pod through Service, not a distinct application client. Failure exercises readiness-timeout partial lifecycle, not mid-create network loss or all fault classes. Exact chart/schema and Python source checks must run locally; no live run by planner. Namespace cleanup is explicitly authorized for this fixture only; if identity/custody changes or unknown creation outcome, refuse deletion and report. Unsuccessful wait is not cleanup proof. No baseline destructive operations. No committee submission yet.
 
 Next after result: assess whether native Helm reduces code with adequate invariants; design migration of existing objects and actual consumer/security boundaries. The chart is intentionally separate from infra/platform/redis.
+
+## Observed result
+
+[Owner run](results.md) passed all specimen stages in 46s; no production acceptance.

@@ -1,10 +1,10 @@
-# Redis platform renewal | workshop 06
+# Redis platform renewal | workshop 07
 
 2026-11-26. Integration baseline main b6d128061fd0eb4d30296589d9393a277b09477a. Status: proposed, investigation active; no defense, acceptance or implementation authorization. Next review: next owner workshop checkpoint (2026-11-26), after read-only inventory and lifecycle comparison. Posture: independent target with evolutionary reconciliation; retain working native resources where warranted. Scope: local Kind Redis infrastructure, lifecycle, configuration, physical pool boundaries and verification. Exclude application cache implementation, hosted topology, business correctness and paid execution.
 
 ## Current decision
 
-[R2 lifecycle ownership](LIFECYCLE.md) supersedes the R1 open Helm-versus-create choice: native Helm for fresh pools, conditional on version-matched proof; legacy baseline is not adopted. R1 below remains the requirements and historical evidence register. [Live observations](OBSERVATIONS.md) now establish both legacy runtime identities, idle memory and successful Helm list on both contexts; version-matched Helm source investigated in LIFECYCLE.md. [Memory-pressure experiment](experiments/memory-results.md) observed successful bounded eviction; retain 32MiB maxmemory/128MiB limit as provisional baseline, investigate scheduling request and connection limits. Next: [native lifecycle specimen](experiments/lifecycle/README.md), owner-operated disposable Kind proof with explicit authorization.
+[R2 lifecycle ownership](LIFECYCLE.md) supersedes the R1 open Helm-versus-create choice: native Helm for fresh pools, conditional on version-matched proof; legacy baseline is not adopted. R1 below remains the requirements and historical evidence register. [Live observations](OBSERVATIONS.md) now establish both legacy runtime identities, idle memory and successful Helm list on both contexts; version-matched Helm source investigated in LIFECYCLE.md. [Memory-pressure experiment](experiments/memory-results.md) observed successful bounded eviction; retain 32MiB maxmemory/128MiB limit as provisional baseline, investigate scheduling request and connection limits. [Native lifecycle proof](experiments/lifecycle/results.md) passed in release; native Helm selected for fresh local pools as candidate architecture. Next: [integration and cutover](INTEGRATION.md), consumer census and full observation contract.
 
 ## Target hypothesis R1
 
