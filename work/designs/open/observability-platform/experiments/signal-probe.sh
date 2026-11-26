@@ -5,7 +5,7 @@ here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 src="${1:?usage: signal-probe.sh E03_EVIDENCE_DIRECTORY [identity.json]}"
 identity="${2:-}"
 mode="${3:-normal}"
-[[ "$mode" == normal || "$mode" == tempo-outage ]]
+[[ "$mode" == normal || "$mode" == tempo-outage || "$mode" == privacy ]]
 if [[ -n "$identity" ]]; then test -f "$identity"; fi
 python3 -c 'import ast,pathlib,sys; ast.parse(pathlib.Path(sys.argv[1]).read_text())' "$here/signal-probe.py"
 name="$(cat "$src/cluster-name")"
@@ -66,4 +66,4 @@ timeout 30s "${K[@]}" -n "$ns" logs "$probe" >"$out/probe.log" 2>&1 || true
 cat "$out/probe.log"
 timeout 20s "${K[@]}" -n "$ns" get pod "$probe" -o json >"$out/pod-status.json"
 echo "Evidence directory: $out"
-[[ "$phase" == Succeeded ]] && grep -Eq '^E04-(A|B QUERY|C ISOLATION) PASS$' "$out/probe.log"
+[[ "$phase" == Succeeded ]] && grep -Eq '^E04-(A|B QUERY|C ISOLATION|D2 PRIVACY) PASS$' "$out/probe.log"
