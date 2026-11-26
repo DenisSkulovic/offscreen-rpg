@@ -1,3 +1,5 @@
+> Superseded by owner 2026-11-26. Historical design/evidence only; no dispatch. WR05S/WR05P1/WR05P2/WR06 own realized slices; integrated acceptance remains separate.
+
 # WR05 | decided execution design (planner-owned)
 **Depends on WR02 and WR03 being integrated.** The legacy `offscreen.scene-checkpoint.v1` and SQL v1 selectors remain readable with original hashes.
 

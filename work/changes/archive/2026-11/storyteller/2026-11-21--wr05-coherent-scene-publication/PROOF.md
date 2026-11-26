@@ -1,3 +1,5 @@
+> Superseded by owner 2026-11-26. Historical design/evidence only; no dispatch. WR05S/WR05P1/WR05P2/WR06 own realized slices; integrated acceptance remains separate.
+
 # WR05 | planner proof matrix
 **Evidence:** design only; tests NOT RUN. Use disposable DB and scripted provider; capture v1 historical hashes beforehand.
 | Case | Setup | Result |

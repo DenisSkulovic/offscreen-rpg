@@ -1,3 +1,5 @@
+> Superseded by owner 2026-11-26. Historical design/evidence only; no dispatch. WR05S/WR05P1/WR05P2/WR06 own realized slices; integrated acceptance remains separate.
+
 # WR05 | verified source and transaction map
 **Baseline:** committed `f2e0b237`, static inspection, tests NOT RUN; depends on WR02 and WR03.
 - `packages/documents/src/schema.ts:sceneCheckpointSchema` is **offscreen.scene-checkpoint.v1**, `stateSchemaVersion:1`, max 1 MiB; `quiescentMechanicsSchema` hardcodes `holds:[]`, `offer:null`, `acceptedActivityPlan:null`, `activeActivityId:null`, `activeActionOperationId:null`, `continuityNotes:null|[]`. Hence current checkpoint cannot certify complete active world state.

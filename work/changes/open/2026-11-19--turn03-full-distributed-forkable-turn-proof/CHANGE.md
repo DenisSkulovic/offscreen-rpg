@@ -94,3 +94,5 @@ From TURN01:
 | Test/runbook/status | actual executable run | Pending | Pending | Pending | Pending |
 
 Complete ledger, run `pnpm wiki:change-guard --mode plan` and `--mode close` where supported, archive only actual results, and repair inbound links. No automatic next Change.
+
+**WR05 umbrella reconciliation (2026-11-26):** Archived as superseded by WR05S/P1/P2 and WR06. Existing TURN03 integrated publication/fork acceptance remains required, including exact post-state frontier and selected immutable root, admitted choice semantics, stale/unsupported state refusal and no duplicate effect/spend on replay. See permanent capability catalog; no added dispatch or live permission.

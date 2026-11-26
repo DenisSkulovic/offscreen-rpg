@@ -353,3 +353,5 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [DB10 source closure](platform-operations/2026-11-24--db10-dependency-closure-and-proof/CHANGE.md) (2026-11-26; live SQL transferred to VER04).
 
 - [K8S11](distributed/2026-11-19--k8s11-next-nest-live-edge-integration/CHANGE.md) (superseded 2026-11-26; browser/edge proof transferred).
+
+- [WR05 umbrella](storyteller/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) (superseded 2026-11-26; successor slices Done, integrated proof separate).
