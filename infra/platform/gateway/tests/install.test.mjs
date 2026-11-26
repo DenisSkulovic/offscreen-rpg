@@ -381,8 +381,9 @@ function makeFixture(objects, options = {}) {
     if (args.includes('--raw') && args.includes('/apis')) {
       if (options.discoveryUnreadable) return {...ok(), ok:false, status:1, stderr:'Forbidden'};
       if (options.discoveryMalformed) return ok('{}');
+      const gatewayEntry = inventory.get(`gateway/${LAB_EDGE_NAMESPACE}/${GATEWAY_NAME}`);
       const served = options.discoveryGatewayServed ||
-        inventory.has(`gateway/${LAB_EDGE_NAMESPACE}/${GATEWAY_NAME}`);
+        (gatewayEntry !== undefined && gatewayEntry !== 'absent');
       return ok(JSON.stringify({apiVersion:'v1', kind:'APIGroupList',
         groups: served ? [{name:'gateway.networking.k8s.io'}] : []}));
     }
