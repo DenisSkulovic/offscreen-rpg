@@ -32,11 +32,17 @@ expected_pnpm="$(node -p 'require(process.argv[1]).packageManager.split("@")[1]'
 if [[ -n "${DOCKER_HOST:-}${DOCKER_CONTEXT:-}${DOCKER_TLS_VERIFY:-}" ]]; then
   echo "Docker endpoint overrides are unsupported"; exit 1
 fi
-if ! context="$(timeout 10 docker context show)" ||
-   ! endpoint="$(timeout 10 docker context inspect "$context" --format '{{.Endpoints.docker.Host}}')" ||
-   [[ "$endpoint" != unix:///* ]] ||
-   ! os="$(timeout 10 docker info --format '{{.OperatingSystem}}')"; then
-  echo "Docker: local engine unavailable"; exit 1
+if ! context="$(timeout 10 docker context show)"; then
+  echo "Docker: context unavailable"; exit 1
+fi
+if ! endpoint="$(timeout 10 docker context inspect "$context" --format '{{.Endpoints.docker.Host}}')"; then
+  echo "Docker: endpoint inspection failed"; exit 1
+fi
+if [[ "$endpoint" != unix:///* && "$endpoint" != 'npipe:////./pipe/dockerDesktopLinuxEngine' ]]; then
+  echo "Docker: unsupported endpoint transport"; exit 1
+fi
+if ! os="$(timeout 10 docker info --format '{{.OperatingSystem}}')"; then
+  echo "Docker: engine unreachable"; exit 1
 fi
 [[ "$os" == "Docker Desktop" ]] || { echo "Docker: expected Docker Desktop"; exit 1; }
 for tool in kind kubectl helm tilt; do
