@@ -917,3 +917,19 @@ test('release bootstrap creates only absent baseline after local node identity p
   assert.throws(() => ensureReleaseOwnershipBaseline({ run }), /foreign ownership/);
   assert.equal(writes, 1);
 });
+
+
+test('qualified plural CRD and PV reads remain cluster scoped', () => {
+  for (const resource of ['customresourcedefinitions.apiextensions.k8s.io', 'persistentvolumes']) {
+    const spec = { profileId: 'dev', resource, name: 'specimen' };
+    const args = ['--context', devKind.contextName, 'get', resource, 'specimen', '--ignore-not-found', '-o', 'json'];
+    const body = { metadata: { name: 'specimen' } };
+    const runner = makeRunner([{ command: 'kubectl', args, result: { ok: true, stdout: JSON.stringify(body) } }]);
+    assert.deepEqual(readPlatformObject(spec, { run: runner.run }), { state: 'present', object: body });
+    assert.throws(() => readPlatformObject({ ...spec, namespace: 'default' }, { run: runner.run }), /namespace must not be set/);
+    assert.equal(runner.calls.length, 1);
+    const absent = makeRunner([{ command: 'kubectl', args, result: { ok: true, stdout: '' } }]);
+    assert.deepEqual(readPlatformObject(spec, { run: absent.run }), { state: 'absent' });
+  }
+  assert.throws(() => readPlatformObject({ profileId: 'dev', resource: 'rabbitmqclusters.rabbitmq.com', name: 'specimen' }), /namespace is required/);
+});
