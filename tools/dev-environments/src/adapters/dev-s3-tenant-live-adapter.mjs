@@ -8,6 +8,7 @@ import {
   DEV_S3_SECRET,
 } from '../../../../infra/platform/object-storage/dev-bootstrap.mjs';
 import { parsePolicyDocumentStrict } from '../../../../infra/platform/object-storage/providers/seaweedfs/provision.mjs';
+import { observeDevS3Sdk } from '../../../../infra/platform/object-storage/providers/seaweedfs/live-sdk.mjs';
 import { deriveDevS3Tenant } from './dev-s3-tenant.mjs';
 
 const TRANSPORT_TIMEOUT_MS = 60_000;
@@ -420,7 +421,7 @@ export function createDevS3LiveAdapter({
       const parsed = parseWeedUserList(text);
       return parsed.length === 0;
     },
-    readObservation(slotNames) {
+    async readObservation(slotNames) {
       const names = slotNames.policyName
         ? slotNames
         : deriveDevS3Tenant(slotNames.slotId ?? slotNames);
@@ -455,7 +456,7 @@ export function createDevS3LiveAdapter({
           };
         }
         const policyInventory = this.policyInventory();
-        return {
+        const observation = {
           bucket: bucket ? { name: names.bucket, owner: bucket.owner } : null,
           user,
           policyInventory,
@@ -463,9 +464,13 @@ export function createDevS3LiveAdapter({
           groupsEmpty: this.groupsEmpty(),
           secret,
           bucketPolicies: this.bucketPolicies(),
-          headBucket: this.headBucket(names),
+          headBucket: secret ? this.headBucket(names) : null,
           unreadable: false,
         };
+        if (exec === run) {
+          Object.assign(observation, await observeDevS3Sdk(names, observation));
+        }
+        return observation;
       } catch {
         return unreadable;
       }
