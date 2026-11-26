@@ -2,6 +2,7 @@
 set -euo pipefail
 umask 077
 here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+python3 -c 'import ast, pathlib, sys; ast.parse(pathlib.Path(sys.argv[1]).read_text())' "$here/signal-probe.py"
 src="${1:?usage: signal-probe.sh E03_EVIDENCE_DIRECTORY}"
 name="$(cat "$src/cluster-name")"
 [[ "$name" =~ ^obs-e03-[a-z0-9]+$ ]]

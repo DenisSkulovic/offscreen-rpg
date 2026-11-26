@@ -25,6 +25,7 @@ payloads={
 "traces":{"resourceSpans":[{"resource":resource,"scopeSpans":[{"scope":scope,"spans":[span(parent,"probe-parent",now-20000000,now),span(child,"probe-child",now-15000000,now-5000000,parentSpanId=parent)]}]}]},
 "logs":{"resourceLogs":[{"resource":resource,"scopeLogs":[{"scope":scope,"logRecords":[{"timeUnixNano":str(now),"observedTimeUnixNano":str(now),"severityNumber":9,"severityText":"INFO","body":{"stringValue":marker},"traceId":trace,"spanId":child,"attributes":[attr("probe.run",run)]}]}]}]},
 "metrics":{"resourceMetrics":[{"resource":resource,"scopeMetrics":[{"scope":scope,"metrics":[{"name":"offscreen_probe_events","sum":{"aggregationTemporality":2,"isMonotonic":True,"dataPoints":[{"startTimeUnixNano":str(now-1000000000),"timeUnixNano":str(now),"asInt":"7","attributes":[attr("probe_run",run)]}]}}]}]}]}
+}
 (out/"identity.json").write_text(json.dumps(dict(run=run,trace=trace,parent=parent,child=child,marker=marker),indent=2))
 for signal,payload in payloads.items():
     response=call(collector,"/v1/"+signal,data=payload)
