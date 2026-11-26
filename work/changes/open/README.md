@@ -1,6 +1,6 @@
 # Open Changes | current and near-term
 
-[REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): defended structural renewal, source implementation READY WITH EXPLICIT LIMITS; live and integration held. INF60 suspended. No queue change.
+[REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): source implementation on `change/redis-native-baseline-renewal`; live proof NOT RUN; integration held. INF60 suspended. No queue change.
 
 ## Database platform redesign
 

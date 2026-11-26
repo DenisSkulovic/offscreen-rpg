@@ -11,7 +11,10 @@ export const ADDITIONAL_PLATFORM_TESTS = Object.freeze([
   { file: 'infra/platform/common/tests/render.test.mjs', requiresHelm: true },
   { file: 'infra/platform/postgres/tests/readiness.test.mjs', requiresHelm: false },
   { file: 'infra/platform/object-storage/tests/readiness.test.mjs', requiresHelm: false },
-  { file: 'infra/platform/redis/tests/dev-install.test.mjs', requiresHelm: true },
+  { file: 'infra/platform/redis/tests/install.test.mjs', requiresHelm: false },
+  { file: 'infra/platform/redis/tests/inventory.test.mjs', requiresHelm: false },
+  { file: 'infra/platform/redis/tests/custody.test.mjs', requiresHelm: false },
+  { file: 'infra/platform/redis/tests/readiness.test.mjs', requiresHelm: false },
   { file: 'infra/platform/postgres/tests/render.test.mjs', requiresHelm: true },
   { file: 'infra/platform/postgres/tests/release-install.test.mjs', requiresHelm: true },
   { file: 'infra/platform/object-storage/tests/object-storage-chart.test.mjs', requiresHelm: true },
@@ -59,10 +62,14 @@ export function buildDiagnosticChecks({ repoRoot, definitions, resolveFiles, par
       }
     });
   }
+  const sourceSuiteFiles = new Set();
   for (const definition of definitions) {
     const files = resolveFiles(repoRoot, definition);
     if (!files.length) checks.push({ id: 'source:' + definition.id, tier: 'SOURCE', run: () => ({ status: 'FAIL', reason: 'empty test group' }) });
-    for (const file of files) addNodeTest(file, definition.requiresHelm ? ['host.helm'] : []);
+    for (const file of files) {
+      sourceSuiteFiles.add(file);
+      addNodeTest(file, definition.requiresHelm ? ['host.helm'] : []);
+    }
   }
   for (const file of [
     'infra/verification/verify.test.mjs', 'infra/verification/verify-operation.test.mjs',
@@ -73,6 +80,9 @@ export function buildDiagnosticChecks({ repoRoot, definitions, resolveFiles, par
   ]) addNodeTest(file);
   addNodeTest('infra/monitoring/tests/operation-event.test.mjs', [], 'MON-07');
   for (const { file, requiresHelm } of ADDITIONAL_PLATFORM_TESTS) {
+    if (sourceSuiteFiles.has(file)) {
+      continue;
+    }
     addNodeTest(file, requiresHelm ? ['host.helm'] : []);
   }
   add('source:monitoring-python', 'FIXTURE', 'python3', ['-m', 'unittest', 'discover', '-s', 'infra/monitoring/tests', '-p', 'test_*.py'], {

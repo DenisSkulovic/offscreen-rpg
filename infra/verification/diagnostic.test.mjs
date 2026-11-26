@@ -3,6 +3,11 @@ import test from 'node:test';
 import process from 'node:process';
 import { executeChecks, runCommand, commandOutcome, diagnosticExcerpt } from './diagnostic-engine.mjs';
 import { ADDITIONAL_PLATFORM_TESTS, buildDiagnosticChecks } from './diagnostic.mjs';
+import {
+  REPO_ROOT,
+  SOURCE_SUITE_DEFINITIONS,
+  resolveSuiteFiles,
+} from './verify.mjs';
 
 test('failure, exception and dependency refusal do not stop independent checks', async () => {
   const calls = [];
@@ -76,5 +81,29 @@ test('additional platform tests are explicitly scheduled with Helm prerequisites
     assert.equal(matching.length, 1);
     assert.deepEqual(matching[0].requires, requiresHelm ? ['host.helm'] : []);
     assert.ok(matching[0].command.includes('--test-reporter=tap'));
+  }
+});
+
+test('source suite definitions do not duplicate additional platform Redis render test', () => {
+  const checks = buildDiagnosticChecks({
+    repoRoot: REPO_ROOT,
+    definitions: SOURCE_SUITE_DEFINITIONS,
+    resolveFiles: resolveSuiteFiles,
+    parseCounts: () => ({ complete: false }),
+  });
+  const renderFile = 'infra/platform/redis/tests/render.test.mjs';
+  const renderChecks = checks.filter((check) => check.id === `source:${renderFile}`);
+  assert.equal(renderChecks.length, 1);
+  for (const { file } of ADDITIONAL_PLATFORM_TESTS) {
+    if (file === renderFile) {
+      continue;
+    }
+    const overlapping = SOURCE_SUITE_DEFINITIONS.flatMap((definition) =>
+      resolveSuiteFiles(REPO_ROOT, definition),
+    ).includes(file);
+    if (overlapping) {
+      const matching = checks.filter((check) => check.id === `source:${file}`);
+      assert.equal(matching.length, 1, `duplicate diagnostic schedule: ${file}`);
+    }
   }
 });

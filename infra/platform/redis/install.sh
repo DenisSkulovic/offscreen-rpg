@@ -19,9 +19,14 @@ if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   exit 1
 fi
 
+if [[ "${OFFSCREEN_REDIS_ENSURE:-}" != "authorized" ]]; then
+  echo "OFFSCREEN_REDIS_ENSURE must be exactly 'authorized'." >&2
+  exit 1
+fi
+
 assert_loopback_only
 
-node "$REDIS_DIR/release-install.mjs"
+node "$REDIS_DIR/install.mjs" ensure release "$CONTEXT_NAME"
 install_rc=$?
 if [[ "$install_rc" -ne 0 ]]; then
   echo "Redis release install failed." >&2

@@ -49,7 +49,17 @@ export const SOURCE_SUITE_DEFINITIONS = Object.freeze([
       'infra/platform/temporal/tests/install.test.mjs',
       'infra/platform/temporal/tests/namespaces.test.mjs',
       'infra/platform/postgres/tests/temporal-persistence.test.mjs',
+      'infra/platform/redis/tests/install.test.mjs',
+      'infra/platform/redis/tests/inventory.test.mjs',
+      'infra/platform/redis/tests/custody.test.mjs',
+      'infra/platform/redis/tests/readiness.test.mjs',
+      'infra/platform/redis/tests/smoke-proof.test.mjs',
     ]),
+  },
+  {
+    id: 'redis-render',
+    requiresHelm: true,
+    files: Object.freeze(['infra/platform/redis/tests/render.test.mjs']),
   },
   {
     id: 'dev-environments',
