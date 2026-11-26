@@ -465,16 +465,15 @@ export async function ensureObjectStorageTenant(profileId, deps) {
         state: 'refused',
       };
     }
-    return {
-      ok: true,
-      mutated: true,
-      reason: classified.reason,
-      state: 'absent',
-    };
+    const after = classifyTenantObservation(tenant, await deps.readObservation(tenant));
+    if (after.state !== 'reuse') {
+      return { ok: false, mutated: true, reason: after.reason, state: after.state === 'absent' ? 'unknown' : after.state };
+    }
+    return { ok: true, mutated: true, reason: after.reason, state: 'reuse' };
   } catch (error) {
     return {
       ok: false,
-      mutated: Boolean(error && error.mutated),
+      mutated: true,
       reason: 'write-failed',
       state: 'unknown',
     };
