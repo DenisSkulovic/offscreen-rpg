@@ -77,11 +77,13 @@ export function ensureBaseline(profileId, deps = {}) {
     let observed = collect();
     let assessed = assessBaselineObservation(observed);
     if (assessed.refusals.length) return receipt(false, assessed.refusals);
+    let locked = false;
     const requiresWrite = state => state.operator === 'absent' || state.namespace === 'absent' || state.cluster === 'absent';
     if (requiresWrite(assessed)) {
       if (deps.maintenance !== true) return refuse('maintenance-required', 'Owner maintenance quiescence required for baseline creation');
       stage = 'lock';
       custody.acquire();
+      locked = true;
       if (!(deps.memoryAdmitted ?? memoryAdmitted)()) return refuse('insufficient-memory', 'Host memory admission failed');
       stage = 'observe';
       observed = collect();
@@ -92,10 +94,11 @@ export function ensureBaseline(profileId, deps = {}) {
     if (assessed.operator === 'absent') {
       stage = 'operator';
       writeInFlight = true;
+      actions.push({ op: 'apply-operator', outcome: 'attempted' });
       const applied = kubectl(['apply', '--server-side', '--field-manager=' + manager(profileId), '-f', '-'],
         { input: artifact.body, timeoutMs: 180000, mutation: true });
       writeInFlight = false;
-      actions.push({ op: 'apply-operator', outcome: applied.ok ? 'acknowledged' : 'unknown' });
+      actions[actions.length - 1].outcome = applied.ok ? 'acknowledged' : 'unknown';
       if (!applied.ok) return refuse('operator-apply-unknown', 'Operator installation outcome unknown; re-observe explicitly', 'unknown');
       confirmedMutations.push({ op: 'apply-operator', identities: artifact.inventory.map(entry => entry.id) });
     }
@@ -116,8 +119,9 @@ export function ensureBaseline(profileId, deps = {}) {
     actions.push({ op: 'verify-operator', outcome: 'ready' });
 
     function create(expected, op) {
-      if (deps.maintenance !== true) return { error: 'maintenance-required', state: 'refused' };
+      if (deps.maintenance !== true || !locked) return { error: 'maintenance-lock-required', state: 'refused' };
       writeInFlight = true;
+      actions.push({ op, outcome: 'attempted' });
       const result = kubectl(['create', '-f', '-', '-o', 'json'], {
         input: JSON.stringify(expected), timeoutMs: 60000, mutation: true,
       });
@@ -125,16 +129,17 @@ export function ensureBaseline(profileId, deps = {}) {
       const object = parseObject(result);
       if (!confirmedIdentity(object, expected)) {
         const collision = !result.ok && result.status === 1 && /\(AlreadyExists\)/.test(result.stderr);
-        actions.push({ op, outcome: collision ? 'refused' : 'unknown' });
+        actions[actions.length - 1].outcome = collision ? 'refused' : 'unknown';
         return { error: collision ? 'already-exists' : 'creation-unknown', state: collision ? 'refused' : 'unknown' };
       }
-      actions.push({ op, outcome: 'acknowledged' });
+      actions[actions.length - 1].outcome = 'acknowledged';
       confirmedMutations.push({ op, kind: object.kind, name: object.metadata.name, uid: object.metadata.uid });
       return { object };
     }
 
     let namespaceUid = observed.namespace.object?.metadata.uid;
     let clusterUid = observed.cluster.object?.metadata.uid;
+    const clusterWasAbsent = assessed.cluster === 'absent';
     if (assessed.namespace === 'absent') {
       stage = 'namespace';
       const created = create(rendered.namespace, 'create-namespace');
@@ -147,7 +152,7 @@ export function ensureBaseline(profileId, deps = {}) {
     assessed = assessBaselineObservation(observed);
     if (assessed.refusals.length) return receipt(false, assessed.refusals);
     if (observed.namespace.object?.metadata.uid !== namespaceUid || assessed.namespace !== 'compatible' ||
-      assessed.operator !== 'ready' || (clusterUid && observed.cluster.object?.metadata.uid !== clusterUid))
+      assessed.operator !== 'ready' || (clusterWasAbsent ? assessed.cluster !== 'absent' : observed.cluster.object?.metadata.uid !== clusterUid))
       return refuse('identity-changed', 'Baseline changed before admission probe');
 
     stage = 'cluster';
