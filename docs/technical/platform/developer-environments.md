@@ -6,7 +6,7 @@
 
 **Owns:** the selected technical invariants for development environment identity, capacity admission, image/deployment authority and safe park/release. **Does not own:** player/game behavior, the release cluster's acceptance tests, executable commands, or empirical proof. **Status:** selected architecture; distinguish observed DXK09 implementation from unimplemented DXK10 target. **Reviewed against:** the owned-slot receipt at `d0e35b63` (2026-11-23). The earlier `e93f33c7` trial is failure evidence, not the current image path.
 
-Human explanation: [Developer environments, illustrated](../../architecture/10-developer-environments.md). Exact operational route: [Dev runbook](../../runbooks/dev-worktree-stacks.md). Evidence: [DXK09 PROOF](../../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md). Resource-lifecycle implementation proposal: [DXK10](../../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
+Human explanation: [Developer environments, illustrated](../../architecture/10-developer-environments.md). Exact operational route: [Dev runbook](../../runbooks/dev-worktree-stacks.md). Evidence: [DXK09 PROOF](../../../work/changes/archive/2026-11/infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md). Resource-lifecycle implementation proposal: [DXK10](../../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
 
 ## Boundary and topology
 
@@ -113,13 +113,13 @@ The relay on pinned Node 24.19.0 and Temporal SDK 1.24.0 reportedly hit `RangeEr
 | Capacity is adequate | Measured simultaneous workload with memory, swap, CPU and connection headroom |
 | Game/release behavior works | Separate signed-in story, OAuth, cold-kind release and fault evidence; never implied by green Pods |
 
-Current proof belongs in [DXK09 PROOF](../../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) and [STATUS](../../../STATUS.md), **not** in this selected design. If an implementation contradicts a selected invariant, stop and reconcile the owning contract; don't silently edit the contract to excuse the code.
+Current proof belongs in [DXK09 PROOF](../../../work/changes/archive/2026-11/infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) and [STATUS](../../../STATUS.md), **not** in this selected design. If an implementation contradicts a selected invariant, stop and reconcile the owning contract; don't silently edit the contract to excuse the code.
 
 ## Contract dependencies
 
 | Relation | Governing owner |
 | --- | --- |
 | constrained-by | [Documentation and status distinctions](../../../.agents/rules/documentation.md#documentation-is-the-product-bible--non-negotiable) |
-| constrained-by | [DXK09 scope and real proof](../../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) |
+| constrained-by | [DXK09 scope and real proof](../../../work/changes/archive/2026-11/infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) |
 | informative implementation proposal (not authority over this selected contract) | [DXK10 reserved/active/retained lifecycle packet](../../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) |
 | co-change | [Operator runbook](../../runbooks/dev-worktree-stacks.md) and [human diagram](../../architecture/10-developer-environments.md) |

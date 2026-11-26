@@ -90,3 +90,7 @@ CACHE01 adds a typed core and codecs beside the legacy Redis JSON adapter (`crea
 - [Azure cache-aside](https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside)
 - [Redis distributed locks](https://redis.io/docs/latest/develop/clients/patterns/distributed-locks/) (refresh suppression only)
 - [CloudFront private content](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/PrivateContent.html)
+
+### Physical Redis isolation
+
+Separate Redis instances only where an identified workload needs distinct eviction policy, resource budget or failure isolation. Package boundaries alone do not justify separate pools. Named-pool provisioning is not currently selected; future demand must be designed against the native Redis lifecycle rather than reviving INF60's retired custom create-only CLI.

@@ -1,6 +1,6 @@
 # Redis infrastructure | selected first wave, 2026-11-25
 
-**Historical wave:** 2026-11-26 native R9 supersedes the create/CAS and named-pool direction. See [selected contract](../../../docs/technical/platform/redis-native-infrastructure.md) and [implementation draft](../../changes/open/2026-11-26--redis-native-baseline/CHANGE.md). INF60 suspended; historical commission below not executable.
+**Historical wave:** 2026-11-26 native R9 supersedes the create/CAS and named-pool direction. See [selected contract](../../../docs/technical/platform/redis-native-infrastructure.md) and [implementation draft](../../changes/open/2026-11-26--redis-native-baseline/CHANGE.md). INF60 cancelled; historical commission below not executable.
 
 Baseline c5da10d8d722c3d067fbb06d84d8fd57c22faf00, main. Owner wants medium-company design with small local footprints. One default shared cache pool per environment; logical per-domain key namespaces, physical separation only for incompatible eviction, resource, latency or failure requirements. No Redis for durable business correctness; no large media bytes. PostgreSQL/Temporal/object storage remain authoritative. Existing application cache verification stays VER07/VER08; no shared fixture use.
 
@@ -13,7 +13,7 @@ Baseline c5da10d8d722c3d067fbb06d84d8fd57c22faf00, main. Owner wants medium-comp
 ## Commission and dependency graph
 - [INF58 Redis chart configuration and rollout identity](../../changes/archive/2026-11/platform-operations/2026-11-25--inf58-redis-chart-configuration/CHANGE.md): Done (source); independent of INF59. Own chart and render tests only. Live NOT-RUN.
 - [INF59 Redis installer safety and readiness](../../changes/archive/2026-11/platform-operations/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md): Done (source); independent of INF58 chart ownership. Own install scripts and installer tests; never edit chart or render tests. Live NOT-RUN.
-- [INF60 Named Redis pools and operator inspection](../../changes/open/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md): Ready after INF58 + INF59 source; chart values/ownership APIs must match. Own named pool additions and new operator CLI only. Not auto-started by INF59 closure.
+- [INF60 Named Redis pools and operator inspection](../../changes/archive/2026-11/platform-operations/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md): Ready after INF58 + INF59 source; chart values/ownership APIs must match. Own named pool additions and new operator CLI only. Not auto-started by INF59 closure.
 
 INF58 and INF59 source Done; INF59 parent was sole remaining join writer after INF58 archive. INF60 may proceed under its own commission; no live resource permissions. Named pool create-only, no automatic cleanup or resize. No silent cache allocation increase on default profiles. Existing default remains intact.
 

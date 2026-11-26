@@ -4,7 +4,7 @@
 
 [GATEWAY-NATIVE](2026-11-26--gateway-native-baseline/CHANGE.md): owner-selected local gateway renewal, source-only ready upon dispatch; live and join held. Independent committee waived for this scope. No queue change.
 
-[REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): T08a–T08d source corrections implemented on `change/redis-native-baseline-renewal`; isolated lifecycle/fault/idempotency and measured preservation passed; structural integration authorized; residual assurance and canonical cutover open. INF60 suspended. No queue change.
+[REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): T08a–T08d source corrections implemented on `change/redis-native-baseline-renewal`; isolated lifecycle/fault/idempotency and measured preservation passed; structural integration authorized; residual assurance and canonical cutover open. INF60 cancelled. No queue change.
 
 ## Database platform redesign
 
@@ -44,7 +44,6 @@
 
 | Change | Why it remains open |
 | --- | --- |
-| [DXK09 isolated parallel development stacks](2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) | Promoted near-term; source-mapped but **planner-held** until tenant provisioning and auth route are fully specified. No Cursor implementation yet. |
 | [WR10 private Writer protocol](2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) | Commissioned wave / GA–Worker provider boundary |
 | [MA12 API Lab isolation](2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) | Commissioned wave / production API workspace closure |
 | [TURN03 cold distributed game proof](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) | Commissioned proof, true cold-kind gates unresolved |
@@ -81,7 +80,7 @@ Sequential source-only batch; INF01–INF05 Done. Live cluster NOT-RUN. [Plan](.
 
 ## Infrastructure reconciliation (2026-11-25)
 
-[INF38](2026-11-24--inf38-selective-dev-profiles/CHANGE.md) Ready source-only. [INF49](../archive/2026-11/platform-operations/2026-11-24--inf49-monitor-composition/CHANGE.md) composition source Done (live install NOT-RUN). [INF50](../archive/2026-11/platform-operations/2026-11-24--inf50-infrastructure-correctness/CHANGE.md) residual regression source Done (live NOT-RUN). [INF47](../archive/2026-11/platform-operations/2026-11-24--inf47-historical-observability-queries/CHANGE.md) historical CLI source Done (live query NOT-RUN). [INF52](../archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) source Done (live NOT-RUN); INF38 gates selective scenarios only. INF29 live evidence tracker, no separate Cursor implementation. INF51 archived source-only. INF48 backlog. See [consolidation](../../undertakings/storyteller-workshop/CONSOLIDATION.md). No live permission or global queue change.
+INF38 deferred to platform backlog. [INF49](../archive/2026-11/platform-operations/2026-11-24--inf49-monitor-composition/CHANGE.md) composition source Done (live install NOT-RUN). [INF50](../archive/2026-11/platform-operations/2026-11-24--inf50-infrastructure-correctness/CHANGE.md) residual regression source Done (live NOT-RUN). [INF47](../archive/2026-11/platform-operations/2026-11-24--inf47-historical-observability-queries/CHANGE.md) historical CLI source Done (live query NOT-RUN). [INF52](../archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) source Done (live NOT-RUN); INF38 gates selective scenarios only. INF29 superseded; residual proof in capability catalog. INF51 archived source-only. INF48 backlog. See [consolidation](../../undertakings/storyteller-workshop/CONSOLIDATION.md). No live permission or global queue change.
 
 ## Cache reconciliation (2026-11-25)
 
@@ -91,7 +90,6 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 
 - [INF58 Redis chart configuration and rollout identity](../archive/2026-11/platform-operations/2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Done (source); live NOT-RUN.
 - [INF59 Redis installer safety and readiness](../archive/2026-11/platform-operations/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Done (source); live NOT-RUN.
-- [INF60 Named Redis pools and operator inspection](2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Ready after INF58 + INF59 source; not auto-started.
 
 [Decisions and dependency graph](../../undertakings/storyteller-workshop/REDIS-INFRASTRUCTURE.md). No live authorization or global queue change.
 

@@ -29,7 +29,7 @@ Current main c9ad30652dbf43140bc1e8154a786adc8af073b8. Later startup, release an
 
 ## INF52 programme wiring (source-only, live NOT-RUN)
 
-[INF52](../../archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) registers VER01 live sections that dispatch through `infra/verification/dev-environments/dev-environment-live-dispatch.mjs`:
+[INF52](../2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) registers VER01 live sections that dispatch through `infra/verification/dev-environments/dev-environment-live-dispatch.mjs`:
 
 | Capability | Programme | Live status on current HEAD |
 | --- | --- | --- |

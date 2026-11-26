@@ -1,0 +1,7 @@
+# INF29 | Current developer-flow acceptance
+
+**State:** Superseded: source programmes already integrated; outstanding verification tracked in permanent capability catalog. No blanket PASS.
+
+**Owner disposition 2026-11-26:** Prior execution instructions, status and receipts below are historical and confer no dispatch or live permission. Original packet recoverable at `cd47b5aaa2de16385102913aa597bd9cf1fa4cc9:work/changes/open/2026-11-24--inf29-infra-reconciliation/CHANGE.md`.
+
+**State: Open / live proof only; no planned source implementation.** Main baseline c9ad30652dbf43140bc1e8154a786adc8af073b8. INF23/30–36 and later corrective startup/image/provisioning commits integrated. Historical failures retained in PROOF.md. Owner-reported successful diagnostic/release startup is not equivalent to owned slot lifecycle acceptance. Do not commission broad corrective work or repeat historical fixes. Remaining DEV-02/03/07/08/09/10 and DATA-01 live evidence is assigned to programmes from [INF52](../2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) (source Done; live NOT-RUN until this packet accepts reports). INF29 remains evidence tracker until accepted report or explicit owner disposition; no separate Cursor implementation. DXK09 historical evidence not automatically promoted. [Proof](PROOF.md) · [Permanent capability catalog](../../../../../../infra/verification/CAPABILITIES.md). No new live permission.

@@ -16,7 +16,7 @@
 
 **Lifecycle:** A proposal may stay here indefinitely if genuinely deferred, but must retain a domain owner, next prerequisite, and recognizable outcome. When the owner selects work for the upcoming execution window, ChatGPT rechecks the latest integration HEAD and dependencies, promotes the packet into `work/changes/open/`, repairs its links, and only then turns it into source-grounded executable Cursor tasks. Closed work goes via the established archive/ledger process. Avoid indefinitely parking an actually active blocker here; `open/` is for current/near-term effort.
 
-**2026-11-22 DXK09 promotion:** The old deferred DXK09 pointer was stale; the rebuilt source-grounded packet now lives in [open/DXK09](../open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md). Its implementation readiness is explicitly planner-held on tenant provisioning/auth details; no executor should mistake promotion for dispatch permission.
+**2026-11-26:** DXK09 superseded and archived; INF38 deferred to platform operations, not commissioned.
 
 **Classification:** Deferred proposals remain uncommissioned until explicitly promoted. DXK08 was promoted back to `open/` on 2026-11-22 after current-source/readiness reconciliation and owner commission.
 

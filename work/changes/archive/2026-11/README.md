@@ -343,3 +343,9 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [VER02](platform-operations/2026-11-25--ver02-owned-postgres-verification-resource/CHANGE.md): Done source (owned Postgres Docker plan/create/fault/cleanup); live Docker acquire NOT-RUN.
 - [VER03](platform-operations/2026-11-25--ver03-db-admission-workloads/CHANGE.md): Done source (`@offscreen/db` admission/pressure/process isolation suite); live admission/stress NOT-RUN.
 - [VER06](platform-operations/2026-11-25--ver06-cache-resource-and-harness/CHANGE.md): Done source (owned Redis Docker + CACHE07 harness migration + cache source suite); live Redis acquire NOT-RUN.
+
+## Owner-approved supersession and cancellation, 2026-11-26
+
+- [2026-11-22--dxk09-isolated-parallel-development-stacks](infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md)
+- [2026-11-24--inf29-infra-reconciliation](platform-operations/2026-11-24--inf29-infra-reconciliation/CHANGE.md)
+- [2026-11-25--inf60-redis-named-cache-pools](platform-operations/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md)

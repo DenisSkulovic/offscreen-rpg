@@ -1,6 +1,6 @@
 # REDIS-NATIVE | Native singleton Redis baseline
 
-Status: **STRUCTURAL SOURCE INTEGRATION AUTHORIZED; CHANGE OPEN FOR RESIDUAL ASSURANCE AND CANONICAL CUTOVER.** Owner explicitly directed integration after the final 90/90 focused regression. See ACCEPTANCE-OBSERVATIONS.md for exact live evidence and limitations. Existing canonical pools remain untouched; interim refusal accepted. No public canonical readiness or destructive migration authorization. INF60 remains suspended.
+Status: **STRUCTURAL SOURCE INTEGRATION AUTHORIZED; CHANGE OPEN FOR RESIDUAL ASSURANCE AND CANONICAL CUTOVER.** Owner explicitly directed integration after the final 90/90 focused regression. See ACCEPTANCE-OBSERVATIONS.md for exact live evidence and limitations. Existing canonical pools remain untouched; interim refusal accepted. No public canonical readiness or destructive migration authorization. INF60 cancelled.
 
 Authority: [selected target](../../../../docs/technical/platform/redis-native-infrastructure.md), [R9](https://github.com/DenisSkulovic/offscreen-rpg/blob/75bb1fe5490d16fa645fa1f99517bade352ffd01/work/designs/open/redis-platform/R9.md), [committee](https://github.com/DenisSkulovic/offscreen-rpg/blob/75bb1fe5490d16fa645fa1f99517bade352ffd01/work/designs/open/redis-platform/committee/pass-02.md). [Tasks](TASKS.md) · [Source map and interfaces](SOURCE-MAP.md) · [Proof](PROOF.md).
 

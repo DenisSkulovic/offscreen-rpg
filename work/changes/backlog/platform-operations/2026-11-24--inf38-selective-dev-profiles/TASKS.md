@@ -1,3 +1,5 @@
+> Deferred by owner 2026-11-26. Historical design only; no current commission or dispatch readiness.
+
 # INF38 dispatch
 
 Sequential T-IDs. Dependency INF43, INF37, INF39; INF29 live verifier no active writer to same paths. Each child reads exact EXECUTION section and listed anchors, no broad discovery.

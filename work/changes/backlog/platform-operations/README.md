@@ -17,7 +17,7 @@
 
 These are future work, not today's execution queue. Reconcile source/owner/acceptance before moving any proposal to `open/`.
 
-**Promoted:** [DXK09 isolated parallel development stacks](../../open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) now lives in open as a planner-held next-days Change. Do not treat the stale old packet link as executable.
+DXK09 superseded; remaining acceptance is in the permanent capability catalog.
 
 ## Deferred earlier Changes (also in this category)
 
@@ -35,3 +35,5 @@ These are future work, not today's execution queue. Reconcile source/owner/accep
 - LIB05 generic object-storage boundary is Done in [archive](../../archive/2026-11/platform-operations/2026-11-23--lib05-generic-object-storage-boundary/CHANGE.md).
 
 INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execution plan](../../../undertakings/storyteller-workshop/INF-PARALLEL.md).
+
+- [INF38 selective application profiles](2026-11-24--inf38-selective-dev-profiles/CHANGE.md): deferred, selected design retained; no current commission. Refresh when selective activation is needed.
