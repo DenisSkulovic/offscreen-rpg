@@ -1,6 +1,6 @@
-# Observability platform renewal | R23
+# Observability platform renewal | R24
 2026-11-26. Original baseline 2138ae4a4a188c5dce54e2f77d4211d6ab4f1ed3; integration compatibility a81e275821496e478ba55ae3dce5e72cf63d5dfd. Design only; not defended or commissioned.
-Current checkpoint: [R23](R23.md), read-only resource and self-metrics experiment. Prior acceptance: [R22](R22.md). See [EVIDENCE.md](EVIDENCE.md) for acceptance boundaries and owner receipt index.
+Current checkpoint: [R24](R24.md), resource and self-metrics observation accepted; [R23](R23.md) experiment. Prior acceptance: [R22](R22.md). See [EVIDENCE.md](EVIDENCE.md) for acceptance boundaries and owner receipt index.
 Current target: [R2](R2.md), refined by [R3](R3.md), [chart locks](specimens/pins.yaml), [image lock](specimens/image-lock-candidate.tsv), [values specimens](specimens/).
 Next gate: per-container measurements, Collector self-metrics and privacy/admission contract, final revised render/native validation, designer self-defense and independent committee. No actual application telemetry admission, implementation authorization, permanent cluster mutation or Cursor dispatch.
 Prior checkpoint chain (retained verbatim):
