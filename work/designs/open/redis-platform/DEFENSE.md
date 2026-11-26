@@ -1,0 +1,15 @@
+# Designer self-defense | pass 01 | 2026-11-26
+
+Reviewer: ChatGPT designer, not independent committee. Reviewed R6 e22f59fd5ded6dc98289eb62f191ba797a000a71 against main b6d128061fd0eb4d30296589d9393a277b09477a, and revised to R7 in this commit. Verdict REVISE AND RE-DEFEND for overall baseline; no committee launch.
+
+| Objection | Evidence / counterexample | Disposition |
+| --- | --- | --- |
+| D1: retain current reconciler instead of rewrite | Existing source works and uses CAS patches, but custom mutation path duplicates native release ownership; owner release specimen demonstrated native install/no-op/conflict/failure and cleanup. No automatic adoption and legacy migration is a real cost. | DEFENDED for trusted local baseline; re-open if arbitrary writers required |
+| D2: native Helm silently adopts matching metadata or partial install | v3.22.1 install/validate source; matching orphan refusal and timeout failure live fixture. Precheck not atomic against noncooperating writers. | DEFENDED within explicit cooperative operator scope |
+| D3: new observer recreates Kubernetes schema engine | R6 demanded closed projection without actual defaults. Dry-run against existing name not viable; generic normalizer disproportionate. R7 bounds contract, separates intent/compatibility/readiness and names remaining fixture. | EVIDENCE-GATED: actual manifest/values and API-default sample needed; no claim of exhaustive drift |
+| D4: legacy cutover deletes wrong object or loses active cache | Actual raw manifests no Helm ownership, empty keyspace snapshot, no explicit workload wiring; source grep limited. R7 exact UID/RV, foreground descendants, explicit quiescence and separate authorization. | DEFENDED as procedure design conditional on exact-object proof and operator permission; actual migration gated |
+| D5: old smoke accidentally targets baseline | smoke.sh hardcoded lab-a, app=redis and scale/flush, imports tag. R7 maps retirement to isolated proof preserving cross-Pod, TTL and loss checks. | REVISE: caller census and exact public verification registration still needed |
+| D6: budgets/security insufficient for production | Docker 20k writes peak 72.49MiB, no OOM, idle and config observations; no workload client sizing, unauthenticated. | DEFENDED only local disposable baseline; shared app use/hosted security and capacity separately gated |
+| D7: convenience and cost | Native Helm chart small and proven, one lifecycle owner, reuse existing target/command/format and YAML dependency. No need for operator or Sentinel. New comparator must remain narrow. | DEFENDED architecture direction, subject to D3/D5 |
+
+Next discriminator: one bounded native fixture readback capturing Helm get manifest/values, Deployment/Pod/Service/EndpointSlice defaulted fields; no second full fault run needed. Complete source caller grep and map before next defense. No formal independent review until self-defense passes and proof matrix frozen. No implementation Changes or live mutation of baseline.
