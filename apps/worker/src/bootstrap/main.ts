@@ -30,7 +30,7 @@ async function main() {
     await database.checkConnection();
     const documentStore = createDocumentStoreFromEnv(process.env);
     if (documentStore instanceof S3DocumentStore) {
-      await documentStore.ensureBucket();
+      await documentStore.requireBucket();
     }
     runtime = await startRuntime(
       database,

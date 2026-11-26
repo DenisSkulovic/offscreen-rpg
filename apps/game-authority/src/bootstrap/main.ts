@@ -144,7 +144,7 @@ async function main() {
   });
   const documentStore = createDocumentStoreFromEnv(process.env);
   if (documentStore instanceof S3DocumentStore) {
-    await documentStore.ensureBucket();
+    await documentStore.requireBucket();
   }
   await database.checkConnection();
   const applicationOptions = documentStore ? { documentStore } : {};

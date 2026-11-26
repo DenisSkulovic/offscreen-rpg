@@ -143,6 +143,13 @@ async function commitPin(storeRoot, pin) {
   return path;
 }
 
+export async function requireRuntimeBucket(store) {
+  if (typeof store.requireBucket !== 'function') {
+    throw new Error('S3 document store cannot verify its bucket');
+  }
+  await store.requireBucket();
+}
+
 async function openStore({ storeRoot, s3 }) {
   if (s3) {
     if (storeRoot) {
@@ -158,9 +165,7 @@ async function openStore({ storeRoot, s3 }) {
     if (!store) {
       throw new Error('S3 document store environment is required');
     }
-    if (typeof store.ensureBucket === 'function') {
-      await store.ensureBucket();
-    }
+    await requireRuntimeBucket(store);
     return store;
   }
   if (!storeRoot) {

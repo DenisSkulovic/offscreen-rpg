@@ -14,10 +14,16 @@ import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { LocalDocumentStore } from '../../packages/documents/dist/index.js';
+import { requireRuntimeBucket } from './import-pinned-fixture.mjs';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const script = join(repo, 'scripts', 'repo-tools', 'import-pinned-fixture.mjs');
-const readScript = join(repo, 'scripts', 'repo-tools', 'read-pinned-fixture.mjs');
+const readScript = join(
+  repo,
+  'scripts',
+  'repo-tools',
+  'read-pinned-fixture.mjs',
+);
 const worldId = '7c14e5bc-4d72-4f8c-9a6b-97f334b83c11';
 const worldRoot =
   '5b37ec632d019c983e25f5d481ed2b23c1de464e5932994be16c5befcbc75ec9';
@@ -87,6 +93,57 @@ async function previousPinSurvives(mutate, stderrPattern) {
     await rm(fixture, { recursive: true, force: true });
   }
 }
+
+test('requireRuntimeBucket calls requireBucket once and not ensureBucket', async () => {
+  let requireBucketCalls = 0;
+  const store = {
+    async requireBucket() {
+      requireBucketCalls += 1;
+    },
+    async ensureBucket() {
+      throw new Error('ensureBucket must not run');
+    },
+  };
+  await requireRuntimeBucket(store);
+  assert.equal(requireBucketCalls, 1);
+});
+
+test('requireRuntimeBucket propagates requireBucket rejection without ensureBucket', async () => {
+  const ensureCalls = [];
+  const store = {
+    async requireBucket() {
+      throw new Error('unavailable');
+    },
+    async ensureBucket() {
+      ensureCalls.push('ensure');
+    },
+  };
+  await assert.rejects(
+    () => requireRuntimeBucket(store),
+    (error) => {
+      assert.equal(error.message, 'unavailable');
+      return true;
+    },
+  );
+  assert.deepEqual(ensureCalls, []);
+});
+
+test('requireRuntimeBucket rejects when requireBucket is missing', async () => {
+  let ensureCalled = false;
+  const store = {
+    async ensureBucket() {
+      ensureCalled = true;
+    },
+  };
+  await assert.rejects(
+    () => requireRuntimeBucket(store),
+    (error) => {
+      assert.match(error.message, /cannot verify its bucket/);
+      return true;
+    },
+  );
+  assert.equal(ensureCalled, false);
+});
 
 test('a second import writes the same fixture root hashes', async () => {
   const store = await mkdtemp(join(tmpdir(), 'boot02-idempotent-'));
