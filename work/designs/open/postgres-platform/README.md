@@ -1,10 +1,10 @@
 # PostgreSQL platform renewal | design workshop
 
-**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: 2026-11-26, committee pass 01 revisions. Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
+**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: 2026-11-26, committee pass 02 simplification. Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
 
 ## Current structural specification
 
-[STRUCTURAL-DESIGN.md](STRUCTURAL-DESIGN.md) is the current proposed authority for the structural slice; earlier architecture/specimens/defense files are research history where they conflict. [Committee pass 01](committee/pass-01.md) rejected candidate 318b5a6c; all C01–C05 accepted for closure, C06–C07 separately gated. No committee resubmission yet.
+[STRUCTURAL-DESIGN.md](STRUCTURAL-DESIGN.md) is the current proposed authority for the structural slice; earlier architecture/specimens/defense files are research history where they conflict. [Committee pass 01](committee/pass-01.md) rejected candidate 318b5a6c; all C01–C05 accepted for closure, C06–C07 separately gated. [Committee pass 02](committee/pass-02.md) rejected eb488ab3; revised structural scope now prioritizes baseline installer consolidation and explicitly gates topology recovery. No committee resubmission yet.
 
 ## Intent
 
