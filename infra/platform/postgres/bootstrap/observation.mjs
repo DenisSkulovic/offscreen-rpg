@@ -163,10 +163,15 @@ export function observeWritablePrimary(profileId, { run = runPlatformCommand } =
   const nsAfter = read('namespace', ns, undefined);
   const clusterAfter = read('cluster.postgresql.cnpg.io', name, ns);
   const podAfter = read('pod', primary, ns);
-  if (nsAfter?.metadata?.uid !== namespace.metadata.uid || clusterAfter?.metadata?.uid !== cluster.metadata.uid ||
-    podAfter?.metadata?.uid !== pod.metadata.uid || clusterAfter.status?.currentPrimary !== primary ||
-    !assessClusterSpec(profileId, clusterAfter.spec).ok ||
-    !assessCnpgClusterTopologyReadiness(clusterAfter, assessment.observedInstances).ok ||
+  const after = assessBaselineObservation({ profile, operator: { state: 'ready' },
+    namespace: nsAfter ? { state: 'present', object: nsAfter } : { state: 'unreadable' },
+    cluster: clusterAfter ? { state: 'present', object: clusterAfter } : { state: 'unreadable' } });
+  if (after.refusals.length || after.namespace !== 'compatible' || after.cluster !== 'ready' ||
+    after.observedInstances !== assessment.observedInstances ||
+    nsAfter.metadata.uid !== namespace.metadata.uid || clusterAfter.metadata.uid !== cluster.metadata.uid ||
+    clusterAfter.status?.currentPrimary !== primary ||
+    !validIdentity(podAfter, 'v1', 'Pod', primary, ns) || podAfter.metadata.uid !== pod.metadata.uid ||
+    podAfter.metadata.labels?.['cnpg.io/cluster'] !== name || podAfter.metadata.labels?.['cnpg.io/instanceRole'] !== 'primary' ||
     !podReady(podAfter) || !ownerMatches(podAfter, clusterAfter, 'Cluster') ||
     !readyEndpoint(profile, ns, name + '-rw', podAfter, run)) return fail('primary identity changed during SQL observation');
   return { ok: true, primaryPod: primary, namespaceUid: namespace.metadata.uid, clusterUid: cluster.metadata.uid, podUid: pod.metadata.uid };
