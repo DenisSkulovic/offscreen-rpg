@@ -262,7 +262,7 @@ function templateArgv(chartRoot, profileId, namespace) {
  * @param {RedisProfileId} profileId
  * @param {string} namespace
  */
-function prepareValidatedChartCopy(run, profileId, namespace) {
+export function prepareValidatedChartCopy(run, profileId, namespace) {
   const chartRoot = mkdtempSync(join(tmpdir(), 'offscreen-redis-chart-'));
   try {
     cpSync(SOURCE_CHART_ROOT, chartRoot, { recursive: true });

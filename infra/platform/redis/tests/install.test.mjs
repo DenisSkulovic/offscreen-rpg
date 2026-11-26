@@ -1,815 +1,705 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import test from 'node:test';
-import { RELEASE_API_PORT } from '../../../clusters/kind/manager/config.mjs';
-import { RELEASE_BASELINE_NAMESPACE } from '../../common/commands.mjs';
-import { readPlatformProfile } from '../../common/profile.mjs';
-import { runPlatformCommand } from '../../common/commands.mjs';
-import { renderPlatformDocuments } from '../../common/render.mjs';
 import {
-  executeAuthorizedReleaseRedis,
-  RELEASE_REDIS_CONTEXT,
-  RELEASE_REDIS_NAMESPACE,
-} from '../release-install.mjs';
-import { observeRedis } from '../observations.mjs';
-import { manifestHasAuthMaterial } from '../reconcile.mjs';
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import process from 'node:process';
+import test from 'node:test';
 
-const redisDir = dirname(dirname(fileURLToPath(import.meta.url)));
-const chartRoot = join(redisDir, 'chart');
-const installPath = join(redisDir, 'install.sh');
-const releaseProfile = readPlatformProfile('release');
-const RELEASE_OWNER = releaseProfile.ownerValue;
-const RELEASE_OWNER_LABEL = `${releaseProfile.ownerLabel}/lab`;
+import { readPlatformProfile } from '../../common/profile.mjs';
+import { DEFAULT_WRITE_RESERVE_MS } from '../custody.mjs';
+import { observeInventory, redisTargetFromProfile } from '../inventory.mjs';
+import {
+  ensureRedisInstall,
+  planRedisInstall,
+  runRedisInstallLifecycle,
+} from '../install.mjs';
 
-function releaseKubectlConfigJson() {
-  return JSON.stringify({
-    clusters: [
-      {
-        name: 'kind-offscreen-release',
-        cluster: { server: `https://127.0.0.1:${RELEASE_API_PORT}` },
-      },
-    ],
-    contexts: [
-      {
-        name: RELEASE_REDIS_CONTEXT,
-        context: { cluster: 'kind-offscreen-release' },
-      },
-    ],
-    'current-context': RELEASE_REDIS_CONTEXT,
-  });
-}
+const devProfile = readPlatformProfile('dev');
+const devTarget = redisTargetFromProfile('dev');
+const DEV_CONTEXT = devProfile.contextName;
+const OWNER_KEY = devTarget.ownerKey;
+const OWNER_VALUE = devTarget.ownerValue;
+const NAMESPACE = devTarget.namespace;
 
-function helmRun(command, args, options) {
-  if (command !== 'helm') {
-    return {
-      ok: false,
-      status: 1,
-      stdout: '',
-      stderr: 'unexpected command',
-      timedOut: false,
-      missing: false,
-    };
-  }
-  return runPlatformCommand(command, args, options);
-}
-
-function readyDeploymentObject(configData) {
+function ok(stdout = '', stderr = '') {
   return {
-    metadata: {
-      name: 'redis',
-      namespace: RELEASE_REDIS_NAMESPACE,
-      uid: 'dep-uid',
-      resourceVersion: 'dep-rv-1',
-      generation: 1,
-      labels: { app: 'redis', [RELEASE_OWNER_LABEL]: RELEASE_OWNER },
-    },
-    spec: { replicas: 1, selector: { matchLabels: { app: 'redis' } } },
-    status: {
-      observedGeneration: 1,
-      updatedReplicas: 1,
-      readyReplicas: 1,
-      availableReplicas: 1,
-      replicas: 1,
-    },
+    ok: true,
+    status: 0,
+    stdout,
+    stderr,
+    timedOut: false,
+    missing: false,
   };
 }
 
-function readyServiceObject() {
+function fail(status = 1, stderr = 'failed') {
   return {
-    metadata: {
-      name: 'redis',
-      namespace: RELEASE_REDIS_NAMESPACE,
-      uid: 'svc-uid',
-      resourceVersion: 'svc-rv-1',
-      labels: { app: 'redis', [RELEASE_OWNER_LABEL]: RELEASE_OWNER },
-    },
-    spec: {
-      type: 'ClusterIP',
-      selector: { app: 'redis' },
-      ports: [
-        { name: 'redis', port: 6379, protocol: 'TCP', targetPort: 'redis' },
-      ],
-    },
-  };
-}
-
-function readyConfigMapObject(data) {
-  return {
-    metadata: {
-      name: 'redis-config',
-      namespace: RELEASE_REDIS_NAMESPACE,
-      uid: 'cm-uid',
-      resourceVersion: 'cm-rv-1',
-      labels: { app: 'redis', [RELEASE_OWNER_LABEL]: RELEASE_OWNER },
-    },
-    data,
+    ok: false,
+    status,
+    stdout: '',
+    stderr,
+    timedOut: false,
+    missing: false,
   };
 }
 
 /**
- * @param {{
- *   reuseNamespace?: boolean,
- *   presentChildren?: boolean,
- *   immutableConfigMap?: boolean,
- *   badServiceType?: boolean,
- *   patchConflict?: 'configMap' | 'deployment',
- *   rolloutFails?: boolean,
- *   finalReadiness?: 'ready' | 'stale' | 'missing-config' | 'bad-service',
- * }} [options]
+ * @param {Parameters<typeof observeInventory>[1]} scenario
  */
-function buildReleaseReconcileHarness(options = {}) {
+function createInventoryHarness(scenario = {}) {
   /** @type {Array<[string, string[]]>} */
   const commands = [];
-  let uidCounter = 0;
-  const nextUid = () => `uid-${++uidCounter}`;
-  const nextRv = () => `rv-${uidCounter}`;
+  let namespaceChecks = 0;
 
-  const renderedDocs = renderPlatformDocuments(
-    { service: 'redis', profile: 'release', section: 'all' },
-    { run: helmRun, chartRoot },
-  );
-  const renderedByKind = Object.fromEntries(
-    renderedDocs.map((doc) => [doc.kind, doc]),
-  );
-  const configData = renderedByKind.ConfigMap.data;
-
-  /** @type {{ uid: string, owner: string, rv: string } | null} */
-  let namespace =
-    options.reuseNamespace === true
-      ? { uid: 'ns-owned', owner: RELEASE_OWNER, rv: 'ns-rv-1' }
-      : null;
-  const childrenPresent = options.presentChildren === true;
-  /** @type {object | null} */
-  let configMap = childrenPresent ? readyConfigMapObject(configData) : null;
-  /** @type {object | null} */
-  let deployment = childrenPresent ? readyDeploymentObject(configData) : null;
-  /** @type {object | null} */
-  let service = childrenPresent ? readyServiceObject() : null;
-  let rolloutComplete = false;
-
-  if (options.immutableConfigMap && configMap) {
-    configMap = { ...configMap, immutable: true };
-  }
-  if (options.badServiceType && service) {
-    service = {
-      ...service,
-      spec: { ...service.spec, type: 'NodePort' },
-    };
-  }
-
-  function namespaceObject() {
-    if (!namespace) {
-      return null;
-    }
-    return {
-      metadata: {
-        name: RELEASE_REDIS_NAMESPACE,
-        uid: namespace.uid,
-        resourceVersion: namespace.rv,
-        labels: { [RELEASE_OWNER_LABEL]: namespace.owner },
-      },
-    };
-  }
-
-  function baselineNamespaceObject() {
-    return {
-      metadata: {
-        name: RELEASE_BASELINE_NAMESPACE,
-        uid: 'release-baseline-uid',
-        labels: { [RELEASE_OWNER_LABEL]: RELEASE_OWNER },
-      },
-    };
-  }
-
-  function run(command, args, runOptions = {}) {
-    if (command === 'kind' && args[0] === 'get' && args[1] === 'clusters') {
-      return { ok: true, stdout: 'offscreen-release\n' };
-    }
-    if (command === 'kubectl' && args.join(' ').includes('config view')) {
-      return { ok: true, stdout: releaseKubectlConfigJson() };
-    }
-    const joined = args.join(' ');
-    if (
-      command === 'kubectl' &&
-      joined.includes(`get namespace ${RELEASE_BASELINE_NAMESPACE}`)
-    ) {
-      return { ok: true, stdout: JSON.stringify(baselineNamespaceObject()) };
-    }
-    if (
-      command === 'kubectl' &&
-      joined.includes('get deployment') &&
-      joined.includes(' redis')
-    ) {
-      if (rolloutComplete && options.finalReadiness === 'stale') {
-        return {
-          ok: true,
-          stdout: JSON.stringify({
-            ...readyDeploymentObject(configData),
-            status: {
-              observedGeneration: 0,
-              updatedReplicas: 0,
-              readyReplicas: 0,
-              availableReplicas: 0,
-              replicas: 1,
-            },
-          }),
-        };
-      }
-      return {
-        ok: true,
-        stdout: deployment ? JSON.stringify(deployment) : '',
-      };
-    }
-    if (
-      command === 'kubectl' &&
-      joined.includes('get service') &&
-      joined.includes(' redis')
-    ) {
-      if (rolloutComplete && options.finalReadiness === 'bad-service') {
-        return {
-          ok: true,
-          stdout: JSON.stringify({
-            ...readyServiceObject(),
-            spec: { type: 'NodePort', selector: { app: 'redis' }, ports: [] },
-          }),
-        };
-      }
-      return { ok: true, stdout: service ? JSON.stringify(service) : '' };
-    }
-    if (
-      command === 'kubectl' &&
-      joined.includes('get configmap') &&
-      joined.includes('redis-config')
-    ) {
-      if (rolloutComplete && options.finalReadiness === 'missing-config') {
-        return { ok: true, stdout: '' };
-      }
-      return { ok: true, stdout: configMap ? JSON.stringify(configMap) : '' };
-    }
-    if (
-      command === 'kubectl' &&
-      joined.includes('create') &&
-      joined.includes('-o') &&
-      joined.includes('json')
-    ) {
-      namespace = {
-        uid: nextUid(),
-        owner: RELEASE_OWNER,
-        rv: nextRv(),
-      };
-      return {
-        ok: true,
-        stdout: JSON.stringify({
-          metadata: {
-            name: RELEASE_REDIS_NAMESPACE,
-            uid: namespace.uid,
-            resourceVersion: namespace.rv,
-            labels: { [RELEASE_OWNER_LABEL]: namespace.owner },
-          },
-        }),
-      };
-    }
-    if (
-      command === 'kubectl' &&
-      args.includes('create') &&
-      args.includes('-f') &&
-      !args.includes('-o')
-    ) {
-      const doc = JSON.parse(String(runOptions.input ?? '').trim());
-      const childKey =
-        doc.kind === 'ConfigMap'
-          ? 'configMap'
-          : doc.kind === 'Deployment'
-            ? 'deployment'
-            : 'service';
-      const object = {
-        ...doc,
-        metadata: {
-          ...doc.metadata,
-          uid: nextUid(),
-          resourceVersion: nextRv(),
-          generation: 1,
-        },
-      };
-      if (childKey === 'configMap') {
-        configMap = object;
-      } else if (childKey === 'deployment') {
-        deployment = {
-          ...object,
-          status: readyDeploymentObject(configData).status,
-        };
-      } else {
-        service = object;
-      }
-      return { ok: true, stdout: `${doc.kind}/${doc.metadata.name} created\n` };
-    }
-    if (command === 'kubectl' && joined.includes(' patch ')) {
-      const patchArgIndex = args.indexOf('-p');
-      const patch = JSON.parse(args[patchArgIndex + 1] ?? '[]');
-      const kind = args[args.indexOf('patch') + 1];
-      const target =
-        kind === 'configmap'
-          ? configMap
-          : kind === 'deployment'
-            ? deployment
-            : null;
-      if (!target) {
-        return {
-          ok: false,
-          status: 1,
-          stderr: 'patch target missing',
-          stdout: '',
-        };
-      }
-      for (const op of patch) {
-        if (
-          op.op === 'test' &&
-          op.path === '/metadata/uid' &&
-          op.value !== target.metadata.uid
-        ) {
-          return {
-            ok: false,
-            status: 1,
-            stderr: 'uid test failed',
-            stdout: '',
-          };
-        }
-        if (
-          op.op === 'test' &&
-          op.path === '/metadata/resourceVersion' &&
-          op.value !== target.metadata.resourceVersion
-        ) {
-          return {
-            ok: false,
-            status: 1,
-            stderr: 'resourceVersion test failed',
-            stdout: '',
-          };
-        }
-      }
-      if (
-        (kind === 'configmap' && options.patchConflict === 'configMap') ||
-        (kind === 'deployment' && options.patchConflict === 'deployment')
-      ) {
-        return { ok: false, status: 1, stderr: 'patch conflict', stdout: '' };
-      }
-      for (const op of patch) {
-        if (op.op === 'add' && op.path === '/data') {
-          configMap = { ...target, data: op.value };
-        }
-        if (op.op === 'add' && op.path === '/spec') {
-          deployment = {
-            ...target,
-            spec: op.value,
-            status: readyDeploymentObject(configData).status,
-          };
-        }
-      }
-      return { ok: true, stdout: `${kind}/redis patched\n` };
-    }
-    if (
-      command === 'kubectl' &&
-      joined.includes('rollout status deployment/redis')
-    ) {
-      if (options.rolloutFails) {
-        return { ok: false, status: 1, stderr: 'rollout failed', stdout: '' };
-      }
-      rolloutComplete = true;
-      if (deployment) {
-        deployment = {
-          ...deployment,
-          status: readyDeploymentObject(configData).status,
-        };
-      }
-      return {
-        ok: true,
-        stdout: 'deployment "redis" successfully rolled out\n',
-      };
-    }
-    if (command === 'helm') {
-      return helmRun(command, args, runOptions);
-    }
-    return {
-      ok: false,
-      stderr: `unhandled ${command} ${joined}`,
-      stdout: '',
-    };
-  }
-
-  function isRedisNamespaceGet(args) {
-    const getIndex = args.indexOf('get');
-    return (
-      getIndex >= 0 &&
-      args[getIndex + 1] === 'namespace' &&
-      args[getIndex + 2] === RELEASE_REDIS_NAMESPACE
-    );
-  }
-
-  const wrappedRun = (command, args, runOptions = {}) => {
-    commands.push([command, args]);
-    if (command === 'kubectl' && isRedisNamespaceGet(args)) {
-      const object = namespaceObject();
-      return {
-        ok: true,
-        stdout: object ? JSON.stringify(object) : '',
-      };
-    }
-    return run(command, args, runOptions);
+  const deploymentLabels = {
+    [OWNER_KEY]: scenario.ownerOnLive === false ? 'wrong-owner' : OWNER_VALUE,
+    'app.kubernetes.io/name': 'redis',
+    'app.kubernetes.io/instance': 'redis',
   };
 
-  return { commands, run: wrappedRun, renderedByKind, configData };
-}
-
-/** @param {{ includeForeignContexts?: boolean }} [options] */
-function stubShellBinDir(options = {}) {
-  const binDir = mkdtempSync(join(tmpdir(), 'redis-release-install-'));
-  const writeStub = (name, body) => {
-    const path = join(binDir, name);
-    writeFileSync(path, body, 'utf8');
-    chmodSync(path, 0o755);
-    return path;
-  };
-
-  writeStub(
-    'kind',
-    `#!/usr/bin/env bash
-set -euo pipefail
-if [[ "\${1:-}" == "get" && "\${2:-}" == "clusters" ]]; then
-  echo offscreen-release
-  exit 0
-fi
-echo "unexpected kind: $*" >&2
-exit 2
-`,
-  );
-
-  writeStub(
-    'docker',
-    `#!/usr/bin/env bash
-set -euo pipefail
-if [[ "\${1:-}" == "ps" ]]; then
-  echo "offscreen-release-control-plane 127.0.0.1:6443->6443/tcp"
-  exit 0
-fi
-echo "unexpected docker: $*" >&2
-exit 2
-`,
-  );
-
-  const foreignContextBlock = options.includeForeignContexts
-    ? `echo kind-foreign
-echo kind-offscreen-release`
-    : `echo kind-offscreen-release`;
-
-  const mutateLog = join(binDir, 'mutate-log');
-  writeFileSync(mutateLog, '', 'utf8');
-
-  const readyDeployment = JSON.stringify(
-    readyDeploymentObject({ 'redis.conf': 'port 6379\n' }),
-  );
-  const readyService = JSON.stringify(readyServiceObject());
-  const readyConfigMap = JSON.stringify(
-    readyConfigMapObject({ 'redis.conf': 'port 6379\n' }),
-  );
-  const labNamespaceOwned = JSON.stringify({
-    metadata: {
-      name: RELEASE_REDIS_NAMESPACE,
-      uid: 'ns-created-uid',
-      resourceVersion: 'ns-rv-1',
-      labels: { [RELEASE_OWNER_LABEL]: RELEASE_OWNER },
-    },
-  });
-
-  writeStub(
-    'kubectl',
-    `#!/usr/bin/env bash
-set -euo pipefail
-joined="$*"
-state_file="${mutateLog}"
-mutate_count() {
-  if [[ ! -f "$state_file" ]]; then echo 0; return; fi
-  wc -l <"$state_file" | tr -d ' '
-}
-namespace_ready() { [[ "$(mutate_count)" -ge 1 ]]; }
-install_ready() { [[ "$(mutate_count)" -ge 4 ]]; }
-if [[ "\${1:-}" == "config" && "\${2:-}" == "get-contexts" ]]; then
-  ${foreignContextBlock}
-  exit 0
-fi
-if [[ "$joined" == *"config view --minify -o json"* ]]; then
-  cat <<'JSON'
-${releaseKubectlConfigJson()}
-JSON
-  exit 0
-fi
-if [[ "$joined" == *"get namespace ${RELEASE_BASELINE_NAMESPACE}"* ]]; then
-  cat <<'JSON'
-{"metadata":{"name":"${RELEASE_BASELINE_NAMESPACE}","uid":"release-baseline-uid","labels":{"${RELEASE_OWNER_LABEL}":"${RELEASE_OWNER}"}}}
-JSON
-  exit 0
-fi
-if [[ "$joined" == *"get namespace ${RELEASE_REDIS_NAMESPACE}"* ]]; then
-  if namespace_ready; then
-    echo '${labNamespaceOwned}'
-    exit 0
-  fi
-  exit 0
-fi
-if [[ "$joined" == *"get configmap"*"redis-config"* ]]; then
-  if install_ready; then
-    echo '${readyConfigMap}'
-    exit 0
-  fi
-  exit 0
-fi
-if [[ "$joined" == *"get deployment"*" redis"* ]]; then
-  if install_ready; then
-    echo '${readyDeployment}'
-    exit 0
-  fi
-  exit 0
-fi
-if [[ "$joined" == *"get service"*" redis"* ]]; then
-  if install_ready; then
-    echo '${readyService}'
-    exit 0
-  fi
-  exit 0
-fi
-if [[ "$joined" == *" create "* ]]; then
-  echo mutate >> "${mutateLog}"
-  if [[ "$joined" == *"create -f - -o json"* ]]; then
-    cat <<'JSON'
-{"metadata":{"name":"${RELEASE_REDIS_NAMESPACE}","uid":"ns-created-uid","resourceVersion":"ns-rv-1","labels":{"${RELEASE_OWNER_LABEL}":"${RELEASE_OWNER}"}}}
-JSON
-    exit 0
-  fi
-  exit 0
-fi
-if [[ "$joined" == *" patch "* ]]; then
-  echo mutate >> "${mutateLog}"
-  exit 0
-fi
-if [[ "$joined" == *"rollout status deployment/redis"* ]]; then exit 0; fi
-if [[ "$joined" == *"get svc -A"* ]]; then exit 0; fi
-echo "unexpected kubectl: $*" >&2
-exit 2
-`,
-  );
-
-  return { binDir, mutateLog };
-}
-
-test('install.sh delegates to release-install without ensure-lab-namespace', () => {
-  const text = readFileSync(installPath, 'utf8');
-  assert.doesNotMatch(text, /ensure-lab-namespace/);
-  assert.match(text, /release-install\.mjs/);
-  const firstLoopback = text.indexOf('assert_loopback_only');
-  const nodeIndex = text.indexOf('release-install.mjs');
-  const secondLoopback = text.indexOf(
-    'assert_loopback_only',
-    firstLoopback + 1,
-  );
-  assert.ok(firstLoopback > 0 && firstLoopback < nodeIndex);
-  assert.ok(secondLoopback > nodeIndex);
-});
-
-test('install.sh rejects arguments', () => {
-  const result = spawnSync('bash', [installPath, 'extra'], {
-    encoding: 'utf8',
-  });
-  assert.equal(result.status, 2);
-});
-
-test('install.sh stub run completes without kubectl apply', () => {
-  const { binDir, mutateLog } = stubShellBinDir();
-  const result = spawnSync('bash', [installPath], {
-    encoding: 'utf8',
-    env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
-  });
-  assert.equal(result.status, 0, result.stderr);
-  const mutated = readFileSync(mutateLog, 'utf8');
-  assert.doesNotMatch(mutated, / apply /);
-  assert.match(result.stdout, /Redis install is ready/);
-});
-
-test('executeAuthorizedReleaseRedis creates release redis with loopback context only', () => {
-  const harness = buildReleaseReconcileHarness();
-  const result = executeAuthorizedReleaseRedis({
-    run: harness.run,
-    renderDeps: { run: harness.run, chartRoot },
-  });
-  assert.equal(result.ok, true);
-  assert.equal(result.mutated, true);
-  const joined = harness.commands
-    .map(([cmd, args]) => `${cmd} ${args.join(' ')}`)
-    .join('\n');
-  assert.match(joined, /--context kind-offscreen-release/);
-  assert.doesNotMatch(joined, /kind-offscreen-dev/);
-  assert.match(joined, /release\.yaml/);
-  assert.match(joined, /lab-a/);
-  assert.match(
-    releaseKubectlConfigJson(),
-    new RegExp(`127\\.0\\.0\\.1:${RELEASE_API_PORT}`),
-  );
-  assert.equal(
-    harness.commands.filter(
-      ([cmd, args]) => cmd === 'kubectl' && args.join(' ').includes(' apply '),
-    ).length,
-    0,
-  );
-  assert.equal(
-    harness.commands.filter(
-      ([cmd, args]) =>
-        cmd === 'kubectl' &&
-        args.join(' ').includes(`namespace ${RELEASE_BASELINE_NAMESPACE}`),
-    ).length,
-    1,
-  );
-  assert.equal(
-    harness.commands.filter(
-      ([, args]) =>
-        args.includes('create') && args.includes('-f') && !args.includes('-o'),
-    ).length,
-    3,
-  );
-  for (const doc of Object.values(harness.renderedByKind)) {
-    assert.equal(doc.metadata?.labels?.[RELEASE_OWNER_LABEL], RELEASE_OWNER);
-  }
-});
-
-test('executeAuthorizedReleaseRedis refuses foreign release namespace before writes', () => {
-  const harness = buildReleaseReconcileHarness();
-  const foreignObserve = () => ({
-    namespace: {
-      state: 'present',
-      classification: 'foreign',
-      object: {
-        metadata: {
-          name: RELEASE_REDIS_NAMESPACE,
-          labels: { [RELEASE_OWNER_LABEL]: 'foreign' },
-        },
-      },
-    },
-    deployment: { state: 'absent' },
-    service: { state: 'absent' },
-    configMap: { state: 'absent' },
-  });
-  const result = executeAuthorizedReleaseRedis({
-    run: harness.run,
-    renderDeps: { run: harness.run, chartRoot },
-    observe: foreignObserve,
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.mutated, false);
-  assert.equal(result.refusals[0]?.id, 'namespace-foreign');
-  assert.equal(
-    harness.commands.some(
-      ([cmd, args]) => cmd === 'kubectl' && args.join(' ').includes(' create '),
-    ),
-    false,
-  );
-});
-
-test('executeAuthorizedReleaseRedis refuses unreadable release ConfigMap', () => {
-  const harness = buildReleaseReconcileHarness();
-  const observe = () => ({
-    namespace: { state: 'absent' },
-    deployment: { state: 'absent' },
-    service: { state: 'absent' },
-    configMap: { state: 'unreadable', reason: 'malformed json' },
-  });
-  const result = executeAuthorizedReleaseRedis({
-    run: harness.run,
-    renderDeps: { run: harness.run, chartRoot },
-    observe,
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.refusals[0]?.id, 'configMap-unreadable');
-  assert.equal(result.mutated, false);
-});
-
-test('executeAuthorizedReleaseRedis performs zero writes when render is refused for auth material', () => {
-  const harness = buildReleaseReconcileHarness();
-  const authManifest = `${JSON.stringify({
-    kind: 'ConfigMap',
-    metadata: {
-      name: 'redis-config',
-      namespace: RELEASE_REDIS_NAMESPACE,
-      labels: { [RELEASE_OWNER_LABEL]: RELEASE_OWNER },
-    },
-    data: { 'redis.conf': 'requirepass blocked\n' },
-  })}\n${JSON.stringify({
-    kind: 'Deployment',
-    metadata: {
-      name: 'redis',
-      namespace: RELEASE_REDIS_NAMESPACE,
-      labels: { [RELEASE_OWNER_LABEL]: RELEASE_OWNER },
-    },
-    spec: { replicas: 1, selector: { matchLabels: { app: 'redis' } } },
-  })}\n${JSON.stringify({
-    kind: 'Service',
-    metadata: {
-      name: 'redis',
-      namespace: RELEASE_REDIS_NAMESPACE,
-      labels: { [RELEASE_OWNER_LABEL]: RELEASE_OWNER },
-    },
-    spec: {
-      type: 'ClusterIP',
-      selector: { app: 'redis' },
-      ports: [
-        { name: 'redis', port: 6379, protocol: 'TCP', targetPort: 'redis' },
-      ],
-    },
-  })}\n`;
-  assert.equal(manifestHasAuthMaterial(authManifest), true);
-  const result = executeAuthorizedReleaseRedis({
-    run: harness.run,
-    renderDeps: {
-      run: (command, args, opts) => {
-        if (command === 'helm' && args[0] === 'template') {
-          return { ok: true, stdout: authManifest };
-        }
-        return harness.run(command, args, opts);
-      },
-      chartRoot,
-    },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.refusals[0]?.id, 'auth-material');
-  assert.equal(result.mutated, false);
-  assert.equal(
-    harness.commands.some(
-      ([cmd, args]) => cmd === 'kubectl' && args.includes('create'),
-    ),
-    false,
-  );
-});
-
-test('executeAuthorizedReleaseRedis treats post-check readiness failure as install failure', () => {
-  const harness = buildReleaseReconcileHarness({ finalReadiness: 'stale' });
-  const result = executeAuthorizedReleaseRedis({
-    run: harness.run,
-    renderDeps: { run: harness.run, chartRoot },
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.refusals[0]?.id, 'readiness-failed');
-  assert.equal(result.mutated, true);
-  assert.match(result.refusals[0]?.detail ?? '', /not ready/);
-});
-
-test('observeRedis for release uses lab-a and release owner labels', () => {
-  const harness = buildReleaseReconcileHarness();
-  const observations = observeRedis('release', { run: harness.run });
-  assert.equal(observations.namespace.state, 'absent');
-  assert.match(
-    harness.commands.map(([, args]) => args.join(' ')).join('\n'),
-    /namespace lab-a/,
-  );
-});
-
-test('executeAuthorizedReleaseRedis refuses wrong kubectl context before foreign context use', () => {
-  const commands = [];
   const run = (command, args) => {
     commands.push([command, args]);
-    if (command === 'kind' && args[0] === 'get') {
-      return { ok: true, stdout: 'offscreen-release\n' };
+    if (command === 'helm') {
+      const verb = args[0];
+      if (verb === 'version' && args[1] === '--short') {
+        return ok('v3.22.1\n');
+      }
+      if (verb === 'lint' || verb === 'template') {
+        return ok(scenario.helmTemplate ?? 'ok');
+      }
+      if (verb === 'list') {
+        return ok(JSON.stringify(scenario.helmList ?? []));
+      }
+      if (verb === 'get' && args[1] === 'manifest') {
+        return ok(scenario.helmManifest ?? '');
+      }
+      if (verb === 'get' && args[1] === 'values') {
+        return ok(JSON.stringify(scenario.helmValues ?? {}));
+      }
+      if (verb === 'history') {
+        return ok(JSON.stringify(scenario.helmHistory ?? []));
+      }
+      return fail(1, 'unexpected helm');
     }
-    if (command === 'kubectl' && args.join(' ').includes('config view')) {
-      return {
-        ok: true,
-        stdout: JSON.stringify({
-          clusters: [
-            {
-              name: 'kind-other-cluster',
-              cluster: { server: `https://127.0.0.1:${RELEASE_API_PORT}` },
-            },
-          ],
-          contexts: [
-            {
-              name: 'kind-other-cluster',
-              context: { cluster: 'kind-other-cluster' },
-            },
-          ],
-          'current-context': 'kind-other-cluster',
-        }),
-      };
+
+    if (command !== 'kubectl') {
+      return fail(1, 'unexpected command');
     }
-    return { ok: true, stdout: '', stderr: '' };
+
+    const getIdx = args.indexOf('get');
+    if (args.includes('namespace') && getIdx >= 0 && args[getIdx + 1] === 'namespace') {
+      namespaceChecks += 1;
+      if (scenario.namespaceRace && namespaceChecks === 1) {
+        return fail(1, 'NotFound');
+      }
+      if (scenario.namespacePresent === false) {
+        return fail(1, 'NotFound');
+      }
+      return ok(`namespace/${NAMESPACE}\n`);
+    }
+
+    if (
+      args.includes('secret') &&
+      args.includes('-o') &&
+      args[args.indexOf('-o') + 1] === 'name'
+    ) {
+      if (scenario.listFail) {
+        return fail(1, scenario.listStderr ?? 'Forbidden');
+      }
+      const labelIdx = args.indexOf('-l');
+      const names =
+        labelIdx >= 0
+          ? (scenario.labelSecrets ?? [])
+          : (scenario.secrets ?? []);
+      return ok(
+        names.map((n) => `secret/${n}`).join('\n') +
+          (names.length ? '\n' : ''),
+      );
+    }
+
+    if (
+      args.includes('configmap') &&
+      args.includes('-o') &&
+      args[args.indexOf('-o') + 1] === 'name'
+    ) {
+      return ok('');
+    }
+
+    if (args.includes('jsonpath={.metadata.labels}')) {
+      const name = args[getIdx + 2];
+      if (args.includes('secret')) {
+        return ok(
+          JSON.stringify(
+            scenario.secretLabels?.[name] ?? {
+              owner: 'helm',
+              name: 'redis',
+              status: 'deployed',
+            },
+          ),
+        );
+      }
+      return ok(JSON.stringify(deploymentLabels));
+    }
+
+    if (args.includes('jsonpath={.spec.selector.matchLabels}')) {
+      return ok(
+        JSON.stringify(
+          scenario.deploymentSelectors ?? {
+            'app.kubernetes.io/name': 'redis',
+            'app.kubernetes.io/instance': 'redis',
+          },
+        ),
+      );
+    }
+
+    if (args.includes('jsonpath={.spec.selector}')) {
+      return ok(
+        JSON.stringify(
+          scenario.serviceSelectors ?? {
+            'app.kubernetes.io/name': 'redis',
+            'app.kubernetes.io/instance': 'redis',
+          },
+        ),
+      );
+    }
+
+    if (args.includes('endpoints')) {
+      return scenario.endpointsPresent ? ok('[{}]') : ok('');
+    }
+
+    const resource = args[getIdx + 1];
+    const name = args[getIdx + 2];
+    const present =
+      (resource === 'deployment' && scenario.deployment === true) ||
+      (resource === 'service' && scenario.service === true) ||
+      (resource === 'configmap' && scenario.configMap === true);
+
+    if (args[args.indexOf('-o') + 1] === 'name') {
+      return present ? ok(`${resource}/${name}\n`) : ok('');
+    }
+    return fail(1, 'unexpected kubectl');
   };
+
+  return { run, commands };
+}
+
+/** @param {string} stateRoot */
+function pendingPath(stateRoot) {
+  return join(
+    stateRoot,
+    'platform-locks',
+    `${DEV_CONTEXT}-redis.pending`,
+  );
+}
+
+/** @param {string} stateRoot @param {Record<string, unknown>} scenario */
+function buildMutationDeps(stateRoot, scenario) {
+  const { run } = createInventoryHarness(scenario.harness ?? {});
+  /** @type {Array<[string, string[]]>} */
+  const mutations = [];
+  let inventoryReads = 0;
+
+  const observeInventoryStub = (target, deps = {}) => {
+    inventoryReads += 1;
+    const phase = scenario.inventoryByPass?.[inventoryReads - 1];
+    if (phase) {
+      return phase;
+    }
+    return observeInventory(target, { run: deps.run ?? run });
+  };
+
+  const observeRedisReadyStub = () =>
+    scenario.ready ?? { ok: false, state: 'unready', detail: 'unready' };
+
+  const spawn = (command, args) => {
+    mutations.push([command, args]);
+    if (command === 'kubectl' && args.includes('create')) {
+      return scenario.namespaceCreateResult ?? ok();
+    }
+    if (command === 'kubectl' && args.includes('label')) {
+      return scenario.namespaceLabelResult ?? ok();
+    }
+    if (command === 'helm' && args[0] === 'install') {
+      scenario.helmInstallCalls = (scenario.helmInstallCalls ?? 0) + 1;
+      return (
+        scenario.helmInstallResult ?? {
+          ok: true,
+          status: 0,
+          stdout: '',
+          stderr: '',
+        }
+      );
+    }
+    if (command === 'helm' && (args[0] === 'lint' || args[0] === 'template')) {
+      return ok('');
+    }
+    return fail(1, `unexpected mutation ${command}`);
+  };
+
+  return {
+    deps: {
+      stateRoot,
+      run,
+      spawn,
+      observeInventory: observeInventoryStub,
+      observeRedisReady: observeRedisReadyStub,
+      budgetMs: scenario.budgetMs ?? 600_000,
+      writeReserveMs: scenario.writeReserveMs ?? DEFAULT_WRITE_RESERVE_MS,
+    },
+    mutations,
+    observeInventoryStub,
+  };
+}
+
+test('wrong context refuses before mutation', () => {
   assert.throws(
-    () => executeAuthorizedReleaseRedis({ run }),
-    /selected context cluster mismatch/,
+    () => planRedisInstall('dev', 'kind-offscreen-release', {}),
+    /must be exactly/,
   );
-  assert.equal(
-    commands.some(
+});
+
+test('ensure without OFFSCREEN_REDIS_ENSURE refuses and does not lock-write', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-noauth-'));
+  const prior = process.env.OFFSCREEN_REDIS_ENSURE;
+  delete process.env.OFFSCREEN_REDIS_ENSURE;
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, {
+      stateRoot,
+    });
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutated, false);
+    assert.equal(receipt.detail, 'ensure-not-authorized');
+    assert.equal(existsSync(pendingPath(stateRoot)), false);
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_REDIS_ENSURE;
+    } else {
+      process.env.OFFSCREEN_REDIS_ENSURE = prior;
+    }
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('legacy inventory refuses with zero mutations', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-legacy-'));
+  const prior = process.env.OFFSCREEN_REDIS_ENSURE;
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps, mutations } = buildMutationDeps(stateRoot, {
+    harness: {
+      namespacePresent: true,
+      deployment: true,
+      deploymentSelectors: { app: 'redis' },
+      serviceSelectors: { app: 'redis' },
+    },
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutated, false);
+    assert.equal(receipt.state, 'legacy');
+    assert.equal(mutations.length, 0);
+    assert.equal(existsSync(pendingPath(stateRoot)), false);
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_REDIS_ENSURE;
+    } else {
+      process.env.OFFSCREEN_REDIS_ENSURE = prior;
+    }
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('matching orphan refuses with zero mutations', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-orphan-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps, mutations } = buildMutationDeps(stateRoot, {
+    harness: {
+      namespacePresent: true,
+      secrets: ['sh.helm.release.v1.redis.v1'],
+      deployment: true,
+      service: false,
+      configMap: false,
+      helmList: [
+        {
+          name: 'redis',
+          namespace: NAMESPACE,
+          revision: '1',
+          status: 'deployed',
+          chart: 'offscreen-redis-specimen-0.1.0',
+        },
+      ],
+    },
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutated, false);
+    assert.equal(receipt.state, 'partial');
+    assert.equal(mutations.length, 0);
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('partial inventory refuses with zero mutations', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-partial-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps, mutations } = buildMutationDeps(stateRoot, {
+    harness: {
+      namespacePresent: true,
+      deployment: true,
+      service: true,
+      configMap: false,
+      secrets: ['sh.helm.release.v1.redis.v1'],
+      helmList: [
+        {
+          name: 'redis',
+          namespace: NAMESPACE,
+          revision: '1',
+          status: 'deployed',
+          chart: 'offscreen-redis-specimen-0.1.0',
+        },
+      ],
+    },
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutated, false);
+    assert.equal(receipt.state, 'partial');
+    assert.equal(mutations.length, 0);
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('unexpected helm revision refuses with zero mutations', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-revision-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps, mutations } = buildMutationDeps(stateRoot, {
+    harness: {
+      namespacePresent: true,
+      secrets: ['sh.helm.release.v1.redis.v1'],
+      helmList: [
+        {
+          name: 'redis',
+          namespace: NAMESPACE,
+          revision: '2',
+          status: 'deployed',
+          chart: 'offscreen-redis-specimen-0.1.0',
+        },
+      ],
+    },
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutated, false);
+    assert.equal(receipt.state, 'partial');
+    assert.equal(mutations.length, 0);
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('malformed helm history refuses with zero mutations', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-history-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps, mutations } = buildMutationDeps(stateRoot, {
+    inventoryByPass: [
+      {
+        state: 'unreadable',
+        reason: 'helm-history-too-long',
+        snapshot: {},
+      },
+    ],
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutated, false);
+    assert.equal(receipt.state, 'unreadable');
+    assert.equal(mutations.length, 0);
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('compatible installed ready is a no-op with zero helm install', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-noop-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps, mutations } = buildMutationDeps(stateRoot, {
+    harness: {
+      namespacePresent: true,
+      secrets: ['sh.helm.release.v1.redis.v1'],
+      deployment: true,
+      service: true,
+      configMap: true,
+      endpointsPresent: true,
+      helmList: [
+        {
+          name: 'redis',
+          namespace: NAMESPACE,
+          revision: '1',
+          status: 'deployed',
+          chart: 'offscreen-redis-specimen-0.1.0',
+        },
+      ],
+      helmManifest: '---\napiVersion: v1\nkind: ConfigMap\n',
+      helmValues: { image: 'x' },
+      helmHistory: [{ revision: 1, status: 'deployed' }],
+      helmTemplate: '---\napiVersion: v1\nkind: ConfigMap\n',
+    },
+    ready: { ok: true, state: 'ready', detail: 'compatible-ready' },
+    inventoryByPass: [
+      {
+        state: 'installed',
+        reason: 'compatible',
+        snapshot: {
+          fetchedManifest: 'manifest',
+          fetchedValues: {},
+        },
+      },
+    ],
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, true);
+    assert.equal(receipt.mutated, false);
+    assert.equal(receipt.state, 'installed');
+    assert.equal(
+      mutations.filter(([cmd, args]) => cmd === 'helm' && args[0] === 'install')
+        .length,
+      0,
+    );
+    assert.equal(
+      mutations.filter(
+        ([cmd, args]) => cmd === 'kubectl' && args.includes('create'),
+      ).length,
+      0,
+    );
+    assert.equal(existsSync(pendingPath(stateRoot)), false);
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('unknown helm install result leaves the pending file', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-pending-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps } = buildMutationDeps(stateRoot, {
+    harness: { namespacePresent: false },
+    inventoryByPass: [
+      { state: 'absent', reason: 'namespace-missing', snapshot: {} },
+      { state: 'absent', reason: 'empty', snapshot: {} },
+    ],
+    helmInstallResult: {
+      ok: false,
+      status: null,
+      stdout: '',
+      stderr: 'timeout',
+      timedOut: true,
+    },
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutated, true);
+    assert.equal(existsSync(pendingPath(stateRoot)), true);
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('fresh empty namespace creates chart install and clears pending', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-fresh-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps, mutations } = buildMutationDeps(stateRoot, {
+    harness: {
+      namespacePresent: true,
+      secrets: [],
+      configmaps: [],
+      helmList: [],
+    },
+    inventoryByPass: [
+      { state: 'absent', reason: 'empty', snapshot: { namespace: NAMESPACE } },
+      { state: 'absent', reason: 'empty', snapshot: { namespace: NAMESPACE } },
+      { state: 'installed', reason: 'compatible', snapshot: {} },
+    ],
+    ready: { ok: true, state: 'ready', detail: 'installed-ready' },
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, true);
+    assert.equal(receipt.mutated, true);
+
+    const kubectlCreate = mutations.filter(
       ([cmd, args]) =>
-        cmd === 'kubectl' && args.includes('offscreen-release-system'),
-    ),
-    false,
-  );
+        cmd === 'kubectl' && args.includes('create') && args.includes('namespace'),
+    );
+    assert.equal(kubectlCreate.length, 0);
+
+    const helmInstalls = mutations.filter(
+      ([cmd, args]) => cmd === 'helm' && args[0] === 'install',
+    );
+    assert.equal(helmInstalls.length, 1);
+    const args = helmInstalls[0][1];
+    assert.equal(args[0], 'install');
+    assert.equal(args[1], 'redis');
+    assert.match(args.join(' '), /--kube-context/);
+    assert.match(args.join(' '), new RegExp(`--namespace ${NAMESPACE}`));
+    assert.ok(args.includes('--wait'));
+    assert.ok(args.includes('180s'));
+    assert.ok(!args.includes('--create-namespace'));
+
+    assert.equal(existsSync(pendingPath(stateRoot)), false);
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('namespace-missing path creates namespace then installs once', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-ns-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps, mutations } = buildMutationDeps(stateRoot, {
+    harness: { namespacePresent: false },
+    inventoryByPass: [
+      { state: 'absent', reason: 'namespace-missing', snapshot: {} },
+      { state: 'absent', reason: 'empty', snapshot: {} },
+      { state: 'installed', reason: 'compatible', snapshot: {} },
+    ],
+    ready: { ok: true, state: 'ready', detail: 'installed-ready' },
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, true);
+    assert.equal(
+      mutations.filter(
+        ([cmd, args]) =>
+          cmd === 'kubectl' && args.includes('create') && args.includes('namespace'),
+      ).length,
+      1,
+    );
+    assert.equal(
+      mutations.filter(([cmd, args]) => cmd === 'helm' && args[0] === 'install')
+        .length,
+      1,
+    );
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('deadline: budget below write reserve refuses before helm install', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-deadline-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { deps, mutations } = buildMutationDeps(stateRoot, {
+    harness: {
+      namespacePresent: true,
+      secrets: [],
+      helmList: [],
+    },
+    inventoryByPass: [
+      { state: 'absent', reason: 'empty', snapshot: {} },
+    ],
+    budgetMs: DEFAULT_WRITE_RESERVE_MS - 1,
+    writeReserveMs: DEFAULT_WRITE_RESERVE_MS,
+  });
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, deps);
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutated, false);
+  assert.equal(
+      mutations.filter(([cmd, args]) => cmd === 'helm' && args[0] === 'install')
+        .length,
+      0,
+    );
+    assert.equal(existsSync(pendingPath(stateRoot)), false);
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('plan emits readable receipt without mutations', () => {
+  const { run } = createInventoryHarness({
+    namespacePresent: true,
+    secrets: [],
+    helmList: [],
+  });
+  const { receipt, exitCode } = planRedisInstall('dev', DEV_CONTEXT, {
+    run,
+  });
+  assert.equal(exitCode, 0);
+  assert.equal(receipt.ok, true);
+  assert.equal(receipt.mutated, false);
+  assert.equal(receipt.state, 'absent');
+});
+
+test('plan unreadable inventory exits nonzero', () => {
+  const { run } = createInventoryHarness({
+    namespacePresent: true,
+    listFail: true,
+    listStderr: 'Forbidden',
+    secrets: ['sh.helm.release.v1.redis.v1'],
+  });
+  const { receipt, exitCode } = planRedisInstall('dev', DEV_CONTEXT, { run });
+  assert.equal(exitCode, 1);
+  assert.equal(receipt.ok, false);
+  assert.equal(receipt.state, 'unreadable');
+});
+
+test('lifecycle CLI plan prints JSON receipt', async () => {
+  const { run } = createInventoryHarness({ namespacePresent: false });
+  const priorWrite = process.stdout.write;
+  /** @type {string[]} */
+  const lines = [];
+  process.stdout.write = (chunk) => {
+    lines.push(String(chunk));
+    return true;
+  };
+  try {
+    const code = await runRedisInstallLifecycle(
+      ['plan', 'dev', DEV_CONTEXT],
+      { run },
+    );
+    assert.equal(code, 0);
+    const parsed = JSON.parse(lines.join('').trim());
+    assert.equal(parsed.mutated, false);
+    assert.equal(parsed.state, 'absent');
+  } finally {
+    process.stdout.write = priorWrite;
+  }
+});
+
+test('ensure does not export unlocked ensure helper', () => {
+  assert.equal(typeof ensureRedisInstall, 'function');
+  assert.equal(typeof runRedisInstallLifecycle, 'function');
+});
+
+test('pending directory untouched when ensure unauthorized', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-lock-'));
+  mkdirSync(join(stateRoot, 'platform-locks'), { recursive: true });
+  const lock = join(stateRoot, 'platform-locks', `${DEV_CONTEXT}-redis.lock`);
+  delete process.env.OFFSCREEN_REDIS_ENSURE;
+  try {
+    await ensureRedisInstall('dev', DEV_CONTEXT, { stateRoot });
+    assert.equal(existsSync(lock), false);
+    assert.equal(existsSync(pendingPath(stateRoot)), false);
+  } finally {
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
 });
