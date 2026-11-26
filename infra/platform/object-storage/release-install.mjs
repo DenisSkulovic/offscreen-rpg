@@ -178,10 +178,8 @@ export async function executeReleaseObjectStorageInstall(deps = {}) {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  assertPlatformTarget('release');
-  const result = await executeReleaseObjectStorageInstall();
-  process.stdout.write(
-    `${JSON.stringify({ ...result, actions: result.actions })}\n`,
+  process.stderr.write(
+    'refusing retired release-install.mjs: native installer is the sole writer (providers/seaweedfs/install.mjs). Use infra/platform/object-storage/install.sh.\n',
   );
-  process.exitCode = result.ok ? 0 : 1;
+  process.exit(2);
 }

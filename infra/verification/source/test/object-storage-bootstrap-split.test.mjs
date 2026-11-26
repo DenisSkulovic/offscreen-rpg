@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,6 +29,10 @@ const RETIRED_STORE_MANIFEST = join(
   'infra/platform/object-storage/store.yaml',
 );
 const INSTALL_SH = join(REPO_ROOT, 'infra/platform/object-storage/install.sh');
+const RELEASE_INSTALL = join(
+  REPO_ROOT,
+  'infra/platform/object-storage/release-install.mjs',
+);
 const OBJECT_RUNBOOK = join(
   REPO_ROOT,
   'docs/runbooks/kubernetes-object-storage.md',
@@ -161,6 +166,17 @@ describe('platform install boundary', () => {
     const body = readFileSync(INSTALL_SH, 'utf8');
     assert.match(body, /Does not run object-storage smoke/);
     assert.doesNotMatch(body, /content-bootstrap/);
+    assert.match(body, /providers\/seaweedfs\/install\.mjs/);
+    assert.doesNotMatch(body, /release-install\.mjs/);
+  });
+
+  test('release-install.mjs refuses direct execution as main', () => {
+    const result = spawnSync('node', [RELEASE_INSTALL], {
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /sole writer/);
+    assert.equal(result.stdout, '');
   });
 });
 

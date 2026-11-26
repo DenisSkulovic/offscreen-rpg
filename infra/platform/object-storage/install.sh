@@ -20,23 +20,16 @@ if ! kind get clusters 2>/dev/null | grep -qx "$CLUSTER_NAME"; then
   exit 1
 fi
 
-if ! grep -q 'image: docker.io/chrislusf/seaweedfs:4.54' "$STORE_DIR/chart/values.yaml"; then
-  echo "chart/values.yaml image does not match the pinned SeaweedFS release." >&2
-  exit 1
-fi
-if ! grep -q 'storageClass: local-path' "$STORE_DIR/chart/profiles/release.yaml"; then
-  echo "release profile must request local-path." >&2
-  exit 1
-fi
-
 require_memory
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 volume_guard_begin "$work"
 
-node "$STORE_DIR/release-install.mjs"
+set +e
+OFFSCREEN_OBJECT_STORAGE_ENSURE=authorized node "$STORE_DIR/providers/seaweedfs/install.mjs" ensure release
 install_rc=$?
+set -e
 if [[ "$install_rc" -ne 0 ]]; then
   echo "Object storage release install failed." >&2
   exit "$install_rc"
