@@ -380,8 +380,23 @@ function createInventoryHarness(scenario = {}) {
       );
     }
 
-    if (args.includes('endpoints')) {
-      return scenario.endpointsPresent ? ok('[{}]') : ok('');
+    if (args.includes('endpointslices.discovery.k8s.io')) {
+      return ok(JSON.stringify({
+          apiVersion: 'discovery.k8s.io/v1',
+          kind: 'EndpointSliceList',
+          items: scenario.endpointsPresent
+            ? [{
+                apiVersion: 'discovery.k8s.io/v1',
+                kind: 'EndpointSlice',
+                metadata: {
+                  name: 'redis-fixture',
+                  namespace: args[args.indexOf('-n') + 1],
+                  labels: { 'kubernetes.io/service-name': 'redis' },
+                },
+                endpoints: [],
+              }]
+            : [],
+        }));
     }
 
     const resource = args[getIdx + 1];

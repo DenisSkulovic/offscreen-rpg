@@ -255,8 +255,23 @@ function createSmokeHarness(namespace, target, scenario = {}) {
       );
     }
 
-    if (args.includes('endpoints')) {
-      return scenario.endpointsPresent ? ok('[{}]') : ok('');
+    if (args.includes('endpointslices.discovery.k8s.io')) {
+      return ok(JSON.stringify({
+          apiVersion: 'discovery.k8s.io/v1',
+          kind: 'EndpointSliceList',
+          items: scenario.endpointsPresent
+            ? [{
+                apiVersion: 'discovery.k8s.io/v1',
+                kind: 'EndpointSlice',
+                metadata: {
+                  name: 'redis-fixture',
+                  namespace: namespace,
+                  labels: { 'kubernetes.io/service-name': 'redis' },
+                },
+                endpoints: [],
+              }]
+            : [],
+        }));
     }
 
     return fail(1, 'unexpected kubectl');

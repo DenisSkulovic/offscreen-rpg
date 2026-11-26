@@ -213,18 +213,27 @@ function createHarness(scenario = {}) {
       return ok(`${namespacedObjectJson('namespace', NAMESPACE)}\n`);
     }
 
-    if (jsonGet && args[getIdx + 1] === 'endpoints') {
+    if (args[getIdx + 1] === 'endpointslices.discovery.k8s.io') {
+      assert.ok(args.includes('kubernetes.io/service-name=redis'));
       if (scenario.endpointsUnreadable) {
         return fail(1, 'Forbidden');
       }
-      if (scenario.endpointsPresent) {
-        return ok(
-          `${namespacedObjectJson('endpoints', RESERVED_SERVICE, {
-            subsets: [{ addresses: [{ ip: '10.0.0.1' }] }],
-          })}\n`,
-        );
-      }
-      return ok('');
+      return ok(JSON.stringify({
+          apiVersion: 'discovery.k8s.io/v1',
+          kind: 'EndpointSliceList',
+          items: scenario.endpointsPresent
+            ? [{
+                apiVersion: 'discovery.k8s.io/v1',
+                kind: 'EndpointSlice',
+                metadata: {
+                  name: 'redis-fixture',
+                  namespace: NAMESPACE,
+                  labels: { 'kubernetes.io/service-name': 'redis' },
+                },
+                endpoints: [],
+              }]
+            : [],
+        }));
     }
 
     if (

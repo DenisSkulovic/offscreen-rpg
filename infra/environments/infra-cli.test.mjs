@@ -811,19 +811,25 @@ function createNativeRedisStatusRun(profileId, scenario, installed) {
           }),
         );
       }
-      if (outputFlag === 'json' && gotten === 'endpoints') {
-        if (!flags.endpointsPresent) {
-          return cmdOk('');
-        }
-        return cmdOk(
-          JSON.stringify({
-            apiVersion: 'v1',
-            kind: 'Endpoints',
-            metadata: { name: 'redis', namespace: target.namespace },
-            subsets: [{ addresses: [{ ip: '10.0.0.1' }] }],
-          }),
-        );
+      if (outputFlag === 'json' && gotten === 'endpointslices.discovery.k8s.io') {
+        return cmdOk(JSON.stringify({
+          apiVersion: 'discovery.k8s.io/v1',
+          kind: 'EndpointSliceList',
+          items: flags.endpointsPresent
+            ? [{
+                apiVersion: 'discovery.k8s.io/v1',
+                kind: 'EndpointSlice',
+                metadata: {
+                  name: 'redis-fixture',
+                  namespace: target.namespace,
+                  labels: { 'kubernetes.io/service-name': 'redis' },
+                },
+                endpoints: [],
+              }]
+            : [],
+        }));
       }
+
       if (
         outputFlag === 'json' &&
         (gotten === 'deployment' ||

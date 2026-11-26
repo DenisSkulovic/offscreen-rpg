@@ -646,61 +646,51 @@ function readEndpointsPresence(run, target) {
       target.namespace,
       '--request-timeout=10s',
       'get',
-      'endpoints',
-      RESERVED_SERVICE,
-      '--ignore-not-found',
+      'endpointslices.discovery.k8s.io',
+      '-l',
+      `kubernetes.io/service-name=${RESERVED_SERVICE}`,
       '-o',
       'json',
     ],
     { timeoutMs: KUBECTL_READ_TIMEOUT_MS },
   );
-  if (result.timedOut) {
-    return { state: 'unreadable', reason: 'timeout' };
+  const refused = refuseCommandResult(result, 'endpoints');
+  if (refused) {
+    return refused;
   }
-  if (result.missing) {
-    return { state: 'unreadable', reason: 'endpoints-missing' };
-  }
-  if (result.stderr && result.stderr.trim().length > 0) {
-    return { state: 'unreadable', reason: 'endpoints-stderr' };
-  }
-  if (!result.ok) {
-    return { state: 'unreadable', reason: 'endpoints' };
-  }
-  const trimmed = result.stdout.trim();
-  if (trimmed.length === 0) {
-    return { state: 'absent' };
-  }
-  /** @type {unknown} */
   let parsed;
   try {
-    parsed = JSON.parse(trimmed);
-  } catch {
-    return { state: 'unreadable', reason: 'malformed-endpoints-json' };
-  }
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    return { state: 'unreadable', reason: 'malformed-endpoints-json' };
-  }
-  const endpoints =
-    /** @type {{ apiVersion?: unknown, kind?: unknown, metadata?: { name?: unknown, namespace?: unknown }, subsets?: unknown }} */ (
-      parsed
-    );
-  if (endpoints.apiVersion !== 'v1' || endpoints.kind !== 'Endpoints') {
-    return { state: 'unreadable', reason: 'endpoints-identity' };
+    parsed = JSON.parse(result.stdout);
+  } catch (error) {
+    return { state: 'unreadable', reason: 'malformed-endpoints-json', error };
   }
   if (
-    endpoints.metadata?.name !== RESERVED_SERVICE ||
-    endpoints.metadata?.namespace !== target.namespace
+    !parsed ||
+    parsed.kind !== 'EndpointSliceList' ||
+    parsed.apiVersion !== 'discovery.k8s.io/v1' ||
+    !Array.isArray(parsed.items)
   ) {
-    return { state: 'unreadable', reason: 'endpoints-name-mismatch' };
+    return { state: 'unreadable', reason: 'endpoints-identity' };
   }
-  const subsets = endpoints.subsets;
-  if (subsets == null || (Array.isArray(subsets) && subsets.length === 0)) {
-    return { state: 'absent' };
+  const names = new Set();
+  for (const slice of parsed.items) {
+    const name = slice?.metadata?.name;
+    if (
+      slice?.kind !== 'EndpointSlice' ||
+      slice?.apiVersion !== 'discovery.k8s.io/v1' ||
+      slice?.metadata?.namespace !== target.namespace ||
+      slice?.metadata?.labels?.['kubernetes.io/service-name'] !== RESERVED_SERVICE ||
+      typeof name !== 'string' ||
+      !RESOURCE_NAME.test(name) ||
+      names.has(name) ||
+      !Array.isArray(slice.endpoints)
+    ) {
+      return { state: 'unreadable', reason: 'endpoints-name-mismatch' };
+    }
+    names.add(name);
   }
-  if (!Array.isArray(subsets)) {
-    return { state: 'unreadable', reason: 'endpoints-subsets-shape' };
-  }
-  return { state: 'present' };
+  // Even an empty matching slice is residue, not proof of fresh absence.
+  return { state: names.size === 0 ? 'absent' : 'present' };
 }
 
 /**
