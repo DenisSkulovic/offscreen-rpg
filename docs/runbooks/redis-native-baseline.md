@@ -1,6 +1,6 @@
 # Native Redis baseline — operator failure notes
 
-**Live proof:** NOT RUN. This page is source-only guidance. Do not run smoke or ensure against kind from this page.
+**Live proof:** isolated dev/release lifecycle, repeat ensure, fault recovery and measured preservation passed on recorded candidates. Final cleanup correction is source-tested only. See Change acceptance observations. Live mutation requires separate authorization.
 
 ## Pending receipt and lock paths
 
@@ -23,7 +23,7 @@ Cleanup of a generated smoke namespace is allowed only when the name matches `of
 
 ## Legacy objects and integration
 
-Canonical legacy objects are not deleted by this change. Integration is held until the owner accepts that legacy refusal or authorizes a separate cutover.
+Canonical legacy objects are not deleted by this change. Owner accepted interim legacy refusal for structural integration. Canonical cutover remains separately gated.
 
 ## No automated receipt clear
 

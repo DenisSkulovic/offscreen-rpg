@@ -1,6 +1,6 @@
 # Owner-operated Redis acceptance observations — 2026-11-26
 
-Status: positive, negative and fault lifecycle observations passed; preservation evidence incomplete, join held. No canonical mutation authorization.
+Status: owner-authorized structural source integration; residual assurance and canonical cutover remain open.
 
 | Candidate | Owner-reported evidence |
 | --- | --- |
@@ -18,3 +18,6 @@ Evidence is owner terminal output, not independently executed by ChatGPT. Positi
 Owner reported exact diff equality between /tmp/redis-final-acceptance.dboQ8S/dev-before and final-after: Docker volume driver/name inventory, context names, both canonical Deployment/Service UID/spec, PV/PVC UID/spec, Helm inventories and namespace UID inventories. Initial batch had a shell variable scoping error and ran release twice; first lifecycle passed, second refused proof-ttl-range. Retained specimen c97a0b162d2a5b5233876d9b9d54b967 recovered and receipt 87bbfcfb-f045-435d-9e5c-3de5195678f0 archived; both contexts clear. Earlier dev/release lifecycle evidence remains valid; no claim of volume byte equality. Cleanup descendant ownership correction pending focused tests; integration held until verified. TTL timing flake remains recorded.
 
 Final focused source regression at 6df4eb1eae007ad1a74775efa316440e95eeef7b: owner reported 90/90 test executions passed (includes imported duplicate smoke tests), 4.166s, no cluster mutation. Cleanup ownership and namespace deletion fence correction tested by deterministic fixtures; changed cleanup path not independently live-tested. Prior live lifecycle and preservation results remain scoped to prior tested revisions. Intermittent TTL timing failure remains a known harness limitation. Canonical cutover remains separately gated.
+
+## Integration disposition
+Owner explicitly directed integration after the final focused regression. Main baseline dee12a65beb90493728ef935e3d4d473cd264fe2 is an ancestor of the Change HEAD; no reconciliation edits to source required. Integrate the tested structural implementation with known evidence limitations, preserve all legacy resources, and leave the Change open rather than claim full R9 closure. No canonical migration authority. Earlier hold statements are historical checkpoints. Final cleanup ownership correction is source-tested, not live-retested; intermittent TTL assertion and completeness of foreign inventory evidence remain residual assurance items.
