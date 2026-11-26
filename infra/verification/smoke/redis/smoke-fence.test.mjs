@@ -469,6 +469,9 @@ test('authorized smoke uses generated namespace on helm install', async () => {
   try {
     const receipt = await smokeRedisInstall('release', RELEASE_CONTEXT, deps);
     assert.equal(receipt.ok, true);
+    assert.equal(receipt.repeatEnsure.ok, true);
+    assert.equal(receipt.repeatEnsure.mutated, false);
+    assert.equal(receipt.proof.ok, true);
     assert.equal(receipt.namespace, EXPECTED_SMOKE_NAMESPACE);
     assert.match(receipt.namespace, /^offscreen-redis-proof-[0-9a-f]{32}$/);
     assert.notEqual(receipt.namespace, CANONICAL_NAMESPACE);

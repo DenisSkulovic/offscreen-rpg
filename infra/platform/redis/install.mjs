@@ -465,40 +465,31 @@ async function runLockedRedisInstall(
         return refuse(inventory.reason ?? 'unreadable', 'unreadable');
       }
 
-      if (installMode.mode === 'smoke-repeat') {
-        assertSmokeNamespace(target, profileId);
-        if (inventory.state !== 'installed') {
-          return refuse(inventory.reason ?? inventory.state, inventory.state);
+      const observeInstalledNoop = (observed) => {
+        if (observed.state !== 'installed') {
+          return installReceipt(false, false, observed.reason ?? observed.state, observed.state);
         }
-        const ready = observeReadyAtTarget(target, inventory, profileId, {
+        const ready = observeReadyAtTarget(target, observed, profileId, {
           observeRedisReady: observeReadyFn,
           run: inventoryRun,
         });
-        if (!ready.ok || ready.state !== 'ready') {
-          return refuse(ready.detail ?? 'not-ready', ready.state);
-        }
         return installReceipt(
-          true,
+          ready.ok && ready.state === 'ready',
           false,
-          'smoke-repeat-compatible-ready',
-          'installed',
+          ready.detail ?? ready.state,
+          ready.ok && ready.state === 'ready' ? 'installed' : ready.state,
         );
+      };
+
+      if (installMode.mode === 'smoke-repeat') {
+        assertSmokeNamespace(target, profileId);
+        const result = observeInstalledNoop(inventory);
+        if (!result.ok) return refuse(result.detail, result.state);
+        return { ...result, detail: 'smoke-repeat-compatible-ready' };
       }
 
       if (inventory.state === 'installed') {
-        const ready = observeReadyAtTarget(target, inventory, profileId, {
-          observeRedisReady: observeReadyFn,
-          run: inventoryRun,
-        });
-        if (ready.ok && ready.state === 'ready') {
-          return installReceipt(
-            true,
-            false,
-            ready.detail ?? 'compatible-ready',
-            'installed',
-          );
-        }
-        return refuse(ready.detail ?? 'not-ready', 'installed');
+        return observeInstalledNoop(inventory);
       }
 
       if (
@@ -785,6 +776,12 @@ async function runLockedRedisInstall(
         }
 
         if (installMode.mode === 'smoke') {
+          // Exercise the installed ensure branch under the existing mutation lock.
+          // The fresh read includes Helm revision and manifest/values compatibility.
+          const repeated = observeInstalledNoop(readInventory());
+          if (!repeated.ok || repeated.mutated) {
+            return refuse('smoke-repeat-' + repeated.detail, repeated.state);
+          }
           const proof = await runRedisSmokeProof(target, profileId, {
             run: inventoryRun ?? runPlatformCommand,
             runWrite: trackWrite,
@@ -803,14 +800,17 @@ async function runLockedRedisInstall(
               proof.state ?? 'refused',
             );
           }
+          return {
+            ...installReceipt(true, true, 'smoke-proof-complete', 'installed'),
+            repeatEnsure: repeated,
+            proof,
+          };
         }
 
         return installReceipt(
           true,
           true,
-          installMode.mode === 'smoke'
-            ? 'smoke-proof-complete'
-            : (ready.detail ?? 'installed-ready'),
+          ready.detail ?? 'installed-ready',
           'installed',
         );
       } finally {
