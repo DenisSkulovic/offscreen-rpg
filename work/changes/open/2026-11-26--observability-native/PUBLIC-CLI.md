@@ -23,7 +23,7 @@ Bootstrap only if separately approved; capture expected kube-system UID and veri
 ```bash
 pnpm infra:plan --env release --services observability --json
 pnpm infra:status --env release --services observability --json
-node infra/platform/observability/install.mjs plan release kind-offscreen-lab
+node infra/platform/observability/install.mjs plan release kind-offscreen-release
 ```
 Static preview alone is not A11 evidence. Require occupied legacy state from actual observer, direct native refusal, no mutation. If no occupied target, report live NOT-RUN conditional, source fixture mandatory.
 
@@ -39,3 +39,5 @@ Prior health gate 360s cannot accommodate a worst-case 345s observation, Grafana
 
 ## Additional focused proof
 T04 adapters: platform status=0 malformed receipt, nonzero valid no-mutation refusal, contradictory ok/status, diagnostic valid-looking stdout after timeout, duplicate or non-prefix phases. T05 public result test verifies invalid worker receipt with zero subprocess status produces public exit 1; direct plan uses structural parser; existing preview stays static; scoped public preflight fake-clock tests include cluster verification and no worker after expiry. T06 provisioning actual public JSON selection and exact phase cardinality, reject outer timeout even with plausible receipt. T07 health deadline fixture worst-case native observer + datasource query/cleanup, no double preflight. Source quality: pnpm repo:code-quality:changed and git diff --check (run on implementation worktree per repo standard).
+
+B06 corrections in AUDIT.md supersede missing-cluster behavior and public phase schema above: selected observability ensure refuses missing cluster before bootstrap; use explicit none separately. Proof budgets updated in OWNER-ACCEPTANCE.md.

@@ -31,3 +31,5 @@ Focused source commands and owned test files are now selected in TASKS.md; actua
 Detailed selected proof tooling and owner command sequence: [OWNER-ACCEPTANCE.md](OWNER-ACCEPTANCE.md). T07 implements it; no experiment scripts copied as public proof. Public plan/ensure/status CLI syntax and isolated target availability remain to be verified before final commission.
 
 Public lifecycle commands, actual receipt checks and corrected proof budget: [PUBLIC-CLI.md](PUBLIC-CLI.md). Source and runtime NOT RUN. Isolated normal-profile target availability remains unverified.
+
+Owner VM designation approved; actual read-only availability check specified in AUDIT.md. No live authorization or proof inferred.

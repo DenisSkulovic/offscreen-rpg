@@ -1,18 +1,5 @@
-# Readiness checkpoint
+## G0–G7 disposition
+G0 UNVERIFIED: remote main and defense/current rules verified; owner VM designated, actual availability/active local overlap not verified. G1 UNVERIFIED: high-impact shared symbols reopened (profile, commands, CLI, render, platform-plan, infra-cli, diagnostic-live, provisioning, verify, redis custody/readiness), representative existing tests reopened; not all helper fixtures and exact chart digest keys checked. G2 PASS for selected contracts after corrections, subject to exact artifact compatibility stop. G3 UNVERIFIED: task table cold-read corrections made; not claiming every fixture simulated with actual archive bytes. G4 UNVERIFIED: legal first dispatch T01 after commission and branch guard, not currently commissioned. G5 PASS for internal serial DAG; external local collision check remains G0. G6 UNVERIFIED: exact commands and negative proofs selected, actual isolated VM precommission availability and archive feasibility still to confirm. G7 PASS for execution/closure ownership, no heavy proof by Cursor. Verdict UNVERIFIED, not Ready; no false promotion.
 
-Target: OBSERVABILITY-NATIVE @ main e182a5d0991785708e6e25175f3edeff852cb862; design verdict 7bbdb6d9a4a0cbe2ad22d74c4a335a57eb7191e3. Proposed, not dispatchable.
 
-| Gate | Result | Reason |
-|---|---|---|
-| G0 | UNVERIFIED | remote baseline and defense verified; canonical platform promoted; worktree listing supplied, actual active overlap unknown |
-| G1 | UNVERIFIED | snapshot caller reconciliation recorded in CALLERS.md; task-local symbol/test audit incomplete |
-| G2 | UNVERIFIED | defended architecture selected; INTERFACES.md freezes new module contracts; adversarial verification pending |
-| G3 | UNVERIFIED | expanded cards and focused commands exist; individual cold simulation pending; T07 helper mapping and adaptation now selected |
-| G4 | UNVERIFIED | no legal first dispatch until promotion |
-| G5 | provisional | serial execution avoids child overlap; external shared writers must be checked |
-| G6 | UNVERIFIED | frozen acceptance matrix exists; focused and harness commands specified; public commands and adapters reconciled against snapshot; isolated target prerequisite unverified |
-| G7 | UNVERIFIED | closure route defined, no cold-read receipt |
-
-No source implementation or cluster action. Planner must complete these checks before calling Ready; no architectural research delegated to Cursor. Design defense is not packet readiness.
-
-B05 targeted adversarial review found static public plan mistaken for live observation, status exit-code ambiguity, runner shape mismatch, zero-exit malformed receipt risk, and infeasible health deadline; corrected in PUBLIC-CLI.md. Full per-task cold review still pending; no Ready claim.
+Full receipt: [AUDIT.md](AUDIT.md). Proposed; no dispatch.

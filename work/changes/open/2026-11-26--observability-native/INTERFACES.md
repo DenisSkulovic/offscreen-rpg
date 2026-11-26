@@ -31,3 +31,5 @@ See OWNER-ACCEPTANCE.md for fixed operation signatures, helper ownership, privat
 
 ## Boundary adapters and authorization
 [PUBLIC-CLI.md](PUBLIC-CLI.md) selects exact adapters, public authorization, nonzero malformed-receipt handling and preflight deadline ownership. These refine earlier interface text; no change to defended R34.
+
+B06 normative implementation refinements: AUDIT.md items 3–5 govern pending ownership/finalization, phase-prefix validation and missing-cluster refusal. Structural ready+pending is not admission success. Public status and diagnostic reject pending.
