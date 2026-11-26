@@ -98,7 +98,14 @@ export function readPlatformObject(
 ) {
   const profile = readPlatformProfile(profileId);
   assertResourceType(resource, 'resource');
-  assertIdentifier(name, 'name');
+  const rbacResource = /^(?:clusterroles?|clusterrolebindings?|roles?|rolebindings?)(?:\.rbac\.authorization\.k8s\.io)?$/.test(resource);
+  if (rbacResource && typeof name === 'string' && name.includes(':')) {
+    if (name.length > 253 || !name.split(':').every(part => DNS_LABEL.test(part))) {
+      throw new Error('invalid name');
+    }
+  } else {
+    assertIdentifier(name, 'name');
+  }
 
   const clusterScoped = isClusterScopedRead(resource);
   if (!clusterScoped) {
