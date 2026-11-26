@@ -69,6 +69,22 @@ function classify(resource) {
  * @param {object} probe
  */
 export function assessDevCnpg(probe) {
+  if (probe.fullAssessment) {
+    const state = probe.fullAssessment;
+    const project = value => value === 'absent' ? 'absent' :
+      ['compatible', 'ready', 'pending'].includes(value) ? 'owned' :
+      value === 'incompatible' ? 'foreign' : 'unknown';
+    return {
+      refusals: state.refusals,
+      pin: probe.pin,
+      namespace: project(state.namespace),
+      cluster: project(state.cluster),
+      operatorPresent: state.operator !== 'absent' && state.operator !== 'unknown',
+      operatorMatches: ['ready', 'pending'].includes(state.operator),
+      crdState: probe.crdState,
+    };
+  }
+
   /** @type {{ id: string, detail: string }[]} */
   const refusals = [];
   const unreadable = probe.unreadableReads ?? [];
@@ -250,221 +266,21 @@ export function statusDevCnpg(probe) {
  */
 export function ensureDevCnpg(probe, options = {}) {
   const plan = planDevCnpg(probe, options);
-  if (!options.authorize) {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: false,
-      mutated: false,
-      refusals: [
-        ...plan.refusals,
-        {
-          id: 'ensure-not-authorized',
-          detail: 'live CNPG ensure was not authorized',
-        },
-      ],
-    };
-  }
-  if (plan.refusals.length > 0 || !plan.clusterManifest) {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: false,
-      mutated: false,
-    };
-  }
-  if (
-    options.operatorManifestSha256 &&
-    options.operatorManifestSha256 !== probe.pin.sha256
-  ) {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: false,
-      mutated: false,
-      refusals: [
-        {
-          id: 'operator-manifest-sha-mismatch',
-          detail: 'downloaded operator manifest does not match operator.pin',
-        },
-      ],
-    };
-  }
-  const liveCluster = (probe.resources ?? []).find(
-    (item) => item.kind === 'Cluster' && item.name === DEV_CNPG_CLUSTER,
-  );
-  const storageDrift = Boolean(
-    liveCluster?.storageClass && liveCluster.storageClass !== DEV_STORAGE_CLASS,
-  );
-  if (storageDrift) {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: false,
-      mutated: false,
-      refusals: [
-        ...plan.refusals,
-        {
-          id: 'storage-class-drift',
-          detail: `cluster storage class is ${liveCluster.storageClass}, expected ${DEV_STORAGE_CLASS}`,
-        },
-      ],
-      actions: [],
-    };
-  }
-  if (plan.namespaceState === 'owned' && plan.clusterState === 'owned') {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: true,
-      mutated: false,
-      actions: [{ op: 'noop' }],
-    };
-  }
-  const crdState = probe.crdState ?? 'unknown';
-  const operatorPresent = (probe.resources ?? []).some(
-    (item) =>
-      item.kind === 'Deployment' && item.name === 'cnpg-controller-manager',
-  );
-  if (
-    plan.clusterState === 'absent' &&
-    crdState === 'absent' &&
-    operatorPresent
-  ) {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: false,
-      mutated: false,
-      refusals: [
-        ...plan.refusals,
-        {
-          id: 'crd-absent-with-operator',
-          detail:
-            'cluster CRD is absent while the operator deployment is already present',
-        },
-      ],
-      actions: [],
-    };
-  }
-  /** @type {{ op: string, context: string, [key: string]: unknown }[]} */
+  const refusals = [...plan.refusals];
+  if (!options.authorize) refusals.push({ id: 'ensure-not-authorized', detail: 'Ensure not authorized' });
+  if (options.operatorManifestSha256 && options.operatorManifestSha256 !== probe.pin?.sha256)
+    refusals.push({ id: 'operator-manifest-sha-mismatch', detail: 'Manifest does not match pin' });
+  // This is a pure preview, never a receipt or an executable mutation plan.
+  if (!probe.fullAssessment)
+    refusals.push({ id: 'full-observation-required', detail: 'Projected observations cannot authorize baseline creation' });
   const actions = [];
-  const context = DEV_CNPG_CONTEXT;
-  const needsOperatorApply = !(
-    plan.operatorImage &&
-    probe.resources?.some(
-      (item) =>
-        item.kind === 'Deployment' &&
-        item.name === 'cnpg-controller-manager' &&
-        item.image === plan.operatorImage,
-    )
-  );
-  if (!needsOperatorApply) {
-    actions.push({ op: 'verify-operator', context, image: plan.operatorImage });
-  } else {
-    actions.push({
-      op: 'apply-operator',
-      context,
-      image: plan.operatorImage,
-      sha256: probe.pin.sha256,
-      args: [
-        '--context',
-        context,
-        'apply',
-        '--server-side',
-        '--field-manager=offscreen-dev-cnpg',
-        '-f',
-        '-',
-      ],
-    });
-    actions.push({
-      op: 'wait-established-crd',
-      context,
-      args: [
-        'wait',
-        '--for=condition=Established',
-        'crd/clusters.postgresql.cnpg.io',
-        '--timeout=180s',
-      ],
-    });
-    actions.push({
-      op: 'wait-operator-rollout',
-      context,
-      args: [
-        '-n',
-        'cnpg-system',
-        'rollout',
-        'status',
-        'deployment/cnpg-controller-manager',
-        '--timeout=240s',
-      ],
-    });
+  if (!refusals.length) {
+    const state = probe.fullAssessment;
+    if (state.operator === 'absent') actions.push({ op: 'apply-operator' });
+    else actions.push({ op: 'verify-operator' });
+    if (state.namespace === 'absent') actions.push({ op: 'create-namespace' });
+    if (state.cluster === 'absent') actions.push({ op: 'create-cluster' });
+    actions.push({ op: 'wait-cluster-ready' });
   }
-  if (options.failAfterOperator) {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: false,
-      mutated: true,
-      refusals: [
-        {
-          id: 'partial-operator',
-          detail: 'cluster was not applied; owned data was not deleted',
-        },
-      ],
-      actions,
-    };
-  }
-  if (options.failOperatorWaits) {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: false,
-      mutated: true,
-      refusals: [
-        {
-          id: 'operator-readiness-failed',
-          detail: 'operator CRD or rollout did not become ready',
-        },
-      ],
-      actions,
-    };
-  }
-  if (plan.namespaceState !== 'owned') {
-    actions.push({
-      op: 'apply-namespace',
-      context,
-      manifest: plan.namespaceManifest,
-      args: ['--context', context, 'apply', '-f', '-'],
-    });
-  }
-  if (plan.clusterState !== 'owned') {
-    actions.push({
-      op: 'apply-cluster',
-      context,
-      manifest: plan.clusterManifest,
-      args: ['--context', context, 'apply', '-f', '-'],
-    });
-  }
-  const touchesRelease = actions.some((action) =>
-    JSON.stringify(action).includes(RELEASE_CNPG_NAMESPACE),
-  );
-  return {
-    ...plan,
-    mode: 'ensure',
-    readOnly: false,
-    ok: !touchesRelease,
-    mutated: actions.some(
-      (action) => action.op !== 'verify-operator' && action.op !== 'noop',
-    ),
-    actions,
-  };
+  return { ...plan, mode: 'ensure', readOnly: true, ok: refusals.length === 0, mutated: false, refusals, actions };
 }
