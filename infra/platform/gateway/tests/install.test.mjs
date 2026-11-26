@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { parse } from 'yaml';
+import { parse, parseAllDocuments } from 'yaml';
 import { RELEASE_API_PORT } from '../../../clusters/kind/manager/config.mjs';
 import { RELEASE_BASELINE_NAMESPACE } from '../../common/commands.mjs';
 import {
@@ -15,7 +16,6 @@ import {
   GATEWAY_NAME,
   HELM_NAMESPACE,
   HELM_RELEASE,
-  IMAGE_DIGEST,
   kubectlMutationKind,
   LAB_EDGE_NAMESPACE,
   loadVerifiedPins,
@@ -33,6 +33,75 @@ const smokeRoutes = join(
 
 const context = 'kind-offscreen-release';
 const kubeCluster = 'kind-offscreen-release';
+const valuesYaml = join(gatewayDir, 'values.yaml');
+const selectedValues = parse(readFileSync(valuesYaml, 'utf8'));
+
+function renderPinnedChart() {
+  const pins = JSON.parse(readFileSync(join(gatewayDir, 'pins.yaml'), 'utf8'));
+  const result = spawnSync(
+    'helm',
+    [
+      'template',
+      HELM_RELEASE,
+      join(gatewayDir, pins.chart.archive),
+      '--namespace',
+      HELM_NAMESPACE,
+      '--skip-crds',
+      '-f',
+      valuesYaml,
+    ],
+    { encoding: 'utf8' },
+  );
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  return result.stdout;
+}
+
+const renderedStdout = renderPinnedChart();
+const renderedDocs = parseAllDocuments(renderedStdout)
+  .map((doc) => doc.toJS())
+  .filter((doc) => doc !== null && typeof doc === 'object');
+const renderedDeployment = renderedDocs.find(
+  (doc) => doc.kind === 'Deployment',
+);
+const renderedService = renderedDocs.find((doc) => doc.kind === 'Service');
+const renderedArgs = renderedDeployment.spec.template.spec.containers[0].args;
+
+/**
+ * @param {string[]} args
+ * @param {{ readTimeout: string, writeTimeout: string, idleTimeout: string }} timeouts
+ */
+function withWebTimeouts(args, timeouts) {
+  return args.map((arg) => {
+    if (
+      arg.startsWith(
+        '--entryPoints.web.transport.respondingTimeouts.readTimeout=',
+      )
+    ) {
+      return `--entryPoints.web.transport.respondingTimeouts.readTimeout=${timeouts.readTimeout}`;
+    }
+    if (
+      arg.startsWith(
+        '--entryPoints.web.transport.respondingTimeouts.writeTimeout=',
+      )
+    ) {
+      return `--entryPoints.web.transport.respondingTimeouts.writeTimeout=${timeouts.writeTimeout}`;
+    }
+    if (
+      arg.startsWith(
+        '--entryPoints.web.transport.respondingTimeouts.idleTimeout=',
+      )
+    ) {
+      return `--entryPoints.web.transport.respondingTimeouts.idleTimeout=${timeouts.idleTimeout}`;
+    }
+    return arg;
+  });
+}
+
+const rev11Args = withWebTimeouts(renderedArgs, {
+  readTimeout: '10s',
+  writeTimeout: '10s',
+  idleTimeout: '30s',
+});
 
 /**
  * @param {object} bundleDoc
@@ -64,7 +133,7 @@ const bundleDocs = parseGatewayApiBundle(
 
 /**
  * @param {Record<string, object | 'absent' | 'unreadable'>} objects
- * @param {{ helmRelease?: 'absent' | 'deployed' | 'foreign', crdExtra?: string[], timeoutOn?: string, gatewaySystemBusy?: boolean, labForeign?: boolean, bundleDrift?: boolean, dockerFails?: boolean, dockerTimedOut?: boolean, dockerNonLoopback?: boolean, staleGatewayCondition?: boolean }} [options]
+ * @param {{ helmRelease?: 'absent' | 'deployed' | 'foreign', helmChart?: string, storedValues?: 'selected' | 'timeout-drift', liveArgs?: 'rendered' | 'rev11' | 'duplicate-read', crdExtra?: string[], timeoutOn?: string, gatewaySystemBusy?: boolean, labForeign?: boolean, bundleDrift?: boolean, dockerFails?: boolean, dockerTimedOut?: boolean, dockerNonLoopback?: boolean, staleGatewayCondition?: boolean }} [options]
  */
 function makeFixture(objects, options = {}) {
   const calls = [];
@@ -95,7 +164,21 @@ function makeFixture(objects, options = {}) {
       replicas: 1,
       template: {
         spec: {
-          containers: [{ image: `docker.io/traefik@${IMAGE_DIGEST}` }],
+          hostNetwork: false,
+          containers: [
+            {
+              image: renderedDeployment.spec.template.spec.containers[0].image,
+              args:
+                options.liveArgs === 'rev11'
+                  ? rev11Args
+                  : options.liveArgs === 'duplicate-read'
+                    ? [
+                        ...renderedArgs,
+                        '--entryPoints.web.transport.respondingTimeouts.readTimeout=10s',
+                      ]
+                    : renderedArgs,
+            },
+          ],
         },
       },
     },
@@ -119,8 +202,8 @@ function makeFixture(objects, options = {}) {
       },
     },
     spec: {
-      type: 'ClusterIP',
-      ports: [{ name: 'web', port: 80, targetPort: 'web' }],
+      type: renderedService.spec.type,
+      ports: structuredClone(renderedService.spec.ports),
     },
   };
 
@@ -222,6 +305,12 @@ function makeFixture(objects, options = {}) {
       return ok('offscreen-release-control-plane 127.0.0.1:6443->6443/tcp\n');
     }
 
+    const listedChart = () => {
+      if (options.helmChart) return options.helmChart;
+      if (options.helmRelease === 'foreign') return 'traefik-99.0.0';
+      return 'traefik-42.4.1';
+    };
+
     if (command === 'helm') {
       if (args[0] === 'list') {
         if (helmInstalled) {
@@ -237,25 +326,13 @@ function makeFixture(objects, options = {}) {
           );
         }
         if (options.helmRelease === 'absent') return ok('[]');
-        if (options.helmRelease === 'foreign') {
-          return ok(
-            JSON.stringify([
-              {
-                name: HELM_RELEASE,
-                namespace: HELM_NAMESPACE,
-                status: 'deployed',
-                chart: 'traefik-99.0.0',
-              },
-            ]),
-          );
-        }
         return ok(
           JSON.stringify([
             {
               name: HELM_RELEASE,
               namespace: HELM_NAMESPACE,
               status: 'deployed',
-              chart: 'traefik-42.4.1',
+              chart: listedChart(),
             },
           ]),
         );
@@ -265,7 +342,32 @@ function makeFixture(objects, options = {}) {
         return ok('');
       }
       if (args[0] === 'template') {
-        return ok('kind: Deployment\nmetadata:\n  name: lab-gateway-traefik\n');
+        return ok(renderedStdout);
+      }
+      if (args[0] === 'get' && args[1] === 'values') {
+        if (
+          !args.includes(HELM_RELEASE) ||
+          !args.includes('--namespace') ||
+          !args.includes(HELM_NAMESPACE) ||
+          !args.includes('--kube-context') ||
+          !args.includes(context) ||
+          !args.includes('-o') ||
+          !args.includes('json')
+        ) {
+          throw new Error(
+            `helm get values missing explicit scope: ${args.join(' ')}`,
+          );
+        }
+        if (options.storedValues === 'timeout-drift') {
+          const drifted = structuredClone(selectedValues);
+          drifted.ports.web.transport.respondingTimeouts = {
+            readTimeout: '10s',
+            writeTimeout: '10s',
+            idleTimeout: '30s',
+          };
+          return ok(JSON.stringify(drifted));
+        }
+        return ok(JSON.stringify(selectedValues));
       }
       throw new Error(`unexpected helm: ${args.join(' ')}`);
     }
@@ -654,6 +756,20 @@ test('complete reuse performs no mutating kubectl or helm', () => {
   assert.equal(result.mutated, false);
   assert.equal(mutatingCalls(fx.calls).length, 0);
   assert.ok(
+    fx.calls.some((c) => c.command === 'helm' && c.args[0] === 'template'),
+  );
+  assert.ok(
+    fx.calls.some(
+      (c) =>
+        c.command === 'helm' && c.args[0] === 'get' && c.args[1] === 'values',
+    ),
+  );
+  assert.ok(
+    fx.calls.every(
+      (c) => !(c.command === 'helm' && c.args.includes('upgrade')),
+    ),
+  );
+  assert.ok(
     fx.calls.some(
       (c) =>
         c.command === 'kubectl' &&
@@ -839,6 +955,105 @@ test('stale gateway readiness refuses on reuse with no mutations', () => {
   const result = ensureGatewayInstall({ run: fx.run, gatewayRoot: gatewayDir });
   assert.equal(result.ok, false);
   assert.match(result.error ?? '', /readiness: gateway conditions stale/);
+  assert.equal(mutatingCalls(fx.calls).length, 0);
+});
+
+test('rev11 timeout args refuse without upgrade', () => {
+  const fx = makeFixture({}, { helmRelease: 'deployed', liveArgs: 'rev11' });
+  fx.seedBundlePresent();
+  fx.seedHelmPresent();
+  const result = ensureGatewayInstall({ run: fx.run, gatewayRoot: gatewayDir });
+  assert.equal(result.ok, false);
+  assert.match(
+    result.error ?? '',
+    /maintenance required: effective container args differ/,
+  );
+  assert.equal(mutatingCalls(fx.calls).length, 0);
+});
+
+test('rev12 rendered args and stored values stay a no-op', () => {
+  const fx = makeFixture({}, { helmRelease: 'deployed', liveArgs: 'rendered' });
+  fx.seedBundlePresent();
+  fx.seedHelmPresent();
+  const result = ensureGatewayInstall({ run: fx.run, gatewayRoot: gatewayDir });
+  assert.equal(result.ok, true, result.error);
+  assert.equal(result.mutated, false);
+  assert.equal(mutatingCalls(fx.calls).length, 0);
+});
+
+test('stored values drift refuses when live args already match', () => {
+  const fx = makeFixture(
+    {},
+    {
+      helmRelease: 'deployed',
+      storedValues: 'timeout-drift',
+      liveArgs: 'rendered',
+    },
+  );
+  fx.seedBundlePresent();
+  fx.seedHelmPresent();
+  const result = ensureGatewayInstall({ run: fx.run, gatewayRoot: gatewayDir });
+  assert.equal(result.ok, false);
+  assert.match(result.error ?? '', /stored Helm values differ/);
+  assert.equal(mutatingCalls(fx.calls).length, 0);
+});
+
+test('duplicate web timeout flag refuses without upgrade', () => {
+  const fx = makeFixture(
+    {},
+    { helmRelease: 'deployed', liveArgs: 'duplicate-read' },
+  );
+  fx.seedBundlePresent();
+  fx.seedHelmPresent();
+  const result = ensureGatewayInstall({ run: fx.run, gatewayRoot: gatewayDir });
+  assert.equal(result.ok, false);
+  assert.match(
+    result.error ?? '',
+    /duplicate flag entryPoints\.web\.transport\.respondingTimeouts\.readTimeout/,
+  );
+  assert.equal(mutatingCalls(fx.calls).length, 0);
+});
+
+test('chart prefix longer than the pinned release refuses', () => {
+  const fx = makeFixture(
+    {},
+    { helmRelease: 'deployed', helmChart: 'traefik-42.4.10' },
+  );
+  fx.seedBundlePresent();
+  fx.seedHelmPresent();
+  const result = ensureGatewayInstall({ run: fx.run, gatewayRoot: gatewayDir });
+  assert.equal(result.ok, false);
+  assert.match(result.error ?? '', /foreign or drifted helm release/);
+  assert.equal(mutatingCalls(fx.calls).length, 0);
+});
+
+test('absent bundle and foreign release refuse before any write', () => {
+  const fx = makeFixture({}, { helmRelease: 'foreign' });
+  fx.seedBundleAbsent();
+  fx.seedHelmAbsent();
+  const result = ensureGatewayInstall({ run: fx.run, gatewayRoot: gatewayDir });
+  assert.equal(result.ok, false);
+  assert.match(
+    result.error ?? '',
+    /orphan or foreign controller while gateway api bundle is absent/,
+  );
+  assert.equal(mutatingCalls(fx.calls).length, 0);
+});
+
+test('absent bundle and foreign gateway refuse before any write', () => {
+  const fx = makeFixture({}, { helmRelease: 'absent' });
+  fx.seedBundleAbsent();
+  fx.inventory.set(`gateway/${LAB_EDGE_NAMESPACE}/${GATEWAY_NAME}`, {
+    metadata: { name: GATEWAY_NAME, namespace: LAB_EDGE_NAMESPACE },
+    spec: { gatewayClassName: 'foreign' },
+  });
+  fx.seedHelmAbsent();
+  const result = ensureGatewayInstall({ run: fx.run, gatewayRoot: gatewayDir });
+  assert.equal(result.ok, false);
+  assert.match(
+    result.error ?? '',
+    /foreign gateway while gateway api bundle is absent/,
+  );
   assert.equal(mutatingCalls(fx.calls).length, 0);
 });
 

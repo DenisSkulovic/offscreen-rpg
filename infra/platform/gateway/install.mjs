@@ -24,6 +24,19 @@ export const IMAGE_DIGEST =
   'sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4';
 export const CONTROLLER_NAME = 'traefik.io/gateway-controller';
 
+const EXPECTED_IMAGE = `docker.io/traefik@${IMAGE_DIGEST}`;
+const WEB_TIMEOUT_FLAGS = {
+  readTimeout: 'entryPoints.web.transport.respondingTimeouts.readTimeout',
+  writeTimeout: 'entryPoints.web.transport.respondingTimeouts.writeTimeout',
+  idleTimeout: 'entryPoints.web.transport.respondingTimeouts.idleTimeout',
+};
+const GATEWAY_PROVIDER_FLAG = 'providers.kubernetesgateway';
+const FORBIDDEN_PROVIDER_FLAGS = [
+  'providers.kubernetesCRD',
+  'providers.kubernetesIngress',
+  'providers.kubernetesIngressNGINX',
+];
+
 export const GATEWAY_CRD_NAMES = [
   'backendtlspolicies.gateway.networking.k8s.io',
   'gatewayclasses.gateway.networking.k8s.io',
@@ -414,6 +427,436 @@ function readHelmRelease(context, run) {
  * @param {object} metadata
  * @param {string} label
  */
+/**
+ * @param {string} gatewayRoot
+ */
+function loadSelectedValues(gatewayRoot) {
+  let parsed;
+  try {
+    parsed = parse(readFileSync(join(gatewayRoot, 'values.yaml'), 'utf8'));
+  } catch {
+    throw new Error('selected values unreadable');
+  }
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('selected values are not a mapping');
+  }
+  if (parsed.image?.digest !== IMAGE_DIGEST) {
+    throw new Error('selected image digest mismatch');
+  }
+  return parsed;
+}
+
+/**
+ * @param {object} values
+ */
+function selectedTimeoutMap(values) {
+  const timeouts = values?.ports?.web?.transport?.respondingTimeouts;
+  if (
+    timeouts === null ||
+    typeof timeouts !== 'object' ||
+    Array.isArray(timeouts)
+  ) {
+    throw new Error('selected web timeouts malformed');
+  }
+  const expected = new Map();
+  for (const [field, flag] of Object.entries(WEB_TIMEOUT_FLAGS)) {
+    const value = timeouts[field];
+    if (typeof value !== 'string' || value.length === 0) {
+      throw new Error(`selected ${field} malformed`);
+    }
+    expected.set(flag, value);
+  }
+  return expected;
+}
+
+/**
+ * Traefik static flags are an unordered set. A repeated key is a conflict,
+ * not a last-wins override, so order is not part of equality.
+ *
+ * @param {unknown} args
+ */
+function parseFlagMap(args) {
+  if (!Array.isArray(args)) {
+    throw new Error('container args missing');
+  }
+  /** @type {Map<string, string | null>} */
+  const flags = new Map();
+  for (const arg of args) {
+    if (typeof arg !== 'string' || !arg.startsWith('--') || arg === '--') {
+      throw new Error('malformed container arg');
+    }
+    const body = arg.slice(2);
+    const eq = body.indexOf('=');
+    const key = eq === -1 ? body : body.slice(0, eq);
+    const value = eq === -1 ? null : body.slice(eq + 1);
+    if (key.length === 0) {
+      throw new Error('malformed container arg');
+    }
+    if (flags.has(key)) {
+      throw new Error(`duplicate flag ${key}`);
+    }
+    flags.set(key, value);
+  }
+  return flags;
+}
+
+/**
+ * @param {Map<string, string | null>} left
+ * @param {Map<string, string | null>} right
+ */
+function sameFlagMaps(left, right) {
+  if (left.size !== right.size) return false;
+  for (const [key, value] of left) {
+    if (!right.has(key) || right.get(key) !== value) return false;
+  }
+  return true;
+}
+
+/**
+ * @param {unknown} args
+ * @param {Map<string, string>} expectedTimeouts
+ */
+function assertSharedRuntimeFlags(args, expectedTimeouts) {
+  const flags = parseFlagMap(args);
+  for (const [flag, value] of expectedTimeouts) {
+    if (!flags.has(flag)) {
+      throw new Error(`missing flag ${flag}`);
+    }
+    if (flags.get(flag) !== value) {
+      throw new Error(`conflicting flag ${flag}`);
+    }
+  }
+  if (flags.get(GATEWAY_PROVIDER_FLAG) !== null) {
+    throw new Error('provider mismatch');
+  }
+  for (const forbidden of FORBIDDEN_PROVIDER_FLAGS) {
+    for (const key of flags.keys()) {
+      if (key === forbidden || key.startsWith(`${forbidden}.`)) {
+        throw new Error('provider mismatch');
+      }
+    }
+  }
+}
+
+/**
+ * @param {unknown[] | undefined} ports
+ * @param {string} label
+ */
+function assertNoHostPort(ports, label) {
+  for (const port of ports ?? []) {
+    if (port != null && port.hostPort !== undefined) {
+      throw new Error(`${label}: hostPort exposure`);
+    }
+  }
+}
+
+/**
+ * @param {string} chartPath
+ * @param {string} valuesPath
+ * @param {string} gatewayRoot
+ * @param {typeof runPlatformCommand} run
+ */
+function loadDesiredRender(chartPath, valuesPath, gatewayRoot, run) {
+  const values = loadSelectedValues(gatewayRoot);
+  const result = run('helm', [
+    'template',
+    HELM_RELEASE,
+    chartPath,
+    '--namespace',
+    HELM_NAMESPACE,
+    '--skip-crds',
+    '-f',
+    valuesPath,
+  ]);
+  if (result.timedOut) {
+    throw new Error('desired render timed out');
+  }
+  if (!result.ok) {
+    throw new Error('desired render failed');
+  }
+  let docs;
+  try {
+    docs = parseAllDocuments(result.stdout)
+      .map((doc) => {
+        if (doc.errors.length) {
+          throw new Error('desired render malformed');
+        }
+        return doc.toJS();
+      })
+      .filter((doc) => doc !== null && typeof doc === 'object');
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === 'desired render malformed'
+    ) {
+      throw error;
+    }
+    throw new Error('desired render malformed', { cause: error });
+  }
+
+  const expectedKeys = new Set(
+    HELM_OWNED_IDENTITIES.map(
+      (id) => `${id.kind}/${id.namespace ?? ''}/${id.name}`,
+    ),
+  );
+  const actualKeys = new Set();
+  for (const doc of docs) {
+    const key = `${doc.kind}/${doc.metadata?.namespace ?? ''}/${doc.metadata?.name}`;
+    if (!expectedKeys.has(key) || actualKeys.has(key)) {
+      throw new Error(`desired render unexpected object ${key}`);
+    }
+    actualKeys.add(key);
+  }
+  if (actualKeys.size !== expectedKeys.size) {
+    throw new Error('desired render identity count mismatch');
+  }
+
+  const deployment = docs.find((doc) => doc.kind === 'Deployment');
+  const service = docs.find((doc) => doc.kind === 'Service');
+  const gatewayClass = docs.find((doc) => doc.kind === 'GatewayClass');
+  const container = deployment?.spec?.template?.spec?.containers?.[0];
+  if (container?.image !== EXPECTED_IMAGE) {
+    throw new Error('desired render image mismatch');
+  }
+  if (deployment.spec?.replicas !== 1) {
+    throw new Error('desired render replica mismatch');
+  }
+  if (deployment.spec?.template?.spec?.hostNetwork !== false) {
+    throw new Error('desired render hostNetwork exposure');
+  }
+  assertNoHostPort(container?.ports, 'desired render');
+  if (service?.spec?.type !== 'ClusterIP') {
+    throw new Error('desired render service type mismatch');
+  }
+  if ((service.spec?.externalIPs ?? []).length > 0) {
+    throw new Error('desired render externalIPs exposure');
+  }
+  assertNoHostPort(service.spec?.ports, 'desired render');
+  if (gatewayClass?.spec?.controllerName !== CONTROLLER_NAME) {
+    throw new Error('desired render gatewayclass mismatch');
+  }
+  assertSharedRuntimeFlags(container.args, selectedTimeoutMap(values));
+  return { deployment, service, gatewayClass };
+}
+
+/**
+ * @param {object} liveDeployment
+ * @param {object} liveService
+ * @param {object} liveGatewayClass
+ * @param {ReturnType<typeof loadDesiredRender>} rendered
+ */
+function assertLiveControllerMatchesRender(
+  liveDeployment,
+  liveService,
+  liveGatewayClass,
+  rendered,
+) {
+  if (liveDeployment?.spec?.replicas !== rendered.deployment.spec.replicas) {
+    throw new Error(
+      'maintenance required: deployment replicas differ from the pinned chart render. Refusing automatic upgrade.',
+    );
+  }
+  if (
+    liveDeployment?.spec?.template?.spec?.hostNetwork !==
+    rendered.deployment.spec.template.spec.hostNetwork
+  ) {
+    throw new Error(
+      'maintenance required: hostNetwork differs from the pinned chart render. Refusing automatic upgrade.',
+    );
+  }
+  const liveContainer = liveDeployment?.spec?.template?.spec?.containers?.[0];
+  const renderedContainer =
+    rendered.deployment.spec.template.spec.containers[0];
+  if (liveContainer?.image !== renderedContainer.image) {
+    throw new Error(
+      'maintenance required: container image differs from the pinned chart render. Refusing automatic upgrade.',
+    );
+  }
+  assertNoHostPort(liveContainer?.ports, 'maintenance required');
+  let liveFlags;
+  let renderedFlags;
+  try {
+    liveFlags = parseFlagMap(liveContainer?.args);
+    renderedFlags = parseFlagMap(renderedContainer.args);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'flag mismatch';
+    throw new Error(
+      `maintenance required: ${message}. Refusing automatic upgrade.`,
+      { cause: error },
+    );
+  }
+  if (!sameFlagMaps(liveFlags, renderedFlags)) {
+    throw new Error(
+      'maintenance required: effective container args differ from the pinned chart render. Refusing automatic upgrade.',
+    );
+  }
+  if (liveService?.spec?.type !== rendered.service.spec.type) {
+    throw new Error(
+      'maintenance required: service type differs from the pinned chart render. Refusing automatic upgrade.',
+    );
+  }
+  if (
+    !isDeepStrictEqual(liveService?.spec?.ports, rendered.service.spec.ports)
+  ) {
+    throw new Error(
+      'maintenance required: service ports differ from the pinned chart render. Refusing automatic upgrade.',
+    );
+  }
+  if ((liveService?.spec?.externalIPs ?? []).length > 0) {
+    throw new Error(
+      'maintenance required: externalIPs exposure. Refusing automatic upgrade.',
+    );
+  }
+  assertNoHostPort(liveService?.spec?.ports, 'maintenance required');
+  if (
+    liveGatewayClass?.spec?.controllerName !==
+    rendered.gatewayClass.spec.controllerName
+  ) {
+    throw new Error(
+      'maintenance required: gatewayclass differs from the pinned chart render. Refusing automatic upgrade.',
+    );
+  }
+}
+
+/**
+ * @param {string} context
+ * @param {{ kind: string, name: string, namespace?: string }} id
+ * @param {typeof runPlatformCommand} run
+ */
+function readHelmIdentity(context, id, run) {
+  const resource = id.kind.toLowerCase();
+  if (id.namespace != null) {
+    return readPlatformObject(
+      {
+        profileId: 'release',
+        resource,
+        name: id.name,
+        namespace: id.namespace,
+      },
+      { run },
+    );
+  }
+  return readClusterJson(context, resource, id.name, run);
+}
+
+/**
+ * @param {string} context
+ * @param {typeof runPlatformCommand} run
+ */
+function readGatewaySystemNamespace(context, run) {
+  const ns = readPlatformObject(
+    { profileId: 'release', resource: 'namespace', name: HELM_NAMESPACE },
+    { run },
+  );
+  if (ns.state === 'unreadable') {
+    throw new Error('gateway-system namespace unreadable');
+  }
+  if (ns.state === 'present') {
+    const list = run('kubectl', [
+      '--context',
+      context,
+      'get',
+      'all',
+      '-n',
+      HELM_NAMESPACE,
+      '--ignore-not-found',
+      '-o',
+      'name',
+    ]);
+    if (!list.ok) {
+      throw new Error('gateway-system inventory failed');
+    }
+    if (list.stdout.trim()) {
+      throw new Error('gateway-system namespace not empty-compatible');
+    }
+  }
+  return ns;
+}
+
+/**
+ * Read-only. An absent Gateway API bundle must not be written while a
+ * controller release, owned object, or Gateway is already present or unreadable.
+ *
+ * @param {string} context
+ * @param {typeof runPlatformCommand} run
+ */
+function assertAbsentBundleAdmitsInstall(context, run) {
+  const helmRelease = readHelmRelease(context, run);
+  if (helmRelease.state === 'unreadable') {
+    throw new Error(helmRelease.reason ?? 'helm release unreadable');
+  }
+  if (helmRelease.state === 'present') {
+    throw new Error(
+      'orphan or foreign controller while gateway api bundle is absent',
+    );
+  }
+  const gateway = readPlatformObject(
+    {
+      profileId: 'release',
+      resource: 'gateway',
+      name: GATEWAY_NAME,
+      namespace: LAB_EDGE_NAMESPACE,
+    },
+    { run },
+  );
+  if (gateway.state === 'unreadable') {
+    throw new Error('gateway unreadable');
+  }
+  if (gateway.state === 'present') {
+    throw new Error('foreign gateway while gateway api bundle is absent');
+  }
+  for (const id of HELM_OWNED_IDENTITIES) {
+    const read = readHelmIdentity(context, id, run);
+    if (read.state === 'unreadable') {
+      throw new Error(`preflight unreadable: ${id.kind}/${id.name}`);
+    }
+    if (read.state === 'present') {
+      throw new Error(`preflight conflict: ${id.kind}/${id.name}`);
+    }
+  }
+  readGatewaySystemNamespace(context, run);
+}
+
+/**
+ * @param {string} context
+ * @param {typeof runPlatformCommand} run
+ */
+function readStoredHelmValues(context, run) {
+  const result = run('helm', [
+    'get',
+    'values',
+    HELM_RELEASE,
+    '--namespace',
+    HELM_NAMESPACE,
+    '--kube-context',
+    context,
+    '-o',
+    'json',
+  ]);
+  if (result.timedOut) {
+    return { state: 'unreadable', reason: 'helm get values timed out' };
+  }
+  if (!result.ok) {
+    return { state: 'unreadable', reason: 'helm get values failed' };
+  }
+  try {
+    const parsed = JSON.parse(result.stdout);
+    if (
+      parsed === null ||
+      typeof parsed !== 'object' ||
+      Array.isArray(parsed)
+    ) {
+      return {
+        state: 'unreadable',
+        reason: 'helm get values is not a mapping',
+      };
+    }
+    return { state: 'present', values: parsed };
+  } catch {
+    return { state: 'unreadable', reason: 'helm get values malformed' };
+  }
+}
+
 function objectGeneration(metadata, label) {
   const generation = metadata?.generation;
   if (generation === undefined || generation === null) {
@@ -572,19 +1015,40 @@ function assessReadiness(context, run) {
   if (status.observedGeneration !== depGen) {
     throw new Error('readiness: deployment generation stale');
   }
-  const desired = dep.spec?.replicas ?? 1;
+  if (dep.spec?.replicas !== 1) {
+    throw new Error('readiness: replica count mismatch');
+  }
   for (const field of [
     'updatedReplicas',
     'availableReplicas',
     'readyReplicas',
   ]) {
-    if ((status[field] ?? 0) < desired) {
+    if ((status[field] ?? 0) < 1) {
       throw new Error(`readiness: deployment ${field} low`);
     }
   }
-  const image = dep.spec?.template?.spec?.containers?.[0]?.image ?? '';
-  if (!image.includes(IMAGE_DIGEST)) {
+  const podSpec = dep.spec?.template?.spec ?? {};
+  if (podSpec.hostNetwork === true) {
+    throw new Error('readiness: hostNetwork exposure');
+  }
+  const containers = podSpec.containers;
+  if (!Array.isArray(containers) || containers.length !== 1) {
+    throw new Error('readiness: container count mismatch');
+  }
+  const container = containers[0];
+  if (container?.image !== EXPECTED_IMAGE) {
     throw new Error('readiness: deployment image mismatch');
+  }
+  try {
+    assertNoHostPort(container?.ports, 'readiness');
+    const selected = loadSelectedValues(moduleDir);
+    assertSharedRuntimeFlags(container?.args, selectedTimeoutMap(selected));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'flag mismatch';
+    throw new Error(
+      message.startsWith('readiness:') ? message : `readiness: ${message}`,
+      { cause: error },
+    );
   }
 
   const service = readPlatformObject(
@@ -603,6 +1067,9 @@ function assessReadiness(context, run) {
   if (svc.spec?.type !== 'ClusterIP') {
     throw new Error('readiness: service type mismatch');
   }
+  if ((svc.spec?.externalIPs ?? []).length > 0) {
+    throw new Error('readiness: externalIPs exposure');
+  }
   const ports = svc.spec?.ports ?? [];
   if (
     ports.length !== 1 ||
@@ -612,6 +1079,7 @@ function assessReadiness(context, run) {
   ) {
     throw new Error('readiness: service port mismatch');
   }
+  assertNoHostPort(ports, 'readiness');
 
   const gateway = readPlatformObject(
     {
@@ -630,8 +1098,12 @@ function assessReadiness(context, run) {
   if (gw.spec?.gatewayClassName !== GATEWAY_CLASS_NAME) {
     throw new Error('readiness: gateway class mismatch');
   }
-  const listener = (gw.spec?.listeners ?? []).find((l) => l.name === 'web');
-  if (!listener || listener.port !== 8000 || listener.protocol !== 'HTTP') {
+  const selectedGateway = parse(
+    readFileSync(join(moduleDir, 'gateway.yaml'), 'utf8'),
+  );
+  if (
+    !isDeepStrictEqual(gw.spec?.listeners, selectedGateway?.spec?.listeners)
+  ) {
     throw new Error('readiness: gateway listener mismatch');
   }
   if (
@@ -835,8 +1307,31 @@ export function ensureGatewayInstall(deps = {}) {
     return fail('partial gateway api bundle');
   }
 
+  stage = 'desired-render';
+  const valuesPath = join(gatewayRoot, 'values.yaml');
+  let desiredRender;
+  try {
+    desiredRender = loadDesiredRender(
+      pinsArtifacts.chartPath,
+      valuesPath,
+      gatewayRoot,
+      run,
+    );
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'desired render failed';
+    return fail(message);
+  }
+
   stage = 'bundle-ensure';
   if (bundleMode === 'absent') {
+    try {
+      assertAbsentBundleAdmitsInstall(context, run);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'bundle admission refused';
+      return fail(message);
+    }
     try {
       refuseWriteDrift(
         BUNDLE_IDENTITIES.map((identity) => ({
@@ -932,19 +1427,7 @@ export function ensureGatewayInstall(deps = {}) {
 
   if (helmRelease.state === 'absent') {
     for (const id of HELM_OWNED_IDENTITIES) {
-      const resource = id.kind.toLowerCase();
-      const read =
-        id.namespace != null
-          ? readPlatformObject(
-              {
-                profileId: 'release',
-                resource,
-                name: id.name,
-                namespace: id.namespace,
-              },
-              { run },
-            )
-          : readClusterJson(context, resource, id.name, run);
+      const read = readHelmIdentity(context, id, run);
       if (read.state === 'unreadable') {
         return fail(`preflight unreadable: ${id.kind}/${id.name}`);
       }
@@ -953,31 +1436,15 @@ export function ensureGatewayInstall(deps = {}) {
       }
     }
 
-    const ns = readPlatformObject(
-      { profileId: 'release', resource: 'namespace', name: HELM_NAMESPACE },
-      { run },
-    );
-    if (ns.state === 'unreadable') {
-      return fail('gateway-system namespace unreadable');
-    }
-    if (ns.state === 'present') {
-      const list = run('kubectl', [
-        '--context',
-        context,
-        'get',
-        'all',
-        '-n',
-        HELM_NAMESPACE,
-        '--ignore-not-found',
-        '-o',
-        'name',
-      ]);
-      if (!list.ok) {
-        return fail('gateway-system inventory failed');
-      }
-      if (list.stdout.trim()) {
-        return fail('gateway-system namespace not empty-compatible');
-      }
+    let ns;
+    try {
+      ns = readGatewaySystemNamespace(context, run);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'gateway-system namespace refused';
+      return fail(message);
     }
 
     stage = 'helm-install';
@@ -990,22 +1457,10 @@ export function ensureGatewayInstall(deps = {}) {
       },
     ];
     for (const id of HELM_OWNED_IDENTITIES) {
-      const resource = id.kind.toLowerCase();
       helmWriteChecks.push({
         label: `${id.kind}/${id.name}`,
         snapshot: { kind: 'absent' },
-        read: () =>
-          id.namespace != null
-            ? readPlatformObject(
-                {
-                  profileId: 'release',
-                  resource,
-                  name: id.name,
-                  namespace: id.namespace,
-                },
-                { run },
-              )
-            : readClusterJson(context, resource, id.name, run),
+        read: () => readHelmIdentity(context, id, run),
       });
     }
     let gatewaySystemSnapshot;
@@ -1172,35 +1627,58 @@ export function ensureGatewayInstall(deps = {}) {
   } else {
     const rel = helmRelease.release;
     const expectedChart = `traefik-${pinsArtifacts.pins.chart.version}`;
-    if (
-      rel.status !== 'deployed' ||
-      !String(rel.chart ?? '').startsWith(expectedChart)
-    ) {
+    if (rel.status !== 'deployed' || rel.chart !== expectedChart) {
       return fail('foreign or drifted helm release');
     }
     if (rel.namespace !== HELM_NAMESPACE) {
       return fail('helm release namespace mismatch');
     }
+    /** @type {object | undefined} */
+    let liveDeployment;
+    /** @type {object | undefined} */
+    let liveService;
+    /** @type {object | undefined} */
+    let liveGatewayClass;
     for (const id of HELM_OWNED_IDENTITIES) {
-      const resource = id.kind.toLowerCase();
-      const read =
-        id.namespace != null
-          ? readPlatformObject(
-              {
-                profileId: 'release',
-                resource,
-                name: id.name,
-                namespace: id.namespace,
-              },
-              { run },
-            )
-          : readClusterJson(context, resource, id.name, run);
+      const read = readHelmIdentity(context, id, run);
       if (read.state !== 'present') {
         return fail(`owned object missing: ${id.kind}/${id.name}`);
       }
       if (!helmOwned(read.object.metadata)) {
         return fail(`foreign helm ownership: ${id.kind}/${id.name}`);
       }
+      if (id.kind === 'Deployment') liveDeployment = read.object;
+      if (id.kind === 'Service') liveService = read.object;
+      if (id.kind === 'GatewayClass') liveGatewayClass = read.object;
+    }
+    const storedValues = readStoredHelmValues(context, run);
+    if (storedValues.state !== 'present') {
+      return fail(storedValues.reason ?? 'helm get values unreadable');
+    }
+    let selectedValues;
+    try {
+      selectedValues = loadSelectedValues(gatewayRoot);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'selected values unreadable';
+      return fail(message);
+    }
+    if (!isDeepStrictEqual(storedValues.values, selectedValues)) {
+      return fail(
+        'maintenance required: stored Helm values differ from pinned values.yaml. Refusing automatic upgrade.',
+      );
+    }
+    try {
+      assertLiveControllerMatchesRender(
+        liveDeployment,
+        liveService,
+        liveGatewayClass,
+        desiredRender,
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'controller drift';
+      return fail(message);
     }
 
     const labNs = readPlatformObject(

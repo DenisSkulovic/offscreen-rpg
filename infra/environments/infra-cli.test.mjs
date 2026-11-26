@@ -938,7 +938,15 @@ test('release gateway status uses class, deployment, service, and gateway readin
       replicas: 1,
       template: {
         spec: {
-          containers: [{ image: `docker.io/traefik:v3.7.19@${IMAGE_DIGEST}` }],
+          containers: [{
+            image: `docker.io/traefik@${IMAGE_DIGEST}`,
+            args: [
+              '--providers.kubernetesgateway',
+              '--entryPoints.web.transport.respondingTimeouts.readTimeout=60s',
+              '--entryPoints.web.transport.respondingTimeouts.writeTimeout=0s',
+              '--entryPoints.web.transport.respondingTimeouts.idleTimeout=180s',
+            ],
+          }],
         },
       },
     },
@@ -964,7 +972,12 @@ test('release gateway status uses class, deployment, service, and gateway readin
       metadata: { name: GATEWAY_NAME, namespace: LAB_EDGE_NAMESPACE, generation },
       spec: {
         gatewayClassName: GATEWAY_CLASS_NAME,
-        listeners: [{ name: 'web', port: 8000, protocol: 'HTTP' }],
+        listeners: [{
+          name: 'web',
+          port: 8000,
+          protocol: 'HTTP',
+          allowedRoutes: { namespaces: { from: 'Same' } },
+        }],
       },
       status: {
         conditions,
