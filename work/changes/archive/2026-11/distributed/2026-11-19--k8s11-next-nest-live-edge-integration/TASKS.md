@@ -1,3 +1,5 @@
+> Superseded by owner 2026-11-26. Historical source/fixture receipts and design only; no dispatch. Outstanding edge acceptance is tracked in the permanent capability catalog.
+
 # K8S11 | Composer tasks: real Next/Nest same-origin edge
 
 **Baseline:** 584b594. **Verify SHA:** `ec73a535`. **State:** Proposed/unselected; **T01 VERIFY PASS** (2026-11-20); **not Done**; **no live edge claimed**. **Default model:** Composer Standard. **Deep existing planner notes:** [TURN02 SOURCE-MAP](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--turn02-compose-real-kubernetes-application-release/SOURCE-MAP.md), [TURN02 TASKS](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/distributed/2026-11-19--turn02-compose-real-kubernetes-application-release/TASKS.md). Do not build a competing edge architecture or duplicate image work.

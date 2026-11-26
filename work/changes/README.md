@@ -288,7 +288,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [OBS04](backlog/platform-operations/2026-11-15--obs04-finite-action-transition-evidence/CHANGE.md) | Finite-action evidence |
 | [DIST03](open/2026-11-19--dist03-game-authority-private-boundary/CHANGE.md) | Private Game Authority boundary |
 | [K8S10](backlog/platform-operations/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md) | Distributed fault/load harness |
-| [K8S11](open/2026-11-19--k8s11-next-nest-live-edge-integration/CHANGE.md) | Next/Nest live edge |
+| [K8S11](archive/2026-11/distributed/2026-11-19--k8s11-next-nest-live-edge-integration/CHANGE.md) | Superseded; live browser/edge proof transferred to permanent capability catalog |
 | [TURN03](open/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) | Full distributed forkable turn |
 | [TURN04](backlog/platform-operations/2026-11-19--turn04-opt-in-real-provider-confirmation/CHANGE.md) | Opt-in live provider confirmation |
 | [DXK08](archive/2026-11/infrastructure/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md) | Fast Kubernetes developer loop — **Done** |
