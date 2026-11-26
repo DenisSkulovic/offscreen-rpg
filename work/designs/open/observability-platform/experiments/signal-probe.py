@@ -1,7 +1,7 @@
 """Synthetic OTLP HTTP probe. No credentials or application payloads."""
 import json, pathlib, secrets, sys, time, urllib.request, urllib.parse, urllib.error
 out=pathlib.Path(sys.argv[1])
-collector,prom,loki,tempo=[f"http://127.0.0.1:{int(p)}" for p in sys.argv[2:]]
+collector,prom,loki,tempo=sys.argv[2:]
 opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 run=secrets.token_hex(8)
 trace=secrets.token_hex(16)
@@ -16,9 +16,13 @@ scope={"name":"offscreen.synthetic"}
 def call(base,path,params=None,data=None):
     url=base+path+("?" + urllib.parse.urlencode(params) if params else "")
     req=urllib.request.Request(url,data=json.dumps(data).encode() if data is not None else None,headers={"Content-Type":"application/json"} if data is not None else {})
-    with opener.open(req,timeout=8) as r:
-        raw=r.read()
-        return json.loads(raw) if raw else {}
+    try:
+        with opener.open(req,timeout=8) as r:
+            raw=r.read()
+            return json.loads(raw) if raw else {}
+    except urllib.error.HTTPError as e:
+        body=e.read().decode(errors="replace")
+        raise RuntimeError(f"HTTP {e.code} {path}: {body[:2000]}") from e
 def span(sid,name,start,end,**kw):
     return dict(traceId=trace,spanId=sid,name=name,kind=1,startTimeUnixNano=str(start),endTimeUnixNano=str(end),attributes=[attr("probe.run",run)],**kw)
 payloads={
@@ -68,7 +72,7 @@ while pending and time.monotonic()<deadline:
             if check(d):
                 print("PASS",name,flush=True)
                 pending.remove(name)
-        except (OSError,ValueError,urllib.error.URLError) as e:
+        except (OSError,ValueError,RuntimeError,urllib.error.URLError) as e:
             (out/f"{name}.error.txt").write_text(str(e))
     if pending: time.sleep(2)
 print("E04-A", "PASS" if not pending else "FAIL: "+",".join(sorted(pending)))
