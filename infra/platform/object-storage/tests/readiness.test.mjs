@@ -296,9 +296,7 @@ function buildChainState(options = {}) {
       endpoints: [
         {
           addresses: [podIp],
-          ready: options.endpointReady !== false,
-          serving: options.endpointReady !== false,
-          terminating: false,
+          conditions: { ready: options.endpointReady !== false, serving: options.endpointReady !== false, terminating: false },
           targetRef: {
             kind: 'Pod',
             name: 'object-store-pod',
