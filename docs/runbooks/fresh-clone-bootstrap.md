@@ -21,6 +21,15 @@ Each operation creates an absent owned cluster or verifies an existing one. No s
 
 ## Core platform
 
+Initial PostgreSQL creation requires explicit owner maintenance quiescence. Stop topology, tenant, Temporal and concurrent provisioning writers before authorizing either command. The local baseline lock alone does not coordinate all writers. Do not persist this authorization or use it to repair partial installation. See [PostgreSQL entrypoints and safety contract](../../infra/platform/postgres/README.md).
+
+```bash
+OFFSCREEN_POSTGRES_MAINTENANCE=authorized node infra/environments/infra-cli.mjs up --env dev --services postgres --json
+OFFSCREEN_POSTGRES_MAINTENANCE=authorized node infra/environments/infra-cli.mjs up --env release --services postgres --json
+```
+
+Only after both baseline ensures succeed, proceed with ordinary core ensure (which re-observes compatible PostgreSQL without granting maintenance authorization):
+
 ```bash
 node infra/environments/infra-cli.mjs up --env dev --services core --human
 node infra/environments/infra-cli.mjs up --env release --services core --human
