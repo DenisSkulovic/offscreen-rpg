@@ -176,26 +176,17 @@ test('the CLI plans from an injected probe and refuses live ensure', () => {
     dirname(fileURLToPath(import.meta.url)),
     '../src/adapters/dev-object-store-bootstrap-cli.mjs',
   );
-  const plan = spawnSync(process.execPath, [script, 'plan'], {
-    encoding: 'utf8',
-    env: {
-      ...process.env,
-      OFFSCREEN_DEV_S3_PROBE: JSON.stringify(ready),
-      OFFSCREEN_DEV_S3_ENSURE: 'authorized',
-    },
-  });
-  assert.equal(plan.status, 2);
-  assert.match(plan.stderr, /injected probe is not a live observation/);
-  const ensure = spawnSync(process.execPath, [script, 'ensure'], {
-    encoding: 'utf8',
-    env: {
-      ...process.env,
-      OFFSCREEN_DEV_S3_ENSURE: 'authorized',
-      OFFSCREEN_DEV_S3_PROBE: JSON.stringify(ready),
-    },
-  });
-  assert.equal(ensure.status, 2);
-  assert.match(ensure.stderr, /injected probe cannot authorize mutation/);
+  const env = { ...process.env };
+  delete env.OFFSCREEN_DEV_S3_ENSURE;
+  for (const subcommand of ['plan', 'ensure', 'prove']) {
+    const result = spawnSync(process.execPath, [script, subcommand], {
+      encoding: 'utf8',
+      env,
+    });
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /sole writer/);
+    assert.equal(result.stdout, '');
+  }
 });
 
 test('pvc or deployment without admin secret refuses', () => {
