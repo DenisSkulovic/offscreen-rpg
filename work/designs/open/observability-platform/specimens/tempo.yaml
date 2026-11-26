@@ -1,0 +1,28 @@
+# DESIGN ONLY, dev profile.
+fullnameOverride: obs-tempo
+replicas: 1
+tempo:
+  retention: 72h
+  reportingEnabled: false
+  multitenancyEnabled: false
+  receivers:
+    jaeger: null
+    otlp:
+      protocols:
+        grpc: {endpoint: "0.0.0.0:4317"}
+        http: null
+  metricsGenerator: {enabled: false}
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {memory: 512Mi}
+  storage:
+    trace:
+      backend: local
+      local: {path: /var/tempo/traces}
+      wal: {path: /var/tempo/wal}
+persistence:
+  enabled: true
+  storageClassName: standard
+  size: 5Gi
+  enableStatefulSetAutoDeletePVC: false
+service: {type: ClusterIP}

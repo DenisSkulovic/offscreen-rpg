@@ -1,0 +1,33 @@
+# DESIGN ONLY; admin Secret must be supplied by separately approved lifecycle.
+fullnameOverride: obs-grafana
+replicas: 1
+rbac: {create: false}
+serviceAccount:
+  automountServiceAccountToken: false
+testFramework: {enabled: false}
+service: {type: ClusterIP}
+ingress: {enabled: false}
+persistence: {enabled: false}
+admin:
+  existingSecret: obs-grafana-admin
+  userKey: admin-user
+  passwordKey: admin-password
+resources:
+  requests: {cpu: 50m, memory: 128Mi}
+  limits: {memory: 256Mi}
+grafana.ini:
+  analytics:
+    reporting_enabled: false
+    check_for_updates: false
+    check_for_plugin_updates: false
+  auth.anonymous:
+    enabled: false
+  users:
+    allow_sign_up: false
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - {name: Prometheus, uid: offscreen-metrics, type: prometheus, access: proxy, url: "http://obs-prometheus:9090", isDefault: true, editable: false}
+      - {name: Loki, uid: offscreen-logs, type: loki, access: proxy, url: "http://obs-loki:3100", editable: false}
+      - {name: Tempo, uid: offscreen-traces, type: tempo, access: proxy, url: "http://obs-tempo:3200", editable: false}
