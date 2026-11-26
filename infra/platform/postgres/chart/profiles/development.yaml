@@ -28,3 +28,7 @@ bootstrap:
     owner: dev
     localeCType: C
     localeCollate: C
+    postInitSQL:
+      - 'REVOKE CONNECT, TEMPORARY ON DATABASE "postgres" FROM PUBLIC;'
+    postInitApplicationSQL:
+      - 'REVOKE CONNECT, TEMPORARY ON DATABASE "dev" FROM PUBLIC;'
