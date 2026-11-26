@@ -56,7 +56,7 @@ export function readInjectedReleaseClusterProbe(env) {
  */
 export async function executeReleaseClusterCreate(deps) {
   const probes = await deps.collectProbes();
-  const preflight = runStackPreflight(probes);
+  const preflight = runStackPreflight(probes, { createAbsentRelease: true });
   if (!preflight.ok) {
     return {
       ok: false,
