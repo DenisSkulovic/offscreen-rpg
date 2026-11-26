@@ -52,6 +52,8 @@ function operatorReady(profile, inventory, observations, run) {
   const objects = inventory.map(entry => observations.get(entry.id)?.object);
   const crds = objects.filter(object => object?.kind === 'CustomResourceDefinition');
   if (crds.length !== 11 || !crds.every(crd => condition(crd, 'Established') && condition(crd, 'NamesAccepted'))) return false;
+  const namespace = objects.find(object => object?.kind === 'Namespace');
+  if (namespace?.status?.phase !== 'Active') return false;
   const deployment = objects.find(object => object?.kind === 'Deployment');
   if (!deployment || deployment.status?.observedGeneration !== deployment.metadata.generation ||
     deployment.status?.updatedReplicas !== deployment.spec.replicas ||
@@ -117,7 +119,7 @@ export function collectBaselineObservation(profileId, { artifact, run = runPlatf
   const crdObservation = observations.get(crd.id);
   const cluster = crdObservation?.state === 'present' && condition(crdObservation.object, 'Established')
     ? readBaselineObject(profileId, 'cluster.postgresql.cnpg.io', baselineCnpgClusterName(profileId), namespaceName, run)
-    : operator.state === 'absent' ? { state: 'absent', unavailableByCrd: true } : { state: 'unreadable' };
+    : operator.state === 'absent' ? { state: 'absent', unavailableByCrd: true } : { state: 'unreadable', unavailableByCrd: crdObservation?.state === 'present' };
   return { profile, target, operator, observations, namespace, cluster };
 }
 
@@ -152,7 +154,7 @@ export function assessBaselineObservation(observation) {
     }
     if (namespaceState !== 'compatible') refuse('cluster-namespace-conflict', 'existing Cluster requires compatible namespace');
   }
-  if (clusterState === 'unreadable' && operator.state !== 'pending') refuse('cluster-unreadable', 'Cluster observation unavailable');
+  if (clusterState === 'unreadable' && !(operator.state === 'pending' && cluster.unavailableByCrd === true)) refuse('cluster-unreadable', 'Cluster observation unavailable');
   return { operator: operator.state, namespace: namespaceState, cluster: clusterState, observedInstances, refusals };
 }
 

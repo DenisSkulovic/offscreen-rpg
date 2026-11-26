@@ -63,7 +63,7 @@ export function ensureBaseline(profileId, deps = {}) {
   };
   try {
     if (deps.authorized !== true) return refuse('ensure-not-authorized', 'Baseline ensure requires explicit authorization');
-    const artifact = deps.artifact ?? loadOperatorArtifact({ path: deps.operatorManifestPath });
+    const artifact = loadOperatorArtifact({ path: deps.operatorManifestPath });
     const profile = readPlatformProfile(profileId);
     const rendered = renderBaseline(profileId, run);
     const collect = () => collectBaselineObservation(profileId, { artifact, run });
@@ -72,6 +72,9 @@ export function ensureBaseline(profileId, deps = {}) {
     let observed = collect();
     let assessed = assessBaselineObservation(observed);
     if (assessed.refusals.length) return receipt(false, assessed.refusals);
+    const initialNamespaceUid = observed.namespace.object?.metadata.uid;
+    const initialClusterUid = observed.cluster.object?.metadata.uid;
+    const initialInstances = assessed.observedInstances;
     let locked = false;
     const requiresWrite = state => state.operator === 'absent' || state.namespace === 'absent' || state.cluster === 'absent';
     if (requiresWrite(assessed)) {
@@ -87,6 +90,7 @@ export function ensureBaseline(profileId, deps = {}) {
     }
 
     if (assessed.operator === 'absent') {
+      if (!locked) return refuse('maintenance-lock-required', 'Operator installation requires custody');
       stage = 'operator';
       writeInFlight = true;
       actions.push({ op: 'apply-operator', outcome: 'attempted' });
@@ -132,6 +136,10 @@ export function ensureBaseline(profileId, deps = {}) {
       return { object };
     }
 
+    if (initialNamespaceUid !== observed.namespace.object?.metadata.uid ||
+      initialClusterUid !== observed.cluster.object?.metadata.uid ||
+      (initialInstances !== undefined && assessed.observedInstances !== initialInstances))
+      return refuse('identity-changed', 'Baseline changed during operator observation');
     let namespaceUid = observed.namespace.object?.metadata.uid;
     let clusterUid = observed.cluster.object?.metadata.uid;
     const clusterWasAbsent = assessed.cluster === 'absent';
@@ -161,6 +169,15 @@ export function ensureBaseline(profileId, deps = {}) {
       return refuse('admission-probe-failed', 'Trusted Cluster admission reference mismatch');
     actions.push({ op: 'verify-admission', outcome: 'ready' });
 
+    observed = collect();
+    assessed = assessBaselineObservation(observed);
+    if (assessed.refusals.length) return receipt(false, assessed.refusals);
+    if (assessed.operator !== 'ready' || assessed.namespace !== 'compatible' ||
+      observed.namespace.object?.metadata.uid !== namespaceUid ||
+      (clusterWasAbsent ? assessed.cluster !== 'absent' : observed.cluster.object?.metadata.uid !== clusterUid) ||
+      (initialInstances !== undefined && assessed.observedInstances !== initialInstances))
+      return refuse('identity-changed', 'Baseline changed during admission probe');
+
     if (assessed.cluster === 'absent') {
       const created = create(rendered.cluster, 'create-cluster');
       if (created.error) return refuse(created.error, 'Cluster creation stopped', created.state);
@@ -168,6 +185,7 @@ export function ensureBaseline(profileId, deps = {}) {
     }
 
     stage = 'readiness';
+    const expectedInstances = initialInstances ?? rendered.cluster.spec.instances;
     const readinessStart = custody.remaining();
     do {
       observed = collect();
@@ -175,6 +193,7 @@ export function ensureBaseline(profileId, deps = {}) {
       if (assessed.refusals.length) return receipt(false, assessed.refusals);
       if (observed.namespace.object?.metadata.uid !== namespaceUid || observed.cluster.object?.metadata.uid !== clusterUid)
         return refuse('identity-changed', 'Baseline UID changed during readiness');
+      if (assessed.observedInstances !== expectedInstances) return refuse('topology-changed', 'Baseline instance count changed');
       if (assessed.operator === 'ready' && assessed.cluster === 'ready') {
         const ready = observeWritablePrimary(profileId, { run });
         if (ready.ok && ready.namespaceUid === namespaceUid && ready.clusterUid === clusterUid) {

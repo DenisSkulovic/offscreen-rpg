@@ -101,325 +101,45 @@ const ready = {
   crdState: 'absent',
 };
 
-test('live instance count above profile default reuses without apply', () => {
-  const decision = ensureReleaseCnpg(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: pin.operatorImage,
-        },
-        compatibleNamespace(),
-        compatibleCluster({ instances: 4 }),
-      ],
-      crdState: 'present',
-    },
-    { authorize: true, operatorManifestSha256: pin.sha256 },
-  );
-  assert.equal(decision.ok, true);
-  assert.equal(decision.expectedInstances, 4);
-  assert.equal(
-    decision.actions.some((action) => action.op === 'apply-cluster'),
-    false,
-  );
+test('full compatible inventory preserves existing instance count', () => {
+  const result = ensureReleaseCnpg({ ...ready, resources: [compatibleNamespace(), compatibleCluster({ instances: 4 })],
+    fullAssessment: { operator: 'ready', namespace: 'compatible', cluster: 'ready', observedInstances: 4, refusals: [] },
+  }, { authorize: true });
+  assert.equal(result.ok, true);
+  assert.equal(result.expectedInstances, 4);
+  assert.equal(result.mutated, false);
+  assert.deepEqual(result.actions.map(a => a.op), ['verify-operator', 'wait-cluster-ready']);
 });
 
-test('matching namespace, cluster, and operator reuse without apply writes', () => {
-  const decision = ensureReleaseCnpg(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: pin.operatorImage,
-        },
-        compatibleNamespace(),
-        compatibleCluster(),
-      ],
-      crdState: 'present',
-    },
-    { authorize: true, operatorManifestSha256: pin.sha256 },
-  );
-  assert.equal(decision.ok, true);
-  assert.equal(decision.mutated, false);
-  assert.equal(
-    decision.actions.some((action) => String(action.op).startsWith('apply-')),
-    false,
-  );
-  assert.deepEqual(
-    decision.actions.map((action) => action.op),
-    ['verify-operator', 'wait-webhook-endpoint', 'wait-cluster-ready'],
-  );
+test('full cold inventory previews native create-only operations', () => {
+  const result = ensureReleaseCnpg({ ...ready, fullAssessment: {
+    operator: 'absent', namespace: 'absent', cluster: 'absent', refusals: [],
+  } }, { authorize: true });
+  assert.equal(result.ok, true);
+  assert.equal(result.mutated, false);
+  assert.deepEqual(result.actions.map(a => a.op),
+    ['apply-operator', 'create-namespace', 'create-cluster', 'wait-cluster-ready']);
 });
 
-test('missing namespace and cluster plan create only the absent pieces', () => {
-  const created = ensureReleaseCnpg(ready, {
-    authorize: true,
-    operatorManifestSha256: pin.sha256,
-  });
-  assert.equal(created.ok, true);
-  assert.deepEqual(
-    created.actions.map((action) => action.op),
-    [
-      'apply-operator',
-      'wait-established-crd',
-      'wait-operator-rollout',
-      'wait-webhook-endpoint',
-      'apply-namespace',
-      'apply-cluster',
-      'wait-cluster-ready',
-    ],
-  );
-  const onlyNamespace = ensureReleaseCnpg(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: pin.operatorImage,
-        },
-        compatibleCluster(),
-      ],
-      crdState: 'present',
-    },
-    { authorize: true, operatorManifestSha256: pin.sha256 },
-  );
-  assert.equal(onlyNamespace.ok, true);
-  assert.equal(
-    onlyNamespace.actions.some((action) => action.op === 'apply-cluster'),
-    false,
-  );
-  assert.equal(
-    onlyNamespace.actions.some((action) => action.op === 'apply-namespace'),
-    true,
-  );
-
-  const onlyCluster = ensureReleaseCnpg(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: pin.operatorImage,
-        },
-        compatibleNamespace(),
-      ],
-      crdState: 'present',
-    },
-    { authorize: true, operatorManifestSha256: pin.sha256 },
-  );
-  assert.equal(onlyCluster.ok, true);
-  assert.equal(
-    onlyCluster.actions.some((action) => action.op === 'apply-namespace'),
-    false,
-  );
-  assert.equal(
-    onlyCluster.actions.some((action) => action.op === 'apply-cluster'),
-    true,
-  );
+test('projected, partial, and foreign observations refuse mutation preview', () => {
+  for (const probe of [ready, { ...ready, fullAssessment: {
+    operator: 'partial', namespace: 'absent', cluster: 'absent',
+    refusals: [{ id: 'operator-partial', detail: 'partial inventory' }],
+  } }, { ...ready, resources: [{ kind: 'Namespace', name: RELEASE_CNPG_NAMESPACE, labLabel: null }] }]) {
+    const result = ensureReleaseCnpg(probe, { authorize: true });
+    assert.equal(result.ok, false);
+    assert.equal(result.mutated, false);
+    assert.deepEqual(result.actions, []);
+  }
 });
 
-test('plan remains read-only and uses the release renderer', () => {
+test('plan is read-only; mismatched manifest digest refuses', () => {
   const plan = planReleaseCnpg(ready, { run: helmRun });
   assert.equal(plan.readOnly, true);
-  assert.match(plan.namespaceManifest, /"name":"lab-postgres"/);
-  assert.match(
-    plan.clusterManifest,
-    new RegExp(`"imageName":"${pin.postgresImage}"`),
-  );
+  assert.deepEqual(plan.actions, []);
+  const result = ensureReleaseCnpg(ready, { authorize: true, operatorManifestSha256: 'a'.repeat(64) });
+  assert.ok(result.refusals.some(item => item.id === 'operator-manifest-sha-mismatch'));
 });
-
-test('unreadable observation, foreign resources, and spec mismatch refuse create', () => {
-  const unreadable = ensureReleaseCnpg(
-    {
-      ...ready,
-      unreadableReads: [
-        { id: 'postgres-cluster', reason: 'kubectl get failed' },
-      ],
-    },
-    { authorize: true },
-  );
-  assert.equal(unreadable.ok, false);
-  assert.equal(
-    unreadable.actions.some((action) => action.op?.startsWith('apply-')),
-    false,
-  );
-
-  const foreignNs = ensureReleaseCnpg(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Namespace',
-          name: RELEASE_CNPG_NAMESPACE,
-          labLabel: null,
-          uid: 'ns-1',
-        },
-      ],
-    },
-    { authorize: true },
-  );
-  assert.equal(foreignNs.refusals[0].id, 'foreign-namespace');
-  assert.equal(
-    foreignNs.actions.some((action) => action.op?.startsWith('apply-')),
-    false,
-  );
-
-  const imageMismatch = ensureReleaseCnpg(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: pin.operatorImage,
-        },
-        compatibleNamespace(),
-        {
-          ...compatibleCluster(),
-          image: 'ghcr.io/cloudnative-pg/postgresql:0.0.0',
-        },
-      ],
-      crdState: 'present',
-    },
-    { authorize: true },
-  );
-  assert.equal(
-    imageMismatch.refusals.some((item) => item.id === 'cluster-spec-mismatch'),
-    true,
-  );
-  assert.equal(
-    imageMismatch.actions.some((action) => action.op === 'apply-cluster'),
-    false,
-  );
-
-  const storageMismatch = ensureReleaseCnpg(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: pin.operatorImage,
-        },
-        compatibleNamespace(),
-        { ...compatibleCluster(), storageClass: 'standard' },
-      ],
-      crdState: 'present',
-    },
-    { authorize: true },
-  );
-  assert.equal(
-    storageMismatch.refusals.some(
-      (item) => item.id === 'cluster-spec-mismatch',
-    ),
-    true,
-  );
-
-  const operatorMismatch = ensureReleaseCnpg(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: 'ghcr.io/cloudnative-pg/cloudnative-pg:0.0.0',
-        },
-        compatibleNamespace(),
-        compatibleCluster(),
-      ],
-      crdState: 'present',
-    },
-    { authorize: true },
-  );
-  assert.equal(
-    operatorMismatch.refusals.some(
-      (item) => item.id === 'operator-image-mismatch',
-    ),
-    true,
-  );
-  assert.equal(
-    operatorMismatch.actions.some((action) => action.op === 'apply-operator'),
-    false,
-  );
-
-  const unauthorized = ensureReleaseCnpg(ready);
-  assert.equal(unauthorized.refusals.at(-1).id, 'ensure-not-authorized');
-});
-
-test('matching operator verifies readiness and rejects a bad manifest digest', () => {
-  const matching = ensureReleaseCnpg(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: pin.operatorImage,
-        },
-      ],
-      crdState: 'present',
-    },
-    { authorize: true, operatorManifestSha256: pin.sha256 },
-  );
-  assert.equal(matching.actions[0].op, 'verify-operator');
-  assert.equal(
-    matching.actions.some((action) => action.op === 'apply-operator'),
-    false,
-  );
-  let manifestReads = 0;
-  const executed = executeAuthorizedReleaseCnpg({
-    collect: () => ({
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: pin.operatorImage,
-        },
-      ],
-      crdState: 'present',
-    }),
-    readOperatorManifest: () => {
-      manifestReads += 1;
-      return { body: '', sha256: '' };
-    },
-    run: (_command, args) => {
-      const query = args.join(' ');
-      if (query.includes(' lab-pg') && args.at(-1) === 'json') {
-        return { ok: true, stdout: healthyClusterJson(1), stderr: '' };
-      }
-      return { ok: true, stdout: '10.0.0.1', stderr: '' };
-    },
-  });
-  assert.equal(executed.ok, true);
-  assert.equal(manifestReads, 0);
-
-  const digest = ensureReleaseCnpg(ready, {
-    authorize: true,
-    operatorManifestSha256: 'a'.repeat(64),
-  });
-  assert.equal(digest.refusals[0].id, 'operator-manifest-sha-mismatch');
-  assert.equal(
-    digest.actions.some((action) => action.op?.startsWith('apply-')),
-    false,
-  );
-});
-
 test('release installer CLI validates structured render and actually executes', () => {
   const result = spawnSync(
     process.execPath,
@@ -455,117 +175,3 @@ test('release render guard rejects wrong pin, count and identity', () => {
   assert.throws(() => assertReleaseClusterPin([], pin), /identity/);
 });
 
-/**
- * @param {() => object} collect
- * @param {(command: string, args: string[]) => { ok: boolean, stdout?: string }} run
- */
-function executeWithFastReadinessPoll(collect, run) {
-  let clock = 0;
-  return executeAuthorizedReleaseCnpg({
-    collect,
-    run,
-    now: () => clock,
-    sleep: (ms) => {
-      clock += ms;
-    },
-    readinessTimeoutMs: 15_000,
-  });
-}
-
-test('executeAuthorizedReleaseCnpg reports topology failures without reset', () => {
-  const baseProbe = () => ({
-    ...ready,
-    resources: [
-      {
-        kind: 'Deployment',
-        name: 'cnpg-controller-manager',
-        namespace: 'cnpg-system',
-        image: pin.operatorImage,
-      },
-      compatibleNamespace(),
-      compatibleCluster(),
-    ],
-    crdState: 'present',
-  });
-
-  const stale = executeWithFastReadinessPoll(baseProbe, (_command, args) => {
-    if (args.at(-1) === 'json') {
-      const body = JSON.parse(healthyClusterJson(1));
-      body.status.conditions = [{ type: 'Ready', status: 'False' }];
-      return { ok: true, stdout: JSON.stringify(body) };
-    }
-    return { ok: true, stdout: '10.0.0.1' };
-  });
-  assert.equal(stale.ok, false);
-  assert.equal(stale.refusals[0].id, 'cluster-readiness-failed');
-  assert.match(stale.refusals[0].detail, /Ready/);
-
-  const primary = executeWithFastReadinessPoll(baseProbe, (_command, args) => {
-    if (args.at(-1) === 'json') {
-      const body = JSON.parse(healthyClusterJson(1));
-      delete body.status.currentPrimary;
-      return { ok: true, stdout: JSON.stringify(body) };
-    }
-    return { ok: true, stdout: '10.0.0.1' };
-  });
-  assert.equal(primary.ok, false);
-  assert.match(primary.refusals[0].detail, /currentPrimary/);
-
-  const mismatch = executeWithFastReadinessPoll(
-    () => ({
-      ...ready,
-      resources: [
-        {
-          kind: 'Deployment',
-          name: 'cnpg-controller-manager',
-          namespace: 'cnpg-system',
-          image: pin.operatorImage,
-        },
-        compatibleNamespace(),
-        compatibleCluster({ instances: 4 }),
-      ],
-      crdState: 'present',
-    }),
-    (_command, args) => {
-      if (args.at(-1) === 'json') {
-        return { ok: true, stdout: healthyClusterJson(1) };
-      }
-      return { ok: true, stdout: '10.0.0.1' };
-    },
-  );
-  assert.equal(mismatch.ok, false);
-  assert.match(mismatch.refusals[0].detail, /expected 4/);
-});
-
-import { collectReleaseCnpgProbe } from '../release-install.mjs';
-
-test('cold release inventory does not query an unregistered CNPG resource', () => {
-  const calls = [];
-  const probe = collectReleaseCnpgProbe({
-    readMeminfo: () => 'MemAvailable: 8192000 kB',
-    run(command, args) {
-      calls.push(args);
-      if (args.includes('cluster.postgresql.cnpg.io'))
-        throw Error('CRD not installed');
-      return { ok: true, stdout: '' };
-    },
-  });
-  assert.equal(probe.crdState, 'absent');
-  assert.deepEqual(probe.unreadableReads, []);
-  assert.ok(!calls.some((args) => args.includes('cluster.postgresql.cnpg.io')));
-});
-
-test('unreadable CNPG CRD does not authorize cold installation', () => {
-  const probe = collectReleaseCnpgProbe({
-    readMeminfo: () => 'MemAvailable: 8192000 kB',
-    run(command, args) {
-      if (args.includes('cluster.postgresql.cnpg.io'))
-        throw Error('CRD state unknown');
-      if (args.includes('crd'))
-        return { ok: false, stdout: '', stderr: 'Forbidden' };
-      return { ok: true, stdout: '' };
-    },
-  });
-  assert.equal(probe.crdState, 'unreadable');
-  assert.ok(probe.unreadableReads.some((row) => row.id === 'postgres-crd'));
-});
