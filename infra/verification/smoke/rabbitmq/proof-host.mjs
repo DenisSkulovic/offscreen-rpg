@@ -1062,7 +1062,7 @@ export async function runProofSupervisor(input) {
       return { ok: false, reason: smoke.reason, phase: 'smoke' };
     }
     if (!input.skipAuth) {
-      await createProofPod(
+      const auth = await createProofPod(
         ctxFrom(
           input,
           receipt,
@@ -1076,6 +1076,9 @@ export async function runProofSupervisor(input) {
         'wrong-password',
         ['python3', '/opt/amqp_smoke.py', 'wrong-password'],
       );
+      if (!auth.ok || !auth.stdout.split('\n').includes('AUTH-REFUSED 403')) {
+        return { ok: false, phase: 'negative-auth', reason: auth.reason ?? 'explicit-auth-refusal-missing' };
+      }
     }
     return { ok: true, phase: 'smoke-complete', stdout: smoke.stdout };
   }
