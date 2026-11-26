@@ -1,0 +1,81 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "image",
+    "redis",
+    "resources"
+  ],
+  "properties": {
+    "image": {
+      "type": "string",
+      "pattern": "^docker\\.io/library/redis@sha256:[a-f0-9]{64}$"
+    },
+    "redis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxmemoryMiB",
+        "evictionPolicy"
+      ],
+      "properties": {
+        "maxmemoryMiB": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "evictionPolicy": {
+          "enum": [
+            "allkeys-lru",
+            "allkeys-lfu"
+          ]
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requests",
+        "limits"
+      ],
+      "properties": {
+        "requests": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cpuMilli",
+            "memoryMiB"
+          ],
+          "properties": {
+            "cpuMilli": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "memoryMiB": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "cpuMilli",
+            "memoryMiB"
+          ],
+          "properties": {
+            "cpuMilli": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "memoryMiB": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

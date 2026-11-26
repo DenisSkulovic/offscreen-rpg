@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis.specimen.selector" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "redis.specimen.selector" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "redis.specimen.selector" . | nindent 8 }}
+      annotations:
+        offscreen.rpg/redis-config-sha256: {{ include "redis.specimen.conf" . | sha256sum | quote }}
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: redis
+          image: {{ .Values.image | quote }}
+          imagePullPolicy: IfNotPresent
+          command: ["redis-server", "/config/redis.conf"]
+          ports:
+            - name: redis
+              containerPort: 6379
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: {{ printf "%dm" (int .Values.resources.requests.cpuMilli) | quote }}
+              memory: {{ printf "%dMi" (int .Values.resources.requests.memoryMiB) | quote }}
+            limits:
+              cpu: {{ printf "%dm" (int .Values.resources.limits.cpuMilli) | quote }}
+              memory: {{ printf "%dMi" (int .Values.resources.limits.memoryMiB) | quote }}
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            periodSeconds: 2
+            timeoutSeconds: 2
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            periodSeconds: 10
+            timeoutSeconds: 2
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-config
+        - name: data
+          emptyDir:
+            sizeLimit: 32Mi

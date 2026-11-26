@@ -1,0 +1,16 @@
+{{- if not (hasPrefix "offscreen-redis-proof-" .Release.Namespace) -}}
+{{- fail "specimen requires a disposable proof namespace" -}}
+{{- end -}}
+{{- if or (gt (int .Values.resources.requests.memoryMiB) (int .Values.resources.limits.memoryMiB)) (gt (int .Values.resources.requests.cpuMilli) (int .Values.resources.limits.cpuMilli)) (gt (int .Values.redis.maxmemoryMiB) (div (int .Values.resources.limits.memoryMiB) 2)) -}}
+{{- fail "invalid resource envelope" -}}
+{{- end -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis.specimen.selector" . | nindent 4 }}
+data:
+  redis.conf: |-
+    {{- include "redis.specimen.conf" . | nindent 4 }}
