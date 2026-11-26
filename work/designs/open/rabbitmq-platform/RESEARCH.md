@@ -1,0 +1,8 @@
+# First-party research | 2026-11-26
+- https://www.rabbitmq.com/kubernetes/operator/install-operator and https://github.com/rabbitmq/cluster-operator : operator >=2.20 requires cert-manager; current upstream documentation identifies default broker 4.3.4. Repository pins 2.23.3 and cert-manager 1.21.3. Need tagged artifact validation rather than assuming latest docs establish exact contract.
+- https://www.rabbitmq.com/kubernetes/operator/using-operator : native RabbitmqCluster persistence/resources/service; operator enables management, peer discovery, Prometheus plugins. Prefer native configuration and generated default credentials. Verify exact tagged CRD/status fields and generated Secret reference before freeze.
+- https://www.rabbitmq.com/kubernetes/operator/operator-overview : cluster lifecycle vs separate messaging topology controller. Defer topology operator absent consumers.
+- https://www.rabbitmq.com/kubernetes/operator/quickstart-operator : upstream default memory 2GB, CPU 1; local 1Gi/200m is an explicit resource-constrained baseline historically exercised, not production sizing.
+- https://www.rabbitmq.com/docs/memory and https://www.rabbitmq.com/docs/monitoring : memory/resource alarms and monitoring matter; inspect effective threshold, disk alarm and metrics in live acceptance instead of tuning without demand.
+ 
+Historical repository manifest pins: cert-manager SHA256 c04a51295adda2b1a775146751f973e787190778c7f35180861d9678876e5c74; operator SHA256 3ccd8a7c8a7f319ff21c444f3599829242f3cc1c18ae2dedea170cfcefeb8681. Values source-observed, bytes not verified here. Historical broker digest in runbook is not yet confirmed as manifest/index pin. No runtime verification.
