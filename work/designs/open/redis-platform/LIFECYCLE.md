@@ -48,3 +48,15 @@ Read-only discovery is not authorization for install, scale, flush or delete. Ve
 ## Acceptance refinement
 
 Fresh-only native install and repeat no-op must prove release revision stable and object UIDs unchanged; foreign resource with matching labels or annotations must cause refusal before writes; partial/failed release must refuse without cleanup; extra matching Pod or mismatched endpoint target UID must not be reported ready. Readiness must establish actual image identity, effective config and a PING through intended Service, not localhost only. Native observer must never log secret values. Check a second independent pool cannot match baseline selector. Legacy cutover and memory/ACL proof remain separately gated. Formal self-defense not yet passed.
+
+## R3 update | actual Helm v3.22.1 source and observed inventory
+
+Supersedes earlier installed-version unknown and live inventory missing statements. Owner output: Helm v3.22.1+gd6c1a0e; both Redis baselines legacy, each with one endpoint targeting intended Pod UID; dev Helm list initially unreachable, subsequent read-only retry succeeded, release list empty. See [observations](OBSERVATIONS.md). No migration or install occurred.
+
+Exact-version upstream source inspected 2026-11-26 via GitHub:
+- https://github.com/helm/helm/blob/v3.22.1/pkg/action/install.go#L351-L361: normal path invokes existingResourceConflict, takeover invokes requireAdoption; either may produce toBeAdopted. Lines 402-411 store release record before install. Lines 458-468 create when adoption list empty, otherwise Update or UpdateThreeWayMerge. Therefore ordinary install is not inherently create-only if matching metadata present. No flags alone prove fresh ownership.
+- https://github.com/helm/helm/blob/v3.22.1/pkg/action/validate.go#L65-L117: existingResourceConflict retrieves resource and checkOwnership evaluates label and annotations, not UID/custody. Refusal before Helm invocation for any reserved present object (even matching metadata) required on fresh path; namespace and history checks under shared lock; external noncooperating writer race remains explicit local operational constraint.
+- https://github.com/helm/helm/blob/v3.22.1/pkg/kube/client.go#L143-L149 and #L573-L590, #L630-L640: Create delegates to resource helper through batchPerform, aggregates errors; no multi-resource transaction. Failure can leave partial inventory. No automatic cleanup/rollback.
+- https://helm.sh/docs/v3/helm/helm_install/ version 3.22.1: --wait/--timeout, --atomic and --take-ownership; latter two not used. Exact chart render and disposable runtime tests remain unexecuted.
+
+Selection retained for fresh local pools with cooperating-writer discipline; no unconditional guarantee against concurrent arbitrary writers between precheck and Helm's own adoption check. This scope limitation must be defended explicitly; if unacceptable, choose guarded kubectl create-only instead. Runtime proof must include matching-metadata orphan and partial-install scenarios. Legacy cutover still gated.
