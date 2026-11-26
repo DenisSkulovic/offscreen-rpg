@@ -1,3 +1,6 @@
+# Observability platform renewal | R34
+2026-11-26. Candidate for independent defense pass 03; not approved or commissioned. Original baseline 2138ae4a4a188c5dce54e2f77d4211d6ab4f1ed3; compatibility a81e275821496e478ba55ae3dce5e72cf63d5dfd. [Pass 02 verdict](committee/pass-02.md), [R34 normative amendment](R34.md), [self-defense](SELF-DEFENSE.md), [acceptance](ACCEPTANCE.md). OBS-05 addressed in design; R33 and earlier defended contracts retained except explicit observation supersession. A1–A12 unrun; isolated A9 host and full caller line classification remain precommission prerequisites.
+
 # Observability platform renewal | R33
 2026-11-26. Submitted for independent defense pass 02, not approved or commissioned. Original baseline 2138ae4a4a188c5dce54e2f77d4211d6ab4f1ed3; current compatibility a81e275821496e478ba55ae3dce5e72cf63d5dfd. Read [committee pass 01](committee/pass-01.md), [R30](R30.md), [R33](R33.md) (latest normative precedence), [frozen inventory](specimens/expected-inventory.json), [R31/R32 evidence](EVIDENCE.md), [designer self-defense pass 02](SELF-DEFENSE.md). R31 offline and R32 real Helm quota feasibility PASS; actual integrated acceptance unrun, isolated normal-profile host prerequisite and full caller line review disclosed. Committee adjudicates sufficiency. No implementation dispatch.
 
