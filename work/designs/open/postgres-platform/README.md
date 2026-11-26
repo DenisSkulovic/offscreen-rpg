@@ -1,10 +1,10 @@
 # PostgreSQL platform renewal | design workshop
 
-**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: 2026-11-26, committee pass 02 simplification. Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
+**Proposed; not implementation commission.** Baseline main 73b3154025e94ad2f827cdb03eda4b389e19ac35, 2026-11-26. Design branch `design/postgres-platform`. Next review: after pass-03 response evidence gates; do not submit prematurely. Owner commissioned investigation only; no local runtime access, Cursor, live changes, deletion or deployment. Current source stays intact. Method: [target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
 
 ## Current structural specification
 
-[STRUCTURAL-DESIGN.md](STRUCTURAL-DESIGN.md) is the current proposed authority for the structural slice; earlier architecture/specimens/defense files are research history where they conflict. [Committee pass 01](committee/pass-01.md) rejected candidate 318b5a6c; all C01–C05 accepted for closure, C06–C07 separately gated. [Committee pass 02](committee/pass-02.md) rejected eb488ab3; revised structural scope now prioritizes baseline installer consolidation and explicitly gates topology recovery. [Committee pass 03](committee/pass-03.md) is committed; round A now records release metadata and source-derived inventory, exact bytes still gated. No committee resubmission yet.
+[STRUCTURAL-DESIGN.md](STRUCTURAL-DESIGN.md) is the current proposed authority for the structural slice; earlier architecture/specimens/defense files are research history where they conflict. [Committee pass 01](committee/pass-01.md) rejected candidate 318b5a6c; all C01–C05 accepted for closure, C06–C07 separately gated. [Committee pass 02](committee/pass-02.md) rejected eb488ab3; revised structural scope now prioritizes baseline installer consolidation and explicitly gates topology recovery. [Committee pass 03](committee/pass-03.md) is committed. The takeover revision selects concrete baseline composition, create-only recovery, strict default normalization and a single worker deadline. See [designer defense](DEFENSE-PASS-04.md) and [evidence gates](STRUCTURAL-EVIDENCE.md). No resubmission yet: mutating slice EVIDENCE-GATED.
 
 ## Intent
 
@@ -41,7 +41,7 @@ Current canonical sources: [database infrastructure](../../../../docs/technical/
 8. Formal architecture defense — [pass 1](DEFENSE.md): REVISE AND RE-DEFEND; see [pass 2](DEFENSE-PASS-02.md). Independent committee required after self-defense.
 9. Convergence, canonical promotion and execution choice only after gates.
 
-Next action: close structural caller map, compatibility matrix and bounded lock custody; revise artifacts and self-defend exact scope before fresh-chat committee submission. No implementation until target, integration/preservation map and necessary proof/acceptance are settled. Live experiments deferred until owner at terminal. No current queue change.
+Next action: non-cluster custody and exact artifact inventory probes, then authorized disposable admission/defaulting specimen and tracked caller scan. Reconcile results into STRUCTURAL-DESIGN.md and DEFENSE-PASS-04.md before fresh-chat committee submission. No implementation until target, integration/preservation map and necessary proof/acceptance are settled. Live experiments deferred until owner at terminal. No current queue change.
 
 ## Evidence discipline
 
