@@ -59,6 +59,34 @@ class AmqpSmokeTests(unittest.TestCase):
         )
         self.assertEqual(sock.sent[1], frame(0, 10, 11, expected))
 
+    def test_basic_publish_and_get_exact_wire(self):
+        payload = b"nonce"
+        header = struct.pack(">HHQH", 60, 0, len(payload), 0)
+        def content_frame(kind, body):
+            return struct.pack(">BHI", kind, 1, len(body)) + body + b"\xce"
+        get_ok = struct.pack(">QB", 7, 0) + b"\x00\x01q" + struct.pack(">I", 0)
+        sock = BufferSocket([
+            frame(1, 60, 80, struct.pack(">QB", 1, 0)),
+            frame(1, 60, 71, get_ok),
+            content_frame(2, header),
+            content_frame(3, payload),
+            frame(1, 60, 72, b"\x00"),
+        ])
+        wire = amqp_smoke.AmqpWire(sock)
+        deadline = wire.clock() + 1
+        wire.publish(deadline, "q", "nonce", mandatory=True, delivery_mode=1)
+        self.assertEqual(sock.sent[0], frame(1, 60, 40, b"\x00\x00\x00\x01q\x01"))
+        self.assertEqual(wire.basic_get(deadline, "q", False), (7, 0, "nonce"))
+        self.assertEqual(sock.sent[3], frame(1, 60, 70, b"\x00\x00\x01q\x00"))
+        self.assertIsNone(wire.basic_get(deadline, "q", False))
+
+    def test_connection_close_on_channel_zero_during_channel_operation(self):
+        sock = BufferSocket([frame(0, 10, 50, struct.pack(">H", 503) + shortstr("private peer text") + struct.pack(">HH", 60, 70))])
+        wire = amqp_smoke.AmqpWire(sock)
+        with self.assertRaises(amqp_smoke.ProtocolFailure) as ctx:
+            wire.read_method(wire.clock() + 1, 1)
+        self.assertEqual(ctx.exception.stage, "connection-close:503")
+
     def test_declare_mode_cannot_publish(self):
         self.assertTrue(amqp_smoke.declare_has_publish_path("declare", ["x", "declare", "publish"]))
 
@@ -83,7 +111,7 @@ class AmqpSmokeTests(unittest.TestCase):
         def fake_read(_deadline, expect_channel=None):
             if state["step"] == 0:
                 state["step"] = 1
-                return 1, 60, 72, b""
+                return 1, 60, 50, b""
             return 1, 60, 80, struct.pack(">QB", 1, 0)
 
         wire.read_method = fake_read  # type: ignore[method-assign]
@@ -96,7 +124,7 @@ class AmqpSmokeTests(unittest.TestCase):
         wire = amqp_smoke.AmqpWire(sock)
 
         def fake_read(_deadline, expect_channel=None):
-            return 1, 60, 71, struct.pack(">QB", 1, 0)
+            return 1, 60, 120, struct.pack(">QB", 1, 0)
 
         wire.read_method = fake_read  # type: ignore[method-assign]
         with self.assertRaises(amqp_smoke.ProtocolFailure):
