@@ -39,7 +39,7 @@ for row in "${rows[@]}"; do
       collector) opts=(--env MY_POD_IP=127.0.0.1); args=(validate --config=/conf/relay.yaml);;
       prometheus) opts=(--entrypoint /bin/promtool); dest=/etc/prometheus; args=(check config /etc/prometheus/prometheus.yml);;
       loki) args=(-config.file=/conf/config.yaml -verify-config=true);;
-      tempo) args=(-config.file=/conf/tempo.yaml -config.verify);;
+      tempo) args=(-config.file=/conf/tempo.yaml -config.verify=true);;
       grafana) printf '%s\t%s\tDEFERRED_STARTUP\n' "$role" "$profile" >> "$out/results.tsv"; continue;;
       *) echo "Unknown role: $role" >&2; exit 2;;
     esac
@@ -73,7 +73,10 @@ cat "$out/images.tsv" "$out/results.tsv"
 for log in "$out"/*.dev.log "$out"/*.release.log "$out"/*.pull.log; do
   [[ -f "$log" ]] || continue
   printf '\n### %s\n' "$(basename "$log")"
-  tail -n 25 "$log"
+  head -n 25 "$log"
+  if [[ "$(wc -l < "$log")" -gt 25 ]]; then
+    echo "... (full log retained locally) ..."
+  fi
 done
 echo "Evidence directory: $out"
 exit "$failed"
