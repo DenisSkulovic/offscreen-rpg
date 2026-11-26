@@ -1,25 +1,24 @@
-{{- define "platform-redis.doc.deployment" -}}
-{{- $configSha := include "platform-redis.redisConf" . | sha256sum -}}
+{{- include "redis.validateRelease" . -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: redis
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
-{{ include "platform-redis.labels" . | nindent 4 }}
+    {{- include "redis.labels" . | nindent 4 }}
 spec:
   replicas: 1
   strategy:
     type: Recreate
   selector:
     matchLabels:
-      app: redis
+      {{- include "redis.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-{{ include "platform-redis.labels" . | nindent 8 }}
+        {{- include "redis.labels" . | nindent 8 }}
       annotations:
-        offscreen.rpg/redis-config-sha256: {{ $configSha }}
+        offscreen.rpg/redis-config-sha256: {{ include "redis.confSha256" . | quote }}
     spec:
       automountServiceAccountToken: false
       enableServiceLinks: false
@@ -32,38 +31,33 @@ spec:
           type: RuntimeDefault
       containers:
         - name: redis
-          image: {{ .Values.images.redis | quote }}
+          image: {{ .Values.image | quote }}
           imagePullPolicy: IfNotPresent
           command: ["redis-server", "/config/redis.conf"]
           ports:
             - name: redis
               containerPort: 6379
-              protocol: TCP
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
           resources:
             requests:
-              cpu: {{ include "platform-redis.formatCpuMilli" .Values.resources.requests }}
-              memory: {{ include "platform-redis.formatMemoryMiB" .Values.resources.requests }}
+              cpu: {{ printf "%dm" (int .Values.resources.requests.cpuMilli) | quote }}
+              memory: {{ printf "%dMi" (int .Values.resources.requests.memoryMiB) | quote }}
             limits:
-              cpu: {{ include "platform-redis.formatCpuMilli" .Values.resources.limits }}
-              memory: {{ include "platform-redis.formatMemoryMiB" .Values.resources.limits }}
-          livenessProbe:
-            exec:
-              command: ["redis-cli", "ping"]
-            initialDelaySeconds: 5
-            periodSeconds: 10
-            timeoutSeconds: 2
-            failureThreshold: 3
+              cpu: {{ printf "%dm" (int .Values.resources.limits.cpuMilli) | quote }}
+              memory: {{ printf "%dMi" (int .Values.resources.limits.memoryMiB) | quote }}
           readinessProbe:
             exec:
               command: ["redis-cli", "ping"]
-            initialDelaySeconds: 2
-            periodSeconds: 5
+            periodSeconds: 2
             timeoutSeconds: 2
-            failureThreshold: 6
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            periodSeconds: 10
+            timeoutSeconds: 2
           volumeMounts:
             - name: config
               mountPath: /config
@@ -76,5 +70,4 @@ spec:
             name: redis-config
         - name: data
           emptyDir:
-            sizeLimit: {{ include "platform-redis.formatMemoryMiB" (dict "memoryMiB" .Values.data.emptyDirMiB) }}
-{{- end -}}
+            sizeLimit: 32Mi

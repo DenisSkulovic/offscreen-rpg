@@ -1,16 +1,3 @@
-mode: development
-namespace: offscreen-dev-redis
-images:
-  redis: docker.io/library/redis:8.2.1-alpine
-redis:
-  maxmemoryMiB: 32
-  evictionPolicy: allkeys-lru
-resources:
-  requests:
-    cpuMilli: 20
-    memoryMiB: 32
-  limits:
-    cpuMilli: 500
-    memoryMiB: 128
-data:
-  emptyDirMiB: 32
+owner:
+  key: offscreen.dev/owner
+  value: offscreen-dev

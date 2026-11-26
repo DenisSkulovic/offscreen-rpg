@@ -1,0 +1,12 @@
+{{- include "redis.validateRelease" . -}}
+{{- include "redis.validateResources" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis.labels" . | nindent 4 }}
+data:
+  redis.conf: |-
+    {{- include "redis.conf" . | nindent 4 }}
