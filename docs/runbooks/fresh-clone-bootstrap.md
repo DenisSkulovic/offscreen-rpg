@@ -28,7 +28,7 @@ OFFSCREEN_POSTGRES_MAINTENANCE=authorized node infra/environments/infra-cli.mjs 
 OFFSCREEN_POSTGRES_MAINTENANCE=authorized node infra/environments/infra-cli.mjs up --env release --services postgres --json
 ```
 
-Before Temporal installation, verify that no connection-enabled non-template database grants PUBLIC CONNECT. Fresh baselines currently require a separately authorized PostgreSQL ACL maintenance operation; do not silently revoke privileges on occupied databases. See [Temporal maintenance guidance](kubernetes-temporal.md). Automatic fresh-baseline ACL policy is outstanding. Stop if the isolation check fails.
+Fresh baseline renders now declare CNPG postInitSQL and postInitApplicationSQL to revoke PUBLIC CONNECT and TEMPORARY on postgres and the profile application database (dev or lab). This source change requires fresh runtime acceptance. Existing exact historical specifications remain observable without patching their initialization history; no privilege migration is performed by ordinary ensure. Before Temporal installation, its existing SQL isolation gate remains authoritative: no unrelated connection-enabled non-template database may grant PUBLIC CONNECT. Stop if that gate fails; occupied database maintenance requires separate authorization. See [Temporal maintenance guidance](kubernetes-temporal.md).
 
 Only after both baseline ensures and the isolation prerequisite succeed, proceed with ordinary core ensure (which re-observes compatible PostgreSQL without granting maintenance authorization):
 
@@ -53,6 +53,6 @@ Follow [owned development environment](dev-worktree-stacks.md) for local configu
 - Redis: fresh install and repeated ensure passed on both profiles.
 - RabbitMQ dev: at `7d69be0a`, live ordinary smoke completed in 2.837 s, with SMOKE-PUBLISHED, SMOKE-EMPTY, MGMT-OK, METRICS-OK and a separate same-run wrong-password Pod log AUTH-REFUSED 403. At `7f8296bc`, 44 focused Node tests passed and structural observation returned ready; repeat ensure reported mutation none in 1.717 s. At `7d69be0a`, 14 Python tests passed. Original installation timed out on a defective inventory observer; corrected uninterrupted fresh acceptance remains unproven.
 - RabbitMQ proof limitations: supervisor does not enforce negative-auth result or complete fixture cleanup; terminal failure diagnostics and disruptive proof runner remain incomplete. Do not run durability or worker-loss modes. Failed and successful proof fixtures retained pending scoped cleanup. Fresh release RabbitMQ runtime remains separately gated.
-- Outstanding: automatic fresh PostgreSQL ACL policy, remaining bootstrap source/diagnostic hardening, uninterrupted integrated cold acceptance, observability and application workload acceptance.
+- Outstanding: runtime acceptance of native fresh PostgreSQL ACL hooks, remaining bootstrap source/diagnostic hardening, uninterrupted integrated cold acceptance and application workload acceptance. Legacy observability is explicitly excluded pending the independent replacement design.
 
 Record exact tested SHA and failures; fix the source, not only the running cluster.
