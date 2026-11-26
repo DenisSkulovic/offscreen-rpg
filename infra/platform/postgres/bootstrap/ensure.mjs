@@ -44,15 +44,53 @@ function confirmedIdentity(object, expected) {
     typeof object.metadata.uid === 'string' && object.metadata.uid.length > 0;
 }
 
+function parseNativeObjects(stdout) {
+  if (typeof stdout !== 'string') throw new Error('Missing native output');
+  const objects = [];
+  let start = -1;
+  let depth = 0;
+  let quoted = false;
+  let escaped = false;
+  for (let index = 0; index < stdout.length; index++) {
+    const char = stdout[index];
+    if (start === -1) {
+      if (/\s/.test(char)) continue;
+      if (char !== '{') throw new Error('Unexpected native output');
+      start = index;
+      depth = 1;
+      continue;
+    }
+    if (quoted) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') quoted = false;
+    } else if (char === '"') quoted = true;
+    else if (char === '{') depth++;
+    else if (char === '}' && --depth === 0) {
+      objects.push(JSON.parse(stdout.slice(start, index + 1)));
+      start = -1;
+    }
+  }
+  if (start !== -1) throw new Error('Truncated native output');
+  if (objects.length === 1 && objects[0].kind === 'List') {
+    if (!Array.isArray(objects[0].items)) throw new Error('Malformed native List');
+    return objects[0].items;
+  }
+  return objects;
+}
+
 /** Require a complete native acknowledgment; no inferred success from exit code. */
 export function acknowledgeOperatorApply(result, inventory) {
   if (!result.ok) return false;
-  const body = parseObject(result);
-  const objects = body?.kind === 'List' ? body.items : null;
-  if (!Array.isArray(objects) || objects.length !== inventory.length) return false;
+  let objects;
+  try {
+    // kubectl printers may emit one JSON object per resource rather than a List.
+    objects = parseNativeObjects(result.stdout);
+  } catch { return false; }
+  if (objects.length !== inventory.length) return false;
   const expected = new Set(inventory.map(entry => entry.id));
   for (const object of objects) {
-    if (!object?.metadata?.uid || !expected.delete(operatorIdentity(object))) return false;
+    if (typeof object?.metadata?.uid !== 'string' || !object.metadata.uid || !expected.delete(operatorIdentity(object))) return false;
   }
   return expected.size === 0;
 }
