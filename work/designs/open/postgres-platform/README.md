@@ -4,7 +4,7 @@
 
 ## Current structural specification
 
-[STRUCTURAL-DESIGN.md](STRUCTURAL-DESIGN.md) is the current proposed authority for the structural slice; earlier architecture/specimens/defense files are research history where they conflict. [Committee pass 01](committee/pass-01.md) rejected candidate 318b5a6c; all C01–C05 accepted for closure, C06–C07 separately gated. [Committee pass 02](committee/pass-02.md) rejected eb488ab3; revised structural scope now prioritizes baseline installer consolidation and explicitly gates topology recovery. No committee resubmission yet.
+[STRUCTURAL-DESIGN.md](STRUCTURAL-DESIGN.md) is the current proposed authority for the structural slice; earlier architecture/specimens/defense files are research history where they conflict. [Committee pass 01](committee/pass-01.md) rejected candidate 318b5a6c; all C01–C05 accepted for closure, C06–C07 separately gated. [Committee pass 02](committee/pass-02.md) rejected eb488ab3; revised structural scope now prioritizes baseline installer consolidation and explicitly gates topology recovery. [Committee pass 03](committee/pass-03.md) is committed; round A now records release metadata and source-derived inventory, exact bytes still gated. No committee resubmission yet.
 
 ## Intent
 
