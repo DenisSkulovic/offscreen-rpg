@@ -31,7 +31,8 @@ function run(command, args, input) {
   if (result.status !== 0) {
     const error = new Error('s3 transport failed');
     error.code = 's3-transport-failed';
-    error.stderr = `${result.stderr ?? ''}`;
+    // Retain only the conflict classification, never subprocess diagnostics.
+    error.stderr = /AlreadyExists|already exists/i.test(result.stderr ?? '') ? 'AlreadyExists' : '';
     throw error;
   }
   return `${result.stdout ?? ''}${result.stderr ?? ''}`;

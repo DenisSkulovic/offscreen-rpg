@@ -575,3 +575,42 @@ test('runWrite returns child stdout without losing inherited lock fd', async () 
     },
   );
 });
+
+
+test('caught native failure cannot clear durable pending evidence', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'os-guard-'));
+  await assert.rejects(() => withObjectStorageMutation('dev', async ({ runWrite }) => {
+    await assert.rejects(() => runWrite('node', ['-e', 'process.exit(7)']));
+    return { ok: true };
+  }, {
+    stateRoot, mutationCommands: TEST_MUTATION_COMMANDS,
+    readIdentity: async () => ({ state: 'known', identity: sampleIdentity() }),
+  }), /reported incomplete/);
+  assert.equal(existsSync(resolveObjectStorageLockPaths(stateRoot, 'kind-offscreen-dev').pending), true);
+});
+
+test('escaped write capability cannot run after custody returns', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'os-guard-'));
+  let escaped;
+  await withObjectStorageMutation('dev', async ({ runWrite }) => {
+    escaped = runWrite;
+    return { ok: true };
+  }, {
+    stateRoot, mutationCommands: TEST_MUTATION_COMMANDS,
+    readIdentity: async () => ({ state: 'known', identity: sampleIdentity() }),
+  });
+  assert.throws(() => escaped('node', ['-e', 'process.exit(0)']), /outside active/);
+  assert.equal(existsSync(resolveObjectStorageLockPaths(stateRoot, 'kind-offscreen-dev').pending), false);
+});
+
+test('oversized child output refuses and retains evidence', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'os-guard-'));
+  await assert.rejects(() => withObjectStorageMutation('dev', async ({ runWrite }) => {
+    await runWrite('node', ['-e', 'process.stdout.write(Buffer.alloc(5 * 1024 * 1024))'], { timeoutMs: 5000 });
+    return { ok: true };
+  }, {
+    stateRoot, mutationCommands: TEST_MUTATION_COMMANDS,
+    readIdentity: async () => ({ state: 'known', identity: sampleIdentity() }),
+  }), /incomplete or unknown/);
+  assert.equal(existsSync(resolveObjectStorageLockPaths(stateRoot, 'kind-offscreen-dev').pending), true);
+});
