@@ -10,6 +10,7 @@ import {
   createDevS3LiveAdapter,
   parseCredentials,
   parseWeedBucketList,
+  parseWeedPolicyInventory,
   parseWeedUserList,
   parseWeedUserShow,
 } from '../src/adapters/dev-s3-tenant-live-adapter.mjs';
@@ -209,7 +210,7 @@ test('existing tenant reuse retains the secret uid without recreating credential
       });
     }
     if (String(input).includes('s3.policy -list')) {
-      return `"${names.policyName}"\n`;
+      return `Name: ${names.policyName}\nContent: ${policyDoc}\n---\n`;
     }
     if (String(input).includes('s3.policy -get')) return policyDoc;
     if (String(input).includes('s3.group.list')) return '[]';
@@ -374,4 +375,13 @@ test('user show without status or source is not treated as an enabled dynamic us
   assert.equal(adapter.user('dev-1'), null);
   assert.throws(() => parseWeedUserList(''));
   assert.throws(() => parseWeedUserList('[{}]'));
+});
+
+test('policy inventory reads actual Name/Content records and rejects malformed output', () => {
+  const doc = JSON.stringify(expectedTenantPolicy('offscreen-dev-1'));
+  const record = `Name: offscreen-dev-1-dev-1-readwrite\nContent: ${doc}\n---\n`;
+  assert.deepEqual(parseWeedPolicyInventory(record), ['offscreen-dev-1-dev-1-readwrite']);
+  assert.deepEqual(parseWeedPolicyInventory(''), []);
+  assert.throws(() => parseWeedPolicyInventory(record + record));
+  assert.throws(() => parseWeedPolicyInventory('unexpected output'));
 });
