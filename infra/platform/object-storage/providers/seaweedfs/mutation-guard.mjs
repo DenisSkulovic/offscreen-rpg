@@ -679,7 +679,7 @@ export async function withObjectStorageMutation(
 
       const afterWrite = await readIdentity(profileId);
       if (afterWrite.state !== 'known' || !afterWrite.identity) {
-        throw new Error('Object storage identity unknown after write');
+        throw new Error(`Object storage identity unknown after write: ${afterWrite.reason ?? 'unclassified'}`);
       }
       if (
         !identityAdoptAfterWrite(
