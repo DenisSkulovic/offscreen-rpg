@@ -54,7 +54,6 @@
 | Change | Why NOT moved to backlog/archive blindly |
 | --- | --- |
 | [DIST03 Game Authority seam](2026-11-19--dist03-game-authority-private-boundary/CHANGE.md) | Partly implemented, outstanding acceptance/closure decision |
-| [WR09 umbrella Writer runtime](2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) | Split into successor implementations, original scope not proven complete; needs reconciliation |
 
 **Promotion:** a future [backlog](../backlog/README.md) Change moves here only after an actual near-term commission and updated source/dependency/readiness review. **Retirement:** only verified Done/Cancelled moves to [archive](../archive/README.md) with required evidence/ledger. Do not keep a permanent queue of speculative ideas here, and do not delete or auto-archive a partially executed folder just to make this page short.
 

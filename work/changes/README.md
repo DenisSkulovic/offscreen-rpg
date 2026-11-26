@@ -227,7 +227,7 @@ No Change has an authorized T-ID; do not dispatch these shallow packets to Compo
 | B | [WR09A](archive/2026-11/other/2026-11-21--wr09a-durable-writer-provider-response/CHANGE.md) | Crash-safe writer response and charge settlement | **Done (2026-11-21).** Disposable custody 9/9. No paid call |
 | C | [MA11](archive/2026-11/other/2026-11-21--ma11-story-engine-boundary-ratchet/CHANGE.md) | Story Engine domain ratchet and two host runtime dependencies | **Done (2026-11-21).** Module-graph tests 26/26 |
 
-**Remaining:** [WR09](open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) real worker/provider vertical, [MA09](backlog/agent-runtime/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) authority→Writer transaction seam after Writer interfaces stable, followed by internal SCC/public export closure and final undertaking acceptance. These are **not** simultaneous commissions of this wave.
+**Remaining:** [WR09](archive/2026-11/storyteller/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) historical umbrella (superseded by WR10/11/12), [MA09](backlog/agent-runtime/2026-11-21--ma09-authority-writer-dependency-inversion/CHANGE.md) authority→Writer transaction seam after Writer interfaces stable, followed by internal SCC/public export closure and final undertaking acceptance. These are **not** simultaneous commissions of this wave.
 
 ## Structural completion packets (2026-11-21)
 
@@ -277,7 +277,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 
 | Change | Status / dispatch |
 | --- | --- |
-| [WR09](open/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) | **PLANNER-BLOCKED**: real-provider Writer recovery/custody design; not commissioned for Cursor; final response persistence and Worker policy must be decided by ChatGPT |
+| [WR09](archive/2026-11/storyteller/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) | Superseded by WR09A/B, WR10/11 and WR12; funded proof separately gated |
 
 ## Open packets
 

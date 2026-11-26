@@ -21,3 +21,5 @@ Expected future owners after reconciliation: `packages/story-engine/src/storytel
 ## Dependencies / planner promotion
 
 After WR10 and WR11 actual source, TURN03/first complete fake Writer acceptance, and effective cost/admission design (CFG01 if enabled). ChatGPT must recheck opening-specific state schema, workflow topic, capture compatibility, launch receipt and first-scene commit path before writing precise tasks. Crosses Writer/GA/Worker source, so cannot run alongside WR11 or AI01. This Change is not an implementation authorization.
+
+**WR09 umbrella reconciliation (2026-11-26):** WR09 retired as superseded; this packet retains its existing selected ownership and safety/acceptance obligations. No expanded source scope, dispatch or paid authorization follows from retirement. See permanent capability catalog for residual provider proof.

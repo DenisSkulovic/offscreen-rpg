@@ -1,3 +1,5 @@
+> Superseded by owner 2026-11-26. Historical design/evidence only; successor ownership and residual proof are recorded in CHANGE.md. No dispatch or paid permission.
+
 # WR09 | source call graph and decisive replay hazard
 
 **Inspected:** source snapshot/remote branch HEAD `e122d080677263aa6f38961f8734713664827c55`. Static inspection, no SQL/provider runtime tests.

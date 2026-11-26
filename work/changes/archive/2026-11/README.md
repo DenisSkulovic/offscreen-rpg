@@ -355,3 +355,5 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [K8S11](distributed/2026-11-19--k8s11-next-nest-live-edge-integration/CHANGE.md) (superseded 2026-11-26; browser/edge proof transferred).
 
 - [WR05 umbrella](storyteller/2026-11-21--wr05-coherent-scene-publication/CHANGE.md) (superseded 2026-11-26; successor slices Done, integrated proof separate).
+
+- [WR09 umbrella](storyteller/2026-11-21--wr09-provider-ready-writer-runtime/CHANGE.md) (superseded 2026-11-26; provider safety and acceptance retained by successor owners).

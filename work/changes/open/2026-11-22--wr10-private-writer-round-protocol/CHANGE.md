@@ -18,3 +18,5 @@ Build a **versioned, private two-phase Writer round protocol**, invoked by an al
 **Acceptance:** two offline fake provider-shaped attempts (tool then final) through a real private HTTP GA server/Worker client with distinct roles; one persisted response CAS and charge per delivered attempt, zero second sends on replay; wrong role, changed price/model/root, stale step, oversized payload, missing key, sent-unknown timeout, corrupted SHA, duplicate PUT, process reconstruction all fail closed. Existing WR09A/B and legacy scripted tests unchanged. This is a genuine security/cost protocol seam, **not yet a full player turn**.
 
 [Source map](SOURCE-MAP.md) · [selected execution](EXECUTION.md) · [bounded tasks](TASKS.md) · [proof](PROOF.md).
+
+**WR09 umbrella reconciliation (2026-11-26):** WR09 retired as superseded; this packet retains its existing selected ownership and safety/acceptance obligations. No expanded source scope, dispatch or paid authorization follows from retirement. See permanent capability catalog for residual provider proof.

@@ -1,3 +1,5 @@
+> Superseded by owner 2026-11-26. Historical design/evidence only; successor ownership and residual proof are recorded in CHANGE.md. No dispatch or paid permission.
+
 # WR09 | falsifiable proof requirements; NOT YET READY
 
 1. Disabled mode, no grant, no secret: zero transport calls, zero new possibly-sent attempts, no secret leakage, old scripted hashes unchanged.
