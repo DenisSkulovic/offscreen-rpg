@@ -1,3 +1,5 @@
+> Deferred by owner 2026-11-26. Historical task plan only; no current dispatch readiness. All security, correctness, resource custody and cleanup oracles retained. Refresh current public APIs and test seams after VER07 source joins and before promotion.
+
 > VER07 source prerequisite is unsatisfied following owner deferral on 2026-11-26. No dispatch while this dependency remains unmet.
 
 # VER08 | Bounded dispatch

@@ -43,3 +43,5 @@ INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execut
 - [VER05 replicated PostgreSQL topology verification](2026-11-25--ver05-db-replicated-topology-programme/CHANGE.md): deferred; VER04 source prerequisite and native PostgreSQL provisioning refresh required before owner-selected promotion. No current commission.
 
 - [VER07 cache mechanism, load and fault acceptance](2026-11-25--ver07-cache-mechanism-programme/CHANGE.md): deferred; all runtime acceptance oracles preserved, no current commission. Refresh cache APIs and resource contracts before owner-selected promotion.
+
+- [VER08 SQL-origin cache and Story snapshot acceptance](2026-11-25--ver08-cache-sql-origin-programme/CHANGE.md): deferred; all security/correctness proof retained, no current commission. VER07 source prerequisite and current consumer/resource refresh required before owner-selected promotion.
