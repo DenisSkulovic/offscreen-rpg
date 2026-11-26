@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ensureBaseline, acknowledgeOperatorApply } from '../bootstrap/ensure.mjs';
+import { ensureBaseline, acknowledgeOperatorApply, inspectOperatorApply } from '../bootstrap/ensure.mjs';
 
 test('unauthorized ensure refuses before every command and closes custody', () => {
   let closed = 0;
@@ -53,4 +53,19 @@ test('native JSON stream accepts exact objects, refuses truncation and noise', (
   assert.equal(acknowledgeOperatorApply({ ok: true, stdout: stream }, inventory), true);
   assert.equal(acknowledgeOperatorApply({ ok: true, stdout: stream.slice(0, -1) }, inventory), false);
   assert.equal(acknowledgeOperatorApply({ ok: true, stdout: stream + '\nwarning' }, inventory), false);
+});
+
+test('partial and truncated SSA retain only individually acknowledged identities', () => {
+  const a = { apiVersion:'v1', kind:'Namespace', metadata:{name:'a',uid:'uid-a'} };
+  const b = { apiVersion:'v1', kind:'Namespace', metadata:{name:'b',uid:'uid-b'} };
+  const inventory = ['a','b'].map(name => ({id:'v1/Namespace//'+name}));
+  for (const receipt of [
+    {ok:false,stdout:JSON.stringify(a)},
+    {ok:true,stdout:JSON.stringify(a)+'\n'+JSON.stringify(b).slice(0,-1)},
+    {ok:true,stdout:JSON.stringify({kind:'List',items:[a]})},
+  ]) {
+    assert.deepEqual(inspectOperatorApply(receipt,inventory), {
+      complete:false,confirmed:[{id:'v1/Namespace//a',uid:'uid-a'}],
+    });
+  }
 });

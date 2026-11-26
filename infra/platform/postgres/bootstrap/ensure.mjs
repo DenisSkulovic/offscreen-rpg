@@ -20,6 +20,7 @@ function renderBaseline(profileId, run) {
   if (namespaces.length !== 1 || clusters.length !== 1 ||
     namespace?.apiVersion !== 'v1' || namespace.kind !== 'Namespace' ||
     namespace.metadata?.name !== profile.namespaces.postgres ||
+    namespace.metadata?.labels?.[profile.ownerLabel + (profileId === 'dev' ? '/owner' : '/lab')] !== profile.ownerValue ||
     cluster?.apiVersion !== 'postgresql.cnpg.io/v1' || cluster.kind !== 'Cluster' ||
     cluster.metadata?.name !== baselineCnpgClusterName(profileId) ||
     cluster.metadata?.namespace !== profile.namespaces.postgres)
@@ -44,9 +45,8 @@ function confirmedIdentity(object, expected) {
     typeof object.metadata.uid === 'string' && object.metadata.uid.length > 0;
 }
 
-function parseNativeObjects(stdout) {
+function parseNativeObjects(stdout, objects = []) {
   if (typeof stdout !== 'string') throw new Error('Missing native output');
-  const objects = [];
   let start = -1;
   let depth = 0;
   let quoted = false;
@@ -80,19 +80,38 @@ function parseNativeObjects(stdout) {
 }
 
 /** Require a complete native acknowledgment; no inferred success from exit code. */
-export function acknowledgeOperatorApply(result, inventory) {
-  if (!result.ok) return false;
+export function inspectOperatorApply(result, inventory) {
+  const parsed = [];
   let objects;
+  let valid = true;
   try {
-    // kubectl printers may emit one JSON object per resource rather than a List.
-    objects = parseNativeObjects(result.stdout);
-  } catch { return false; }
-  if (objects.length !== inventory.length) return false;
-  const expected = new Set(inventory.map(entry => entry.id));
-  for (const object of objects) {
-    if (typeof object?.metadata?.uid !== 'string' || !object.metadata.uid || !expected.delete(operatorIdentity(object))) return false;
+    objects = parseNativeObjects(result.stdout, parsed);
+  } catch {
+    objects = parsed;
+    valid = false;
   }
-  return expected.size === 0;
+  const expected = new Set(inventory.map(entry => entry.id));
+  const confirmed = new Map();
+  const ambiguous = new Set();
+  for (const object of objects) {
+    if (!object || typeof object !== 'object') { valid = false; continue; }
+    const id = operatorIdentity(object);
+    const uid = object.metadata?.uid;
+    if (!expected.has(id) || typeof uid !== 'string' || !uid) { valid = false; continue; }
+    if (confirmed.has(id)) {
+      valid = false;
+      if (confirmed.get(id) !== uid) ambiguous.add(id);
+    } else confirmed.set(id, uid);
+  }
+  for (const id of ambiguous) confirmed.delete(id);
+  return {
+    complete: result.ok && valid && objects.length === expected.size && confirmed.size === expected.size,
+    confirmed: [...confirmed].map(([id, uid]) => ({ id, uid })),
+  };
+}
+
+export function acknowledgeOperatorApply(result, inventory) {
+  return inspectOperatorApply(result, inventory).complete;
 }
 
 /** Shared native baseline worker. No existing-object mutation or write retries. */
@@ -151,10 +170,11 @@ export function ensureBaseline(profileId, deps = {}) {
       const applied = kubectl(['apply', '--server-side', '--field-manager=' + manager(profileId), '-f', '-', '-o', 'json'],
         { input: artifact.body, timeoutMs: 180000, mutation: true });
       writeInFlight = false;
-      const acknowledged = acknowledgeOperatorApply(applied, artifact.inventory);
+      const acknowledgment = inspectOperatorApply(applied, artifact.inventory);
+      const acknowledged = acknowledgment.complete;
       actions[actions.length - 1].outcome = acknowledged ? 'acknowledged' : 'unknown';
+      if (acknowledgment.confirmed.length) confirmedMutations.push({ op: 'apply-operator', identities: acknowledgment.confirmed.map(entry => entry.id), objects: acknowledgment.confirmed });
       if (!acknowledged) return refuse('operator-apply-unknown', 'Operator installation outcome unknown; re-observe explicitly', 'unknown');
-      confirmedMutations.push({ op: 'apply-operator', identities: artifact.inventory.map(entry => entry.id) });
     }
 
     stage = 'operator';

@@ -23,7 +23,9 @@ snapshot_volumes() {
 snapshot_foreign_contexts() {
   local path="$1"
   snapshot_file "$path"
-  kubectl config get-contexts -o name 2>/dev/null | grep -vx "$CONTEXT_NAME" | sort >"$path" || true
+  local contexts
+  contexts="$(kubectl config get-contexts -o name)" || return 1
+  printf '%s\n' "$contexts" | awk -v own="$CONTEXT_NAME" 'NF && $0 != own' | sort >"$path"
 }
 
 assert_same_file() {
@@ -130,7 +132,9 @@ assert_loopback_only() {
     exit 1
   fi
   local exposed
-  exposed="$("${KUBECTL[@]}" get svc -A --no-headers 2>/dev/null | awk '$3=="NodePort" || $3=="LoadBalancer" {print}')"
+  local services
+  services="$("${KUBECTL[@]}" get svc -A --no-headers)" || return 1
+  exposed="$(printf '%s\n' "$services" | awk '$3=="NodePort" || $3=="LoadBalancer" {print}')"
   if [[ -n "$exposed" ]]; then
     echo "Refusing to continue: a Service is NodePort or LoadBalancer." >&2
     echo "$exposed" >&2

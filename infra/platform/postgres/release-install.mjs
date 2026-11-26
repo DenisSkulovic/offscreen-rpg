@@ -1,4 +1,5 @@
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readPlatformProfile } from '../common/profile.mjs';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -7,7 +8,7 @@ import { renderReleaseManifests } from './bootstrap/release-plan.mjs';
 import { ensureBaseline } from './bootstrap/ensure.mjs';
 import { createBaselineCustody } from './bootstrap/custody.mjs';
 import { loadOperatorArtifact } from './bootstrap/operator.mjs';
-import { collectBaselineObservation, assessBaselineObservation } from './bootstrap/observation.mjs';
+import { collectBaselineObservation, assessBaselineObservation, assertBaselineKubeconfig } from './bootstrap/observation.mjs';
 
 export {
   RELEASE_CNPG_CONTEXT,
@@ -48,6 +49,7 @@ export function installReleaseCnpg({ operatorManifestPath, repoRoot }) {
   let pvc;
   try {
     if (resolve(repoRoot) !== actualRoot) throw new Error('repository root mismatch');
+    assertBaselineKubeconfig(readPlatformProfile('release'), custody.run);
     work = mkdtempSync(join(tmpdir(), 'offscreen-postgres-'));
     const before = custody.run('bash', ['-c', 'set -euo pipefail; source "$1"; require_memory; volume_guard_begin "$2"', 'postgres-guard', lib, work], { timeoutMs: 30000 });
     if (!before.ok) throw new Error('guard begin failed');
