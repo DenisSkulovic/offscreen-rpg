@@ -22,3 +22,7 @@ After T05. T06a private smoke mode and smoke-fence fixtures: generated namespace
 
 ## T07 Retirement and verification registration
 After T06. Remove dev-install.mjs, release-install.mjs, observations.mjs, reconcile.mjs and dev-install.test.mjs; retain install.sh thin authorized alias; no alternate mutation owner. Update diagnostic.mjs and verify.mjs definitions per SOURCE-MAP, layout relocation map specified in SOURCE-MAP, runbook exact commands and evidence status. Run focused Redis/environments/smoke suites, pnpm infra:verify --suite source, changed-file formatting/quality and repo code-health baseline comparison. Parent owns shared docs and integration; compare inherited failures to baseline, no unrelated fixes. Final grep old exports and paths. Stop for unexpected active caller, source failure, live gate NOT RUN or owner integration decision missing. No archive/join without essential acceptance.
+
+
+## Acceptance corrective tasks (current execution)
+Read [ACCEPTANCE-CORRECTIONS.md](ACCEPTANCE-CORRECTIONS.md) for ordered T08a–d tasks and source/owner proof split. These supersede the original completion receipt, not the selected design. No heavy live proof by Cursor.
