@@ -1,3 +1,6 @@
+# Observability platform renewal | R30
+2026-11-26. [Committee pass 01](committee/pass-01.md): REVISE AND RE-DEFEND. [R30](R30.md) supersedes inconsistent lifecycle, identity, inventory and proof contracts below. Remaining gates: exact rendered inventory, caller audit, fault-injection feasibility and revised self-defense. Not ready for re-defense or implementation. Prior R29 checkpoint retained below.
+
 # Observability platform renewal | R29
 2026-11-26. Original baseline 2138ae4a4a188c5dce54e2f77d4211d6ab4f1ed3; integration compatibility a81e275821496e478ba55ae3dce5e72cf63d5dfd. Design only; not defended or commissioned.
 Current checkpoint: [R29](R29.md), final specimen validation PASS. Normative [TARGET](TARGET.md), [SOURCE-MAP](SOURCE-MAP.md), [ACCEPTANCE](ACCEPTANCE.md), [SELF-DEFENSE](SELF-DEFENSE.md). [R28](R28.md) bounded privacy acceptance; [R27](R27.md) native validation; [R26](R26.md) native admission candidate; [R25](R25.md) scoped boundary; [R24](R24.md) resource and self-metrics acceptance. Prior acceptance: [R22](R22.md). See [EVIDENCE.md](EVIDENCE.md) for acceptance boundaries and owner receipt index.
