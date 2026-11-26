@@ -9,7 +9,8 @@ Owner-operated disposable cluster only. Recorded 2026-11-26. Original source bas
 | E04-A | PASS | /tmp/offscreen-obs-signals.niM9JW7H; R18 | OTLP HTTP through Service DNS, exact correlated log, counter7, parent/child trace; initial trace404 then retrieved |
 | E04-B | PASS | /tmp/offscreen-obs-persistence.eErZtOtu; R20 | 12/12 query checks baseline and after each graceful backend replacement; same PVC UID/PV names; no resubmission |
 | E04-C | PASS | /tmp/offscreen-obs-outage.qrD4YRjZ; R22 | 8/8 required signal queries, Tempo zero Pods/no ready endpoints, healthy log/metric delivery, fresh trace recovery, same Collector Pod UID and PVC identities |
-| E04-D | PENDING | not authored | Resource measurements, self-metrics, privacy/identity admission |
+| E04-D1 | PENDING | R23 | Read-only resource and self-metrics harness authored; execution pending |
+| E04-D2 | PENDING | not authored | Privacy/identity admission contract and negative tests |
 | Final specimen validation | PENDING | revised Grafana memory | Rerender both profiles and validate revised candidate |
 | Defense / implementation | PENDING | none | No acceptance or authorization implied |
 
