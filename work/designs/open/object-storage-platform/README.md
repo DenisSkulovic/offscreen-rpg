@@ -1,9 +1,13 @@
-# Object storage platform | R7 defense candidate
+# Object storage platform | R9 second-defense candidate
 
 2026-11-26 · integration main `88b6ebae6acb1664c8c571aadd8cc4385dbb40eb` · designer ChatGPT.
-**State: self-defended, awaiting independent committee and owner acceptance.** No implementation or migration authorized. Next review: independent committee, 2026-11-26.
+**State: revised after independent pass 01, self-defended for bounded structural scope, awaiting independent pass 02 and owner acceptance.** No implementation or migration authorized. Next review: independent committee, 2026-11-26.
 
 ## Normative reading order
+
+- [R9 committee closure evidence](R9.md): controlling scope, observed IAM and storage evidence, remaining gates.
+- [R8 committee response](R8.md): custody and authorization amendments, subordinate to R9.
+- [Independent pass 01](committee/pass-01.md): three material findings and original verdict.
 
 - [R7 defense and final scope](DEFENSE.md): controlling final choices, proof matrix, source retirement and self-defense.
 - [R6 integration](INTEGRATION.md): detailed render, runtime, credential and custody contracts, as amended by R7.
@@ -21,4 +25,4 @@ S3 data-plane portability; SeaweedFS 4.54 only a minimal local provider. One nat
 
 Owner observed both local providers running, pinned image, PVCs bound, no listed Helm releases. Owner SDK experiment against two existing dev tenants passed conditional writes, one winner among eight simultaneous writes, authentication and cross-tenant denial. No fresh Helm installation, new scoped release identity, guard implementation, hosted or migrated deployment tested. R7 specifies required source and isolated live structural proof.
 
-Self-defense verdict DEFENDED for fresh local structural renewal, read-only compatible legacy continuity and source-level provider-neutral binding. Destructive adoption/cutover, existing release credential migration and actual external hosted deployment separately gated. Independent committee must commit verdict against frozen candidate SHA before owner acceptance or implementation packet planning. No further designer edits during review.
+Self-defense verdict DEFENDED for fresh local structural renewal and source-level provider-neutral binding, including design of read-only legacy classification. Actual occupied legacy admission remains evidence-gated until complete classifier readback and owner acceptance. R9 records observed continuity and targeted IAM readback, not full compatibility certification. Destructive adoption/cutover, existing release credential migration and actual external hosted deployment separately gated. Independent committee must commit verdict against frozen candidate SHA before owner acceptance or implementation packet planning. No further designer edits during review.
