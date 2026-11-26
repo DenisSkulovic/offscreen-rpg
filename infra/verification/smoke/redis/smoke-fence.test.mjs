@@ -6,9 +6,20 @@ import { join } from 'node:path';
 import process from 'node:process';
 import test from 'node:test';
 
+import {
+  DEV_BASELINE_NAMESPACE,
+  DEV_CLUSTER_OWNER,
+} from '../../../clusters/kind/manager/dev-bootstrap.mjs';
+import {
+  kindKubeconfigClusterName,
+  RELEASE_BASELINE_NAMESPACE,
+} from '../../../platform/common/commands.mjs';
 import { readPlatformProfile } from '../../../platform/common/profile.mjs';
 import { DEFAULT_WRITE_RESERVE_MS } from '../../../platform/redis/custody.mjs';
-import { observeInventory, redisTargetFromProfile } from '../../../platform/redis/inventory.mjs';
+import {
+  observeInventory,
+  redisTargetFromProfile,
+} from '../../../platform/redis/inventory.mjs';
 
 const devProfile = readPlatformProfile('dev');
 const devTarget = redisTargetFromProfile('dev');
@@ -32,6 +43,76 @@ const RELEASE_CONTEXT = releaseProfile.contextName;
 const CANONICAL_NAMESPACE = releaseTarget.namespace;
 const FIXED_NONCE = '0123456789abcdef0123456789abcdef';
 const EXPECTED_SMOKE_NAMESPACE = `offscreen-redis-proof-${FIXED_NONCE}`;
+const PROOF_NAMESPACE_UID = 'namespace-uid';
+
+/**
+ * @param {'dev' | 'release'} profileId
+ * @param {string} command
+ * @param {string[]} args
+ */
+function stubPlatformTarget(profileId, command, args) {
+  const profile = readPlatformProfile(profileId);
+  if (command === 'kind' && args[0] === 'get' && args[1] === 'clusters') {
+    return ok(`${profile.clusterName}\n`);
+  }
+  if (
+    command === 'kubectl' &&
+    args.includes('config') &&
+    args.includes('view')
+  ) {
+    const clusterName = kindKubeconfigClusterName(profile.clusterName);
+    const port = profileId === 'release' ? 6443 : 24443;
+    return ok(
+      JSON.stringify({
+        clusters: [
+          {
+            name: clusterName,
+            cluster: { server: `https://127.0.0.1:${port}` },
+          },
+        ],
+        contexts: [
+          {
+            name: profile.contextName,
+            context: { cluster: clusterName, namespace: 'default' },
+          },
+        ],
+        'current-context': profile.contextName,
+      }),
+    );
+  }
+  const getIdx = args.indexOf('get');
+  const name = getIdx >= 0 ? args[getIdx + 2] : '';
+  if (
+    command === 'kubectl' &&
+    getIdx >= 0 &&
+    args[getIdx + 1] === 'namespace' &&
+    args.includes('json')
+  ) {
+    if (name === DEV_BASELINE_NAMESPACE) {
+      return ok(
+        JSON.stringify({
+          metadata: {
+            name: DEV_BASELINE_NAMESPACE,
+            uid: 'dev-baseline-uid',
+            labels: { [`${profile.ownerLabel}/owner`]: DEV_CLUSTER_OWNER },
+          },
+        }),
+      );
+    }
+    if (name === RELEASE_BASELINE_NAMESPACE) {
+      return ok(
+        JSON.stringify({
+          metadata: {
+            name: RELEASE_BASELINE_NAMESPACE,
+            uid: 'release-baseline-uid',
+            labels: { [`${profile.ownerLabel}/lab`]: profile.ownerValue },
+          },
+        }),
+      );
+    }
+  }
+  return null;
+}
 
 function fixedRandomBytes() {
   return Buffer.from(FIXED_NONCE, 'hex');
@@ -67,11 +148,17 @@ function fail(status = 1, stderr = 'failed') {
 function createSmokeHarness(namespace, target, scenario = {}) {
   const ownerKey = target.ownerKey;
   const ownerValue = target.ownerValue;
+  const profileId =
+    target.contextName === devProfile.contextName ? 'dev' : 'release';
   /** @type {Array<[string, string[]]>} */
   const commands = [];
 
   const run = (command, args) => {
     commands.push([command, args]);
+    const stub = stubPlatformTarget(profileId, command, args);
+    if (stub) {
+      return stub;
+    }
     if (command === 'helm') {
       const verb = args[0];
       if (verb === 'version' && args[1] === '--short') {
@@ -168,7 +255,7 @@ function createSmokeHarness(namespace, target, scenario = {}) {
       );
     }
 
-  if (args.includes('endpoints')) {
+    if (args.includes('endpoints')) {
       return scenario.endpointsPresent ? ok('[{}]') : ok('');
     }
 
@@ -191,6 +278,10 @@ function buildSmokeDeps(stateRoot, scenario) {
   const proof = buildHappyProofRunner(proofTarget);
 
   const run = (command, args) => {
+    const stub = stubPlatformTarget('release', command, args);
+    if (stub) {
+      return stub;
+    }
     const proofAttempt = proof.run(command, args);
     const stderr = proofAttempt.stderr ?? '';
     if (
@@ -218,8 +309,31 @@ function buildSmokeDeps(stateRoot, scenario) {
 
   const spawn = (command, args, options) => {
     commands.push([command, args]);
-    if (command === 'kubectl' && args.includes('namespace') && args.includes('create')) {
-      return scenario.namespaceCreateResult ?? ok();
+    if (
+      command === 'kubectl' &&
+      args.includes('create') &&
+      args.includes('-f') &&
+      !args.includes('-n')
+    ) {
+      return (
+        scenario.namespaceCreateResult ??
+        ok(
+          JSON.stringify({
+            metadata: {
+              uid: PROOF_NAMESPACE_UID,
+              resourceVersion: '9001',
+              name: namespace,
+            },
+          }),
+        )
+      );
+    }
+    if (
+      command === 'kubectl' &&
+      args.includes('create') &&
+      args.includes('-f')
+    ) {
+      return proof.runWrite(command, args, options);
     }
     if (command === 'kubectl' && args.includes('label')) {
       return scenario.namespaceLabelResult ?? ok();
@@ -237,10 +351,10 @@ function buildSmokeDeps(stateRoot, scenario) {
     if (command === 'helm' && (args[0] === 'lint' || args[0] === 'template')) {
       return ok('');
     }
-  if (
+    if (
       command === 'kubectl' &&
       (args.includes('scale') ||
-        (args.includes('create') && args.includes('-f')) ||
+        args.includes('exec') ||
         (args.includes('delete') && args.includes('--raw')))
     ) {
       return proof.runWrite(command, args, options);
@@ -256,7 +370,11 @@ function buildSmokeDeps(stateRoot, scenario) {
       randomBytes: fixedRandomBytes,
       observeInventory: observeInventoryStub,
       observeRedisReady: () =>
-        scenario.ready ?? { ok: true, state: 'ready', detail: 'installed-ready' },
+        scenario.ready ?? {
+          ok: true,
+          state: 'ready',
+          detail: 'installed-ready',
+        },
       budgetMs: scenario.budgetMs ?? 600_000,
       writeReserveMs: scenario.writeReserveMs ?? DEFAULT_WRITE_RESERVE_MS,
     },
@@ -275,18 +393,15 @@ function mutatingKubectl(commands) {
 }
 
 function helmInstalls(commands) {
-  return commands.filter(([cmd, args]) => cmd === 'helm' && args[0] === 'install');
+  return commands.filter(
+    ([cmd, args]) => cmd === 'helm' && args[0] === 'install',
+  );
 }
 
 test('smoke lifecycle rejects extra argv including caller namespace', async () => {
   await assert.rejects(
     () =>
-      runRedisInstallLifecycle([
-        'smoke',
-        'release',
-        RELEASE_CONTEXT,
-        'lab-a',
-      ]),
+      runRedisInstallLifecycle(['smoke', 'release', RELEASE_CONTEXT, 'lab-a']),
     /invalid redis install invocation/,
   );
 });
@@ -352,13 +467,10 @@ test('authorized smoke uses generated namespace on helm install', async () => {
     assert.ok(!helmArgs.includes('offscreen-dev-redis'));
 
     const namespaceCreates = mutatingKubectl(commands).filter(
-      ([, args]) => args.includes('create') && args.includes('namespace'),
+      ([, args]) =>
+        args.includes('create') && args.includes('-f') && !args.includes('-n'),
     );
     assert.equal(namespaceCreates.length, 1);
-    assert.equal(
-      namespaceCreates[0][1].includes(EXPECTED_SMOKE_NAMESPACE),
-      true,
-    );
     assert.equal(namespaceCreates[0][1].includes(CANONICAL_NAMESPACE), false);
 
     assert.ok(

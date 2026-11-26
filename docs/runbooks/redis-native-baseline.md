@@ -28,3 +28,11 @@ Canonical legacy objects are not deleted by this change. Integration is held unt
 ## No automated receipt clear
 
 There is no `install.mjs` subcommand that clears the receipt.
+
+## Smoke-failure (expected install fault)
+
+With `OFFSCREEN_REDIS_SMOKE_DISPOSABLE=confirmed`, run the disposable smoke-failure selector (for example via `infra/verification/smoke/redis/smoke.sh failure <dev|release>`), which invokes `node infra/platform/redis/install.mjs smoke-failure <profile> <exact-context>`. This uses an internally generated `offscreen-redis-proof-…` namespace and a fault-only chart copy with the zero digest image; ordinary ensure/smoke never accept that pin.
+
+When Helm/kubectl failure is the expected outcome, the generated namespace and pending receipt are **retained** (no automatic cleanup). The receipt records target, nonce, namespace UID when known, operation ID, and redacted fault evidence. The next ordinary `ensure` or `smoke` in the same context refuses before any write while that pending file exists.
+
+There is still no receipt-clear or recovery subcommand on `install.mjs`. Operator recovery after an authorized review of the retained receipt and namespace remains manual and is not scripted from this runbook.

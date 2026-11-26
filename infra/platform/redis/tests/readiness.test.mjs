@@ -363,9 +363,7 @@ function liveBundle({
     ],
     pod,
     afterPod,
-    endpointSlices: extraSlice
-      ? [endpointSlice, extraSlice]
-      : [endpointSlice],
+    endpointSlices: extraSlice ? [endpointSlice, extraSlice] : [endpointSlice],
   };
 }
 
@@ -401,7 +399,14 @@ function createObserverRun(scenario = {}) {
   const run = (command, args) => {
     commands.push([command, args]);
     if (command !== 'kubectl') {
-      return { ok: false, status: 1, stdout: '', stderr: 'unexpected', timedOut: false, missing: false };
+      return {
+        ok: false,
+        status: 1,
+        stdout: '',
+        stderr: 'unexpected',
+        timedOut: false,
+        missing: false,
+      };
     }
     if (args.includes('exec')) {
       if (scenario.probeTimedOut) {
@@ -420,19 +425,35 @@ function createObserverRun(scenario = {}) {
     const resourceIdx = args.indexOf('get') + 1;
     const resourceKind = args[resourceIdx];
     const resourceName = args[resourceIdx + 1];
-    if (args.includes('get') && resourceKind === 'namespace' && resourceName === NAMESPACE) {
+    if (
+      args.includes('get') &&
+      resourceKind === 'namespace' &&
+      resourceName === NAMESPACE
+    ) {
       snapshotIndex += 1;
       return ok(JSON.stringify(bundle.namespace));
     }
-    if (args.includes('get') && resourceKind === 'configmap' && resourceName === 'redis-config') {
+    if (
+      args.includes('get') &&
+      resourceKind === 'configmap' &&
+      resourceName === 'redis-config'
+    ) {
       return ok(JSON.stringify(bundle.configMap));
     }
-    if (args.includes('get') && resourceKind === 'deployment' && resourceName === 'redis') {
+    if (
+      args.includes('get') &&
+      resourceKind === 'deployment' &&
+      resourceName === 'redis'
+    ) {
       const deploy =
         snapshotIndex < 1 ? bundle.deployment : bundle.afterDeployment;
       return ok(JSON.stringify(deploy));
     }
-    if (args.includes('get') && resourceKind === 'service' && resourceName === 'redis') {
+    if (
+      args.includes('get') &&
+      resourceKind === 'service' &&
+      resourceName === 'redis'
+    ) {
       return ok(JSON.stringify(bundle.service));
     }
     if (args.includes('replicaset')) {
@@ -445,7 +466,14 @@ function createObserverRun(scenario = {}) {
     if (args.includes('endpointslice')) {
       return ok(JSON.stringify({ items: bundle.endpointSlices }));
     }
-    return { ok: false, status: 1, stdout: '', stderr: 'unhandled kubectl', timedOut: false, missing: false };
+    return {
+      ok: false,
+      status: 1,
+      stdout: '',
+      stderr: 'unhandled kubectl',
+      timedOut: false,
+      missing: false,
+    };
   };
 
   return { run, commands, desired, bundle };
@@ -483,7 +511,9 @@ test('resourceVersion churn with same UID yields unstable', () => {
 });
 
 test('containerID change across snapshots is not ready', () => {
-  const { run, desired } = createObserverRun({ afterContainerId: 'docker://cid-2' });
+  const { run, desired } = createObserverRun({
+    afterContainerId: 'docker://cid-2',
+  });
   const result = observeTargetReady(devTarget, desired, {
     run,
     deadline: Date.now() + 60_000,
@@ -545,7 +575,7 @@ test('unexpected env, volume, and security context refuse compatibility', () => 
   const desired = buildDesired();
   const bundle = liveBundle();
   const badEnv = assessRedisReadyState(
-  {
+    {
       ...bundle,
       deployment: {
         ...bundle.deployment,
@@ -618,7 +648,8 @@ test('inventory absent does not exec redis probes', () => {
       return ok('v3.22.1\n');
     }
     if (command === 'kubectl' && args.includes('namespace')) {
-      return { ok: true, stdout: '', stderr: 'not found', timedOut: false, missing: false, status: 1 };
+      // Empty successful stdout is absence. Stderr would be unreadable.
+      return ok('');
     }
     return ok('');
   };

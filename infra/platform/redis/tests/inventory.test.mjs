@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { isDeepStrictEqual } from 'node:util';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { runPlatformCommand } from '../../common/commands.mjs';
@@ -11,6 +12,7 @@ const devTarget = redisTargetFromProfile('dev');
 const OWNER_KEY = devTarget.ownerKey;
 const OWNER_VALUE = devTarget.ownerValue;
 const NAMESPACE = devTarget.namespace;
+const RESERVED_SERVICE = 'redis';
 
 const MUTATING_HELM = new Set([
   'install',
@@ -71,6 +73,31 @@ function fail(code = 1, stderr = 'failed') {
 }
 
 /**
+ * @param {'deployment' | 'service' | 'configmap' | 'endpoints' | 'namespace'} resource
+ * @param {string} name
+ * @param {Record<string, unknown>} [extra]
+ */
+function namespacedObjectJson(resource, name, extra = {}) {
+  /** @type {Record<string, { apiVersion: string, kind: string }>} */
+  const table = {
+    deployment: { apiVersion: 'apps/v1', kind: 'Deployment' },
+    service: { apiVersion: 'v1', kind: 'Service' },
+    configmap: { apiVersion: 'v1', kind: 'ConfigMap' },
+    endpoints: { apiVersion: 'v1', kind: 'Endpoints' },
+    namespace: { apiVersion: 'v1', kind: 'Namespace' },
+  };
+  const identity = table[resource];
+  const metadata =
+    resource === 'namespace' ? { name } : { name, namespace: NAMESPACE };
+  return JSON.stringify({
+    apiVersion: identity.apiVersion,
+    kind: identity.kind,
+    metadata,
+    ...extra,
+  });
+}
+
+/**
  * @param {{
  *   namespacePresent?: boolean,
  *   namespaceRace?: boolean,
@@ -95,6 +122,11 @@ function fail(code = 1, stderr = 'failed') {
  *   listFail?: boolean,
  *   malformedHelmList?: string,
  *   truncation?: boolean,
+ *   endpointsUnreadable?: boolean,
+ *   objectReadForbidden?: boolean,
+ *   objectReadTimeout?: boolean,
+ *   deploymentWrongIdentity?: boolean,
+ *   namespaceRecheckUnreadable?: boolean,
  * }} scenario
  */
 function createHarness(scenario = {}) {
@@ -146,6 +178,8 @@ function createHarness(scenario = {}) {
         return ok(scenario.helmManifest ?? '');
       }
       if (verb === 'get' && args[1] === 'values') {
+        assert.ok(args.includes('--all'));
+        assert.equal(args[args.indexOf('-o') + 1], 'json');
         return ok(JSON.stringify(scenario.helmValues ?? {}));
       }
       if (verb === 'history') {
@@ -158,18 +192,78 @@ function createHarness(scenario = {}) {
       return fail(1, 'unexpected command');
     }
 
-    if (args.includes('namespace') && args.includes('get')) {
+    const getIdx = args.indexOf('get');
+    const jsonGet =
+      args.includes('--ignore-not-found') &&
+      getIdx >= 0 &&
+      args.indexOf('-o') >= 0 &&
+      args[args.indexOf('-o') + 1] === 'json';
+
+    if (jsonGet && args[getIdx + 1] === 'namespace') {
       namespaceChecks += 1;
+      if (scenario.namespaceRecheckUnreadable && namespaceChecks === 2) {
+        return fail(1, 'Forbidden');
+      }
       if (scenario.namespaceRace && namespaceChecks === 1) {
-        return fail(1, 'NotFound');
+        return ok('');
       }
       if (scenario.namespacePresent === false) {
-        return fail(1, 'NotFound');
+        return ok('');
       }
-      return ok(`namespace/${NAMESPACE}\n`);
+      return ok(`${namespacedObjectJson('namespace', NAMESPACE)}\n`);
     }
 
-    const getIdx = args.indexOf('get');
+    if (jsonGet && args[getIdx + 1] === 'endpoints') {
+      if (scenario.endpointsUnreadable) {
+        return fail(1, 'Forbidden');
+      }
+      if (scenario.endpointsPresent) {
+        return ok(
+          `${namespacedObjectJson('endpoints', RESERVED_SERVICE, {
+            subsets: [{ addresses: [{ ip: '10.0.0.1' }] }],
+          })}\n`,
+        );
+      }
+      return ok('');
+    }
+
+    if (
+      jsonGet &&
+      (args[getIdx + 1] === 'deployment' ||
+        args[getIdx + 1] === 'service' ||
+        args[getIdx + 1] === 'configmap')
+    ) {
+      const resource = args[getIdx + 1];
+      const name = args[getIdx + 2];
+      if (scenario.objectReadTimeout && resource === 'deployment') {
+        return {
+          ok: false,
+          status: null,
+          stdout: '',
+          stderr: '',
+          timedOut: true,
+          missing: false,
+        };
+      }
+      if (scenario.objectReadForbidden && resource === 'deployment') {
+        return fail(1, 'Forbidden');
+      }
+      if (scenario.deploymentWrongIdentity && resource === 'deployment') {
+        return ok(
+          `${JSON.stringify({
+            apiVersion: 'v1',
+            kind: 'Deployment',
+            metadata: { name, namespace: NAMESPACE },
+          })}\n`,
+        );
+      }
+      const present =
+        (resource === 'deployment' && scenario.deployment === true) ||
+        (resource === 'service' && scenario.service === true) ||
+        (resource === 'configmap' && scenario.configMap === true);
+      return present ? ok(`${namespacedObjectJson(resource, name)}\n`) : ok('');
+    }
+
     const namespacedGet = getIdx >= 0 ? args[getIdx + 2] : undefined;
     const isCollectionGet =
       namespacedGet === '-o' ||
@@ -241,24 +335,6 @@ function createHarness(scenario = {}) {
       return ok(JSON.stringify(serviceSelectors));
     }
 
-    if (args.includes('endpoints') && args.includes('jsonpath={.subsets}')) {
-      if (scenario.endpointsPresent) {
-        return ok('[{"addresses":[{"ip":"10.0.0.1"}]}]');
-      }
-      return ok('');
-    }
-
-    const resource = args[getIdx + 1];
-    const name = args[getIdx + 2];
-    const output = args[args.indexOf('-o') + 1];
-    const present =
-      (resource === 'deployment' && scenario.deployment === true) ||
-      (resource === 'service' && scenario.service === true) ||
-      (resource === 'configmap' && scenario.configMap === true);
-
-    if (output === 'name') {
-      return present ? ok(`${resource}/${name}\n`) : ok('');
-    }
     return fail(1, 'unexpected kubectl');
   };
 
@@ -534,3 +610,224 @@ test('legacy old selector without exact release secret', () => {
   assert.equal(result.reason, 'old-selector');
   assertReadOnlyCommands(commands);
 });
+
+test('deployment.apps/redis json identity mismatch is unreadable', () => {
+  const { run, commands } = createHarness({
+    namespacePresent: true,
+    secrets: [],
+    configmaps: [],
+    helmList: [],
+    deployment: true,
+    deploymentWrongIdentity: true,
+  });
+  const result = observeInventory(devTarget, { run });
+  assert.equal(result.state, 'unreadable');
+  assert.equal(result.reason, 'identity-mismatch');
+  assertReadOnlyCommands(commands);
+});
+
+test('deployment presence uses structured json get', () => {
+  const { run, commands } = createHarness({
+    namespacePresent: true,
+    secrets: [],
+    configmaps: [],
+    helmList: [],
+    deployment: true,
+  });
+  observeInventory(devTarget, { run });
+  const deploymentGet = commands.find(
+    ([cmd, args]) =>
+      cmd === 'kubectl' &&
+      args.includes('deployment') &&
+      args.includes('--ignore-not-found') &&
+      args[args.indexOf('-o') + 1] === 'json',
+  );
+  assert.ok(deploymentGet);
+});
+
+test('forbidden deployment read is unreadable', () => {
+  const { run, commands } = createHarness({
+    namespacePresent: true,
+    secrets: [],
+    configmaps: [],
+    helmList: [],
+    objectReadForbidden: true,
+  });
+  const result = observeInventory(devTarget, { run });
+  assert.equal(result.state, 'unreadable');
+  assert.equal(result.reason, 'kubectl-deployment-stderr');
+  assertReadOnlyCommands(commands);
+});
+
+test('deployment read timeout is unreadable', () => {
+  const { run, commands } = createHarness({
+    namespacePresent: true,
+    secrets: [],
+    configmaps: [],
+    helmList: [],
+    objectReadTimeout: true,
+  });
+  const result = observeInventory(devTarget, { run });
+  assert.equal(result.state, 'unreadable');
+  assert.equal(result.reason, 'timeout');
+  assertReadOnlyCommands(commands);
+});
+
+test('unreadable namespace recheck', () => {
+  const { run, commands } = createHarness({
+    namespacePresent: false,
+    namespaceRecheckUnreadable: true,
+  });
+  const result = observeInventory(devTarget, { run });
+  assert.equal(result.state, 'unreadable');
+  assert.equal(result.reason, 'namespace-stderr');
+  assertReadOnlyCommands(commands);
+});
+
+test('endpoint residue blocks fresh empty path', () => {
+  const { run, commands } = createHarness({
+    namespacePresent: true,
+    secrets: [],
+    configmaps: [],
+    helmList: [],
+    endpointsPresent: true,
+  });
+  const result = observeInventory(devTarget, { run });
+  assert.equal(result.state, 'partial');
+  assert.equal(result.reason, 'endpoint-residue');
+  assertReadOnlyCommands(commands);
+});
+
+test('endpoint unreadable is propagated', () => {
+  const { run, commands } = createHarness({
+    namespacePresent: true,
+    secrets: [],
+    configmaps: [],
+    helmList: [],
+    endpointsUnreadable: true,
+  });
+  const result = observeInventory(devTarget, { run });
+  assert.equal(result.state, 'unreadable');
+  assert.equal(result.reason, 'endpoints-stderr');
+  assertReadOnlyCommands(commands);
+});
+
+test(
+  'shuffled helm values keys still compare equal',
+  { skip: !installedFixture },
+  () => {
+    assert.ok(installedFixture);
+    const base = installedFixture.values;
+    /** @type {Record<string, unknown>} */
+    const shuffled = {};
+    for (const key of ['owner', 'resources', 'redis', 'image']) {
+      shuffled[key] = base[key];
+    }
+    const { run, commands } = createHarness({
+      namespacePresent: true,
+      secrets: ['sh.helm.release.v1.redis.v1'],
+      deployment: true,
+      service: true,
+      configMap: true,
+      endpointsPresent: true,
+      helmList: [
+        {
+          name: 'redis',
+          namespace: NAMESPACE,
+          revision: '1',
+          status: 'deployed',
+          chart: 'offscreen-redis-specimen-0.1.0',
+        },
+      ],
+      helmManifest: installedFixture.manifest,
+      helmValues: shuffled,
+      helmHistory: [{ revision: 1, status: 'deployed' }],
+      helmTemplate: installedFixture.manifest,
+    });
+    const result = observeInventory(devTarget, { run });
+    assert.equal(result.state, 'installed');
+    assert.ok(isDeepStrictEqual(shuffled, installedFixture.values));
+    assertReadOnlyCommands(commands);
+  },
+);
+
+test(
+  'extra helm values key rejects compatible installed',
+  {
+    skip: !installedFixture,
+  },
+  () => {
+    assert.ok(installedFixture);
+    const { run, commands } = createHarness({
+      namespacePresent: true,
+      secrets: ['sh.helm.release.v1.redis.v1'],
+      deployment: true,
+      service: true,
+      configMap: true,
+      endpointsPresent: true,
+      helmList: [
+        {
+          name: 'redis',
+          namespace: NAMESPACE,
+          revision: '1',
+          status: 'deployed',
+          chart: 'offscreen-redis-specimen-0.1.0',
+        },
+      ],
+      helmManifest: installedFixture.manifest,
+      helmValues: { ...installedFixture.values, unexpectedField: true },
+      helmHistory: [{ revision: 1, status: 'deployed' }],
+      helmTemplate: installedFixture.manifest,
+    });
+    const result = observeInventory(devTarget, { run });
+    assert.equal(result.state, 'drift');
+    assert.equal(result.reason, 'manifest-mismatch');
+    assertReadOnlyCommands(commands);
+  },
+);
+
+test(
+  'helm argv omits manifest -o and values use --all -o json',
+  {
+    skip: !installedFixture,
+  },
+  () => {
+    assert.ok(installedFixture);
+    const { run, commands } = createHarness({
+      namespacePresent: true,
+      secrets: ['sh.helm.release.v1.redis.v1'],
+      deployment: true,
+      service: true,
+      configMap: true,
+      endpointsPresent: true,
+      helmList: [
+        {
+          name: 'redis',
+          namespace: NAMESPACE,
+          revision: '1',
+          status: 'deployed',
+          chart: 'offscreen-redis-specimen-0.1.0',
+        },
+      ],
+      helmManifest: installedFixture.manifest,
+      helmValues: installedFixture.values,
+      helmHistory: [{ revision: 1, status: 'deployed' }],
+      helmTemplate: installedFixture.manifest,
+    });
+    observeInventory(devTarget, { run });
+    const manifestCall = commands.find(
+      ([cmd, args]) =>
+        cmd === 'helm' && args[0] === 'get' && args[1] === 'manifest',
+    );
+    const valuesCall = commands.find(
+      ([cmd, args]) =>
+        cmd === 'helm' && args[0] === 'get' && args[1] === 'values',
+    );
+    assert.ok(manifestCall);
+    assert.ok(!manifestCall[1].includes('-o'));
+    assert.ok(valuesCall);
+    assert.ok(valuesCall[1].includes('--all'));
+    assert.equal(valuesCall[1][valuesCall[1].indexOf('-o') + 1], 'json');
+    assertReadOnlyCommands(commands);
+  },
+);

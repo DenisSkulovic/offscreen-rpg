@@ -9,7 +9,11 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { runPlatformCommand } from '../../common/commands.mjs';
 import { readPlatformProfile } from '../../common/profile.mjs';
-import { lintRedisChart, renderRedisChart } from '../config.mjs';
+import {
+  lintRedisChart,
+  renderRedisChart,
+  renderRedisChartForTarget,
+} from '../config.mjs';
 
 const redisRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const chartRoot = join(redisRoot, 'chart');
@@ -474,6 +478,32 @@ test(
     assert.equal(calls.length, 2);
     assert.deepEqual(calls[0], ['version', '--short']);
     assertHelmLintArgv(calls[1], 'dev', profile.namespaces.redis);
+  },
+);
+
+test(
+  'renderRedisChartForTarget renders distinct proof namespace',
+  {
+    skip: helmMissing || !helmPinned,
+  },
+  () => {
+    const calls = [];
+    const run = recordingHelmRun(calls);
+    const distinct = 'offscreen-redis-proof-target-render';
+    const rendered = renderRedisChartForTarget(
+      'dev',
+      { namespace: distinct },
+      run,
+    );
+    assertRenderedObjects(
+      rendered,
+      distinct,
+      'offscreen.dev/owner',
+      'offscreen-dev',
+    );
+    assert.equal(calls.length, 3);
+    assertHelmLintArgv(calls[1], 'dev', distinct);
+    assertHelmTemplateArgv(calls[2], 'dev', distinct);
   },
 );
 

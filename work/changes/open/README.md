@@ -2,7 +2,7 @@
 
 [GATEWAY-NATIVE](2026-11-26--gateway-native-baseline/CHANGE.md): owner-selected local gateway renewal, source-only ready upon dispatch; live and join held. Independent committee waived for this scope. No queue change.
 
-[REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): source implementation on `change/redis-native-baseline-renewal`; acceptance corrections commissioned; live proof NOT RUN; integration held. INF60 suspended. No queue change.
+[REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): T08a–T08d source corrections implemented on `change/redis-native-baseline-renewal`; heavy acceptance pending; live proof NOT RUN; integration held. INF60 suspended. No queue change.
 
 ## Database platform redesign
 

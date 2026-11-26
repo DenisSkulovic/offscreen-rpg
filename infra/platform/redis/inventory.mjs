@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
+import { isDeepStrictEqual } from 'node:util';
 import { URL, fileURLToPath } from 'node:url';
 import { parse, parseAllDocuments } from 'yaml';
 import {
@@ -9,7 +10,7 @@ import {
   PLATFORM_COMMAND_TIMEOUT_MS,
 } from '../common/commands.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
-import { renderRedisChart } from './config.mjs';
+import { renderRedisChartForTarget } from './config.mjs';
 
 const REDIS_MODULE_ROOT = fileURLToPath(new URL('./', import.meta.url));
 const CHART_META = parse(
@@ -45,6 +46,25 @@ const REFUSED_RUNNER_ENV_KEYS = [
 
 const RESOURCE_NAME = /^[a-z0-9][a-z0-9.\-/]*$/;
 const NAME_LINE = /^(secret|configmap)\/([^/]+)$/;
+
+/** kubectl -o name qualified prefixes for reserved live objects. */
+const RESOURCE_IDENTITY = {
+  deployment: {
+    apiVersion: 'apps/v1',
+    kind: 'Deployment',
+    qualifiedPrefix: 'deployment.apps',
+  },
+  service: {
+    apiVersion: 'v1',
+    kind: 'Service',
+    qualifiedPrefix: 'service',
+  },
+  configmap: {
+    apiVersion: 'v1',
+    kind: 'ConfigMap',
+    qualifiedPrefix: 'configmap',
+  },
+};
 
 /** @typedef {'dev' | 'release'} RedisProfileId */
 
@@ -229,8 +249,9 @@ function observeNamespace(run, target) {
       'namespace',
       target.namespace,
       '--request-timeout=10s',
+      '--ignore-not-found',
       '-o',
-      'name',
+      'json',
     ],
     { timeoutMs: KUBECTL_READ_TIMEOUT_MS },
   );
@@ -240,24 +261,35 @@ function observeNamespace(run, target) {
   if (result.timedOut) {
     return { kind: 'unreadable', reason: 'timeout' };
   }
-  if (
-    result.stderr?.includes('NotFound') ||
-    result.stderr?.includes('not found')
-  ) {
-    return { kind: 'absent' };
-  }
   if (result.stderr && result.stderr.trim().length > 0) {
     return { kind: 'unreadable', reason: 'namespace-stderr' };
   }
-  if (!result.ok && result.stdout.trim() === '') {
+  if (!result.ok) {
+    return { kind: 'unreadable', reason: 'namespace-get' };
+  }
+  const trimmed = result.stdout.trim();
+  // Successful kubectl with empty stdout means the namespace is absent.
+  if (trimmed.length === 0) {
     return { kind: 'absent' };
   }
-  const refused = refuseCommandResult(result, 'namespace-get');
-  if (refused) {
-    return { kind: 'unreadable', reason: refused.reason };
+  /** @type {unknown} */
+  let parsed;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return { kind: 'unreadable', reason: 'malformed-namespace-json' };
   }
-  const expected = `namespace/${target.namespace}`;
-  if (result.stdout.trim() !== expected) {
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { kind: 'unreadable', reason: 'malformed-namespace-json' };
+  }
+  const ns =
+    /** @type {{ apiVersion?: unknown, kind?: unknown, metadata?: { name?: unknown } }} */ (
+      parsed
+    );
+  if (ns.apiVersion !== 'v1' || ns.kind !== 'Namespace') {
+    return { kind: 'unreadable', reason: 'namespace-shape' };
+  }
+  if (ns.metadata?.name !== target.namespace) {
     return { kind: 'unreadable', reason: 'namespace-shape' };
   }
   return { kind: 'present' };
@@ -426,6 +458,11 @@ function readObjectMeta(run, target, resource, name) {
  * @param {string} name
  */
 function readObjectPresence(run, target, resource, name) {
+  const identity =
+    RESOURCE_IDENTITY[/** @type {keyof typeof RESOURCE_IDENTITY} */ (resource)];
+  if (!identity) {
+    return { state: 'unreadable', reason: `unsupported-resource-${resource}` };
+  }
   const result = run(
     'kubectl',
     [
@@ -437,30 +474,58 @@ function readObjectPresence(run, target, resource, name) {
       'get',
       resource,
       name,
+      '--ignore-not-found',
       '-o',
-      'name',
+      'json',
     ],
     { timeoutMs: KUBECTL_READ_TIMEOUT_MS },
   );
   if (result.timedOut) {
     return { state: 'unreadable', reason: 'timeout' };
   }
-  if (result.stderr?.includes('NotFound')) {
+  if (result.missing) {
+    return { state: 'unreadable', reason: `kubectl-${resource}-missing` };
+  }
+  if (result.stderr && result.stderr.trim().length > 0) {
+    return { state: 'unreadable', reason: `kubectl-${resource}-stderr` };
+  }
+  if (!result.ok) {
+    return { state: 'unreadable', reason: `kubectl-${resource}` };
+  }
+  const trimmed = result.stdout.trim();
+  if (trimmed.length === 0) {
     return { state: 'absent' };
   }
-  const refused = refuseCommandResult(result, `kubectl-${resource}`);
-  if (refused) {
-    return refused;
+  /** @type {unknown} */
+  let parsed;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return { state: 'unreadable', reason: 'malformed-object-json' };
   }
-  const line = result.stdout.trim();
-  const expected = `${resource}/${name}`;
-  if (line.length === 0) {
-    return { state: 'absent' };
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { state: 'unreadable', reason: 'malformed-object-json' };
   }
-  if (line !== expected) {
+  const object =
+    /** @type {{ apiVersion?: unknown, kind?: unknown, metadata?: { name?: unknown, namespace?: unknown } }} */ (
+      parsed
+    );
+  if (
+    object.apiVersion !== identity.apiVersion ||
+    object.kind !== identity.kind
+  ) {
+    return { state: 'unreadable', reason: 'identity-mismatch' };
+  }
+  if (
+    object.metadata?.name !== name ||
+    object.metadata?.namespace !== target.namespace
+  ) {
     return { state: 'unreadable', reason: 'name-mismatch' };
   }
-  return { state: 'present' };
+  return {
+    state: 'present',
+    qualifiedName: `${identity.qualifiedPrefix}/${name}`,
+  };
 }
 
 /**
@@ -583,24 +648,57 @@ function readEndpointsPresence(run, target) {
       'get',
       'endpoints',
       RESERVED_SERVICE,
+      '--ignore-not-found',
       '-o',
-      'jsonpath={.subsets}',
+      'json',
     ],
     { timeoutMs: KUBECTL_READ_TIMEOUT_MS },
   );
   if (result.timedOut) {
     return { state: 'unreadable', reason: 'timeout' };
   }
-  if (result.stderr?.includes('NotFound')) {
-    return { state: 'absent' };
+  if (result.missing) {
+    return { state: 'unreadable', reason: 'endpoints-missing' };
   }
-  const refused = refuseCommandResult(result, 'endpoints');
-  if (refused) {
-    return refused;
+  if (result.stderr && result.stderr.trim().length > 0) {
+    return { state: 'unreadable', reason: 'endpoints-stderr' };
+  }
+  if (!result.ok) {
+    return { state: 'unreadable', reason: 'endpoints' };
   }
   const trimmed = result.stdout.trim();
-  if (!trimmed || trimmed === '[]' || trimmed === 'null') {
+  if (trimmed.length === 0) {
     return { state: 'absent' };
+  }
+  /** @type {unknown} */
+  let parsed;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return { state: 'unreadable', reason: 'malformed-endpoints-json' };
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { state: 'unreadable', reason: 'malformed-endpoints-json' };
+  }
+  const endpoints =
+    /** @type {{ apiVersion?: unknown, kind?: unknown, metadata?: { name?: unknown, namespace?: unknown }, subsets?: unknown }} */ (
+      parsed
+    );
+  if (endpoints.apiVersion !== 'v1' || endpoints.kind !== 'Endpoints') {
+    return { state: 'unreadable', reason: 'endpoints-identity' };
+  }
+  if (
+    endpoints.metadata?.name !== RESERVED_SERVICE ||
+    endpoints.metadata?.namespace !== target.namespace
+  ) {
+    return { state: 'unreadable', reason: 'endpoints-name-mismatch' };
+  }
+  const subsets = endpoints.subsets;
+  if (subsets == null || (Array.isArray(subsets) && subsets.length === 0)) {
+    return { state: 'absent' };
+  }
+  if (!Array.isArray(subsets)) {
+    return { state: 'unreadable', reason: 'endpoints-subsets-shape' };
   }
   return { state: 'present' };
 }
@@ -641,13 +739,6 @@ function defaultInventoryRun(command, args, options = {}) {
     timeoutMs: options.timeoutMs ?? PLATFORM_COMMAND_TIMEOUT_MS,
     input: options.input,
   });
-}
-
-/**
- * @param {Record<string, unknown>} object
- */
-function stableSerialize(object) {
-  return JSON.stringify(object);
 }
 
 /**
@@ -695,9 +786,9 @@ function manifestsCompatible(got, want) {
     return false;
   }
   return (
-    stableSerialize(configMap) === stableSerialize(want.configMap) &&
-    stableSerialize(deployment) === stableSerialize(want.deployment) &&
-    stableSerialize(service) === stableSerialize(want.service)
+    isDeepStrictEqual(configMap, want.configMap) &&
+    isDeepStrictEqual(deployment, want.deployment) &&
+    isDeepStrictEqual(service, want.service)
   );
 }
 
@@ -708,7 +799,7 @@ function manifestsCompatible(got, want) {
 function fetchHelmManifestValues(run, target) {
   const manifest = run(
     'helm',
-    ['get', 'manifest', RELEASE_NAME, '-o', 'yaml', ...helmCommonArgs(target)],
+    ['get', 'manifest', RELEASE_NAME, ...helmCommonArgs(target)],
     { timeoutMs: HELM_TIMEOUT_MS },
   );
   const manifestRefused = refuseCommandResult(manifest, 'helm-get-manifest');
@@ -717,7 +808,15 @@ function fetchHelmManifestValues(run, target) {
   }
   const values = run(
     'helm',
-    ['get', 'values', RELEASE_NAME, '-o', 'json', ...helmCommonArgs(target)],
+    [
+      'get',
+      'values',
+      RELEASE_NAME,
+      '--all',
+      '-o',
+      'json',
+      ...helmCommonArgs(target),
+    ],
     { timeoutMs: HELM_TIMEOUT_MS },
   );
   const valuesRefused = refuseCommandResult(values, 'helm-get-values');
@@ -765,8 +864,15 @@ function fetchHelmManifestValues(run, target) {
   if (!Array.isArray(historyParsed)) {
     return { state: 'unreadable', reason: 'helm-history-not-array' };
   }
-  if (historyParsed.length > 1) {
-    return { state: 'unreadable', reason: 'helm-history-too-long' };
+  if (historyParsed.length !== 1) {
+    return { state: 'unreadable', reason: 'helm-history-count' };
+  }
+  const historyRow = /** @type {{ revision?: unknown, status?: unknown }} */ (
+    historyParsed[0]
+  );
+  const historyRevision = Number.parseInt(String(historyRow.revision), 10);
+  if (!Number.isFinite(historyRevision) || historyRevision !== 1) {
+    return { state: 'unreadable', reason: 'helm-history-revision' };
   }
   /** @type {Record<string, unknown>[]} */
   let manifestDocs;
@@ -817,6 +923,13 @@ export function observeInventory(target, deps = {}) {
     const recheck = observeNamespace(run, target);
     if (recheck.kind === 'present') {
       return { state: 'unreadable', reason: 'namespace-race', snapshot: {} };
+    }
+    if (recheck.kind === 'unreadable') {
+      return {
+        state: 'unreadable',
+        reason: recheck.reason ?? 'namespace-recheck',
+        snapshot: {},
+      };
     }
     return {
       state: 'absent',
@@ -897,6 +1010,13 @@ export function observeInventory(target, deps = {}) {
     };
   }
   const endpoints = readEndpointsPresence(run, target);
+  if (endpoints.state === 'unreadable') {
+    return {
+      state: 'unreadable',
+      reason: endpoints.reason,
+      snapshot: {},
+    };
+  }
 
   /** @type {Record<string, string>} */
   let configMapLabels = {};
@@ -1057,6 +1177,9 @@ export function observeInventory(target, deps = {}) {
     nativeRows.length === 0 &&
     !hasReservedLive
   ) {
+    if (endpoints.state === 'present') {
+      return { state: 'partial', reason: 'endpoint-residue', snapshot };
+    }
     return { state: 'absent', reason: 'empty', snapshot };
   }
 
@@ -1100,13 +1223,16 @@ export function observeInventory(target, deps = {}) {
 
   let rendered;
   try {
-    rendered = renderRedisChart(target.profileId, { run });
+    rendered = renderRedisChartForTarget(
+      target.profileId,
+      { namespace: target.namespace },
+      run,
+    );
   } catch {
     return { state: 'unreadable', reason: 'render-failed', snapshot };
   }
 
-  const valuesEqual =
-    stableSerialize(helmPayload.values) === stableSerialize(rendered.values);
+  const valuesEqual = isDeepStrictEqual(helmPayload.values, rendered.values);
   const manifestEqual = manifestsCompatible(helmPayload.manifestDocs, rendered);
   snapshot.fetchedManifest = helmPayload.manifest;
   snapshot.fetchedValues = helmPayload.values;

@@ -19,14 +19,55 @@ import { performance } from 'node:perf_hooks';
 import { randomUUID } from 'node:crypto';
 import { clearTimeout, setTimeout } from 'node:timers';
 
+import { assertPlatformTarget } from '../common/commands.mjs';
+import { runPlatformCommand } from '../common/commands.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
 
 /** @typedef {'dev' | 'release'} RedisProfileId */
 
 export const DEFAULT_BUDGET_MS = 600_000;
+export const DEFAULT_SMOKE_BUDGET_MS = 900_000;
 export const DEFAULT_WRITE_RESERVE_MS = 360_000;
 export const DEFAULT_LOCK_WAIT_SEC = 30;
 export const DEFAULT_KILL_GRACE_MS = 5_000;
+
+export const REFUSED_REDIS_RUNNER_ENV_KEYS = [
+  'HELM_DRIVER',
+  'KUBECONFIG',
+  'KUBERNETES_SERVICE_HOST',
+  'KUBERNETES_SERVICE_PORT',
+  'HTTPS_PROXY',
+  'HTTP_PROXY',
+  'ALL_PROXY',
+  'NO_PROXY',
+  'HELM_KUBEAPISERVER',
+  'HELM_KUBETOKEN',
+  'HELM_BEARER_TOKEN',
+  'AWS_ROLE_ARN',
+  'AWS_WEB_IDENTITY_TOKEN_FILE',
+];
+
+/** Refuse inherited credential, proxy, and Helm driver overrides before native I/O. */
+export function assertRedisRunnerEnv() {
+  for (const key of REFUSED_REDIS_RUNNER_ENV_KEYS) {
+    const value = process.env[key];
+    if (value != null && String(value).length > 0) {
+      throw new Error(`redis runner env refused: ${key}`);
+    }
+  }
+}
+
+/**
+ * @returns {NodeJS.ProcessEnv}
+ */
+export function sanitizedHelmChildEnv() {
+  return {
+    PATH: process.env.PATH,
+    HOME: process.env.HOME,
+    LANG: process.env.LANG,
+    HELM_DRIVER: 'secret',
+  };
+}
 
 /**
  * Production state root is fixed; callers may pass deps.stateRoot in tests only.
@@ -82,7 +123,7 @@ function lockPaths(stateRoot, contextName) {
 /**
  * @param {string} pendingPath
  */
-function readPendingReceipt(pendingPath) {
+export function readPendingReceipt(pendingPath) {
   try {
     const stat = lstatSync(pendingPath);
     if (stat.isSymbolicLink()) {
@@ -129,15 +170,32 @@ function fsyncDirectory(lockDirectory) {
 
 /**
  * @param {string} pendingPath
- * @param {{ operationId: string, profile: string, context: string, phase: string, start: string }} receipt
+ * @param {Record<string, unknown>} receipt
  */
-function writePendingReceipt(pendingPath, receipt) {
+export function writePendingReceipt(pendingPath, receipt) {
   const body = `${JSON.stringify(receipt)}\n`;
   const fd = openSync(
     pendingPath,
     constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL,
     0o600,
   );
+  try {
+    writeFileSync(fd, body, { encoding: 'utf8' });
+    fsyncSync(fd);
+  } finally {
+    closeSync(fd);
+  }
+  fsyncDirectory(dirname(pendingPath));
+}
+
+/**
+ * Durable receipt update under the held flock (same lock owner).
+ * @param {string} pendingPath
+ * @param {Record<string, unknown>} receipt
+ */
+export function updatePendingReceipt(pendingPath, receipt) {
+  const body = `${JSON.stringify(receipt)}\n`;
+  const fd = openSync(pendingPath, constants.O_WRONLY | constants.O_TRUNC);
   try {
     writeFileSync(fd, body, { encoding: 'utf8' });
     fsyncSync(fd);
@@ -165,6 +223,7 @@ function isSuccessResult(value) {
  *   runWrite: (command: 'helm' | 'kubectl', args: string[], options?: { input?: string, timeoutMs?: number }) => Promise<RunWriteResult> | RunWriteResult,
  *   remainingMs: () => number,
  *   beginPending: (phase: string) => void,
+ *   updatePending: (fields: Record<string, unknown>) => void,
  *   finishPending: () => void,
  * }) => Promise<unknown> | unknown} operation
  * @param {{
@@ -175,9 +234,13 @@ function isSuccessResult(value) {
  *   lockWaitSec?: number,
  *   killGraceMs?: number,
  *   spawn?: typeof spawnSync,
+ *   pendingTarget?: string,
+ *   pendingNonce?: string,
+ *   run?: import('./inventory.mjs').PlatformRun,
  * }=} deps
  */
 export async function withRedisMutation(profileId, operation, deps = {}) {
+  assertRedisRunnerEnv();
   const profile = readPlatformProfile(profileId);
   const stateRoot = deps.stateRoot ?? resolveProductionStateRoot();
   const now = deps.now ?? (() => performance.now());
@@ -186,6 +249,7 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
   const lockWaitSec = deps.lockWaitSec ?? DEFAULT_LOCK_WAIT_SEC;
   const killGraceMs = deps.killGraceMs ?? DEFAULT_KILL_GRACE_MS;
   const spawnImpl = deps.spawn ?? spawnSync;
+  const identityRun = deps.run ?? runPlatformCommand;
 
   const deadline = now() + budgetMs;
   const remainingMs = () => Math.max(0, Math.floor(deadline - now()));
@@ -215,25 +279,25 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
   assertOwnerOnly(directoryStat, true);
 
   let lockFd;
+  /** @type {import('node:child_process').ChildProcess[]} */
   const activeChildren = [];
   let shuttingDownChildren = false;
+  /** @type {boolean} Stops new writes after parent termination signal. */
+  let writeLatchCancelled = false;
   let pendingEstablished = false;
+  let initialWriteAdmissionConsumed = false;
   let operationId;
+
+  /** Termination follows child close (stdio drained), not child.killed. */
+  const awaitChildClose = (child) =>
+    new Promise((resolve) => {
+      child.once('close', resolve);
+    });
 
   const awaitActiveChildren = async () => {
     while (activeChildren.length > 0) {
-      await Promise.all(
-        activeChildren.map(
-          (child) =>
-            new Promise((resolve) => {
-              if (child.killed || child.exitCode !== null) {
-                resolve();
-                return;
-              }
-              child.once('exit', resolve);
-            }),
-        ),
-      );
+      const snapshot = [...activeChildren];
+      await Promise.all(snapshot.map((child) => awaitChildClose(child)));
     }
   };
 
@@ -242,19 +306,19 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
       return;
     }
     shuttingDownChildren = true;
+    writeLatchCancelled = true;
     for (const child of activeChildren) {
-      if (child.exitCode === null && !child.killed) {
+      if (child.exitCode === null) {
         child.kill('SIGTERM');
       }
     }
-    const grace = killGraceMs;
     setTimeout(() => {
       for (const child of activeChildren) {
-        if (child.exitCode === null && !child.killed) {
+        if (child.exitCode === null) {
           child.kill('SIGKILL');
         }
       }
-    }, grace);
+    }, killGraceMs);
   };
 
   const onSignal = () => {
@@ -278,7 +342,6 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
     );
     assertLockIdentity(lockFd, lockPath);
 
-    // 1. Hold one open file description; flock and mutation children inherit fd 3.
     const flockResult = spawnSync(
       'flock',
       ['--exclusive', '--wait', String(lockWaitSec), '3'],
@@ -295,7 +358,36 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
       );
     }
 
+    assertLockIdentity(lockFd, lockPath);
+    if (existsSync(pendingPath)) {
+      const occupied = readPendingReceipt(pendingPath);
+      if (!occupied.ok) {
+        throw new Error(
+          `refused: stale redis pending blocks mutations (${occupied.reason})`,
+        );
+      }
+      throw new Error(
+        'refused: redis pending receipt already exists for this context',
+      );
+    }
+
+    assertPlatformTarget(profileId, { run: identityRun });
+
     operationId = randomUUID();
+    const pendingTarget =
+      deps.pendingTarget ?? profile.namespaces.redis ?? 'unknown';
+    /** @type {Record<string, unknown>} */
+    let currentReceipt = {
+      operationId,
+      profile: profileId,
+      context: profile.contextName,
+      target: pendingTarget,
+      phase: 'mutation',
+      start: new Date().toISOString(),
+    };
+    if (deps.pendingNonce) {
+      currentReceipt.nonce = deps.pendingNonce;
+    }
 
     const beginPending = (phase) => {
       if (pendingEstablished) {
@@ -313,14 +405,9 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
         }
         throw new Error('refused: pending path already exists');
       }
+      currentReceipt = { ...currentReceipt, phase: String(phase) };
       try {
-        writePendingReceipt(pendingPath, {
-          operationId,
-          profile: profileId,
-          context: profile.contextName,
-          phase: String(phase),
-          start: new Date().toISOString(),
-        });
+        writePendingReceipt(pendingPath, currentReceipt);
         pendingEstablished = true;
       } catch (error) {
         if (existsSync(pendingPath)) {
@@ -332,6 +419,23 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
         }
         throw new Error(
           `refused: redis pending receipt creation failed (${error instanceof Error ? error.message : 'error'})`,
+          { cause: error },
+        );
+      }
+    };
+
+    const updatePending = (fields) => {
+      if (!pendingEstablished) {
+        throw new Error(
+          'refused: redis pending receipt update before durable receipt exists',
+        );
+      }
+      currentReceipt = { ...currentReceipt, ...fields };
+      try {
+        updatePendingReceipt(pendingPath, currentReceipt);
+      } catch (error) {
+        throw new Error(
+          `refused: redis pending receipt update failed (${error instanceof Error ? error.message : 'error'})`,
           { cause: error },
         );
       }
@@ -352,17 +456,14 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
      * @param {'helm' | 'kubectl'} command
      * @param {string[]} args
      * @param {{ input?: string, timeoutMs?: number }=} options
-     * @returns {Promise<{
-     *   ok: boolean,
-     *   status: number | null,
-     *   stdout: string,
-     *   stderr: string,
-     *   timedOut?: boolean,
-     *   signal?: string | null,
-     *   missing?: boolean,
-     * }>}
      */
     const runWrite = async (command, args, options = {}) => {
+      assertRedisRunnerEnv();
+      if (writeLatchCancelled) {
+        throw new Error(
+          'refused: redis mutation write cancelled after termination signal',
+        );
+      }
       if (!pendingEstablished) {
         throw new Error(
           'refused: runWrite called before redis pending receipt exists',
@@ -371,15 +472,21 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
       if (command !== 'helm' && command !== 'kubectl') {
         throw new Error('refused: runWrite allows only helm or kubectl');
       }
-      if (remainingMs() < writeReserveMs) {
-        throw new Error(
-          'refused: runWrite denied because redis mutation budget reserve is exhausted',
-        );
+      if (!initialWriteAdmissionConsumed) {
+        if (remainingMs() < writeReserveMs) {
+          throw new Error(
+            'refused: runWrite denied because redis mutation budget reserve is exhausted',
+          );
+        }
+        initialWriteAdmissionConsumed = true;
       }
 
+      const remaining = remainingMs();
+      const killReserve = remaining > killGraceMs + 1 ? killGraceMs : 0;
+      const cappedRemaining = remaining - killReserve;
       const timeoutMs = Math.min(
-        options.timeoutMs ?? remainingMs(),
-        remainingMs(),
+        options.timeoutMs ?? cappedRemaining,
+        cappedRemaining,
       );
       if (timeoutMs < 1) {
         throw new Error('refused: runWrite denied with no remaining budget');
@@ -392,6 +499,7 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
           timeout: timeoutMs,
           stdio: ['pipe', 'pipe', 'pipe', lockFd],
           windowsHide: true,
+          env: command === 'helm' ? sanitizedHelmChildEnv() : process.env,
         });
         if (injected && typeof injected.then === 'function') {
           return injected;
@@ -401,10 +509,10 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
         );
       }
 
-      // Mutation children inherit the lock fd as descriptor 3; no shell or detached processes.
       const child = spawn(command, args, {
         stdio: ['pipe', 'pipe', 'pipe', lockFd],
         windowsHide: true,
+        env: command === 'helm' ? sanitizedHelmChildEnv() : process.env,
       });
       activeChildren.push(child);
 
@@ -418,7 +526,7 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
         let stderr = '';
         let settled = false;
         const timer = setTimeout(() => {
-          if (child.exitCode === null && !child.killed) {
+          if (child.exitCode === null) {
             child.kill('SIGKILL');
           }
         }, timeoutMs);
@@ -453,14 +561,14 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
           });
         });
 
-        child.on('exit', (status, signal) => {
+        child.on('close', (code, signal) => {
           finalize({
-            ok: status === 0,
-            status,
+            ok: code === 0,
+            status: code,
             stdout,
             stderr,
             signal: signal ?? null,
-            timedOut: signal === 'SIGKILL' && remainingMs() <= 0,
+            timedOut: signal === 'SIGKILL' && remainingMs() <= killGraceMs,
           });
         });
       });
@@ -473,20 +581,27 @@ export async function withRedisMutation(profileId, operation, deps = {}) {
         runWrite,
         remainingMs,
         beginPending,
+        updatePending,
         finishPending,
       }),
     );
 
     if (isSuccessResult(result)) {
+      await awaitActiveChildren();
       finishPending();
+    } else {
+      await awaitActiveChildren();
     }
 
-    await awaitActiveChildren();
     return result;
   } finally {
     process.removeListener('SIGTERM', onSignal);
     process.removeListener('SIGINT', onSignal);
-    await awaitActiveChildren().catch(() => {});
+    if (shuttingDownChildren || writeLatchCancelled) {
+      await awaitActiveChildren().catch(() => {});
+    } else {
+      await awaitActiveChildren().catch(() => {});
+    }
     if (lockFd !== undefined) {
       closeSync(lockFd);
     }

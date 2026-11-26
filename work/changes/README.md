@@ -372,7 +372,7 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 
 ## Redis infrastructure source wave
 
-- [REDIS-NATIVE](open/2026-11-26--redis-native-baseline/CHANGE.md) — R9 architecture accepted; source implementation on `change/redis-native-baseline-renewal`; live proof NOT RUN; integration held. INF60 suspended.
+- [REDIS-NATIVE](open/2026-11-26--redis-native-baseline/CHANGE.md) — R9 architecture accepted; T08a–T08d source corrections implemented on `change/redis-native-baseline-renewal`; heavy acceptance pending; live proof NOT RUN; integration held. INF60 suspended.
 - [INF58 Redis chart configuration and rollout identity](archive/2026-11/platform-operations/2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Done (source); 13/13 render tests; live NOT-RUN.
 - [INF59 Redis installer safety and readiness](archive/2026-11/platform-operations/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Done (source); observe/reconcile CAS + readiness; focused 79/79; live NOT-RUN.
 - [INF60 Named Redis pools and operator inspection](open/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Suspended; redesign against native lifecycle after acceptance.

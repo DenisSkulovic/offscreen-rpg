@@ -39,7 +39,12 @@ function kubectlConfigJson(profile, port) {
     clusters: [
       { name: clusterName, cluster: { server: `https://127.0.0.1:${port}` } },
     ],
-    contexts: [{ name: contextName, context: { cluster: clusterName, user: contextName } }],
+    contexts: [
+      {
+        name: contextName,
+        context: { cluster: clusterName, user: contextName },
+      },
+    ],
     users: [{ name: contextName, user: {} }],
     'current-context': contextName,
   });
@@ -209,6 +214,8 @@ function redisNamespaceObject(profileId, owned = true) {
     profileId === 'dev' ? 'offscreen.dev/owner' : 'offscreen.rpg/lab';
   const owner = profileId === 'dev' ? DEV_CLUSTER_OWNER : RELEASE_LAB_OWNER;
   return {
+    apiVersion: 'v1',
+    kind: 'Namespace',
     metadata: {
       name: redisNamespaceName(profileId),
       uid: `${profileId}-redis-ns`,
@@ -231,6 +238,8 @@ function redisDeploymentObject(profileId, options = {}) {
       : RELEASE_LAB_OWNER;
   const namespace = redisNamespaceName(profileId);
   return {
+    apiVersion: 'apps/v1',
+    kind: 'Deployment',
     metadata: {
       name: 'redis',
       namespace,
@@ -259,6 +268,8 @@ function redisServiceObject(profileId) {
   const owner = profileId === 'dev' ? DEV_CLUSTER_OWNER : RELEASE_LAB_OWNER;
   const namespace = redisNamespaceName(profileId);
   return {
+    apiVersion: 'v1',
+    kind: 'Service',
     metadata: {
       name: 'redis',
       namespace,
@@ -286,6 +297,8 @@ function redisConfigMapObject(profileId, options = {}) {
   const owner = profileId === 'dev' ? DEV_CLUSTER_OWNER : RELEASE_LAB_OWNER;
   const namespace = redisNamespaceName(profileId);
   return {
+    apiVersion: 'v1',
+    kind: 'ConfigMap',
     metadata: {
       name: 'redis-config',
       namespace,
@@ -340,7 +353,11 @@ function buildRedisObserveRun(profileId, fixtures) {
     }
     if (command === 'kubectl' && legacyInventory) {
       const getIdx = args.indexOf('get');
-      if (getIdx >= 0 && args[getIdx + 1] === 'namespace' && args.includes('name')) {
+      if (
+        getIdx >= 0 &&
+        args[getIdx + 1] === 'namespace' &&
+        args.includes('name')
+      ) {
         return cmdOk(`namespace/${redisNs}\n`);
       }
       if (args.includes('jsonpath={.spec.selector.matchLabels}')) {
@@ -398,7 +415,9 @@ function buildRedisObserveRun(profileId, fixtures) {
 const NATIVE_REDIS_RUN_ID = 'a'.repeat(40);
 const NATIVE_EXPECTED_IMAGE =
   'docker.io/library/redis@sha256:987c376c727652f99625c7d205a1cba3cb2c53b92b0b62aade2bd48ee1593232';
-const helmProbe = spawnSync('helm', ['version', '--short'], { encoding: 'utf8' });
+const helmProbe = spawnSync('helm', ['version', '--short'], {
+  encoding: 'utf8',
+});
 const helmPinned =
   !helmProbe.error && (helmProbe.stdout ?? '').trim().startsWith('v3.22.1');
 
@@ -563,6 +582,8 @@ function nativeLiveBundle(target, installed) {
   };
   return {
     namespace: {
+      apiVersion: 'v1',
+      kind: 'Namespace',
       metadata: {
         name: target.namespace,
         uid: 'ns-uid-1',
@@ -647,8 +668,13 @@ function createNativeRedisStatusRun(profileId, scenario, installed) {
       scenario === 'legacy' || scenario === 'absent'
         ? []
         : ['sh.helm.release.v1.redis.v1'],
-    deployment: scenario === 'legacy' || scenario === 'partial' || scenario === 'ready' || scenario === 'drift',
-    service: scenario === 'partial' || scenario === 'ready' || scenario === 'drift',
+    deployment:
+      scenario === 'legacy' ||
+      scenario === 'partial' ||
+      scenario === 'ready' ||
+      scenario === 'drift',
+    service:
+      scenario === 'partial' || scenario === 'ready' || scenario === 'drift',
     configMap: scenario === 'ready' || scenario === 'drift',
     endpointsPresent: scenario === 'ready' || scenario === 'drift',
     helmList:
@@ -720,16 +746,35 @@ function createNativeRedisStatusRun(profileId, scenario, installed) {
       const resourceKind = args[resourceIdx];
       const resourceName = args[resourceIdx + 1];
       const output = args[args.indexOf('-o') + 1];
-      if (args.includes('get') && resourceKind === 'namespace' && output === 'json') {
+      if (
+        args.includes('get') &&
+        resourceKind === 'namespace' &&
+        output === 'json'
+      ) {
         return cmdOk(JSON.stringify(bundle.namespace));
       }
-      if (args.includes('get') && resourceKind === 'configmap' && resourceName === 'redis-config' && output === 'json') {
+      if (
+        args.includes('get') &&
+        resourceKind === 'configmap' &&
+        resourceName === 'redis-config' &&
+        output === 'json'
+      ) {
         return cmdOk(JSON.stringify(bundle.configMap));
       }
-      if (args.includes('get') && resourceKind === 'deployment' && resourceName === 'redis' && output === 'json') {
+      if (
+        args.includes('get') &&
+        resourceKind === 'deployment' &&
+        resourceName === 'redis' &&
+        output === 'json'
+      ) {
         return cmdOk(JSON.stringify(bundle.deployment));
       }
-      if (args.includes('get') && resourceKind === 'service' && resourceName === 'redis' && output === 'json') {
+      if (
+        args.includes('get') &&
+        resourceKind === 'service' &&
+        resourceName === 'redis' &&
+        output === 'json'
+      ) {
         return cmdOk(JSON.stringify(bundle.service));
       }
       if (args.includes('replicaset')) {
@@ -744,11 +789,66 @@ function createNativeRedisStatusRun(profileId, scenario, installed) {
     }
 
     if (command === 'kubectl') {
-      if (args.includes('namespace') && args.includes('get')) {
+      const outputFlag = args.includes('-o')
+        ? args[args.indexOf('-o') + 1]
+        : '';
+      const getIndex = args.indexOf('get');
+      const gotten = getIndex >= 0 ? args[getIndex + 1] : '';
+      const gottenName = getIndex >= 0 ? args[getIndex + 2] : '';
+      if (outputFlag === 'json' && gotten === 'namespace') {
         if (!flags.namespacePresent) {
-          return cmdFail(1, 'NotFound');
+          return cmdOk('');
         }
-        return cmdOk(`namespace/${target.namespace}\n`);
+        return cmdOk(
+          JSON.stringify({
+            apiVersion: 'v1',
+            kind: 'Namespace',
+            metadata: {
+              name: target.namespace,
+              uid: 'ns-uid-1',
+              resourceVersion: 'ns-rv-1',
+            },
+          }),
+        );
+      }
+      if (outputFlag === 'json' && gotten === 'endpoints') {
+        if (!flags.endpointsPresent) {
+          return cmdOk('');
+        }
+        return cmdOk(
+          JSON.stringify({
+            apiVersion: 'v1',
+            kind: 'Endpoints',
+            metadata: { name: 'redis', namespace: target.namespace },
+            subsets: [{ addresses: [{ ip: '10.0.0.1' }] }],
+          }),
+        );
+      }
+      if (
+        outputFlag === 'json' &&
+        (gotten === 'deployment' ||
+          gotten === 'service' ||
+          gotten === 'configmap')
+      ) {
+        const present =
+          (gotten === 'deployment' && flags.deployment) ||
+          (gotten === 'service' && flags.service) ||
+          (gotten === 'configmap' && flags.configMap);
+        if (!present) {
+          return cmdOk('');
+        }
+        const identity =
+          gotten === 'deployment'
+            ? { apiVersion: 'apps/v1', kind: 'Deployment' }
+            : gotten === 'service'
+              ? { apiVersion: 'v1', kind: 'Service' }
+              : { apiVersion: 'v1', kind: 'ConfigMap' };
+        return cmdOk(
+          JSON.stringify({
+            ...identity,
+            metadata: { name: gottenName, namespace: target.namespace },
+          }),
+        );
       }
 
       const getIdx = args.indexOf('get');
@@ -780,10 +880,18 @@ function createNativeRedisStatusRun(profileId, scenario, installed) {
         const name = args[args.indexOf('get') + 2];
         if (args.includes('secret')) {
           return cmdOk(
-            JSON.stringify({ owner: 'helm', name: 'redis', status: 'deployed' }),
+            JSON.stringify({
+              owner: 'helm',
+              name: 'redis',
+              status: 'deployed',
+            }),
           );
         }
-        if (args.includes('configmap') && name === 'redis-config' && flags.configMap) {
+        if (
+          args.includes('configmap') &&
+          name === 'redis-config' &&
+          flags.configMap
+        ) {
           return cmdOk(JSON.stringify(deploymentLabels));
         }
         if (
@@ -1267,7 +1375,11 @@ test(
   () => {
     const installed = nativeInstalledByProfile.get('dev');
     assert.ok(installed);
-    const { run, commands } = createNativeRedisStatusRun('dev', 'ready', installed);
+    const { run, commands } = createNativeRedisStatusRun(
+      'dev',
+      'ready',
+      installed,
+    );
     const result = runInfraStatus({
       profileId: 'dev',
       services: 'redis',
@@ -1275,12 +1387,12 @@ test(
     });
     assert.equal(result.ok, true);
     assert.equal(result.services.redis.state, 'installed');
-  const joined = commands
-    .map(([cmd, args]) => `${cmd} ${args.join(' ')}`)
-    .join('\n');
-  assert.equal(/helm\s+install/i.test(joined), false);
-  assert.equal(/\bapply\b/i.test(joined), false);
-  assert.equal(/\bdelete\b/i.test(joined), false);
+    const joined = commands
+      .map(([cmd, args]) => `${cmd} ${args.join(' ')}`)
+      .join('\n');
+    assert.equal(/helm\s+install/i.test(joined), false);
+    assert.equal(/\bapply\b/i.test(joined), false);
+    assert.equal(/\bdelete\b/i.test(joined), false);
   },
 );
 
@@ -1373,58 +1485,140 @@ test('release Temporal status observes Helm-owned workloads and frontend health 
   const calls = [];
   const context = 'kind-offscreen-release';
   const namespace = 'lab-temporal';
-  const pinnedValues = parse(readFileSync(new URL('../platform/temporal/values.yaml', import.meta.url), 'utf8'));
-  const ok = (body) => ({ ok: true, status: 0, stdout: typeof body === 'string' ? body : JSON.stringify(body) });
+  const pinnedValues = parse(
+    readFileSync(
+      new URL('../platform/temporal/values.yaml', import.meta.url),
+      'utf8',
+    ),
+  );
+  const ok = (body) => ({
+    ok: true,
+    status: 0,
+    stdout: typeof body === 'string' ? body : JSON.stringify(body),
+  });
   function run(command, args) {
     calls.push({ command, args });
     if (command === 'kind') return ok('offscreen-release\n');
-    if (command === 'helm') return ok([{
-      name: 'temporal', namespace, chart: 'temporal-1.8.0',
-      app_version: '1.32.2', revision: '1', status: 'deployed',
-    }]);
+    if (command === 'helm')
+      return ok([
+        {
+          name: 'temporal',
+          namespace,
+          chart: 'temporal-1.8.0',
+          app_version: '1.32.2',
+          revision: '1',
+          status: 'deployed',
+        },
+      ]);
     assert.equal(command, 'kubectl');
     assert.equal(args[1], context);
-    if (args.includes('config')) return ok({
-      contexts: [{ name: context, context: { cluster: context } }],
-      clusters: [{ name: context, cluster: { server: 'https://127.0.0.1:6443' } }],
-    });
+    if (args.includes('config'))
+      return ok({
+        contexts: [{ name: context, context: { cluster: context } }],
+        clusters: [
+          { name: context, cluster: { server: 'https://127.0.0.1:6443' } },
+        ],
+      });
     if (args.includes('exec')) {
       assert.ok(args.includes('deploy/temporal-admintools'));
       return ok('SERVING\n');
     }
     const resource = args[3];
     if (resource === 'namespace') {
-      return ok({ metadata: {
-        name: args[4], uid: 'baseline-uid', labels: { 'offscreen.rpg/lab': 'disposable', 'app.kubernetes.io/part-of': 'temporal' },
-      } });
+      return ok({
+        metadata: {
+          name: args[4],
+          uid: 'baseline-uid',
+          labels: {
+            'offscreen.rpg/lab': 'disposable',
+            'app.kubernetes.io/part-of': 'temporal',
+          },
+        },
+      });
     }
     const metadata = {
-      name: args[6], namespace, generation: 1,
-      labels: { 'app.kubernetes.io/instance': 'temporal', 'app.kubernetes.io/managed-by': 'Helm' },
-      annotations: { 'meta.helm.sh/release-name': 'temporal', 'meta.helm.sh/release-namespace': namespace },
-    };
-    if (resource === 'service') return ok({
-      metadata, spec: {
-        type: 'ClusterIP', clusterIP: '10.96.0.20',
-        selector: { 'app.kubernetes.io/instance': 'temporal', 'app.kubernetes.io/name': 'temporal', 'app.kubernetes.io/component': 'frontend' },
-        ports: [{ port: 7233, targetPort: 'rpc', protocol: 'TCP' }],
+      name: args[6],
+      namespace,
+      generation: 1,
+      labels: {
+        'app.kubernetes.io/instance': 'temporal',
+        'app.kubernetes.io/managed-by': 'Helm',
       },
-    });
+      annotations: {
+        'meta.helm.sh/release-name': 'temporal',
+        'meta.helm.sh/release-namespace': namespace,
+      },
+    };
+    if (resource === 'service')
+      return ok({
+        metadata,
+        spec: {
+          type: 'ClusterIP',
+          clusterIP: '10.96.0.20',
+          selector: {
+            'app.kubernetes.io/instance': 'temporal',
+            'app.kubernetes.io/name': 'temporal',
+            'app.kubernetes.io/component': 'frontend',
+          },
+          ports: [{ port: 7233, targetPort: 'rpc', protocol: 'TCP' }],
+        },
+      });
     assert.equal(resource, 'deployment');
     return ok({
-      metadata, spec: { replicas: 1, template: { spec: { containers: [{ image: 'temporalio/image:' + pinnedValues[metadata.name === 'temporal-web' ? 'web' : metadata.name === 'temporal-admintools' ? 'admintools' : 'server'].image.tag }] } } },
-      status: { observedGeneration: 1, replicas: 1, updatedReplicas: 1, readyReplicas: 1, availableReplicas: 1 },
+      metadata,
+      spec: {
+        replicas: 1,
+        template: {
+          spec: {
+            containers: [
+              {
+                image:
+                  'temporalio/image:' +
+                  pinnedValues[
+                    metadata.name === 'temporal-web'
+                      ? 'web'
+                      : metadata.name === 'temporal-admintools'
+                        ? 'admintools'
+                        : 'server'
+                  ].image.tag,
+              },
+            ],
+          },
+        },
+      },
+      status: {
+        observedGeneration: 1,
+        replicas: 1,
+        updatedReplicas: 1,
+        readyReplicas: 1,
+        availableReplicas: 1,
+      },
     });
   }
-  assert.equal(observeSelectedServiceState('release', 'temporal', { run }).state, 'installed');
-  assert.ok(calls.some(({ args }) => args.includes('deploy/temporal-admintools')));
-  assert.ok(calls.every(({ args }) => !args.includes('job') && !args.includes('psql')));
-  assert.equal(observeSelectedServiceState('release', 'temporal', {
-    run: (command, args) => args.includes('exec') ? ok('NOT_SERVING') : run(command, args),
-  }).state, 'not-ready');
-  assert.equal(observeSelectedServiceState('release', 'temporal', {
-    run: (command, args) => command === 'helm' ? ok([]) : run(command, args),
-  }).state, 'not-installed');
+  assert.equal(
+    observeSelectedServiceState('release', 'temporal', { run }).state,
+    'installed',
+  );
+  assert.ok(
+    calls.some(({ args }) => args.includes('deploy/temporal-admintools')),
+  );
+  assert.ok(
+    calls.every(({ args }) => !args.includes('job') && !args.includes('psql')),
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'temporal', {
+      run: (command, args) =>
+        args.includes('exec') ? ok('NOT_SERVING') : run(command, args),
+    }).state,
+    'not-ready',
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'temporal', {
+      run: (command, args) =>
+        command === 'helm' ? ok([]) : run(command, args),
+    }).state,
+    'not-installed',
+  );
 });
 
 test('release RabbitMQ absent CRD is not-installed, permission failure remains unreadable', () => {

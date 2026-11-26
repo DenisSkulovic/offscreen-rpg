@@ -1,10 +1,16 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  cpSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 import { URL, fileURLToPath } from 'node:url';
-import { parse, parseAllDocuments } from 'yaml';
+import { parse, parseAllDocuments, stringify } from 'yaml';
 import { runPlatformCommand } from '../common/commands.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
 
@@ -13,6 +19,21 @@ const SOURCE_CHART_ROOT = join(REDIS_MODULE_ROOT, 'chart');
 const HELM_TIMEOUT_MS = 30_000;
 const REQUIRED_HELM_SHORT_VERSION = 'v3.22.1';
 const RELEASE_NAME = 'redis';
+
+/** Fault-only smoke image; rejected on ordinary render/install paths. */
+export const FAULT_ONLY_REDIS_IMAGE =
+  'docker.io/library/redis@sha256:0000000000000000000000000000000000000000000000000000000000000000';
+
+/**
+ * @param {unknown} image
+ */
+export function assertOrdinaryRedisImage(image) {
+  if (image === FAULT_ONLY_REDIS_IMAGE) {
+    throw new Error(
+      'refused: fault-only redis image pin is not valid for ordinary render/install',
+    );
+  }
+}
 
 /** @typedef {'dev' | 'release'} RedisProfileId */
 
@@ -159,7 +180,7 @@ function captureMergedValuesSnapshot(merged) {
  * @param {string} chartRoot
  * @param {RedisProfileId} profileId
  */
-function readMergedValuesSnapshot(chartRoot, profileId) {
+function readMergedValuesData(chartRoot, profileId) {
   const base = parse(readFileSync(join(chartRoot, 'values.yaml'), 'utf8'));
   const overlay = parse(
     readFileSync(
@@ -177,12 +198,17 @@ function readMergedValuesSnapshot(chartRoot, profileId) {
   ) {
     throw new Error('redis chart values are malformed');
   }
-  return captureMergedValuesSnapshot(
-    mergeHelmValues(
-      /** @type {Record<string, unknown>} */ (base),
-      /** @type {Record<string, unknown>} */ (overlay),
-    ),
+  return mergeHelmValues(
+    /** @type {Record<string, unknown>} */ (base),
+    /** @type {Record<string, unknown>} */ (overlay),
   );
+}
+
+function readMergedValues(chartRoot, profileId) {
+  const merged = readMergedValuesData(chartRoot, profileId);
+  assertOrdinaryRedisImage(merged.image);
+  captureMergedValuesSnapshot(merged);
+  return clonePlain(merged);
 }
 
 /**
@@ -278,6 +304,88 @@ export function prepareValidatedChartCopy(run, profileId, namespace) {
     const detail = (lint.stderr || lint.stdout || 'helm lint failed').trim();
     throw new Error(`redis chart validation failed: ${detail}`);
   }
+  assertOrdinaryRedisImage(readMergedValues(chartRoot, profileId).image);
+  return {
+    chartRoot,
+    dispose() {
+      rmSync(chartRoot, { recursive: true, force: true });
+    },
+  };
+}
+
+/**
+ * Smoke-failure only: validated chart copy with fault image digest substituted.
+ *
+ * @param {PlatformRun} run
+ * @param {RedisProfileId} profileId
+ * @param {string} namespace
+ */
+export function prepareFaultValidatedChartCopy(run, profileId, namespace) {
+  const chartRoot = mkdtempSync(join(tmpdir(), 'offscreen-redis-fault-chart-'));
+  try {
+    cpSync(SOURCE_CHART_ROOT, chartRoot, { recursive: true });
+  } catch (error) {
+    rmSync(chartRoot, { recursive: true, force: true });
+    throw error;
+  }
+
+  const valuesPath = join(chartRoot, 'values.yaml');
+  const baseValues = parse(readFileSync(valuesPath, 'utf8'));
+  if (
+    !baseValues ||
+    typeof baseValues !== 'object' ||
+    Array.isArray(baseValues)
+  ) {
+    rmSync(chartRoot, { recursive: true, force: true });
+    throw new Error('redis chart values are malformed');
+  }
+  /** @type {Record<string, unknown>} */
+  const valuesRecord = /** @type {Record<string, unknown>} */ (baseValues);
+  valuesRecord.image = FAULT_ONLY_REDIS_IMAGE;
+  writeFileSync(valuesPath, stringify(valuesRecord));
+
+  const merged = readMergedValuesData(chartRoot, profileId);
+  if (merged.image !== FAULT_ONLY_REDIS_IMAGE) {
+    rmSync(chartRoot, { recursive: true, force: true });
+    throw new Error(
+      'refused: fault chart merge did not retain fault image pin',
+    );
+  }
+  captureMergedValuesSnapshot(merged);
+
+  const lint = run('helm', lintArgv(chartRoot, profileId, namespace), {
+    timeoutMs: HELM_TIMEOUT_MS,
+  });
+  if (!lint.ok || lint.timedOut || lint.missing) {
+    rmSync(chartRoot, { recursive: true, force: true });
+    const detail = (lint.stderr || lint.stdout || 'helm lint failed').trim();
+    throw new Error(`redis fault chart validation failed: ${detail}`);
+  }
+
+  const rendered = run('helm', templateArgv(chartRoot, profileId, namespace), {
+    timeoutMs: HELM_TIMEOUT_MS,
+  });
+  if (!rendered.ok || rendered.timedOut || rendered.missing) {
+    rmSync(chartRoot, { recursive: true, force: true });
+    const detail = (
+      rendered.stderr ||
+      rendered.stdout ||
+      'helm template failed'
+    ).trim();
+    throw new Error(`redis fault helm template failed: ${detail}`);
+  }
+
+  const documents = parseRenderedRedisDocuments(rendered.stdout);
+  const containers =
+    /** @type {{ spec?: { template?: { spec?: { containers?: { image?: string }[] } } } }} */ (
+      documents.deployment
+    ).spec?.template?.spec?.containers;
+  const image = containers?.[0]?.image;
+  if (image !== FAULT_ONLY_REDIS_IMAGE) {
+    rmSync(chartRoot, { recursive: true, force: true });
+    throw new Error('refused: fault chart render image mismatch');
+  }
+
   return {
     chartRoot,
     dispose() {
@@ -339,7 +447,7 @@ function parseRenderedRedisDocuments(output) {
  * @param {{ namespace: string }} target
  * @param {PlatformRun} run
  */
-function renderRedisChartForTarget(profileId, target, run) {
+export function renderRedisChartForTarget(profileId, target, run) {
   if (profileId !== 'dev' && profileId !== 'release') {
     throw new Error(`unsupported platform profile: ${profileId}`);
   }
@@ -364,7 +472,7 @@ function renderRedisChartForTarget(profileId, target, run) {
       throw new Error(`redis helm template failed: ${detail}`);
     }
     const documents = parseRenderedRedisDocuments(rendered.stdout);
-    const values = readMergedValuesSnapshot(prepared.chartRoot, profileId);
+    const values = readMergedValues(prepared.chartRoot, profileId);
     return { ...documents, values };
   } finally {
     prepared.dispose();
