@@ -65,13 +65,16 @@ Current source baseline `7322b6f1a6df6f5ae612763b9786563dca2989eb`; main is the 
 
 ## Current dispatch (2026-11-25)
 
-Run one Cursor parent at most for this DB program. DB09 is Done source-only; schema and runtime lanes are complete. DB10 T01–T03 source joined main at `a658f707` (graph/wiki/harness); live disposable proof remains NOT RUN. Keep packet OPEN until live acceptance or explicit owner disposition. No automatic successor dispatch.
+Run one Cursor parent at most for this DB program. DB09 is Done source-only; schema and runtime lanes are complete. DB10 T01–T03 source joined main at `a658f707` (graph/wiki/harness); live disposable proof remains NOT RUN. Owner disposition 2026-11-26: DB10 source scope closed and archived; remaining live SQL transferred to VER04. No automatic successor dispatch.
 
 - [DB03 source map](../../changes/archive/2026-11/platform-operations/2026-11-24--db03-story-persistence/SOURCE-MAP.md)
 - [DB04 source map](../../changes/archive/2026-11/platform-operations/2026-11-24--db04-admin-lab-persistence/SOURCE-MAP.md)
 - [DB05 source map](../../changes/archive/2026-11/platform-operations/2026-11-24--db05-durable-outbox/SOURCE-MAP.md)
 - [DB07 execution](../../changes/archive/2026-11/platform-operations/2026-11-24--db07-managed-transactions/EXECUTION.md)
 - [DB09 execution](../../changes/archive/2026-11/platform-operations/2026-11-24--db09-telemetry-and-concurrency/EXECUTION.md)
-- [DB10 execution](../../changes/open/2026-11-24--db10-dependency-closure-and-proof/EXECUTION.md)
+- [DB10 execution](../../changes/archive/2026-11/platform-operations/2026-11-24--db10-dependency-closure-and-proof/EXECUTION.md)
 
 Review boundary: planner inspected committed ZIP and current GitHub baseline, actual schema declarations, registry, manifests, import-bearing workspaces, outbox custody, admission/runtime, migration and proof fixtures, graph/closure/wiki guards. No local builds/tests or live DB run by planner. Existing CACHE04 SQL and CACHE07 Redis acceptance remain separate; no runtime proof credit. DBOPS01/02 and SQL01 remain future separately scoped operational/domain audit work, not automatic successor dispatch. Local untracked work was excluded from snapshot; preserve it.
+
+
+**Current disposition 2026-11-26:** DB01–DB10 source implementation complete; DB10 archived with explicit transfer of unrun live SQL to VER04. Historical commission and sequencing above are not current execution instructions.

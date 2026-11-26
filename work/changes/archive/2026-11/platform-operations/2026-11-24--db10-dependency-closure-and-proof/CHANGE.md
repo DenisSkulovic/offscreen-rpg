@@ -1,8 +1,8 @@
 # DB10 | Final graph guard and integrated DB proof
 
-**Status: Active / source T01–T03 joined main; live proof NOT RUN. Kind: implementation. Profile: PROOF.** Baseline d08e36d809bb53c48fef3351224994bae92b6e7c; main join `a658f707aeb93d425f3712cbcd63a577855cf1d8`. T01 graph/closure, T02 wiki/docs, T03 managed harness source accepted and integrated. Live disposable PostgreSQL remains separately gated; packet stays open until live acceptance or explicit owner disposition.
+**State:** Done (source scope only; owner-approved closure 2026-11-26). T01–T03 joined main at `a658f707aeb93d425f3712cbcd63a577855cf1d8`; live SQL NOT RUN, transferred to [VER04](../../../../open/2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md). Historical full graph failure remains unverified on current HEAD; no PASS credit. Prior execution instructions below are historical, not commission.
 
-[Selected architecture](../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
+[Selected architecture](../../../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 
 ## Outcome and scope
 
@@ -35,3 +35,7 @@ Run named focused normal/negative tests in TASKS, affected builds/typechecks and
 | Integrated disposable SQL proof (T03) | database-infrastructure | harness in packages/db/test/database.integration.ts + test:integration wiring | build+unit PASS; live NOT RUN (DATABASE_TEST_URL unset) | loopback/offscreen_db_test guard throws without URL | pending live |
 
 Read [EXECUTION.md](EXECUTION.md) for frozen source mapping and implementation decisions before dispatch. The revised TASKS supersede older outcome shorthand wherever more precise. No new live resource permission.
+
+## Retirement receipt
+
+Owner explicitly accepted source-scope closure. Preserve migration lock/rollback/hash refusal, managed saturation/recovery, serializable conflicts, rollback/read-only/lock timeouts and duplicate-effect oracle through VER04. Historical graph violation `forbidden-authority-writer-import` in `packages/story-engine/src/campaign/action-executions.ts` remains a distinct source health obligation; current file still imports writer-continuation runtime constant, but full graph check NOT RUN. DBOPS01/02 retain their complementary scopes. Recovery: `68663d698c4a5a6c6d31b46fa7876ab17a136adf:work/changes/open/2026-11-24--db10-dependency-closure-and-proof/CHANGE.md`.

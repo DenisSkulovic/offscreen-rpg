@@ -349,3 +349,5 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-22--dxk09-isolated-parallel-development-stacks](infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md)
 - [2026-11-24--inf29-infra-reconciliation](platform-operations/2026-11-24--inf29-infra-reconciliation/CHANGE.md)
 - [2026-11-25--inf60-redis-named-cache-pools](platform-operations/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md)
+
+- [DB10 source closure](platform-operations/2026-11-24--db10-dependency-closure-and-proof/CHANGE.md) (2026-11-26; live SQL transferred to VER04).

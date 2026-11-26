@@ -23,3 +23,7 @@ Separate linked Change branch/worktree from current main; branch guard `node scr
 | Claim | Authority | Source SHA | Evidence | Negative |
 | --- | --- | --- | --- | --- |
 | DB programme: transactions, migration, telemetry and recovery | verification-programmes.md | pending | NOT-RUN | TASKS |
+
+## Transferred DB10 acceptance (2026-11-26)
+
+DB10 source scope closed by owner; component harness and graph/wiki work already integrated at a658f707. VER04 owns remaining disposable live SQL proof, not a duplicate harness: migration advisory-lock exclusion, transactional rollback, applied hash/prefix refusal, managed saturation and recovery, serializable conflicts, rollback/read-only/lock timeout and no duplicated effects. Preserve zero extraction DDL and tracked migration bytes as source invariants; no live PASS inferred. Historical graph failure in action-executions.ts is a separate source-health check, not a SQL experiment. DB12/13/14 corrected earlier source defects; revalidate current anchors before dispatch and test the fixed behavior, not obsolete assumed failures. [Archived DB10](../../archive/2026-11/platform-operations/2026-11-24--db10-dependency-closure-and-proof/CHANGE.md).
