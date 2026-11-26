@@ -64,5 +64,4 @@ timeout 30s "${K[@]}" -n "$ns" logs "$probe" >"$out/probe.log" 2>&1 || true
 cat "$out/probe.log"
 timeout 20s "${K[@]}" -n "$ns" get pod "$probe" -o json >"$out/pod-status.json"
 echo "Evidence directory: $out"
-[[ "$phase" == Succeeded ]] && grep -Eq '^E04-(A|B QUERY) PASS
- "$out/probe.log"
+[[ "$phase" == Succeeded ]] && grep -Eq '^E04-(A|B QUERY) PASS$' "$out/probe.log"

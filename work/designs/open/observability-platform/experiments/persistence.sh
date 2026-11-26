@@ -2,6 +2,7 @@
 set -euo pipefail
 umask 077
 here="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+bash -n "$here/signal-probe.sh"
 src="${1:?usage: persistence.sh E03_DIRECTORY}"
 name="$(cat "$src/cluster-name")"
 [[ "$name" =~ ^obs-e03-[a-z0-9]+$ ]]
