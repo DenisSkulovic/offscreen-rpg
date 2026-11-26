@@ -5,7 +5,7 @@ Target: OBSERVABILITY-NATIVE @ main a81e275821496e478ba55ae3dce5e72cf63d5dfd; de
 | Gate | Result | Reason |
 |---|---|---|
 | G0 | UNVERIFIED | remote baseline and defense verified; canonical promotion and local overlap not reconciled |
-| G1 | UNVERIFIED | primary seams confirmed; full caller/symbol/test audit incomplete |
+| G1 | UNVERIFIED | snapshot caller reconciliation recorded in CALLERS.md; task-local symbol/test audit incomplete |
 | G2 | UNVERIFIED | defended architecture selected; exact implementation interface mapping incomplete |
 | G3 | UNVERIFIED | draft cards not executable with limited anchors |
 | G4 | UNVERIFIED | no legal first dispatch until promotion |

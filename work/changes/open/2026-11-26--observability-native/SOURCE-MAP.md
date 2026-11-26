@@ -1,6 +1,6 @@
 # Source map — draft
 
-Pinned main a81e275821496e478ba55ae3dce5e72cf63d5dfd. The following is the defended designer map, with direct confirmation of primary caller lines in this planning session. Full line-level audit remains outstanding.
+Pinned main a81e275821496e478ba55ae3dce5e72cf63d5dfd. The following is the defended designer map, with direct confirmation of primary caller lines in this planning session. Caller reconciliation recorded in [CALLERS.md](CALLERS.md) against owner-supplied cb66dfab snapshot.
 
 # Integration / preservation map
 Main a81e275821496e478ba55ae3dce5e72cf63d5dfd. Source inspection current at this SHA.
@@ -16,10 +16,10 @@ Main a81e275821496e478ba55ae3dce5e72cf63d5dfd. Source inspection current at this
 - infra/environments/{platform-plan.test.mjs,infra-cli.test.mjs,infra-cli-operation.test.mjs,infra-presentation.test.mjs}, infra/verification/diagnostic.test.mjs: focused compatibility tests.
 - docs/runbooks/kubernetes-observability.md and docs/technical/observability/telemetry-and-diagnostics.md: canonical promotion only after committee/owner; retain protected evidence separation and truth of runtime status.
 - Preserve infra/monitoring, workstation runbook/technical doc, all domain telemetry/evidence packages, existing other platform services. No application workload changes.
-Residual caller audit: current direct seams inspected; complete git grep/consumer list and exact legacy inventory required before source implementation; no uninspected caller assumed absent.
+Caller dispositions: see [CALLERS.md](CALLERS.md). Exact legacy inventory is selected in canonical R30/R33.
 
 ## R34 diagnostic integration map (current compatibility main)
-Read diagnostic-live.mjs observe (six baseline subprocesses before classifier); diagnostic.mjs diagnosticServices/buildDiagnosticChecks/runDiagnostic; diagnostic-engine.mjs runCommand/commandOutcome/executeChecks; verify.mjs parseVerifyArgs and CLI diagnostic branch; provisioning.mjs observeOutcome/buildProvisioningChecks; common/commands.mjs runPlatformCommand/assertTargetIdentity/assertPlatformTarget; infra-cli.mjs observeSelectedServiceState/runInfraStatus. Exact decisions and proof in [R34](R34.md). Focused tests diagnostic.test.mjs, verify.test.mjs, provisioning.test.mjs, native observation fixtures; add worker seam tests. No change to generic engine aggregation, unrelated optional service policy, cluster prerequisite or other service timeout. Full repository caller line classification still a precommission gate, not delegated investigation.
+Read diagnostic-live.mjs observe (six baseline subprocesses before classifier); diagnostic.mjs diagnosticServices/buildDiagnosticChecks/runDiagnostic; diagnostic-engine.mjs runCommand/commandOutcome/executeChecks; verify.mjs parseVerifyArgs and CLI diagnostic branch; provisioning.mjs observeOutcome/buildProvisioningChecks; common/commands.mjs runPlatformCommand/assertTargetIdentity/assertPlatformTarget; infra-cli.mjs observeSelectedServiceState/runInfraStatus. Exact decisions and proof in [R34](R34.md). Focused tests diagnostic.test.mjs, verify.test.mjs, provisioning.test.mjs, native observation fixtures; add worker seam tests. No change to generic engine aggregation, unrelated optional service policy, cluster prerequisite or other service timeout. Caller classification is recorded in CALLERS.md; task-local symbol/fixture review still required.
 
 
 ## Directly confirmed primary caller lines
@@ -30,4 +30,4 @@ Read diagnostic-live.mjs observe (six baseline subprocesses before classifier); 
 - diagnostic-live.mjs:9 observe; provisioning.mjs:16,26,30,115,130,155,187; verify.mjs:334 parseVerifyArgs.
 - check-lab-manifests.mjs:67; infra-layout.test.mjs:305–310.
 
-RabbitMQ and object-storage native source already joined main, acceptance pending. Preserve shared branch changes; local worktree/cluster occupancy unknown. No exhaustive caller claim.
+RabbitMQ and object-storage native source already joined main, acceptance pending. Preserve shared branch changes; local worktree/cluster occupancy unknown. Scope and scan exclusions documented in CALLERS.md.
