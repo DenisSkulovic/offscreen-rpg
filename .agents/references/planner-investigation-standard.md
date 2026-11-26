@@ -19,7 +19,7 @@
 
 ## Before authoring: settle design, then map the current repo
 
-The packet-authoring steps below begin after the material-design gate. Do not treat this source-map workflow as the architecture design workflow. Respect owner-selected legacy source exclusions; boundary evidence and explicit unknowns replace guesses. Direct planner implementation may be selected without Cursor handoff.
+The packet-authoring steps below begin after the material-design gate. Do not treat this source-map workflow as the architecture design workflow. Respect owner-selected legacy source exclusions; boundary evidence and explicit unknowns replace guesses. Direct planner implementation may be selected without Cursor handoff. Material designs must already establish the [verification architecture and acceptance matrix](../rules/target-driven-renewal.md#design-verification-with-the-system); this applies equally to direct and delegated execution.
 
 1. **Name the desired outcome and authorization.** Is the request a new architecture decision, a documentation contract, a concrete implementation slice, or merely verification? Don't multiply open Changes for speculation or tests without an authoritative target. Check the existing queue and related Changes first, including merged/archived work and in-flight Cursor ownership; deduplicate or transfer scope.
 2. **Inspect exact current source, not just the wiki.** On connected GitHub/attached ZIP/full checkout, record inspected commit/date, relevant path **and symbol/function**; read real implementation boundaries, callers, types/DB tables/transactions, tests, runtime/config and existing fixture. Validate package paths and anchors. If access is limited to an old snapshot or running Cursor branches are unavailable, clearly mark what is unverified and do not assert readiness based on assumptions.
@@ -61,7 +61,7 @@ Write a concise **Planner Source Map** in the Change or `PLAN.md`:
 1. Source/authority refs verified against an identified baseline, with actual dependencies and concurrent work identified.
 2. Core behavior, interface, data transformations and known failure cases decided; the executor isn't being asked to invent architecture.
 3. Disjoint file/resource ownership, relevant docs reconciliation and test fixtures are specified.
-4. One falsifiable normal and discriminating negative, exact verification route and bounded stop condition exist.
+4. One falsifiable normal and discriminating negative, exact verification route and bounded stop condition exist; required proof tiers, environment/fixture ownership, authorization, setup/cleanup and any extended assurance are explicit in the acceptance matrix.
 
 If not, do **planner research or a separate, explicitly selected INVESTIGATE** and label the Change Proposed / design-dependent. Avoid false `Blocked` status when the planner can resolve the question itself.
 

@@ -29,7 +29,7 @@ A fresh executor should be able to accept a Change packet without reconstructing
 2. **Authority:** exact product/technical specification headings, or an approved invariant for internal refactors.
 3. **Baseline:** latest verified source/revision, or a clear pre-implementation reinspection gate if stale.
 4. **Scope:** exact canonical document headings and anticipated text/structure edits and/or source/test owners; excluded adjacent work.
-5. **Acceptance:** a normal reading/behavior case, a discriminating negative/edge case, and smallest safe *semantic and/or executable* proof.
+5. **Acceptance:** a normal reading/behavior case, a discriminating negative/edge case, and smallest safe *semantic and/or executable* proof. For material Changes inherit the frozen [acceptance matrix](../rules/target-driven-renewal.md#design-verification-with-the-system), including required evidence tiers and feasible test environment. Follow [integration versus outcome closure](../../WORKFLOW.md#9-verification-review-and-the-next-loop) for explicit extended-assurance deferral, never silent waiver.
 6. **Risks/permissions:** state, security, migrations, irreversible side effects, budget, authorized test environments.
 7. **Status/next action:** one responsible executor, current step, actual checks and blockers, explicit human go-ahead if required.
 
