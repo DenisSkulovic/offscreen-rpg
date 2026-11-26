@@ -730,28 +730,28 @@ export function runInfraUp(input) {
       };
     }
     progressReporter?.phaseOk('cluster-ensure');
-  } else {
-    progressReporter?.phaseStart('cluster-verify');
-    try {
-      assertPlatformTarget(input.profileId, { run });
-      verifyClusterNodesReady(input.profileId, run);
-      if (input.profileId === 'release') {
-        verifyReleaseLocalPathProvisioner(run, profile.contextName);
-      }
-      progressReporter?.phaseOk('cluster-verify');
-      clusterPhases.push('cluster-verify');
-    } catch (error) {
-      progressReporter?.phaseFail('cluster-verify');
-      const message = error instanceof Error ? error.message : String(error);
-      process.stderr.write(`${message}\n`);
-      return {
-        ok: false,
-        exitCode: 1,
-        phase: 'cluster-verify',
-        message,
-        ran: clusterPhases,
-      };
+  }
+
+  progressReporter?.phaseStart('cluster-verify');
+  try {
+    assertPlatformTarget(input.profileId, { run });
+    verifyClusterNodesReady(input.profileId, run);
+    if (input.profileId === 'release') {
+      verifyReleaseLocalPathProvisioner(run, profile.contextName);
     }
+    progressReporter?.phaseOk('cluster-verify');
+    clusterPhases.push('cluster-verify');
+  } catch (error) {
+    progressReporter?.phaseFail('cluster-verify');
+    const message = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`${message}\n`);
+    return {
+      ok: false,
+      exitCode: 1,
+      phase: 'cluster-verify',
+      message,
+      ran: clusterPhases,
+    };
   }
 
   if (selection.selected.length === 0) {
