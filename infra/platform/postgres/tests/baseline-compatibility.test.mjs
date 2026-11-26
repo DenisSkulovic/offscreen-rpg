@@ -48,3 +48,25 @@ test('object order is immaterial, array order and missing keys are not', () => {
   assert.equal(firstMismatch({ a: [1, 2] }, { a: [2, 1] }), '/a/0');
   assert.equal(firstMismatch({ a: null }, {}), '/a');
 });
+
+test('fresh admission requires both exact ACL hooks; historical observation remains compatible', () => {
+  for (const profile of ['dev', 'release']) {
+    const fresh = expectedClusterSpec(profile);
+    const old = expectedClusterSpec(profile, { historical: true });
+    const options = { exactInstances: true, freshAdmission: true };
+    assert.equal(assessClusterSpec(profile, fresh, options).ok, true);
+    assert.equal(assessClusterSpec(profile, old, options).ok, false);
+    assert.equal(assessClusterSpec(profile, old).ok, true);
+    for (const hook of ['postInitSQL', 'postInitApplicationSQL']) {
+      const missing = structuredClone(fresh);
+      delete missing.bootstrap.initdb[hook];
+      assert.equal(assessClusterSpec(profile, missing).ok, false);
+      assert.equal(assessClusterSpec(profile, missing, options).ok, false);
+      const tampered = structuredClone(fresh);
+      tampered.bootstrap.initdb[hook].push('SELECT 1;');
+      assert.equal(assessClusterSpec(profile, tampered).ok, false);
+    }
+    old.enableSuperuserAccess = true;
+    assert.equal(assessClusterSpec(profile, old).ok, false);
+  }
+});
