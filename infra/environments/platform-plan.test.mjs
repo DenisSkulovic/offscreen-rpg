@@ -7,6 +7,7 @@ import {
   REPO_ROOT,
   buildPlatformPlan,
   parsePlatformServiceSelection,
+  platformPhaseTimeoutMs,
   runChartRenderPreflight,
   runEnsurePreflight,
   runGatewayInstallPreflight,
@@ -30,6 +31,13 @@ test('dev and release plans keep the core service order with absolute entrypoint
   for (const phase of dev.phases) {
     assert.equal(phase.argv[1]?.startsWith('/'), true);
     assert.equal(phase.argv[2], 'plan');
+    if (phase.id === 'object-storage') {
+      assert.match(
+        phase.argv[1],
+        /infra\/platform\/object-storage\/providers\/seaweedfs\/install\.mjs$/,
+      );
+      assert.equal(phase.argv[3], 'dev');
+    }
   }
   assert.deepEqual(dev.excludedOptional, ['redis']);
 
@@ -46,11 +54,20 @@ test('dev and release plans keep the core service order with absolute entrypoint
     ['postgres', 'object-storage', 'temporal', 'gateway'],
   );
   for (const phase of release.phases) {
-    assert.equal(phase.argv[0], phase.id === 'temporal' ? process.execPath : 'bash');
+    const nativePhase =
+      phase.id === 'temporal' || phase.id === 'object-storage';
+    assert.equal(phase.argv[0], nativePhase ? process.execPath : 'bash');
     assert.equal(
       phase.argv[1]?.startsWith(join(REPO_ROOT, 'infra/platform')),
       true,
     );
+    if (phase.id === 'object-storage') {
+      assert.match(
+        phase.argv[1],
+        /infra\/platform\/object-storage\/providers\/seaweedfs\/install\.mjs$/,
+      );
+      assert.deepEqual(phase.argv.slice(2), ['plan', 'release']);
+    }
   }
   assert.deepEqual(release.excludedOptional, [...OPTIONAL_EXCLUDED_SERVICES]);
 });
@@ -164,7 +181,9 @@ test('chart render preflight touches only selected services', () => {
     }
     return { ok: true, stdout: '', stderr: '' };
   };
-  runChartRenderPreflight('dev', ['postgres', 'temporal'], { run: fixtureHelm });
+  runChartRenderPreflight('dev', ['postgres', 'temporal'], {
+    run: fixtureHelm,
+  });
   assert.equal(linted.length, 1);
   assert.match(linted[0], /postgres\/chart$/);
   assert.equal(rendered.length, 1);
@@ -208,7 +227,8 @@ test('ensure preflight skips unselected chart services', () => {
         stdout: JSON.stringify({
           metadata: {
             labels: { 'offscreen.rpg/lab': 'disposable' },
-            name: 'offscreen-release-system', uid: 'release-baseline-uid',
+            name: 'offscreen-release-system',
+            uid: 'release-baseline-uid',
           },
         }),
       };
@@ -266,7 +286,15 @@ test('dev ensure carries the existing authorization env flags on bootstrap CLIs'
   });
   assert.equal(plan.ok, true);
   assert.equal(plan.phases[0].env?.OFFSCREEN_DEV_CNPG_ENSURE, 'authorized');
-  assert.equal(plan.phases[1].env?.OFFSCREEN_DEV_S3_ENSURE, 'authorized');
+  assert.equal(
+    plan.phases[1].env?.OFFSCREEN_OBJECT_STORAGE_ENSURE,
+    'authorized',
+  );
+  assert.match(
+    plan.phases[1].argv[1],
+    /infra\/platform\/object-storage\/providers\/seaweedfs\/install\.mjs$/,
+  );
+  assert.deepEqual(plan.phases[1].argv.slice(2), ['ensure', 'dev']);
   assert.equal(plan.phases[2].env?.OFFSCREEN_TEMPORAL_ENSURE, 'authorized');
   assert.deepEqual(
     plan.phases.map((p) => p.argv[2]),
@@ -343,30 +371,56 @@ test('release plan mode leaves install scripts preview-only', () => {
   );
 });
 
-
 test('gateway preflight uses JSON Docker template and exact repository digest', () => {
-  const digest = 'sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4';
-  const runner = (stdout, ok = true) => (command, args) => {
-    if (command === 'docker') {
-      assert.deepEqual(args, ['image', 'inspect', 'traefik:v3.7.19', '--format', '{{json .RepoDigests}}']);
-      return { ok, stdout };
-    }
-    assert.equal(command, 'helm');
-    return { ok: true, stdout: '[{"name":"traefik"}]' };
-  };
+  const digest =
+    'sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4';
+  const runner =
+    (stdout, ok = true) =>
+    (command, args) => {
+      if (command === 'docker') {
+        assert.deepEqual(args, [
+          'image',
+          'inspect',
+          'traefik:v3.7.19',
+          '--format',
+          '{{json .RepoDigests}}',
+        ]);
+        return { ok, stdout };
+      }
+      assert.equal(command, 'helm');
+      return { ok: true, stdout: '[{"name":"traefik"}]' };
+    };
   for (const name of ['traefik', 'docker.io/library/traefik']) {
-    assert.doesNotThrow(() => runGatewayInstallPreflight({ run: runner(JSON.stringify([name + '@' + digest])) }));
+    assert.doesNotThrow(() =>
+      runGatewayInstallPreflight({
+        run: runner(JSON.stringify([name + '@' + digest])),
+      }),
+    );
   }
-  for (const bad of ['not json', '[]', JSON.stringify(['foreign@' + digest]), JSON.stringify(['traefik@' + digest + '0'])]) {
+  for (const bad of [
+    'not json',
+    '[]',
+    JSON.stringify(['foreign@' + digest]),
+    JSON.stringify(['traefik@' + digest + '0']),
+  ]) {
     assert.throws(() => runGatewayInstallPreflight({ run: runner(bad) }));
   }
-  assert.throws(() => runGatewayInstallPreflight({ run: runner('', false) }), /digest check failed/);
+  assert.throws(
+    () => runGatewayInstallPreflight({ run: runner('', false) }),
+    /digest check failed/,
+  );
 });
 
 test('both Temporal profiles select the same native installer and exact confirmation', () => {
   for (const profileId of ['dev', 'release']) {
-    const context = profileId === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
-    const plan = buildPlatformPlan({ profileId, command: 'ensure', services: 'temporal', confirmation: context });
+    const context =
+      profileId === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
+    const plan = buildPlatformPlan({
+      profileId,
+      command: 'ensure',
+      services: 'temporal',
+      confirmation: context,
+    });
     assert.equal(plan.ok, true);
     assert.equal(plan.phases.length, 1);
     const phase = plan.phases[0];
@@ -375,4 +429,53 @@ test('both Temporal profiles select the same native installer and exact confirma
     assert.equal(phase.env.OFFSCREEN_TEMPORAL_ENSURE, 'authorized');
     assert.ok(plan.preflight.includes('helm'));
   }
+});
+
+test('both object-storage profiles use the native installer with authorization', () => {
+  for (const profileId of ['dev', 'release']) {
+    const context =
+      profileId === 'dev' ? 'kind-offscreen-dev' : 'kind-offscreen-release';
+    const plan = buildPlatformPlan({
+      profileId,
+      command: 'ensure',
+      services: 'object-storage',
+      confirmation: context,
+    });
+    assert.equal(plan.ok, true);
+    assert.equal(plan.phases.length, 1);
+    const phase = plan.phases[0];
+    assert.match(
+      phase.argv[1],
+      /infra\/platform\/object-storage\/providers\/seaweedfs\/install\.mjs$/,
+    );
+    assert.deepEqual(phase.argv.slice(2), ['ensure', profileId]);
+    assert.equal(phase.env?.OFFSCREEN_OBJECT_STORAGE_ENSURE, 'authorized');
+    assert.ok(plan.preflight.includes('helm'));
+  }
+});
+
+test('dev object-storage-only ensure includes helm preflight and postgres-only does not', () => {
+  const s3 = buildPlatformPlan({
+    profileId: 'dev',
+    command: 'ensure',
+    services: 'object-storage',
+    confirmation: 'kind-offscreen-dev',
+  });
+  assert.equal(s3.ok, true);
+  assert.ok(s3.preflight.includes('helm'));
+
+  const postgres = buildPlatformPlan({
+    profileId: 'dev',
+    command: 'ensure',
+    services: 'postgres',
+    confirmation: 'kind-offscreen-dev',
+  });
+  assert.equal(postgres.ok, true);
+  assert.equal(postgres.preflight.includes('helm'), false);
+});
+
+test('platformPhaseTimeoutMs leaves object-storage unbounded and honors core budgets', () => {
+  assert.equal(platformPhaseTimeoutMs('object-storage'), undefined);
+  assert.equal(platformPhaseTimeoutMs('temporal'), 1_200_000);
+  assert.equal(platformPhaseTimeoutMs('cnpg'), 1_830_000);
 });

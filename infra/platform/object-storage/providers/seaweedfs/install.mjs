@@ -1,3 +1,5 @@
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import {
   readPlatformObject,
   runPlatformCommand,
@@ -343,4 +345,58 @@ export function isObjectStorageMutatingInvocation(command, args) {
   }
   const joined = args.join(' ');
   return MUTATING_PATTERN.test(joined);
+}
+
+/**
+ * @param {string[]} args
+ */
+function objectStorageCliExitCodeForState(state) {
+  return state === 'unknown' ? 1 : 0;
+}
+
+/**
+ * @param {string[]} args
+ */
+async function objectStorageCliMain(args) {
+  const [command, profileId, extra] = args;
+  if (
+    extra ||
+    !['plan', 'ensure', 'status'].includes(command) ||
+    (profileId !== 'dev' && profileId !== 'release')
+  ) {
+    process.exitCode = 2;
+    return;
+  }
+
+  if (command === 'plan') {
+    const result = planObjectStorage(profileId);
+    process.stdout.write(`${JSON.stringify(result)}\n`);
+    process.exitCode = objectStorageCliExitCodeForState(result.state);
+    return;
+  }
+  if (command === 'status') {
+    const result = statusObjectStorage(profileId);
+    process.stdout.write(`${JSON.stringify(result)}\n`);
+    process.exitCode = objectStorageCliExitCodeForState(result.state);
+    return;
+  }
+
+  if (process.env.OFFSCREEN_OBJECT_STORAGE_ENSURE !== 'authorized') {
+    process.stderr.write('object storage ensure is not authorized\n');
+    process.exitCode = 2;
+    return;
+  }
+
+  const result = await ensureObjectStorage(profileId, { authorize: true });
+  process.stdout.write(`${JSON.stringify(result)}\n`);
+  process.exitCode = result.ok ? 0 : 1;
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  objectStorageCliMain(process.argv.slice(2)).catch((error) => {
+    process.stderr.write(
+      `${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exitCode = 1;
+  });
 }

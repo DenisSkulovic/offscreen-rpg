@@ -34,7 +34,12 @@ function kubectlConfigJson(profile, port) {
     clusters: [
       { name: clusterName, cluster: { server: `https://127.0.0.1:${port}` } },
     ],
-    contexts: [{ name: contextName, context: { cluster: clusterName, user: contextName } }],
+    contexts: [
+      {
+        name: contextName,
+        context: { cluster: clusterName, user: contextName },
+      },
+    ],
     users: [{ name: contextName, user: {} }],
     'current-context': contextName,
   });
@@ -783,6 +788,28 @@ test('redis status uses shared readiness for dev and release profiles', () => {
   assert.doesNotMatch(releasePartial.detail ?? '', /absent/i);
 });
 
+test('object-storage status maps native installer states on dev and release', () => {
+  for (const profileId of ['dev', 'release']) {
+    const cases = [
+      ['absent', 'not-installed', 'namespace absent'],
+      ['native-noop', 'installed', 'native compatible'],
+      ['unknown', 'unreadable', 'cluster unreachable'],
+      ['refused', 'not-ready', 'legacy structural'],
+    ];
+    for (const [nativeState, serviceState, reason] of cases) {
+      const observed = observeSelectedServiceState(
+        profileId,
+        'object-storage',
+        {
+          statusObjectStorage: () => ({ state: nativeState, reason }),
+        },
+      );
+      assert.equal(observed.state, serviceState);
+      assert.equal(observed.detail, reason);
+    }
+  }
+});
+
 test('inventoryKindClusters requires exact kind success', () => {
   const unreadable = inventoryKindClusters(() => ({
     ok: false,
@@ -857,58 +884,140 @@ test('release Temporal status observes Helm-owned workloads and frontend health 
   const calls = [];
   const context = 'kind-offscreen-release';
   const namespace = 'lab-temporal';
-  const pinnedValues = parse(readFileSync(new URL('../platform/temporal/values.yaml', import.meta.url), 'utf8'));
-  const ok = (body) => ({ ok: true, status: 0, stdout: typeof body === 'string' ? body : JSON.stringify(body) });
+  const pinnedValues = parse(
+    readFileSync(
+      new URL('../platform/temporal/values.yaml', import.meta.url),
+      'utf8',
+    ),
+  );
+  const ok = (body) => ({
+    ok: true,
+    status: 0,
+    stdout: typeof body === 'string' ? body : JSON.stringify(body),
+  });
   function run(command, args) {
     calls.push({ command, args });
     if (command === 'kind') return ok('offscreen-release\n');
-    if (command === 'helm') return ok([{
-      name: 'temporal', namespace, chart: 'temporal-1.8.0',
-      app_version: '1.32.2', revision: '1', status: 'deployed',
-    }]);
+    if (command === 'helm')
+      return ok([
+        {
+          name: 'temporal',
+          namespace,
+          chart: 'temporal-1.8.0',
+          app_version: '1.32.2',
+          revision: '1',
+          status: 'deployed',
+        },
+      ]);
     assert.equal(command, 'kubectl');
     assert.equal(args[1], context);
-    if (args.includes('config')) return ok({
-      contexts: [{ name: context, context: { cluster: context } }],
-      clusters: [{ name: context, cluster: { server: 'https://127.0.0.1:6443' } }],
-    });
+    if (args.includes('config'))
+      return ok({
+        contexts: [{ name: context, context: { cluster: context } }],
+        clusters: [
+          { name: context, cluster: { server: 'https://127.0.0.1:6443' } },
+        ],
+      });
     if (args.includes('exec')) {
       assert.ok(args.includes('deploy/temporal-admintools'));
       return ok('SERVING\n');
     }
     const resource = args[3];
     if (resource === 'namespace') {
-      return ok({ metadata: {
-        name: args[4], uid: 'baseline-uid', labels: { 'offscreen.rpg/lab': 'disposable', 'app.kubernetes.io/part-of': 'temporal' },
-      } });
+      return ok({
+        metadata: {
+          name: args[4],
+          uid: 'baseline-uid',
+          labels: {
+            'offscreen.rpg/lab': 'disposable',
+            'app.kubernetes.io/part-of': 'temporal',
+          },
+        },
+      });
     }
     const metadata = {
-      name: args[6], namespace, generation: 1,
-      labels: { 'app.kubernetes.io/instance': 'temporal', 'app.kubernetes.io/managed-by': 'Helm' },
-      annotations: { 'meta.helm.sh/release-name': 'temporal', 'meta.helm.sh/release-namespace': namespace },
-    };
-    if (resource === 'service') return ok({
-      metadata, spec: {
-        type: 'ClusterIP', clusterIP: '10.96.0.20',
-        selector: { 'app.kubernetes.io/instance': 'temporal', 'app.kubernetes.io/name': 'temporal', 'app.kubernetes.io/component': 'frontend' },
-        ports: [{ port: 7233, targetPort: 'rpc', protocol: 'TCP' }],
+      name: args[6],
+      namespace,
+      generation: 1,
+      labels: {
+        'app.kubernetes.io/instance': 'temporal',
+        'app.kubernetes.io/managed-by': 'Helm',
       },
-    });
+      annotations: {
+        'meta.helm.sh/release-name': 'temporal',
+        'meta.helm.sh/release-namespace': namespace,
+      },
+    };
+    if (resource === 'service')
+      return ok({
+        metadata,
+        spec: {
+          type: 'ClusterIP',
+          clusterIP: '10.96.0.20',
+          selector: {
+            'app.kubernetes.io/instance': 'temporal',
+            'app.kubernetes.io/name': 'temporal',
+            'app.kubernetes.io/component': 'frontend',
+          },
+          ports: [{ port: 7233, targetPort: 'rpc', protocol: 'TCP' }],
+        },
+      });
     assert.equal(resource, 'deployment');
     return ok({
-      metadata, spec: { replicas: 1, template: { spec: { containers: [{ image: 'temporalio/image:' + pinnedValues[metadata.name === 'temporal-web' ? 'web' : metadata.name === 'temporal-admintools' ? 'admintools' : 'server'].image.tag }] } } },
-      status: { observedGeneration: 1, replicas: 1, updatedReplicas: 1, readyReplicas: 1, availableReplicas: 1 },
+      metadata,
+      spec: {
+        replicas: 1,
+        template: {
+          spec: {
+            containers: [
+              {
+                image:
+                  'temporalio/image:' +
+                  pinnedValues[
+                    metadata.name === 'temporal-web'
+                      ? 'web'
+                      : metadata.name === 'temporal-admintools'
+                        ? 'admintools'
+                        : 'server'
+                  ].image.tag,
+              },
+            ],
+          },
+        },
+      },
+      status: {
+        observedGeneration: 1,
+        replicas: 1,
+        updatedReplicas: 1,
+        readyReplicas: 1,
+        availableReplicas: 1,
+      },
     });
   }
-  assert.equal(observeSelectedServiceState('release', 'temporal', { run }).state, 'installed');
-  assert.ok(calls.some(({ args }) => args.includes('deploy/temporal-admintools')));
-  assert.ok(calls.every(({ args }) => !args.includes('job') && !args.includes('psql')));
-  assert.equal(observeSelectedServiceState('release', 'temporal', {
-    run: (command, args) => args.includes('exec') ? ok('NOT_SERVING') : run(command, args),
-  }).state, 'not-ready');
-  assert.equal(observeSelectedServiceState('release', 'temporal', {
-    run: (command, args) => command === 'helm' ? ok([]) : run(command, args),
-  }).state, 'not-installed');
+  assert.equal(
+    observeSelectedServiceState('release', 'temporal', { run }).state,
+    'installed',
+  );
+  assert.ok(
+    calls.some(({ args }) => args.includes('deploy/temporal-admintools')),
+  );
+  assert.ok(
+    calls.every(({ args }) => !args.includes('job') && !args.includes('psql')),
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'temporal', {
+      run: (command, args) =>
+        args.includes('exec') ? ok('NOT_SERVING') : run(command, args),
+    }).state,
+    'not-ready',
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'temporal', {
+      run: (command, args) =>
+        command === 'helm' ? ok([]) : run(command, args),
+    }).state,
+    'not-installed',
+  );
 });
 
 test('release RabbitMQ absent CRD is not-installed, permission failure remains unreadable', () => {

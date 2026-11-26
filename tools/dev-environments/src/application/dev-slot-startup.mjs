@@ -352,6 +352,40 @@ export async function prepareMigrationArtifact(input, record, deps = {}) {
 }
 
 /**
+ * @param {{ slotId: string }} owner
+ * @param {{
+ *   status?: () => { state: string, reason?: string },
+ *   ensureTenant?: (input: object) => Promise<object>,
+ * }} [deps]
+ */
+export async function admitOwnedDevS3Tenant(owner, deps = {}) {
+  const { statusObjectStorage } =
+    await import('../../../../infra/platform/object-storage/providers/seaweedfs/install.mjs');
+  const status = deps.status?.() ?? statusObjectStorage('dev');
+  if (status.state !== 'native-noop') {
+    return {
+      ok: false,
+      detail: status.reason ?? status.state,
+      retained: [],
+    };
+  }
+  if (deps.ensureTenant) {
+    return deps.ensureTenant({
+      slotId: owner.slotId,
+      authorizeLive: 'kind-offscreen-dev-s3-tenant-live',
+    });
+  }
+  const { ensureDevS3Tenant } = await import('../adapters/dev-s3-tenant.mjs');
+  const { createDevS3LiveAdapter } =
+    await import('../adapters/dev-s3-tenant-live-adapter.mjs');
+  return ensureDevS3Tenant({
+    slotId: owner.slotId,
+    authorizeLive: 'kind-offscreen-dev-s3-tenant-live',
+    adapter: createDevS3LiveAdapter(),
+  });
+}
+
+/**
  * Live binding. SQL ensure includes every registry slot so existing dev
  * databases stay in the executor's expected catalog.
  *
@@ -389,15 +423,15 @@ export async function reconcileOwnedDevSlot(input) {
     await import('../adapters/dev-sql-tenant-executor.mjs');
   const { createLiveDevSqlAdapter } =
     await import('../adapters/dev-sql-tenant-live-adapter.mjs');
-  const { ensureDevS3Tenant } = await import('../adapters/dev-s3-tenant.mjs');
-  const { createDevS3LiveAdapter } =
-    await import('../adapters/dev-s3-tenant-live-adapter.mjs');
   const temporalTenant = await import('../adapters/dev-temporal-tenant.mjs');
   const { ensureDevTemporalTenant } = temporalTenant;
   const { projectDevSlot } = await import('../rendering/dev-slot-project.mjs');
-  const { readPlatformProfile } = await import('../../../../infra/platform/common/profile.mjs');
-  const { observeTemporalReady } = await import('../../../../infra/platform/temporal/readiness.mjs');
-  const { describeTemporalNamespace, createTemporalNamespace } = await import('../../../../infra/platform/temporal/namespaces.mjs');
+  const { readPlatformProfile } =
+    await import('../../../../infra/platform/common/profile.mjs');
+  const { observeTemporalReady } =
+    await import('../../../../infra/platform/temporal/readiness.mjs');
+  const { describeTemporalNamespace, createTemporalNamespace } =
+    await import('../../../../infra/platform/temporal/namespaces.mjs');
   const temporal = readPlatformProfile('dev');
 
   return reconcileDevSlot(
@@ -463,12 +497,7 @@ export async function reconcileOwnedDevSlot(input) {
         });
       },
       ensureMigration: (owner) => migrateOwnedDevSlot(owner, input.worktree),
-      ensureS3: (owner) =>
-        ensureDevS3Tenant({
-          slotId: owner.slotId,
-          authorizeLive: 'kind-offscreen-dev-s3-tenant-live',
-          adapter: createDevS3LiveAdapter(),
-        }),
+      ensureS3: (owner) => admitOwnedDevS3Tenant(owner),
       ensureTemporal: (owner) =>
         ensureDevTemporalTenant({
           slotId: owner.slotId,
@@ -483,7 +512,8 @@ export async function reconcileOwnedDevSlot(input) {
               };
             },
             describe: (name) => describeTemporalNamespace('dev', name),
-            create: (names) => createTemporalNamespace('dev', names.temporalNamespace, 1),
+            create: (names) =>
+              createTemporalNamespace('dev', names.temporalNamespace, 1),
             wait: () => new Promise((resolve) => setTimeout(resolve, 1000)),
           },
         }),
