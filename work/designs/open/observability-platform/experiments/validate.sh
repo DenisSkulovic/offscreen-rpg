@@ -53,7 +53,7 @@ for row in "${rows[@]}"; do
       # Archive paths relative to container root. Docker extracts files into its writable layer.
       mkdir -p "$out/staging/$role/$profile$dest"
       cp "$dir/"* "$out/staging/$role/$profile$dest/"
-      if tar -C "$out/staging/$role/$profile" -cf - "${dest#/}" | timeout 30s docker cp - "$cid:/" >>"$log" 2>&1; then
+      if tar --mode="u=rwX,go=rX" --owner=0 --group=0 --numeric-owner -C "$out/staging/$role/$profile" -cf - "${dest#/}" | timeout 30s docker cp - "$cid:/" >>"$log" 2>&1; then
         if timeout --kill-after=5s 60s docker start -a "$cid" </dev/null >>"$log" 2>&1 &&
            [[ "$(timeout 20s docker inspect --format '{{.State.Status}}:{{.State.ExitCode}}' "$cid" </dev/null)" == exited:0 ]]; then
           state=PASS
