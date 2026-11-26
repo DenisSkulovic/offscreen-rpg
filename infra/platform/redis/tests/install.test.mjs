@@ -690,6 +690,15 @@ test('ensure does not export unlocked ensure helper', () => {
   assert.equal(typeof runRedisInstallLifecycle, 'function');
 });
 
+test('lifecycle CLI rejects recovery argv forms', async () => {
+  for (const command of ['recover', 'clear-pending', 'unlock']) {
+    await assert.rejects(
+      () => runRedisInstallLifecycle([command, 'dev', DEV_CONTEXT]),
+      /invalid redis install invocation/,
+    );
+  }
+});
+
 test('pending directory untouched when ensure unauthorized', async () => {
   const stateRoot = mkdtempSync(join(tmpdir(), 'redis-install-lock-'));
   mkdirSync(join(stateRoot, 'platform-locks'), { recursive: true });
