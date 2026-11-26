@@ -13,6 +13,7 @@ import { observeDevPostgresReady } from '../platform/postgres/readiness.mjs';
 import { RELEASE_CNPG_CLUSTER } from '../platform/postgres/config.mjs';
 import { assessCnpgClusterTopologyReadiness } from '../platform/postgres/cluster-readiness.mjs';
 import { observeTemporalReady, observeTemporalRelease } from '../platform/temporal/readiness.mjs';
+import { observeGatewayStatus } from '../platform/gateway/install.mjs';
 import { observeDevRedisReady } from '../platform/redis/dev-install.mjs';
 import { observeRedisReady } from '../platform/redis/readiness.mjs';
 import {
@@ -497,25 +498,7 @@ function observeReleaseServiceState(serviceId, deps = {}) {
   }
 
   if (serviceId === 'gateway') {
-    const traefik = read('deployment', 'lab-gateway-traefik', 'gateway-system');
-    const gateway = read('gateway', 'lab-edge', 'lab-edge');
-    if (traefik.state === 'unreadable' || gateway.state === 'unreadable') {
-      return { state: 'unreadable' };
-    }
-    if (traefik.state === 'absent' && gateway.state === 'absent') {
-      return { state: 'not-installed' };
-    }
-    const programmed = Array.isArray(gateway.object?.status?.conditions)
-      ? gateway.object.status.conditions.find(
-          (item) => item?.type === 'Programmed',
-        )
-      : null;
-    const ready =
-      traefik.state === 'present' &&
-      deploymentIsReady(traefik.object) &&
-      gateway.state === 'present' &&
-      programmed?.status === 'True';
-    return { state: ready ? 'installed' : 'not-ready' };
+    return observeGatewayStatus({ run });
   }
 
   if (serviceId === 'redis') {

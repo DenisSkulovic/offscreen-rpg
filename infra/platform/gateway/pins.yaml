@@ -1,0 +1,13 @@
+{
+  "chart": {
+    "version": "42.4.1",
+    "archive": "vendor/traefik-42.4.1.tgz",
+    "sha256": "80ea7246b74d5bcd1f86ac598feca6ba516a110dc0ad9e95dfda28d933b4acdb"
+  },
+  "gatewayApi": {
+    "version": "v1.6.3",
+    "channel": "standard",
+    "manifest": "vendor/gateway-api-v1.6.3-standard.yaml",
+    "sha256": "356c2b8e286a964dc20995435659ad1095386329974793af10bbfe3eff977fe5"
+  }
+}

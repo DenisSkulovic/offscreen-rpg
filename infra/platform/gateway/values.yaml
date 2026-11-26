@@ -38,9 +38,9 @@ ports:
       trustedIPs: []
     transport:
       respondingTimeouts:
-        readTimeout: 10s
-        writeTimeout: 10s
-        idleTimeout: 30s
+        readTimeout: "60s"
+        writeTimeout: "0s"
+        idleTimeout: "180s"
   websecure:
     expose:
       default: false

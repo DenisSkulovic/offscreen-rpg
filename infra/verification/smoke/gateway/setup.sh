@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Apply synthetic Gateway smoke fixtures after platform install.
 # Does not write application routes or delete clusters, volumes, or foreign contexts.
+#
+# Cleanup (only resources this script owns in lab-edge):
+#   kubectl --context kind-offscreen-release -n lab-edge delete httproute lab-edge-routes --ignore-not-found
+#   kubectl --context kind-offscreen-release -n lab-edge delete -f infra/verification/smoke/gateway/backends.yaml
+#   kubectl --context kind-offscreen-release -n lab-edge delete configmap synthetic-backend --ignore-not-found
+# Do not delete: shared Gateway API CRDs, gateway-system/lab-gateway-traefik, or lab-edge Gateway lab-edge.
 
 set -euo pipefail
 

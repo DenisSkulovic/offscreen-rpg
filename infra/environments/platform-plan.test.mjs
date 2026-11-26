@@ -344,23 +344,21 @@ test('release plan mode leaves install scripts preview-only', () => {
 });
 
 
-test('gateway preflight uses JSON Docker template and exact repository digest', () => {
-  const digest = 'sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4';
-  const runner = (stdout, ok = true) => (command, args) => {
-    if (command === 'docker') {
-      assert.deepEqual(args, ['image', 'inspect', 'traefik:v3.7.19', '--format', '{{json .RepoDigests}}']);
-      return { ok, stdout };
-    }
-    assert.equal(command, 'helm');
-    return { ok: true, stdout: '[{"name":"traefik"}]' };
+test('gateway preflight verifies native pins without host image or Helm repo', () => {
+  assert.doesNotThrow(() => runGatewayInstallPreflight());
+  const run = (command) => {
+    throw new Error(`unexpected platform command: ${command}`);
   };
-  for (const name of ['traefik', 'docker.io/library/traefik']) {
-    assert.doesNotThrow(() => runGatewayInstallPreflight({ run: runner(JSON.stringify([name + '@' + digest])) }));
-  }
-  for (const bad of ['not json', '[]', JSON.stringify(['foreign@' + digest]), JSON.stringify(['traefik@' + digest + '0'])]) {
-    assert.throws(() => runGatewayInstallPreflight({ run: runner(bad) }));
-  }
-  assert.throws(() => runGatewayInstallPreflight({ run: runner('', false) }), /digest check failed/);
+  assert.doesNotThrow(() => runGatewayInstallPreflight({ run }));
+  assert.throws(
+    () =>
+      runGatewayInstallPreflight({
+        loadVerifiedPins: () => {
+          throw new Error('pins unreadable');
+        },
+      }),
+    /pins unreadable/,
+  );
 });
 
 test('both Temporal profiles select the same native installer and exact confirmation', () => {

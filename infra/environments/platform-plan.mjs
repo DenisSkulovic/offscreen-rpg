@@ -19,6 +19,7 @@ import {
   parseMeminfoMiB,
 } from '../clusters/kind/manager/host-probe.mjs';
 import { createInfraProgressReporter } from './infra-progress.mjs';
+import { loadVerifiedPins } from '../platform/gateway/install.mjs';
 
 const environmentsRoot = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = resolve(environmentsRoot, '../..');
@@ -48,10 +49,6 @@ const DEV_SUPPORTED_SERVICES = new Set([
   'temporal',
   'redis',
 ]);
-
-const GATEWAY_TRAEFIK_IMAGE = 'traefik:v3.7.19';
-const GATEWAY_TRAEFIK_DIGEST =
-  'sha256:a6c0194dda77bcb804824580f36fa7edc56e315b1acfe933366c8b52844a78a4';
 
 /** @typedef {'plan' | 'ensure'} PlatformCommand */
 
@@ -428,70 +425,13 @@ export function runChartRenderPreflight(
 }
 
 /**
- * Pinned Traefik image/repo checks aligned with infra/platform/gateway/install.sh.
- * @param {{ run?: typeof runPlatformCommand }} [deps]
+ * Read-only gateway artifact verification via native installer pins.
+ * @param {{ loadVerifiedPins?: typeof loadVerifiedPins, gatewayRoot?: string }} [deps]
  */
 export function runGatewayInstallPreflight(deps = {}) {
-  const run = deps.run ?? runPlatformCommand;
-  const inspect = run(
-    'docker',
-    [
-      'image',
-      'inspect',
-      GATEWAY_TRAEFIK_IMAGE,
-      '--format',
-      '{{json .RepoDigests}}',
-    ],
-    { timeoutMs: 10_000 },
-  );
-  if (!inspect.ok) {
-    throw new Error(
-      `Refusing gateway install: ${GATEWAY_TRAEFIK_IMAGE} digest check failed`,
-    );
-  }
-  let digests;
-  try {
-    digests = JSON.parse(inspect.stdout ?? '');
-  } catch {
-    throw new Error('Gateway image digest inspection returned invalid JSON');
-  }
-  const expectedRefs = [
-    'traefik',
-    'library/traefik',
-    'docker.io/library/traefik',
-    'docker.io/traefik',
-  ].map((name) => `${name}@${GATEWAY_TRAEFIK_DIGEST}`);
-  if (
-    !Array.isArray(digests) ||
-    !digests.some((ref) => expectedRefs.includes(ref))
-  ) {
-    throw new Error(
-      `Refusing to install: ${GATEWAY_TRAEFIK_IMAGE} is not ${GATEWAY_TRAEFIK_DIGEST}.`,
-    );
-  }
-
-  const repoList = run('helm', ['repo', 'list', '-o', 'json'], {
-    timeoutMs: 10_000,
-  });
-  if (!repoList.ok) {
-    throw new Error('helm repo list failed for gateway preflight');
-  }
-  let repos;
-  try {
-    repos = JSON.parse(repoList.stdout ?? '[]');
-  } catch {
-    throw new Error(
-      'helm repo list returned invalid JSON for gateway preflight',
-    );
-  }
-  if (
-    !Array.isArray(repos) ||
-    !repos.some(
-      (item) => item && typeof item === 'object' && item.name === 'traefik',
-    )
-  ) {
-    throw new Error('traefik helm repo is not configured');
-  }
+  const verify = deps.loadVerifiedPins ?? loadVerifiedPins;
+  const options = deps.gatewayRoot ? { gatewayRoot: deps.gatewayRoot } : {};
+  verify(options);
 }
 
 /**

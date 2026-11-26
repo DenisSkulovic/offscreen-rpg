@@ -5,8 +5,15 @@
 
 set -euo pipefail
 
-if [[ $# -ne 0 ]]; then
-  echo "smoke.sh takes no arguments." >&2
+SMOKE_MODE="quick"
+if [[ $# -eq 0 ]]; then
+  SMOKE_MODE="quick"
+elif [[ $# -eq 1 && "$1" == "long-stream" ]]; then
+  SMOKE_MODE="long-stream"
+else
+  echo "usage: smoke.sh [long-stream]" >&2
+  echo "Default (no arguments) runs the quick probe only." >&2
+  echo "Optional long-stream adds a separate /api/events/long proof (about 45s)." >&2
   exit 2
 fi
 
@@ -280,5 +287,10 @@ snapshot_volumes "$work/volumes-after"
 snapshot_foreign_contexts "$work/contexts-after"
 assert_no_volume_loss "$work/volumes-before" "$work/volumes-after"
 assert_same_file "$work/contexts-before" "$work/contexts-after" "foreign kubectl contexts"
+
+if [[ "${SMOKE_MODE}" == "long-stream" ]]; then
+  echo "Running separate long SSE probe on /api/events/long (single connection, 60s deadline)..."
+  node "${GATEWAY_SMOKE_ROOT}/long-stream-probe.mjs" "${LOCAL_PORT}"
+fi
 
 echo "Gateway smoke passed."

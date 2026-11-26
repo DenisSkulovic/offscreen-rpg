@@ -22,6 +22,14 @@ import {
 } from '../clusters/kind/manager/config.mjs';
 import { DEV_CLUSTER_OWNER } from '../clusters/kind/manager/dev-bootstrap.mjs';
 import { allowedNamespacesForService } from '../platform/common/render.mjs';
+import {
+  GATEWAY_CLASS_NAME,
+  GATEWAY_NAME,
+  CONTROLLER_NAME,
+  IMAGE_DIGEST,
+  HELM_NAMESPACE,
+  LAB_EDGE_NAMESPACE,
+} from '../platform/gateway/install.mjs';
 
 const DEV_PORT = DEV_API_PORT_RANGE.start;
 
@@ -909,6 +917,131 @@ test('release Temporal status observes Helm-owned workloads and frontend health 
   assert.equal(observeSelectedServiceState('release', 'temporal', {
     run: (command, args) => command === 'helm' ? ok([]) : run(command, args),
   }).state, 'not-installed');
+});
+
+test('release gateway status uses class, deployment, service, and gateway readiness', () => {
+  const context = 'kind-offscreen-release';
+  const generation = 3;
+  const cond = (type) => ({
+    type,
+    status: 'True',
+    observedGeneration: generation,
+  });
+  const gatewayClass = JSON.stringify({
+    metadata: { name: GATEWAY_CLASS_NAME, generation },
+    spec: { controllerName: CONTROLLER_NAME },
+    status: { conditions: [cond('Accepted')] },
+  });
+  const deployment = JSON.stringify({
+    metadata: { name: 'lab-gateway-traefik', namespace: HELM_NAMESPACE, generation },
+    spec: {
+      replicas: 1,
+      template: {
+        spec: {
+          containers: [{ image: `docker.io/traefik:v3.7.19@${IMAGE_DIGEST}` }],
+        },
+      },
+    },
+    status: {
+      observedGeneration: generation,
+      replicas: 1,
+      updatedReplicas: 1,
+      availableReplicas: 1,
+      readyReplicas: 1,
+    },
+  });
+  const service = (spec) =>
+    JSON.stringify({
+      metadata: { name: 'lab-gateway-traefik', namespace: HELM_NAMESPACE },
+      spec,
+    });
+  const healthyService = service({
+    type: 'ClusterIP',
+    ports: [{ name: 'web', port: 80, targetPort: 'web' }],
+  });
+  const gateway = (conditions, listenerConditions = conditions) =>
+    JSON.stringify({
+      metadata: { name: GATEWAY_NAME, namespace: LAB_EDGE_NAMESPACE, generation },
+      spec: {
+        gatewayClassName: GATEWAY_CLASS_NAME,
+        listeners: [{ name: 'web', port: 8000, protocol: 'HTTP' }],
+      },
+      status: {
+        conditions,
+        listeners: [{ name: 'web', conditions: listenerConditions }],
+      },
+    });
+  const listenerConds = ['Accepted', 'ResolvedRefs', 'Programmed'].map(cond);
+  const healthyGateway = gateway(
+    [cond('Accepted'), cond('Programmed')],
+    listenerConds,
+  );
+  const respond = (responses) => (command, args) => {
+    assert.equal(command, 'kubectl');
+    assert.equal(args[1], context);
+    const resource = args[3];
+    const namespaced = args[4] === '-n';
+    const namespace = namespaced ? args[5] : undefined;
+    const name = namespaced ? args[6] : args[4];
+    const key = namespace ? `${resource}/${namespace}/${name}` : `${resource}/${name}`;
+    if (responses[key] === undefined) {
+      return { ok: true, stdout: '' };
+    }
+    if (responses[key] === null) {
+      return { ok: false, stdout: '', stderr: 'Forbidden' };
+    }
+    return { ok: true, stdout: responses[key] };
+  };
+  const healthyResponses = {
+    [`gatewayclass/${GATEWAY_CLASS_NAME}`]: gatewayClass,
+    [`deployment/${HELM_NAMESPACE}/lab-gateway-traefik`]: deployment,
+    [`service/${HELM_NAMESPACE}/lab-gateway-traefik`]: healthyService,
+    [`gateway/${LAB_EDGE_NAMESPACE}/${GATEWAY_NAME}`]: healthyGateway,
+  };
+  assert.equal(
+    observeSelectedServiceState('release', 'gateway', {
+      run: respond(healthyResponses),
+    }).state,
+    'installed',
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'gateway', { run: respond({}) }).state,
+    'not-installed',
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'gateway', {
+      run: respond({
+        ...healthyResponses,
+        [`gateway/${LAB_EDGE_NAMESPACE}/${GATEWAY_NAME}`]: null,
+      }),
+    }).state,
+    'unreadable',
+  );
+  const staleGateway = gateway([
+    { type: 'Accepted', status: 'True', observedGeneration: generation - 1 },
+    cond('Programmed'),
+  ]);
+  assert.equal(
+    observeSelectedServiceState('release', 'gateway', {
+      run: respond({
+        ...healthyResponses,
+        [`gateway/${LAB_EDGE_NAMESPACE}/${GATEWAY_NAME}`]: staleGateway,
+      }),
+    }).state,
+    'not-ready',
+  );
+  assert.equal(
+    observeSelectedServiceState('release', 'gateway', {
+      run: respond({
+        ...healthyResponses,
+        [`service/${HELM_NAMESPACE}/lab-gateway-traefik`]: service({
+          type: 'LoadBalancer',
+          ports: [{ name: 'web', port: 80, targetPort: 'web' }],
+        }),
+      }),
+    }).state,
+    'not-ready',
+  );
 });
 
 test('release RabbitMQ absent CRD is not-installed, permission failure remains unreadable', () => {

@@ -13,6 +13,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 ROLE = os.environ.get("ROLE", "web")
 PORT = int(os.environ.get("PORT", "8080"))
 
+# Kept in sync with infra/verification/smoke/gateway/long-stream.mjs
+LONG_SSE_EVENT_DELAYS_S = (0, 15, 30, 45)
+
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
@@ -63,6 +66,24 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.flush()
         self.close_connection = True
 
+    def _sse_long(self, prefix, delays=LONG_SSE_EVENT_DELAYS_S):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("X-Accel-Buffering", "no")
+        self.send_header("Transfer-Encoding", "chunked")
+        self.end_headers()
+        started = time.monotonic()
+        for index, scheduled in enumerate(delays, start=1):
+            elapsed = time.monotonic() - started
+            wait = scheduled - elapsed
+            if wait > 0:
+                time.sleep(wait)
+            self._chunk(f"data: {prefix}-event-{index}\n\n")
+        self.wfile.write(b"0\r\n\r\n")
+        self.wfile.flush()
+        self.close_connection = True
+
     def do_GET(self):
         path = self.path.split("?", 1)[0]
         if path == "/healthz":
@@ -82,6 +103,9 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/events":
             self._sse("api")
+            return
+        if path == "/api/events/long":
+            self._sse_long("api")
             return
         self._send(404, "api-not-found\n")
 
