@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+[OBSERVABILITY-NATIVE](open/2026-11-26--observability-native/CHANGE.md) — Proposed; independently defended design, packet readiness incomplete, no dispatch.
+
 [RABBITMQ-NATIVE](open/2026-11-26--rabbitmq-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and fresh release separately gated.
 
 [OBJECT-STORAGE-NATIVE](open/2026-11-26--object-storage-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and occupied legacy admission separately gated.
