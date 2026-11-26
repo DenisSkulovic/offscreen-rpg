@@ -1,9 +1,9 @@
-# Agent Core | illustrative responsibility tree R1
+# Agent Core | illustrative responsibility tree R2
 
-Not selected filesystem layout, API, dependency graph or implementation. Generic machinery for bounded agent execution, independent of Storyteller. Preserve earlier conceptual distinction between definition, instance, mission, runtime and durable execution state; whether persistent instances are mandatory remains open.
+Outer package placement follows the owner-selected R2 grouping convention; the internal subfolder tree is illustrative, not a selected API, dependency graph or implementation. Generic machinery for bounded agent execution, independent of Storyteller. Preserve earlier conceptual distinction between definition, instance, mission, runtime and durable execution state; whether persistent instances are mandatory remains open.
 
 ```text
-packages/agent-core/
+packages/ai/agent-core/
   README.md
   src/
     identity/
