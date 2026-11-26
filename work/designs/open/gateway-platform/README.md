@@ -1,6 +1,6 @@
-# Gateway platform renewal — R0 workshop
+# Gateway platform renewal — R2 workshop
 
-Owner: architecture planner with repository owner. Integration baseline `7d073df9066ff7b618e9e22ae26ed0680def9bf0` on main. Status: PROPOSED; no self-defense, committee acceptance, implementation or live mutation authorization.
+Owner: architecture planner with repository owner. Integration baseline `7d073df9066ff7b618e9e22ae26ed0680def9bf0` on main. Status: PROPOSED / EVIDENCE-GATED. R2 supersedes earlier provisional choices below; no committee acceptance, implementation or live mutation authorization.
 
 ## Intent and posture
 Evolutionary renewal: retain native Gateway API and official Traefik Helm chart if pinned artifacts and live behavior support them. One local release edge, HTTP/ClusterIP and loopback-only host access; ordinary dev slots need no gateway by default. Future TLS/hostname/replica support through native configuration, not a service mesh, external API management or bespoke routing controller. Application authentication and webhook verification remain application responsibilities.
@@ -43,3 +43,31 @@ Readiness contract: distinguish absent, unreadable, partial/not-ready, ready; re
 ### Verification and defense checkpoint
 Source: verified artifact hashes, full render and inventory, no unexpected CRDs/providers/host ports/NodePort/LB, guard denial before mutation, no host image or alias dependency. Live fresh: explicitly owned isolated release-compatible cluster, first ensure/repeat ensure, valid route, wrong namespace route rejected, absent endpoints 503, spoofed headers not authority, finite SSE fixture with immediate event then 15s intervals through at least 45s (one HTTP connection, no reconnect; baseline 10s fails to deliver all, candidate succeeds); bounded client deadline and fixture cleanup by exact ownership. Existing release integration is separate, preserve real routes and Services. Hosted proof deferred. No live mutation authorized yet.
 Self-defense: retain proven native architecture over custom chart/controller; preserve identity over cosmetic rename; reject blanket /api rewrite; reject unlimited public writes; reject shared CRD destructive rollback. EVIDENCE-GATED: actual pinned chart archive checksum, exact pinned source semantics, full caller/ownership audit and feasible isolated fixture setup remain unresolved. No committee submission or implementation packet yet. Next operator evidence: archive bytes and complete chart render, CRD inventory, source search. 
+
+## R2 — artifact and pinned upstream evidence (2026-11-26)
+Owner downloaded official chart and CRD bundle with explicit repo URL and release version. Observed SHA256 chart 80ea7246b74d5bcd1f86ac598feca6ba516a110dc0ad9e95dfda28d933b4acdb (284 KiB); CRDs 356c2b8e286a964dc20995435659ad1095386329974793af10bbfe3eff977fe5 (1.2 MiB). Select vendoring both exact artifacts, no runtime download or Helm repository alias. Archive bytes are not committed yet. Installed inventory lists ten standard v1.6.3 CRDs, referencegrants stored v1beta1, others v1. Inventory labels do not prove schema equivalence or ownership. Do not apply or adopt existing CRDs in initial fresh-install scope.
+
+Pinned source examined at https://github.com/traefik/traefik/blob/v3.7.19/pkg/config/static/static_config.go lines 48–51, 204–212: default read 60s, idle 180s; zero write disables timeout. https://github.com/traefik/traefik/blob/v3.7.19/pkg/server/server_entrypoint_tcp.go lines 296–304 and 791–794 sets connection deadlines only when positive and maps timeout values to Go HTTP server. This closes version-specific configuration semantics, not actual streaming delivery. Owner render previously verified all flags.
+
+Consumer evidence: release/install.sh 124–125 expects lab-edge Gateway; owned-app-resources.json 8–13 owns game HTTPRoute and Services (not Gateway); release-service-origin.mjs 7 sets game-api.lab-edge.svc.cluster.local:3001; TURN03 preflight 188 queries existing Gateway; chaos preflight 14 includes lab-edge; dev-slot-app-graph.mjs 25 treats lab-edge as legacy namespace; smoke setup 30–31 refuses overlap. Preserve all these identities and consumers; no broad /api route. User grep listed release content/credentials/migration/rollout, build scripts and tests; not all individually read. Existing release mutation remains gated.
+
+### Concrete specimen: artifact lock and native values delta
+Proposed runtime files: README.md, pins.yaml, values.yaml, gateway.yaml, install.sh (narrow adapter), vendor/traefik-42.4.1.tgz, vendor/gateway-api-v1.6.3-standard.yaml, tests/. Keep existing installer path as composition seam; remove duplicated preflight from planner only after moving verification to the single adapter. Pin image solely in values.yaml. Lock specimen:
+```yaml
+chart:
+  version: "42.4.1"
+  archive: vendor/traefik-42.4.1.tgz
+  sha256: 80ea7246b74d5bcd1f86ac598feca6ba516a110dc0ad9e95dfda28d933b4acdb
+gatewayApi:
+  version: "v1.6.3"
+  channel: standard
+  manifest: vendor/gateway-api-v1.6.3-standard.yaml
+  sha256: 356c2b8e286a964dc20995435659ad1095386329974793af10bbfe3eff977fe5
+```
+Values delta only: ports.web.transport.respondingTimeouts readTimeout "60s", writeTimeout "0s", idleTimeout "180s". Retain all other values from baseline and Gateway manifest byte-equivalent for structural scope. No new chart, no new provider, no new namespace model.
+
+### Lifecycle clarification and proof boundary
+Fresh scope: no existing Gateway API CRDs, gateway Helm release or named Gateway resources. Explicit owned context guard + serialized cluster operation + read-only exposure admission before any mutation. Verified archive and CRD bundle, Helm render --skip-crds, verify all expected objects and absence of unwanted exposure. Apply pinned CRD bundle server-side without force; wait Established for every bundle CRD. Helm upgrade --install lab-gateway <verified archive> --namespace gateway-system --create-namespace --kube-context <owned context> --skip-crds --reset-values --values <values> --wait --timeout 240s; apply namespace and Gateway after ownership checks; observe current generation. Repeat ensure requires matching owned resources and CRD specs, not mere annotations. On partial failure stop, report exact stage; never delete shared CRDs. Existing release adoption, partial CRD recovery, schema mismatch, resource identity migration and public deployment are separate evidence gates. No host Docker image or Helm alias prerequisite, but node image pull remains necessary.
+
+### Self-defense R2 — EVIDENCE-GATED
+Defended: retain native Traefik and Gateway API, preserve names, vendored immutable artifacts, pinned timeout semantics, separate platform vs routing vs application proof. Counterexamples: slow client with unlimited write deadline (local trusted scope only, no claim of production security); route accepted with absent endpoints (separate proof); foreign CRDs with matching labels (refuse absent exact equivalence/ownership); chart upgrade with unexpected exposed ports (full render and admission); failed partial apply (stop, no destructive cleanup). Still evidence-gated: exact CRD normalization/ownership algorithm for repeat ensure, complete rendered inventory and isolated experiment feasibility with hardcoded release context. No independent committee submission until these are resolved; no implementation packet. Next: design repeat-ensure comparison and determine isolated live proof path that does not delete or mutate the user's current release environment. Current release remains untouched.
