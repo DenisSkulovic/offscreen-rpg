@@ -1,8 +1,4 @@
-section: all
-mode: placeholder
-namespace: placeholder
-images:
-  redis: placeholder-redis
+image: docker.io/library/redis@sha256:987c376c727652f99625c7d205a1cba3cb2c53b92b0b62aade2bd48ee1593232
 redis:
   maxmemoryMiB: 32
   evictionPolicy: allkeys-lru
@@ -13,5 +9,3 @@ resources:
   limits:
     cpuMilli: 500
     memoryMiB: 128
-data:
-  emptyDirMiB: 32

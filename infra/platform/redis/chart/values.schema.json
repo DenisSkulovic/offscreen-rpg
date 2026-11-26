@@ -1,89 +1,77 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": [
-    "mode",
-    "namespace",
-    "section",
-    "images",
-    "redis",
-    "resources",
-    "data"
-  ],
+  "additionalProperties": false,
+  "required": ["image", "redis", "resources", "owner"],
   "properties": {
-    "mode": { "enum": ["development", "release"] },
-    "namespace": { "type": "string", "minLength": 1 },
-    "section": { "enum": ["all"] },
-    "images": {
-      "type": "object",
-      "required": ["redis"],
-      "properties": {
-        "redis": { "type": "string", "minLength": 1 }
-      },
-      "additionalProperties": false
+    "image": {
+      "type": "string",
+      "const": "docker.io/library/redis@sha256:987c376c727652f99625c7d205a1cba3cb2c53b92b0b62aade2bd48ee1593232"
     },
     "redis": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["maxmemoryMiB", "evictionPolicy"],
       "properties": {
-        "maxmemoryMiB": { "type": "integer", "minimum": 1, "maximum": 32768 },
-        "evictionPolicy": { "enum": ["allkeys-lru", "allkeys-lfu"] }
-      },
-      "additionalProperties": false
+        "maxmemoryMiB": { "type": "integer", "const": 32 },
+        "evictionPolicy": { "type": "string", "const": "allkeys-lru" }
+      }
     },
     "resources": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["requests", "limits"],
       "properties": {
         "requests": {
           "type": "object",
+          "additionalProperties": false,
           "required": ["cpuMilli", "memoryMiB"],
           "properties": {
-            "cpuMilli": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 32000
-            },
-            "memoryMiB": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 65536
-            }
-          },
-          "additionalProperties": false
+            "cpuMilli": { "type": "integer", "const": 20 },
+            "memoryMiB": { "type": "integer", "const": 32 }
+          }
         },
         "limits": {
           "type": "object",
+          "additionalProperties": false,
           "required": ["cpuMilli", "memoryMiB"],
           "properties": {
-            "cpuMilli": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 32000
-            },
-            "memoryMiB": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 65536
-            }
-          },
-          "additionalProperties": false
+            "cpuMilli": { "type": "integer", "const": 500 },
+            "memoryMiB": { "type": "integer", "const": 128 }
+          }
         }
-      },
-      "additionalProperties": false
+      }
     },
-    "data": {
+    "owner": {
       "type": "object",
-      "required": ["emptyDirMiB"],
+      "additionalProperties": false,
+      "required": ["key", "value"],
       "properties": {
-        "emptyDirMiB": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 65536
+        "key": {
+          "type": "string",
+          "enum": ["offscreen.dev/owner", "offscreen.rpg/lab"]
+        },
+        "value": {
+          "type": "string",
+          "enum": ["offscreen-dev", "disposable"]
         }
       },
-      "additionalProperties": false
+      "oneOf": [
+        {
+          "properties": {
+            "key": { "const": "offscreen.dev/owner" },
+            "value": { "const": "offscreen-dev" }
+          },
+          "required": ["key", "value"]
+        },
+        {
+          "properties": {
+            "key": { "const": "offscreen.rpg/lab" },
+            "value": { "const": "disposable" }
+          },
+          "required": ["key", "value"]
+        }
+      ]
     }
-  },
-  "additionalProperties": false
+  }
 }

@@ -1,6 +1,6 @@
 # GATEWAY-NATIVE | Native local gateway renewal
 
-Status: **ACCEPTANCE CORRECTIONS COMMISSIONED / JOIN HELD.** Owner selected R5 and explicitly waived independent committee on 2026-11-26. Integration main; packet baseline 7d073df9066ff7b618e9e22ae26ed0680def9bf0; implementation branch change/gateway-native-baseline from main 88b6ebae6acb1664c8c571aadd8cc4385dbb40eb in linked worktree offscreen-rpg-gateway-native. T01–T04 source checks passed. Do not join main until the owner accepts this source receipt and the live upgrade timing. Redis worktree has uncommitted infra-cli edits on Redis symbols; reconcile those symbols before any join. No global queue change. No cluster mutations, upgrades, deletes or port-forwards were run.
+Status: **ACCEPTED — STRUCTURAL INTEGRATION.** Existing release and isolated fresh installation, repeat ensure, quick/long SSE and attachment refusal passed. See ACCEPTANCE-OBSERVATIONS.md. Disposable specimen cleanup remains separately controlled.
 
 Authority: [R5 design](../../../../work/designs/open/gateway-platform/README.md) and [local gateway target](../../../../docs/runbooks/kubernetes-gateway.md). [Tasks](TASKS.md) · [Execution and source map](EXECUTION.md) · [Proof](PROOF.md).
 

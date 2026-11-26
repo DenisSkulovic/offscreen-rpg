@@ -315,6 +315,14 @@ export const INF15_SUCCESSOR_RELOCATIONS = [
   },
 ];
 
+/** INF15 Redis chart template successor after monolithic redis.yaml retirement. */
+export const INF15_REDIS_TEMPLATE_SUCCESSOR_RELOCATIONS = [
+  {
+    from: 'infra/platform/redis/chart/templates/redis.yaml',
+    to: 'infra/platform/redis/chart/templates/deployment.yaml',
+  },
+];
+
 /** Historical INF15 staging predecessors (all retired). */
 export const INF15_STAGING_PREDECESSOR_PATHS = [];
 
@@ -404,6 +412,7 @@ function effectiveMoveDestination(destination) {
     INF07_EFFECTIVE_DESTINATION_SUCCESSORS,
     INF08_SUCCESSOR_RELOCATIONS,
     INF15_SUCCESSOR_RELOCATIONS,
+    INF15_REDIS_TEMPLATE_SUCCESSOR_RELOCATIONS,
     INF17_SUCCESSOR_RELOCATIONS,
     INF18_SUCCESSOR_RELOCATIONS,
     INF19_SUCCESSOR_RELOCATIONS,
@@ -467,29 +476,45 @@ export function assertInf06SuccessorRelocations(root) {
 }
 
 export function assertInf15PlatformChartSuccessors(root) {
+  const redisHistoricalFrom = 'infra/platform/redis/redis.yaml';
   for (const row of INF15_SUCCESSOR_RELOCATIONS) {
+    const destination =
+      row.from === redisHistoricalFrom
+        ? effectiveMoveDestination(row.to)
+        : row.to;
     const oldExists = existsSync(join(root, row.from));
-    const newExists = existsSync(join(root, row.to));
+    const newExists = existsSync(join(root, destination));
     if (RETIRED_TEMPORAL_DESTINATIONS.has(row.to)) {
       assert.equal(oldExists || newExists, false, 'retired Temporal chart path reappeared');
       continue;
     }
     if (INF15_STAGING_PREDECESSOR_PATHS.includes(row.from)) {
       if (!newExists) {
-        throw new Error(`INF15 successor destination missing: ${row.to}`);
+        throw new Error(`INF15 successor destination missing: ${destination}`);
       }
       continue;
     }
     if (oldExists && newExists) {
       throw new Error(
-        `INF15 successor violation (both paths present): ${row.from} and ${row.to}`,
+        `INF15 successor violation (both paths present): ${row.from} and ${destination}`,
       );
     }
     if (!newExists) {
-      throw new Error(`INF15 successor destination missing: ${row.to}`);
+      throw new Error(`INF15 successor destination missing: ${destination}`);
     }
     if (oldExists) {
       throw new Error(`INF15 predecessor must be retired: ${row.from}`);
+    }
+    if (row.from === redisHistoricalFrom) {
+      const redisTemplateDir = 'infra/platform/redis/chart/templates';
+      for (const name of ['configmap.yaml', 'service.yaml', 'deployment.yaml']) {
+        if (!existsSync(join(root, redisTemplateDir, name))) {
+          throw new Error(`INF15 Redis chart successor missing: ${redisTemplateDir}/${name}`);
+        }
+      }
+      if (existsSync(join(root, row.to))) {
+        throw new Error(`INF15 Redis monolithic template must be retired: ${row.to}`);
+      }
     }
   }
   const verificationRoute = 'infra/verification/smoke/gateway/routes.yaml';

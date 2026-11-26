@@ -1,6 +1,7 @@
 import process from 'node:process';
 import { assertPlatformTarget } from './commands.mjs';
 import { formatManifestDocuments } from './manifest-output.mjs';
+import { renderRedisChart } from '../redis/config.mjs';
 import { renderTemporalChart } from '../temporal/install.mjs';
 import {
   assertPlatformRenderRequest,
@@ -193,7 +194,13 @@ function parsePlatformCliArgv(argv) {
 function runRenderCli(service, profile, section, format) {
   try {
     let documents;
-    if (service === 'temporal') {
+    if (service === 'redis') {
+      if (section !== 'all') {
+        throw new Error('Redis chart supports only the all section');
+      }
+      const rendered = renderRedisChart(profile);
+      documents = [rendered.configMap, rendered.deployment, rendered.service];
+    } else if (service === 'temporal') {
       if (section !== 'all') throw new Error('Temporal upstream chart supports only the all section');
       documents = renderTemporalChart(profile);
     } else {

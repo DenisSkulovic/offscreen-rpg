@@ -1,8 +1,0 @@
-{{- include "platform-redis.validate" . -}}
-{{- $section := default "all" .Values.section -}}
-{{- $ctx := . -}}
-{{- if eq $section "all" -}}
-{{- include "platform-redis.jsonFrom" (dict "name" "platform-redis.doc.configmap" "ctx" $ctx) -}}
-{{- include "platform-redis.jsonFrom" (dict "name" "platform-redis.doc.deployment" "ctx" $ctx) -}}
-{{- include "platform-redis.jsonFrom" (dict "name" "platform-redis.doc.service" "ctx" $ctx) -}}
-{{- end -}}

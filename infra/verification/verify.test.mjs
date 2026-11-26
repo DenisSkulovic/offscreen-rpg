@@ -36,16 +36,32 @@ const TAP_FAIL = `# tests 2
 
 function suiteKeyFromFiles(files) {
   const sample = files[0] ?? '';
+  if (files.some((file) => file.includes('infra/platform/redis/tests/render.test.mjs'))) {
+    return 'redis-render';
+  }
   if (
     sample.includes('platform-plan') ||
     sample.includes('kind-image-loader') ||
-    sample.includes('sync-plan')
+    sample.includes('sync-plan') ||
+    sample.includes('infra/platform/temporal/tests') ||
+    sample.includes('infra/platform/postgres/tests/temporal-persistence') ||
+    sample.includes('infra/platform/redis/tests')
   ) {
     return 'platform-plan';
   }
   if (sample.includes('tools/dev-environments/test')) return 'dev-environments';
   if (sample.includes('infra/workloads/tests')) return 'workloads';
   if (sample.includes('infra/environments/release/test')) return 'release';
+  if (sample.includes('infra/verification/dev-environments/lifecycle-programme')) {
+    return 'infra-dev-lifecycle';
+  }
+  if (
+    sample.includes('recovery-programme') ||
+    sample.includes('tenant-retention-programme')
+  ) {
+    return 'infra-dev-recovery';
+  }
+  if (sample.includes('selective-profile-programme')) return 'infra-dev-selective';
   return 'unknown';
 }
 
@@ -120,7 +136,7 @@ test('runSourceVerification passes when all suites pass', () => {
     })(),
   });
   assert.equal(report.exitCode, 0);
-  assert.equal(report.suites.length, 7);
+  assert.equal(report.suites.length, 8);
   assert.ok(report.suites.every((suite) => suite.status === 'PASS'));
   assert.ok(
     report.suites.every((suite) =>
@@ -175,9 +191,11 @@ test('runSourceVerification blocks workloads without helm but runs other suites'
   assert.equal(report.exitCode, 1);
   const workloads = report.suites.find((suite) => suite.id === 'workloads');
   assert.equal(workloads?.status, 'BLOCKED');
+  const redisRender = report.suites.find((suite) => suite.id === 'redis-render');
+  assert.equal(redisRender?.status, 'BLOCKED');
   assert.ok(
     report.suites
-      .filter((suite) => suite.id !== 'workloads')
+      .filter((suite) => suite.id !== 'workloads' && suite.id !== 'redis-render')
       .every((suite) => suite.status === 'PASS'),
   );
   assert.ok(

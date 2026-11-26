@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+[OBJECT-STORAGE-NATIVE](open/2026-11-26--object-storage-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and occupied legacy admission separately gated.
+
 [INF51 autonomous verification](archive/2026-11/platform-operations/2026-11-24--inf51-autonomous-verification/CHANGE.md) — Done source, full lifecycle transferred to [INF52](archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) (source Done; live NOT-RUN).
 
 **Consolidation:** [INF49](archive/2026-11/platform-operations/2026-11-24--inf49-monitor-composition/CHANGE.md) composition source Done · [INF50](archive/2026-11/platform-operations/2026-11-24--inf50-infrastructure-correctness/CHANGE.md) residual regression source Done · [INF47](archive/2026-11/platform-operations/2026-11-24--inf47-historical-observability-queries/CHANGE.md) historical CLI source Done · [INF48](backlog/platform-operations/2026-11-24--inf48-storage-lifecycle/CHANGE.md) Proposed. [Plan](../undertakings/storyteller-workshop/CONSOLIDATION.md). No live permission.
@@ -370,7 +372,7 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 
 ## Redis infrastructure source wave
 
-- [REDIS-NATIVE](open/2026-11-26--redis-native-baseline/CHANGE.md) — R9 architecture accepted; source implementation READY WITH EXPLICIT LIMITS; live and integration held. INF60 suspended.
+- [REDIS-NATIVE](open/2026-11-26--redis-native-baseline/CHANGE.md) — R9 architecture accepted; T08a–T08d source corrections implemented on `change/redis-native-baseline-renewal`; isolated lifecycle/fault/idempotency and measured preservation passed; structural integration authorized; residual assurance and canonical cutover open. INF60 suspended.
 - [INF58 Redis chart configuration and rollout identity](archive/2026-11/platform-operations/2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Done (source); 13/13 render tests; live NOT-RUN.
 - [INF59 Redis installer safety and readiness](archive/2026-11/platform-operations/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Done (source); observe/reconcile CAS + readiness; focused 79/79; live NOT-RUN.
 - [INF60 Named Redis pools and operator inspection](open/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Suspended; redesign against native lifecycle after acceptance.
