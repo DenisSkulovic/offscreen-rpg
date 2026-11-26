@@ -1,4 +1,4 @@
-# Agent Core | illustrative responsibility tree R2
+# Agent Core | illustrative responsibility tree R3
 
 Outer package placement follows the owner-selected R2 grouping convention; the internal subfolder tree is illustrative, not a selected API, dependency graph or implementation. Generic machinery for bounded agent execution, independent of Storyteller. Preserve earlier conceptual distinction between definition, instance, mission, runtime and durable execution state; whether persistent instances are mandatory remains open.
 
@@ -25,7 +25,7 @@ packages/ai/agent-core/
 | identity | Definition, instance/configuration semantics and version references | No account authentication or DB schema decision |
 | missions | Objective, inputs, bounded execution envelope, output and stop criteria | Domain decides meaning of mission |
 | runtime | Assemble execution environment from supplied capabilities | Host composes actual adapters |
-| loop | Reason/action/observation progression, validation, stopping, yielding | No assumption every operation is a model loop |
+| loop | Integrate established SDK loop, enforce local semantics, stopping and yielding | Borrow-first; no bespoke loop unless demonstrated need |
 | context | Assemble messages, history, references, token allowances and selected tools | Domain supplies relevant knowledge and policy; no Library internals |
 | tools | Registry, discovery, eligibility, exposure, schema validation, dispatch and result handling | Concrete tools and resource authorization remain with capability owners |
 | compaction | Optional bounded history/context reduction with provenance and fidelity constraints | Never silently replace authoritative history; need not implement initially |
@@ -37,6 +37,9 @@ packages/ai/agent-core/
 
 ## Cross-cutting considerations
 Reasoning effort: mission chooses desired effort, model capability constrains it, provider translates wire representation, financial authority admits spending. Agent loop can consume model-selection and inference interfaces without owning their catalogs or transports. No Redis caching logic in core. Storage-neutral contracts only as justified by consumers; do not invent abstract persistence layers prematurely.
+
+## R3 runtime direction
+See [research and experiment plan](AGENT-RUNTIME-RESEARCH.md). The folders are responsibilities, not a custom implementation quota. SDK-provided loops, delegation, compaction and state machinery may shrink or eliminate folders. Temporal-native integration is promising but must pass custody and authorization experiments. Host owns Worker configuration; Workflow-safe orchestration and Activity-side effects must be separated. No agent framework owns Library authority, billing, or durable financial custody.
 
 ## Questions before design selection
 - Can a framework provide loop/tool/message machinery without taking over our authority, durable custody and lifecycle semantics? Compare custom TS, suitable current agent SDKs/frameworks, and Temporal-centered/hybrid execution via official docs and specimens; no framework selected.

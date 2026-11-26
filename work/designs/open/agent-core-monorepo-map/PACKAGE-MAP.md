@@ -1,4 +1,4 @@
-# Preliminary monorepo package map | R2
+# Preliminary monorepo package map | R3
 
 All names below are provisional. **Direction** means an owner-stated separation; **candidate** means a planner hypothesis, not approved package creation. A row may represent a module rather than a separate workspace after review. No implied dependency edges.
 
@@ -12,6 +12,7 @@ All names below are provisional. **Direction** means an owner-stated separation;
 | domain | storyteller | Candidate | Creative behavior, domain prompts, skills, mission definitions, domain tools | Generic loop, authoritative world mutation |
 | ai | agent-core | Direction | Generic mission execution, context, tool lifecycle, loop, delegation, bounded execution semantics | Story fiction, storage adapters, billing, concrete provider wire protocols |
 | ai | ai-providers | Candidate | Provider protocol adapters, request encoding, normalization, streaming and error semantics | Mission policy, subscription decisions |
+| ai | inference | New R3 candidate | Reusable guarded inference execution, attempt custody coordination, result normalization orchestration for agent and direct calls | Agent loop, route catalog, provider protocols, commercial ledger authority |
 | ai | model-routing | Direction to separate concern; name provisional | Catalog, model/route capability, eligibility and selection for text/image/video etc. | Agent loop, provider request dispatch, granting money |
 | commerce | billing | Candidate | Plans, invoices, subscriptions, payments and commercial settlement | Agent execution or provider retry policy |
 | commerce | entitlements | Candidate | Account feature/model eligibility | Actual spending custody |
@@ -46,6 +47,7 @@ packages/
     agent-core/
     ai-providers/
     model-routing/
+    inference/           # R3 candidate, not selected
   commerce/
     billing/
     entitlements/
@@ -84,6 +86,9 @@ Current main `1bf121b488b798f57d1f9f0d738d0f6ba0ce4f11` still has `packages/*` i
 
 ## Apps are composition roots, not package boundaries
 Existing api, web, worker, game-authority app manifests are factual baseline only. Candidate host responsibilities: HTTP/session boundary, UI, computation/orchestration, authoritative game operations. A package does not require its own Pod or network service.
+
+## R3 reuse discovery
+Provider SDKs may supply most adapter implementations and agent loop mechanics. Keep ai-providers and model-routing as responsibility candidates, not commitments to custom code. Inference is a possible shared dispatch/custody boundary between direct calls and agent runtimes; test whether it merits a package or belongs in an existing AI owner. See [runtime research](AGENT-RUNTIME-RESEARCH.md).
 
 ## Dependency hypotheses
 - Library can consume generic document versioning; inverse dependency forbidden by purpose.

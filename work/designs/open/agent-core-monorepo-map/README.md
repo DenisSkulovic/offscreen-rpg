@@ -1,4 +1,4 @@
-# Agent Core and monorepo architecture mapping | R2
+# Agent Core and monorepo architecture mapping | R3
 
 **Status:** open exploratory design; 2026-11-27. Owner and ChatGPT collaborative workshop. Integration baseline `6dbd4c439f1d92733b539cd06a358bb46ca0372e`, main. Clean-slate target thinking; preserve existing source, history, working contracts and data. No implementation commission, canonical promotion, runtime changes or paid calls.
 
@@ -17,14 +17,18 @@ Map the intended monorepo as a whole, using generic agent execution as the initi
 ## R2: owner-selected organization convention (2026-11-27)
 Use one organizational family level under `packages/`, with leaf workspaces retaining short `@offscreen/<name>` identities. Group by responsibility, not a mandatory dependency hierarchy. No numeric or family prefixes in package names; no additional npm scopes or nested workspace packages. The initial five families are `domain`, `ai`, `commerce`, `platform`, `foundation`; individual classifications and package names may evolve. See [package map](PACKAGE-MAP.md#organization-convention-r2) for the authoritative workshop specimen. This selects the design convention, not a source migration or implementation authorization.
 
+## R3: borrow-first agent runtime investigation
+Owner requests serious framework research instead of defaulting to an in-house loop. First-party research identifies native Temporal integrations for TypeScript agent frameworks; prioritize paired Vercel AI SDK and OpenAI Agents SDK specimens. No dependency selection yet. See [runtime research](AGENT-RUNTIME-RESEARCH.md). A reusable inference-execution boundary is a new candidate, not a selected package.
+
 ## Working documents
 - [Package map](PACKAGE-MAP.md)
 - [Agent Core responsibility specimen](AGENT-CORE.md)
+- [Agent runtime research and experiment plan](AGENT-RUNTIME-RESEARCH.md)
 
 ## Evidence and limits
-Read current main AGENTS, CHATGPT, design renewal rules and selected workflow/structure/planner guidance, current tree/manifests, product vision and Storyteller behavior/profile docs, canonical document and spending/trust boundary specs. Existing [monorepo ownership dossier](../code-architecture-health/MONOREPO-MODULE-OWNERSHIP.md) is historical context, not superseded by this draft. [Storyteller Workshop](../../undertakings/storyteller-workshop/OVERVIEW.md) remains open; its reported ~45% overall (±20pp or more) is not a new estimate or credit for this design. Current source and integration gaps are not audited here. No external framework selection or experiment performed; upstream research required before such selections. No proof or acceptance claimed.
+Read current main AGENTS, CHATGPT, design renewal rules and selected workflow/structure/planner guidance, current tree/manifests, product vision and Storyteller behavior/profile docs, canonical document and spending/trust boundary specs. Existing [monorepo ownership dossier](../code-architecture-health/MONOREPO-MODULE-OWNERSHIP.md) is historical context, not superseded by this draft. [Storyteller Workshop](../../undertakings/storyteller-workshop/OVERVIEW.md) remains open; its reported ~45% overall (±20pp or more) is not a new estimate or credit for this design. Current source and integration gaps are not audited here. R3 rolling first-party framework research recorded; exact versions and experiments remain open. No framework selection performed. No proof or acceptance claimed.
 
 R2 amendment checked against current main `1bf121b488b798f57d1f9f0d738d0f6ba0ce4f11`; the original integration baseline is retained. No rebase or runtime changes in this amendment.
 
 ## Next review
-At the next owner workshop turn (review target 2026-11-28), validate the package inventory and refine the strongest boundaries: generic document revision vs Library, model routing vs provider adapter, and generic agent execution vs mission/domain composition. Record missing package families as discovered. Then approve a small README-only placeholder specimen/plan; no workspace manifests or build-graph mutation yet. Before implementation or permanent promotion reconcile adjacent canonical contracts, inspect actual import/export/data seams, research alternatives, define acceptance and defend the design under current repository protocol.
+At the next owner workshop turn (review target 2026-11-28), review the borrow-first shortlist and inference-execution boundary; resolve exact versions before paired specimens; continue to validate the package inventory and refine the strongest boundaries: generic document revision vs Library, model routing vs provider adapter, and generic agent execution vs mission/domain composition. Record missing package families as discovered. Then approve a small README-only placeholder specimen/plan; no workspace manifests or build-graph mutation yet. Before implementation or permanent promotion reconcile adjacent canonical contracts, inspect actual import/export/data seams, research alternatives, define acceptance and defend the design under current repository protocol.
