@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer';
+import { URL } from 'node:url';
 import { createHash, randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -176,6 +177,28 @@ export function decodeSecretStringData(object) {
  * @param {readonly string[]} keys
  * @returns {string[]}
  */
+/**
+ * @param {ReturnType<import('../../../../infra/platform/object-storage/binding.mjs').validateObjectStorageBinding>} objectStorage
+ * @param {string} slotId
+ */
+export function isLocalDevSlotObjectStorage(objectStorage, slotId) {
+  const ownedSecretName = `${slotId}-s3`;
+  const localHost = `object-store.${DEV_S3_NAMESPACE}.svc.cluster.local`;
+  const credentials = objectStorage.credentials;
+  if (credentials.mode !== 'secret') return false;
+  if (credentials.secretName !== ownedSecretName) return false;
+  if (!objectStorage.endpoint) return false;
+  let url;
+  try {
+    url = new URL(objectStorage.endpoint);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== 'http:') return false;
+  if (url.hostname !== localHost || url.port !== '8333') return false;
+  return true;
+}
+
 export function mismatchedFieldNames(fields, expected, keys) {
   /** @type {string[]} */
   const names = [];
@@ -456,10 +479,13 @@ export function applyDevSlotSecret(
  *   record: import('../domain/dev-worktree-registry.mjs').DevWorktreeOwnerRecord,
  *   oauth?: { GITHUB_CLIENT_ID: string, GITHUB_CLIENT_SECRET: string, BETTER_AUTH_SECRET: string },
  *   schemaProof: { ok: true, slotId: string, appliedMigrations: number, expectedMigrations: number },
+ *   objectStorage?: ReturnType<import('../../../../infra/platform/object-storage/binding.mjs').validateObjectStorageBinding>,
  *   deps?: {
  *     kubectl?: (args: string[], input?: string) => string,
  *     randomBytes?: (size: number) => Buffer,
  *     readObject?: (spec: { profileId: 'dev', resource: string, name: string, namespace?: string }) => ReturnType<typeof readPlatformObject>,
+ *     readOwnedBackingSecret?: typeof readOwnedBackingSecret,
+ *     expectedBackingS3?: Partial<Record<'access-key-id' | 'secret-access-key', string>>,
  *   },
  * }} options
  */
@@ -494,15 +520,45 @@ export function projectDevSlot(options) {
   const username = decode(runBacking.data, 'username');
   if (username !== sql.runtimeRole) throw new Error('runtime secret username');
 
-  const backingS3 = readOwnedBackingSecret(
-    kubectlFn,
-    DEV_S3_NAMESPACE,
-    s3.secret,
+  const graphOptions = options.objectStorage
+    ? { objectStorage: options.objectStorage }
+    : {};
+  const graph = renderDevSlotAppGraph(
     record.slotId,
-    { run, readObject },
+    { schemaReady: true, ports: record.ports },
+    graphOptions,
   );
-  for (const key of ['access-key-id', 'secret-access-key']) {
-    if (!backingS3.data[key]) throw new Error(`s3 key ${key}`);
+  const objectStorage = graph.objectStorage;
+  const projectLocalS3 = isLocalDevSlotObjectStorage(
+    objectStorage,
+    record.slotId,
+  );
+  const readBackingSecret =
+    options.deps?.readOwnedBackingSecret ?? readOwnedBackingSecret;
+
+  /** @type {Record<string, string> | null} */
+  let s3StringData = null;
+  if (projectLocalS3) {
+    const backingS3 = readBackingSecret(
+      kubectlFn,
+      DEV_S3_NAMESPACE,
+      s3.secret,
+      record.slotId,
+      { run, readObject },
+    );
+    const s3Keys = ['access-key-id', 'secret-access-key'];
+    const expectedBacking = options.deps?.expectedBackingS3;
+    for (const key of s3Keys) {
+      if (!backingS3.data[key]) throw new Error(`s3 key ${key}`);
+      const decoded = decode(backingS3.data, key);
+      if (expectedBacking && key in expectedBacking) {
+        if (decoded !== expectedBacking[key]) throw new Error(`s3 key ${key}`);
+      }
+    }
+    s3StringData = {
+      'access-key-id': decode(backingS3.data, 'access-key-id'),
+      'secret-access-key': decode(backingS3.data, 'secret-access-key'),
+    };
   }
 
   const oauth = options.oauth ?? assertApprovedOauthFile(options.oauthFile);
@@ -522,18 +578,16 @@ export function projectDevSlot(options) {
     host: HOST,
   });
   const dbStringData = { uri };
-  const s3StringData = {
-    'access-key-id': decode(backingS3.data, 'access-key-id'),
-    'secret-access-key': decode(backingS3.data, 'secret-access-key'),
-  };
 
   /** @type {Record<string, { fields: Record<string, string> } | null>} */
   const preRead = {};
-  for (const [name, intended] of [
+  /** @type {Array<[string, Record<string, string> | null]>} */
+  const secretProjections = [
     [runSecret, dbStringData],
-    [s3Secret, s3StringData],
+    ...(projectLocalS3 ? [[s3Secret, s3StringData]] : []),
     [appSecret, null],
-  ]) {
+  ];
+  for (const [name, intended] of secretProjections) {
     const observed = readObject({
       profileId: PROFILE_ID,
       resource: 'secret',
@@ -590,10 +644,6 @@ export function projectDevSlot(options) {
     }
   }
 
-  const graph = renderDevSlotAppGraph(record.slotId, {
-    schemaReady: true,
-    ports: record.ports,
-  });
   kubectlFn(['apply', '-f', '-'], JSON.stringify(graph.documents[0]));
 
   const deps = { run, readObject };
@@ -605,14 +655,17 @@ export function projectDevSlot(options) {
     labels,
     deps,
   );
-  const s3Uid = applyDevSlotSecret(
-    kubectlFn,
-    record.namespace,
-    s3Secret,
-    s3StringData,
-    labels,
-    deps,
-  );
+  /** @type {string | null} */
+  const s3Uid = projectLocalS3
+    ? applyDevSlotSecret(
+        kubectlFn,
+        record.namespace,
+        s3Secret,
+        s3StringData,
+        labels,
+        deps,
+      )
+    : null;
   const appUid = applyDevSlotSecret(
     kubectlFn,
     record.namespace,

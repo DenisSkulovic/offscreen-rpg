@@ -7,6 +7,7 @@ import {
   DEV_SQL_POOL_MAX,
   deriveDevSqlTenant,
 } from './dev-sql-tenant-contract.mjs';
+import { localObjectStorageBinding } from '../../../../infra/platform/object-storage/binding.mjs';
 import {
   renderWorkloadDocuments,
   renderWorkloadYaml,
@@ -44,8 +45,9 @@ export function deriveSlotCookiePrefix(slotId) {
  * Render one slot application graph. Secret values stay outside the documents.
  * @param {string} slotId
  * @param {{ schemaReady: boolean, ports: { game: number } }} input
+ * @param {{ objectStorage?: import('../../../../infra/platform/object-storage/binding.mjs').validateObjectStorageBinding extends (v: infer V) => unknown ? V : never }} [options]
  */
-export function renderDevSlotAppGraph(slotId, input) {
+export function renderDevSlotAppGraph(slotId, input, options = {}) {
   const sql = deriveDevSqlTenant(slotId);
   const s3 = deriveDevS3Tenant(slotId);
   const prefix = deriveSlotCookiePrefix(slotId);
@@ -64,19 +66,25 @@ export function renderDevSlotAppGraph(slotId, input) {
   const temporal = `temporal-frontend.offscreen-dev-temporal.svc.cluster.local:7233`;
   const temporalNamespace = namespace;
 
+  const objectStorage =
+    options.objectStorage ??
+    localObjectStorageBinding({
+      bucket: s3.bucket,
+      endpoint: s3Endpoint,
+      secretName: s3.secret,
+    });
+
   const bindings = {
     slotId: sql.slotId,
     namespace,
     gamePort: input.ports.game,
     cookiePrefix: prefix,
     dbPoolMax: DEV_SQL_POOL_MAX,
-    s3Bucket: s3.bucket,
-    s3Endpoint,
+    objectStorage,
     temporalAddress: temporal,
     temporalNamespace,
     dbSecret,
     appSecret,
-    s3Secret: s3.secret,
     receiptDir: DEV_POD_RUNTIME_RECEIPT_DIR,
     images: {
       web: imageFor('web'),
@@ -103,6 +111,7 @@ export function renderDevSlotAppGraph(slotId, input) {
     appSecret,
     dbSecret,
     s3Secret: s3.secret,
+    objectStorage,
     origin,
     documents,
   };
