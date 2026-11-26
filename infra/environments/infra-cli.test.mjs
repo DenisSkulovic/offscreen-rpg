@@ -1185,7 +1185,7 @@ test('up cold dev path invokes dev-cli ensure when cluster is absent', () => {
   const result = runInfraUp({
     profileId: 'dev',
     services: 'none',
-    run: devWarmRun(false),
+    run: (command, args) => devWarmRun(runnerCalls.length > 0)(command, args),
     runner: (argv) => {
       runnerCalls.push(argv);
       return { ok: true, status: 0 };
@@ -1220,7 +1220,7 @@ test('up cold release path invokes up.sh when cluster is absent', () => {
   const result = runInfraUp({
     profileId: 'release',
     services: 'none',
-    run: releaseWarmRun(false),
+    run: (command, args) => releaseWarmRun(runnerCalls.length > 0)(command, args),
     runner: (argv) => {
       runnerCalls.push(argv);
       return { ok: true, status: 0 };
@@ -1253,7 +1253,7 @@ test('up warm release with services skips up.sh', () => {
 
 for (const profileId of ['dev', 'release']) {
   test(`up cold ${profileId} refuses an unready foundation before platform ensure`, () => {
-    const healthy = profileId === 'dev' ? devWarmRun(false) : releaseWarmRun(false);
+    const healthy = profileId === 'dev' ? devWarmRun : releaseWarmRun;
     const calls = [];
     const result = runInfraUp({
       profileId,
@@ -1261,7 +1261,7 @@ for (const profileId of ['dev', 'release']) {
       run: (command, args) =>
         command === 'kubectl' && args.includes('nodes')
           ? { ok: true, stdout: JSON.stringify({ items: [] }) }
-          : healthy(command, args),
+          : healthy(calls.length > 0)(command, args),
       runner: (argv) => {
         calls.push(argv);
         return { ok: true, status: 0 };
