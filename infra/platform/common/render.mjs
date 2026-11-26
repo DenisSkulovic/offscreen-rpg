@@ -1,11 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseAllDocuments } from 'yaml';
 import { runPlatformCommand } from './commands.mjs';
-import {
-  POSTGRES_OPERATOR_PIN_KEYS,
-  parsePins,
-} from './pins.mjs';
+import { POSTGRES_OPERATOR_PIN_KEYS, parsePins } from './pins.mjs';
 import { readPlatformProfile } from './profile.mjs';
 
 const commonRoot = dirname(fileURLToPath(import.meta.url));
@@ -189,6 +187,9 @@ export function resolvePlatformChartPath(service, deps = {}) {
   if (deps.chartRoot) {
     return deps.chartRoot;
   }
+  if (service === 'object-storage') {
+    return join(platformRoot, service, 'providers', 'seaweedfs', 'chart');
+  }
   return join(platformRoot, service, 'chart');
 }
 
@@ -246,6 +247,13 @@ export function assertPlatformRenderRequest(service, profile, section) {
  */
 export function helmPlatformStdin(service, profile, section, deps = {}) {
   assertPlatformRenderRequest(service, profile, section);
+  if (service === 'object-storage') {
+    const overlay = { ...(deps.stdinOverlay ?? {}) };
+    if (Object.keys(overlay).length === 0) {
+      return undefined;
+    }
+    return `${JSON.stringify(overlay)}\n`;
+  }
   const overlay = {
     section,
     ...readPinOverlay(service),
@@ -263,6 +271,24 @@ export function helmPlatformStdin(service, profile, section, deps = {}) {
 function helmPlatformArgs(service, profile, section, deps = {}) {
   const chartPath = resolvePlatformChartPath(service, deps);
   const profilePath = resolvePlatformProfilePath(service, profile, deps);
+  if (service === 'object-storage') {
+    const platformProfile = readPlatformProfile(profile);
+    const stdin = helmPlatformStdin(service, profile, section, deps);
+    /** @type {string[]} */
+    const args = [
+      'template',
+      `platform-${service}`,
+      chartPath,
+      '-f',
+      profilePath,
+      '--namespace',
+      platformProfile.namespaces.objectStorage,
+    ];
+    if (stdin != null) {
+      args.push('-f', '-');
+    }
+    return { chartPath, profilePath, args, stdin };
+  }
   return {
     chartPath,
     profilePath,
@@ -277,6 +303,118 @@ function helmPlatformArgs(service, profile, section, deps = {}) {
     ],
     stdin: helmPlatformStdin(service, profile, section, deps),
   };
+}
+
+/** @param {'dev' | 'release'} profileId */
+function syntheticObjectStorageNamespace(profileId) {
+  const profile = readPlatformProfile(profileId);
+  const name = profile.namespaces.objectStorage;
+  const labels =
+    profileId === 'dev'
+      ? { 'offscreen.dev/owner': 'offscreen-dev' }
+      : { 'offscreen.rpg/lab': 'disposable' };
+  return {
+    apiVersion: 'v1',
+    kind: 'Namespace',
+    metadata: { name, labels },
+  };
+}
+
+/**
+ * @param {string} output
+ * @param {'dev' | 'release'} profileId
+ */
+export function parseObjectStorageHelmDocuments(output, profileId) {
+  const profile = readPlatformProfile(profileId);
+  const expectedNs = profile.namespaces.objectStorage;
+  const requiredWorkloadIdentities = [
+    `Deployment/${expectedNs}/object-store`,
+    `Service/${expectedNs}/object-store`,
+    `PersistentVolumeClaim/${expectedNs}/object-store-data`,
+  ];
+
+  const parsed = parseAllDocuments(output);
+  /** @type {object[]} */
+  const workloads = [];
+  const seen = new Set();
+  for (const doc of parsed) {
+    if (doc.errors.length > 0) {
+      throw new Error('malformed platform document');
+    }
+    const js = doc.toJS();
+    if (js === null) continue;
+    if (!js || typeof js !== 'object' || Array.isArray(js)) {
+      throw new Error('malformed platform document');
+    }
+    if (Object.prototype.hasOwnProperty.call(js, 'Error')) {
+      throw new Error(
+        `helm emitted Error field: ${String(js.Error).slice(0, 200)}`,
+      );
+    }
+    const kind = js.kind;
+    if (kind === 'Secret') {
+      throw new Error('secret documents are not allowed');
+    }
+    if (typeof kind !== 'string' || kind === 'Namespace') {
+      throw new Error(`unknown resource kind: ${kind ?? 'missing'}`);
+    }
+    if (js.metadata?.clusterName != null) {
+      throw new Error('cluster metadata is not allowed');
+    }
+    const name = js.metadata?.name;
+    if (typeof name !== 'string' || name.length === 0) {
+      throw new Error('metadata.name is required');
+    }
+    const ns = js.metadata?.namespace;
+    if (typeof ns !== 'string' || ns !== expectedNs) {
+      throw new Error(
+        `namespace ${ns ?? 'missing'} is not allowed for object-storage/${profileId}`,
+      );
+    }
+    const key = documentIdentity(js);
+    if (seen.has(key)) throw new Error(`duplicate platform identity: ${key}`);
+    seen.add(key);
+    workloads.push(js);
+  }
+  for (const identity of requiredWorkloadIdentities) {
+    if (!seen.has(identity)) {
+      throw new Error(
+        `unexpected platform resource identity: missing ${identity}`,
+      );
+    }
+  }
+  const unexpected = [...seen].filter(
+    (id) => !requiredWorkloadIdentities.includes(id),
+  );
+  if (unexpected.length > 0) {
+    throw new Error(`unexpected platform resource identity: ${unexpected[0]}`);
+  }
+  return workloads;
+}
+
+/**
+ * @param {object[]} workloads
+ * @param {'dev' | 'release'} profileId
+ * @param {string} section
+ */
+function assembleObjectStorageDocuments(workloads, profileId, section) {
+  const namespaceDoc = syntheticObjectStorageNamespace(profileId);
+  const byKindName = new Map(
+    workloads.map((doc) => [`${doc.kind}/${doc.metadata.name}`, doc]),
+  );
+  const orderedWorkloads = [
+    byKindName.get('PersistentVolumeClaim/object-store-data'),
+    byKindName.get('Deployment/object-store'),
+    byKindName.get('Service/object-store'),
+  ];
+  if (orderedWorkloads.some((doc) => doc == null)) {
+    throw new Error('object-storage render is incomplete');
+  }
+  const all = [namespaceDoc, ...orderedWorkloads];
+  if (section === 'all') return all;
+  if (section === 'namespace') return [namespaceDoc];
+  if (section === 'workloads') return orderedWorkloads;
+  throw new Error(`unsupported section: ${section}`);
 }
 
 /**
@@ -307,6 +445,12 @@ export function renderPlatformManifestText(
   if (!output.trim()) {
     throw new Error('helm template failed: empty output');
   }
+  if (service === 'object-storage') {
+    const workloads = parseObjectStorageHelmDocuments(output, profile);
+    return renderPlatformYaml(
+      assembleObjectStorageDocuments(workloads, profile, section),
+    );
+  }
   return output;
 }
 
@@ -334,6 +478,10 @@ export function renderPlatformDocuments(
   if (!output.trim()) {
     throw new Error('helm template failed: empty output');
   }
+  if (service === 'object-storage') {
+    const workloads = parseObjectStorageHelmDocuments(output, profile);
+    return assembleObjectStorageDocuments(workloads, profile, section);
+  }
   return parsePlatformDocuments(output, { service, profile });
 }
 
@@ -357,11 +505,15 @@ export function lintPlatformChart(
 ) {
   assertPlatformRenderRequest(service, profile, 'all');
   const helm = helmPlatformArgs(service, profile, 'all', { chartRoot });
-  const result = run(
-    'helm',
-    ['lint', helm.chartPath, '-f', helm.profilePath, '-f', '-', '--strict'],
-    { input: helm.stdin, timeoutMs: HELM_TIMEOUT_MS },
-  );
+  /** @type {string[]} */
+  const lintArgs = ['lint', helm.chartPath, '-f', helm.profilePath, '--strict'];
+  if (helm.stdin != null) {
+    lintArgs.push('-f', '-');
+  }
+  const result = run('helm', lintArgs, {
+    input: helm.stdin,
+    timeoutMs: HELM_TIMEOUT_MS,
+  });
   if (!result.ok || result.timedOut || result.missing) {
     throw new Error(`helm lint failed: ${boundedHelmDiagnostic(result)}`);
   }

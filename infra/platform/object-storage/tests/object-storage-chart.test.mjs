@@ -4,19 +4,19 @@ import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import {
-  DEV_S3_IMAGE,
-  DEV_S3_NAMESPACE,
-  DEV_S3_STORAGE_CLASS,
-} from '../dev-bootstrap.mjs';
+import { DEV_S3_IMAGE, DEV_S3_STORAGE_CLASS } from '../dev-bootstrap.mjs';
 import { runPlatformCommand } from '../../common/commands.mjs';
 import {
+  assertHelmAvailable,
   assertPlatformRenderRequest,
   lintPlatformChart,
+  parseObjectStorageHelmDocuments,
   renderPlatformDocuments,
+  resolvePlatformChartPath,
+  resolvePlatformProfilePath,
 } from '../../common/render.mjs';
+import { readPlatformProfile } from '../../common/profile.mjs';
 
-const chartRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'chart');
 const commonRoot = join(
   dirname(fileURLToPath(import.meta.url)),
   '../../common',
@@ -28,82 +28,144 @@ function findDoc(docs, kind, name) {
   return docs.find((doc) => doc.kind === kind && doc.metadata?.name === name);
 }
 
-test('object-storage chart lint and section counts', () => {
-  lintPlatformChart(
-    { service: 'object-storage', profile: 'dev' },
-    { chartRoot },
-  );
-  lintPlatformChart(
-    { service: 'object-storage', profile: 'release' },
-    { chartRoot },
-  );
-  const devAll = renderPlatformDocuments(
-    { service: 'object-storage', profile: 'dev', section: 'all' },
-    { chartRoot },
-  );
-  assert.equal(devAll.length, 4);
-  const devNs = renderPlatformDocuments(
-    { service: 'object-storage', profile: 'dev', section: 'namespace' },
-    { chartRoot },
-  );
-  assert.equal(devNs.length, 1);
-  const devWl = renderPlatformDocuments(
-    { service: 'object-storage', profile: 'dev', section: 'workloads' },
-    { chartRoot },
-  );
-  assert.equal(devWl.length, 3);
-  const relAll = renderPlatformDocuments(
-    { service: 'object-storage', profile: 'release', section: 'all' },
-    { chartRoot },
-  );
-  assert.equal(relAll.length, 4);
+function assertSyntheticNamespace(doc, profileId) {
+  const profile = readPlatformProfile(profileId);
+  assert.equal(doc.kind, 'Namespace');
+  assert.equal(doc.metadata.name, profile.namespaces.objectStorage);
+  assert.equal(doc.metadata.namespace, undefined);
+  if (profileId === 'dev') {
+    assert.deepEqual(doc.metadata.labels, {
+      'offscreen.dev/owner': 'offscreen-dev',
+    });
+  } else {
+    assert.deepEqual(doc.metadata.labels, {
+      'offscreen.rpg/lab': 'disposable',
+    });
+  }
+}
+
+function assertNoHelmHooksOrSecrets(docs) {
+  for (const doc of docs) {
+    assert.notEqual(doc.kind, 'Secret');
+    const serialized = JSON.stringify(doc);
+    assert.doesNotMatch(serialized, /"helm\.sh\/hook"/);
+  }
+}
+
+test('helm is required for object-storage chart tests', () => {
+  assertHelmAvailable();
 });
 
-test('dev deployment matches bootstrap contract except readiness probe', () => {
-  const docs = renderPlatformDocuments(
-    { service: 'object-storage', profile: 'dev', section: 'workloads' },
-    { chartRoot },
-  );
-  assert.equal(
-    docs.some((doc) => doc.kind === 'Secret'),
-    false,
-  );
+for (const profileId of /** @type {const} */ (['dev', 'release'])) {
+  test(`native object-storage public render sections for ${profileId}`, () => {
+    assertHelmAvailable();
+    lintPlatformChart({ service: 'object-storage', profile: profileId });
+    const all = renderPlatformDocuments({
+      service: 'object-storage',
+      profile: profileId,
+      section: 'all',
+    });
+    assert.equal(all.length, 4);
+    assertSyntheticNamespace(all[0], profileId);
+    assertNoHelmHooksOrSecrets(all);
+
+    const namespaceOnly = renderPlatformDocuments({
+      service: 'object-storage',
+      profile: profileId,
+      section: 'namespace',
+    });
+    assert.equal(namespaceOnly.length, 1);
+    assertSyntheticNamespace(namespaceOnly[0], profileId);
+
+    const workloads = renderPlatformDocuments({
+      service: 'object-storage',
+      profile: profileId,
+      section: 'workloads',
+    });
+    assert.equal(workloads.length, 3);
+    const profile = readPlatformProfile(profileId);
+    const expectedNs = profile.namespaces.objectStorage;
+    for (const doc of workloads) {
+      assert.equal(doc.metadata.namespace, expectedNs);
+    }
+    assert.ok(findDoc(workloads, 'Deployment', 'object-store'));
+    assert.ok(findDoc(workloads, 'Service', 'object-store'));
+    assert.ok(findDoc(workloads, 'PersistentVolumeClaim', 'object-store-data'));
+    const pvc = findDoc(
+      workloads,
+      'PersistentVolumeClaim',
+      'object-store-data',
+    );
+    assert.equal(pvc.metadata.annotations['helm.sh/resource-policy'], 'keep');
+  });
+}
+
+test('native dev deployment matches baseline contract without S3_BUCKET', () => {
+  assertHelmAvailable();
+  const docs = renderPlatformDocuments({
+    service: 'object-storage',
+    profile: 'dev',
+    section: 'workloads',
+  });
+  const profile = readPlatformProfile('dev');
+  assertNoHelmHooksOrSecrets(docs);
   const deploy = findDoc(docs, 'Deployment', 'object-store');
   assert.ok(deploy);
-  assert.equal(deploy.metadata.namespace, DEV_S3_NAMESPACE);
+  assert.equal(deploy.spec.strategy.type, 'Recreate');
+  assert.equal(deploy.spec.replicas, 1);
+  assert.equal(deploy.metadata.namespace, profile.namespaces.objectStorage);
   assert.equal(deploy.spec.template.spec.containers[0].image, DEV_S3_IMAGE);
   const container = deploy.spec.template.spec.containers[0];
+  assert.deepEqual(container.args, ['mini', '-dir=/data']);
   assert.ok(container.readinessProbe?.exec);
   assert.equal(container.livenessProbe, undefined);
   assert.equal(
     container.env.some((item) => item.name === 'S3_BUCKET'),
     false,
   );
+  const sc = deploy.spec.template.spec.securityContext;
+  assert.equal(sc.runAsUser, 1000);
+  assert.equal(sc.runAsGroup, 1000);
+  assert.equal(sc.fsGroup, 1000);
+  assert.equal(deploy.spec.template.spec.automountServiceAccountToken, false);
   const pvc = findDoc(docs, 'PersistentVolumeClaim', 'object-store-data');
+  assert.equal(pvc.metadata.annotations['helm.sh/resource-policy'], 'keep');
   assert.equal(pvc.spec.storageClassName, DEV_S3_STORAGE_CLASS);
   assert.equal(pvc.spec.resources.requests.storage, '2Gi');
+  assert.equal(pvc.spec.volumeMode, 'Filesystem');
+  const service = findDoc(docs, 'Service', 'object-store');
+  assert.equal(service.spec.type, 'ClusterIP');
+  assert.deepEqual(service.spec.ports, [
+    { name: 's3', port: 8333, targetPort: 's3' },
+  ]);
 });
 
-test('release deployment keeps store.yaml probes and S3_BUCKET', () => {
-  const docs = renderPlatformDocuments(
-    { service: 'object-storage', profile: 'release', section: 'workloads' },
-    { chartRoot },
-  );
+test('native release deployment keeps probes and rejects S3_BUCKET bootstrap', () => {
+  assertHelmAvailable();
+  const docs = renderPlatformDocuments({
+    service: 'object-storage',
+    profile: 'release',
+    section: 'workloads',
+  });
+  assertNoHelmHooksOrSecrets(docs);
   const deploy = findDoc(docs, 'Deployment', 'object-store');
   const container = deploy.spec.template.spec.containers[0];
   assert.ok(container.readinessProbe?.exec);
   assert.ok(container.livenessProbe?.exec);
-  const bucket = container.env.find((item) => item.name === 'S3_BUCKET');
-  assert.deepEqual(bucket, { name: 'S3_BUCKET', value: 'lab-objects' });
+  assert.equal(
+    container.env.some((item) => item.name === 'S3_BUCKET'),
+    false,
+  );
   const pvc = findDoc(docs, 'PersistentVolumeClaim', 'object-store-data');
   assert.equal(pvc.spec.storageClassName, 'local-path');
+  assert.equal(pvc.metadata.annotations['helm.sh/resource-policy'], 'keep');
   assert.deepEqual(pvc.metadata.labels, {
     app: 'object-store',
     'offscreen.rpg/lab': 'disposable',
   });
 });
 
-test('object-storage rejects unknown section and unsupported profile via cli', () => {
+test('render path rejects unknown section and unsupported profile via cli', () => {
   assert.throws(
     () => assertPlatformRenderRequest('object-storage', 'dev', 'cluster'),
     /unsupported section/,
@@ -124,22 +186,64 @@ test('object-storage rejects unknown section and unsupported profile via cli', (
   assert.match(badProfile.stderr, /unsupported profile/);
 });
 
-test('object-storage helm stdout never includes Secret documents', () => {
+test('native chart rejects schema violations through public render', () => {
+  assertHelmAvailable();
+  assert.throws(
+    () =>
+      renderPlatformDocuments(
+        { service: 'object-storage', profile: 'dev', section: 'all' },
+        { stdinOverlay: { unexpectedField: true } },
+      ),
+    /helm template failed/,
+  );
+  assert.throws(
+    () =>
+      renderPlatformDocuments(
+        { service: 'object-storage', profile: 'dev', section: 'all' },
+        { stdinOverlay: { section: 'workloads' } },
+      ),
+    /helm template failed/,
+  );
+});
+
+function rawNativeHelmStdout(profileId) {
+  const chartPath = resolvePlatformChartPath('object-storage');
+  const profilePath = resolvePlatformProfilePath('object-storage', profileId);
+  const profile = readPlatformProfile(profileId);
   const result = runPlatformCommand(
     'helm',
     [
       'template',
       'platform-object-storage',
-      chartRoot,
+      chartPath,
       '-f',
-      join(chartRoot, 'profiles/release.yaml'),
-      '-f',
-      '-',
+      profilePath,
+      '--namespace',
+      profile.namespaces.objectStorage,
     ],
-    { input: '{"section":"all"}\n', timeoutMs: 30_000 },
+    { timeoutMs: 30_000 },
   );
-  assert.equal(result.ok, true);
-  assert.match(result.stdout, /object-store-s3/);
-  assert.doesNotMatch(result.stdout, /"kind":"Secret"/);
-  assert.doesNotMatch(result.stdout, /kind: Secret/);
+  assert.equal(result.ok, true, result.stderr);
+  return result.stdout ?? '';
+}
+
+test('parseObjectStorageHelmDocuments rejects malformed yaml and unexpected objects', () => {
+  assertHelmAvailable();
+  const profile = readPlatformProfile('dev');
+  const ns = profile.namespaces.objectStorage;
+  assert.throws(
+    () => parseObjectStorageHelmDocuments(':\ninvalid', 'dev'),
+    /malformed platform document/,
+  );
+  const extraConfig = `${rawNativeHelmStdout('dev')}---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: unexpected
+  namespace: ${ns}
+`;
+  assert.throws(
+    () => parseObjectStorageHelmDocuments(extraConfig, 'dev'),
+    /unexpected platform resource identity/,
+  );
 });
