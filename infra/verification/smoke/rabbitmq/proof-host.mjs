@@ -1014,11 +1014,10 @@ export async function runProofSupervisor(input) {
       context: input.context,
     });
 
-  const baseline =
-    input.baseline ??
-    (await input.runner({ op: 'capture-identities' })).identities ??
-    {};
-
+  const captured = input.baseline ? { ok: true, identities: input.baseline } : await input.runner({ op: 'capture-identities' });
+  const baseline = captured.identities ?? {};
+  if (input.mode === 'smoke' && (!captured.ok || !['namespaceUid', 'crUid', 'serviceUid', 'secretUid'].every(key => typeof baseline[key] === 'string' && baseline[key])))
+    return { ok: false, reason: 'baseline-identity-incomplete', phase: 'refused' };
   receipt.baseline = baseline;
   const initPersist = persistReceipt({
     receipt,
@@ -1031,6 +1030,57 @@ export async function runProofSupervisor(input) {
     return { ok: false, reason: initPersist.reason, phase: 'receipt-init' };
   }
 
+  if (input.mode === 'smoke') {
+    const persist = phase => persistReceipt({ receipt, receiptDir, receiptPath, payloadPhase: phase, io });
+    const finish = (ok, phase, reason, stdout) => {
+      receipt.outcome = { ok, reason: reason ?? null };
+      const saved = persist(phase);
+      return saved.ok ? { ok, phase, ...(reason ? { reason } : {}), ...(stdout ? { stdout } : {}) } :
+        { ok: false, phase: 'receipt-failed', reason: saved.reason };
+    };
+    const sameIdentity = async () => {
+      const current = await input.runner({ op: 'capture-identities' });
+      return current.ok && identitiesCompatible(current.identities ?? {}, baseline);
+    };
+    const create = async (role, command) => {
+      if (!await sameIdentity()) return { ok: false, reason: 'identity-changed' };
+      const name = role === 'configmap' ? `rabbitmq-proof-${receipt.runId}` : proofPodName(receipt.runId, role);
+      receipt.pendingFixture = { role, name };
+      if (!persist('CREATE_INTENT').ok) return { ok: false, reason: 'receipt-intent' };
+      const result = await input.runner({ op: role === 'configmap' ? 'configmap-create' : 'pod-create', role, name, command, runId: receipt.runId });
+      if (!result.ok || !result.uid) return { ok: false, reason: 'fixture-create-unknown' };
+      receipt.fixtureUids[role] = result.uid;
+      receipt.pendingFixture = null;
+      if (!persist('FIXTURE_CREATED').ok) return { ok: false, reason: 'receipt-fixture' };
+      if (role === 'configmap') return { ok: true };
+      const waited = await input.runner({ op: 'pod-wait', name, uid: result.uid, phase: 'Succeeded', timeoutMs: Math.min(120_000, remainingWorkMs()) });
+      if (!waited.ok) return { ok: false, reason: waited.reason ?? 'pod-wait' };
+      return input.runner({ op: 'pod-logs', name, uid: result.uid });
+    };
+    const config = await create('configmap');
+    if (!config.ok) return finish(false, 'RETAINED', config.reason);
+    const smoke = await create('smoke', ['python3', '/opt/amqp_smoke.py', 'smoke']);
+    const lines = (smoke.stdout ?? '').split('\n');
+    if (!smoke.ok || !lines.some(line => /^SMOKE-PUBLISHED queue=amq\.gen-\S+$/.test(line)) ||
+        !['SMOKE-EMPTY', 'MGMT-OK', 'METRICS-OK'].every(line => lines.includes(line)))
+      return finish(false, 'RETAINED', smoke.reason ?? 'positive-markers-missing');
+    const auth = await create('wrong-password', ['python3', '/opt/amqp_smoke.py', 'wrong-password']);
+    if (!auth.ok || !(auth.stdout ?? '').split('\n').includes('AUTH-REFUSED 403'))
+      return finish(false, 'RETAINED', auth.reason ?? 'explicit-auth-refusal-missing');
+    receipt.proofEvidence = { positive: smoke.stdout, negative: 'AUTH-REFUSED 403' };
+    receipt.cleanedFixtures = [];
+    if (!persist('CLEANUP_INTENT').ok) return { ok: false, phase: 'receipt-failed', reason: 'cleanup-intent' };
+    for (const role of ['smoke', 'wrong-password', 'configmap']) {
+      if (!await sameIdentity()) return finish(false, 'RETAINED', 'cleanup-identity-changed');
+      const name = role === 'configmap' ? `rabbitmq-proof-${receipt.runId}` : proofPodName(receipt.runId, role);
+      const deleted = await input.runner({ op: 'smoke-fixture-delete', kind: role === 'configmap' ? 'configmaps' : 'pods', name, uid: receipt.fixtureUids[role] });
+      if (!deleted.ok) return finish(false, 'RETAINED', 'cleanup-unconfirmed');
+      receipt.cleanedFixtures.push(role);
+      if (!persist('CLEANUP_PROGRESS').ok) return { ok: false, phase: 'receipt-failed', reason: 'cleanup-progress' };
+    }
+    return finish(true, 'smoke-complete', null, smoke.stdout);
+  }
+
   const config = await input.runner({
     op: 'configmap-create',
     name: `rabbitmq-proof-${receipt.runId}`,
@@ -1041,46 +1091,6 @@ export async function runProofSupervisor(input) {
   }
   if (config.uid) {
     receipt.fixtureUids.configmap = config.uid;
-  }
-
-  if (input.mode === 'smoke') {
-    const smoke = await createProofPod(
-      ctxFrom(
-        input,
-        receipt,
-        receiptDir,
-        receiptPath,
-        io,
-        baseline,
-        elapsedMs,
-        remainingWorkMs,
-      ),
-      'smoke',
-      ['python3', '/opt/amqp_smoke.py', 'smoke'],
-    );
-    if (!smoke.ok) {
-      return { ok: false, reason: smoke.reason, phase: 'smoke' };
-    }
-    if (!input.skipAuth) {
-      const auth = await createProofPod(
-        ctxFrom(
-          input,
-          receipt,
-          receiptDir,
-          receiptPath,
-          io,
-          baseline,
-          elapsedMs,
-          remainingWorkMs,
-        ),
-        'wrong-password',
-        ['python3', '/opt/amqp_smoke.py', 'wrong-password'],
-      );
-      if (!auth.ok || !auth.stdout.split('\n').includes('AUTH-REFUSED 403')) {
-        return { ok: false, phase: 'negative-auth', reason: auth.reason ?? 'explicit-auth-refusal-missing' };
-      }
-    }
-    return { ok: true, phase: 'smoke-complete', stdout: smoke.stdout };
   }
 
   const ctx = ctxFrom(
