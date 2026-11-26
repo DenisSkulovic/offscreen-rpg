@@ -26,7 +26,8 @@ for path in sorted(root.glob("*.yaml")):
                 say("  UNEXPECTED_EXPOSURE")
                 bad = True
         if kind in ("ClusterRole","ClusterRoleBinding","Role","RoleBinding","CustomResourceDefinition","Ingress","HTTPRoute"):
-            say("  REVIEW_AUTHORITY_OR_ROUTE")
+            say("  UNEXPECTED_AUTHORITY_OR_ROUTE")
+            bad = True
         if kind == "PersistentVolumeClaim":
             say("  pvc " + str(spec))
         if kind == "StatefulSet":
@@ -38,6 +39,9 @@ for path in sorted(root.glob("*.yaml")):
                 pod = spec.get("jobTemplate",{}).get("spec",{}).get("template",{}).get("spec",{})
             say("  replicas " + str(spec.get("replicas", "n/a")))
             say("  serviceAccount " + str(pod.get("serviceAccountName")) + " automount " + str(pod.get("automountServiceAccountToken","inherited")))
+            if pod.get("automountServiceAccountToken") is not False:
+                say("  TOKEN_MOUNT_NOT_EXPLICITLY_DISABLED")
+                bad = True
             if pod.get("hostNetwork") or pod.get("hostPID") or pod.get("hostIPC"):
                 say("  UNEXPECTED_HOST_ACCESS")
                 bad = True

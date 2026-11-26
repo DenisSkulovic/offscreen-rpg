@@ -46,6 +46,7 @@ for key,c in yaml.safe_load(open(sys.argv[1]))["charts"].items():
 PY
 )
 python3 "$here/inventory.py" "$out" || failed=1
+python3 "$here/assert-structure.py" "$out" || failed=1
 cat "$out/results.tsv"
 cat "$out/inventory.txt"
 echo "Evidence directory: $out"
