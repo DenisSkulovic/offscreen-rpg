@@ -11,3 +11,5 @@ Remaining proof: vendor inventory compatibility against measured specimens, all 
 ## Source acceptance checkpoint
 
 Owner ran the focused suite at b127bb0: 173/173 pass, vendor committed. Broader suite: 426/432 pass; status regression traced to loss of absent/unreadable distinction and old kubeconfig fixture. Corrected here; rerun pending. Five other failures involve move-map, image-loading and retired tenant proof paths; compare against main before attributing them to this change. Runtime acceptance remains blocked pending isolated target proof.
+
+Owner recheck at c292f6c: PostgreSQL tests and infra-cli, 123/123 pass. Status regression closed. No live acceptance yet. Five remaining downstream failures require baseline comparison, not speculative edits.
