@@ -1,5 +1,7 @@
 # R8 | Local Redis baseline target and observation contract
 
+**R9 current authority:** [R9.md](R9.md) supersedes the ordinary ensure lock/timeout/history, target routing, runtime probe and proof-tier clauses below. Other chart/profile and integration contracts remain applicable. Historical R8 text is not a competing normative requirement.
+
 2026-11-26. Main baseline b6d128061fd0eb4d30296589d9393a277b09477a. Candidate scope: local trusted disposable cache only, not shared authenticated runtime. Native Helm selected with observed release specimen. Named pool generalization, hosted ACL/TLS, client limits and production capacity are separate decisions; do not block structural baseline on unrelated claims. No implementation or committee acceptance.
 
 ## Desired production source

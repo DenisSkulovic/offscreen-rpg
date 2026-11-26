@@ -1,5 +1,7 @@
 # Integration and cutover | R5 investigation
 
+[R9.md](R9.md) owns current public dispatch/proof split, generated private smoke target, Redis ensure timeout ownership and dev Helm preflight. Both profiles must add Helm availability to preflight when Redis selected; source tests verify no unrelated service change. Structural main integration while canonical legacy ensure refuses requires explicit owner acceptance; otherwise hold merge until separately approved migration. No second mutation owner.
+
 Baseline main b6d128061fd0eb4d30296589d9393a277b09477a. Native lifecycle specimen passed in release; selection applies to fresh local cache pools. Existing legacy objects remain unchanged. No implementation or migration permission.
 
 ## Source findings

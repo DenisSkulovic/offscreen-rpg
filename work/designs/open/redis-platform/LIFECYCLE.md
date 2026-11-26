@@ -1,4 +1,6 @@
-# R2 | Native Helm lifecycle (provisional selection)
+# R2 | Native Helm lifecycle (historical selection)
+
+Current lifecycle custody, admission and acceptance are in [R9.md](R9.md); R2–R8 history below explains original selection and experiments, not current lock/history/proof rules.
 
 2026-11-26. Integration baseline b6d128061fd0eb4d30296589d9393a277b09477a; predecessor cbacbbb38abc844823c89af311f639c5d9d5c6f8. No formal defense or implementation commission.
 

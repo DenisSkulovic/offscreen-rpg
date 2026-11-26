@@ -1,5 +1,7 @@
 # R7 | Bounded compatibility and readiness contract
 
+**R9 supersession:** [R9.md](R9.md) owns release-storage admission, double snapshot, Redis reply/instance checks, smoke and proof tiers. Retain R8 fixed-field comparison/defaults and integration mapping except as explicitly amended. Older statements about UID-only rechecks or representation gates are historical.
+
 Normative for local trusted disposable baseline only; supersedes TARGET.md's open-ended projection language. No general Kubernetes drift detector and no server-side dry-run on ordinary status or ensure reuse. No silent mutation.
 
 ## Three independent results
