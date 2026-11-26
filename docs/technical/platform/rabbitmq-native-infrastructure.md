@@ -1,6 +1,6 @@
 # RabbitMQ native local infrastructure
 
-Owner accepted 2026-11-26. Selected target R10, independent DEFENDED verdict [pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/21e9be5cf49f3cea4e74655550bea188bbf2748b/work/designs/open/rabbitmq-platform/committee/pass-03.md). Both-profile source support; fresh dev live acceptance and occupied release refusal only. Runtime NOT RUN. No migration, adoption, repair, full drift attestation or hosted deployment. Normative contract below, later amendments override conflicting earlier text. Historical proposal status and review instructions in copied text are superseded by this acceptance; no live permission.
+Owner accepted 2026-11-26. Selected target R10, independent DEFENDED verdict [pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/21e9be5cf49f3cea4e74655550bea188bbf2748b/work/designs/open/rabbitmq-platform/committee/pass-03.md). Both-profile source support; fresh dev live acceptance and occupied release refusal only. Source integrated on main at `7c087ae1`; heavy runtime acceptance remains pending under the [open Change](../../../work/changes/open/2026-11-26--rabbitmq-native/CHANGE.md). [Archived design](../../../work/designs/archive/rabbitmq-platform/README.md). No new runtime PASS. No migration, adoption, repair, full drift attestation or hosted deployment. Normative contract below, later amendments override conflicting earlier text. Historical proposal status and review instructions in copied text are superseded by this acceptance; no live permission.
 
 
 ---
