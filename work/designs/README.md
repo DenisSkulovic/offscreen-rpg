@@ -12,7 +12,7 @@ Unaccepted designs and investigations that still need an owner decision, selecte
 
 | Item | Status |
 | --- | --- |
-| [RabbitMQ platform](open/rabbitmq-platform/README.md) | R8 committee corrections; renewed defense pending; next review 2026-11-26 |
+| [RabbitMQ platform](open/rabbitmq-platform/README.md) | R9 self-defended after committee corrections; pass 02 pending; next review 2026-11-26 |
 | [Object storage platform](open/object-storage-platform/README.md) | R9 defended/owner accepted; canonical promoted, source Change commissioned; retained for acceptance traceability; occupied admission separately gated |
 | [Code architecture health](open/code-architecture-health/README.md) | Unresolved code ownership/trust-boundary investigation; concrete CQ Change packets remain separate |
 | [Story creation and writer's workbench](open/story-creation-and-writers-workbench/README.md) | **Promoted to permanent wiki on integration branch:** Storyteller/Library/Play target now lives in `docs/product/` and `docs/technical/`. WR01/WRD02–WRD04 are archived Done; this research dossier is temporarily retained for source traceability pending owner review, then becomes a retirement candidate |
