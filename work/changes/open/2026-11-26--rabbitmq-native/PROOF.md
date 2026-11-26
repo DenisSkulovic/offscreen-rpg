@@ -1,6 +1,6 @@
 # Source receipt
 
-Cursor source implementation is on `change/rabbitmq-native-source`. Record the tested SHA in the commit that adds this note. Commands actually run, all from that worktree:
+Cursor source implementation is on `change/rabbitmq-native-source` at `b2432f8cc23d6606fe12c8bdfc476c45a699c2b9`. Commands actually run, all from that worktree, before this SHA line was added:
 
 - `node --test infra/platform/rabbitmq/tests/*.test.mjs infra/environments/platform-plan.test.mjs infra/environments/infra-cli.test.mjs infra/verification/provisioning.test.mjs` — 104 pass, 0 fail, at T04 commit `f7bdba1a`.
 - `node --test infra/verification/smoke/rabbitmq/proof.test.mjs` — 21 pass, 0 fail.
