@@ -29,3 +29,7 @@ Release attempt at d8974fd stopped before worker execution: Kind already supplie
 ## Release worker live proof
 
 Owner terminal at 54bc22692: isolated Kind offscreen-pg-proof-6358133a557f, port 24444, evidence /tmp/offscreen-pg-proof-czMigb. Total 2m33s. Fresh release ensure ready, three acknowledged persistent commands; lab-pg-1 writable, one instance. Repeat ready, zero persistent commands; explicit disposable topology scale to two, scaled repeat ready, zero additional worker mutations, all 28 recorded UIDs unchanged. PASS for release worker with isolated routing and Kind storage controller plus release StorageClass alias. Production CLI identity and release guard execution remain separate proof gates. No normal dev/release mutation or integration claimed.
+
+## Existing installation compatibility
+
+Owner terminal at 911297d5a: both unmodified production entrypoints completed in 8s combined with maintenance authorization absent. Dev ensure ready, no acknowledged or attempted persistent mutation, one instance and dev-pg-1 writable. Release install completed after final guard, two instances preserved, both local-path PVCs Bound. Existing clusters accepted without migration. Disposable release proof cluster retired by owner. Remaining closure checks: frozen render parity, incomplete native SSA receipt retention, fail-closed guard observation, and outstanding fault-path proof coverage; do not mark whole Change Done solely from happy-path evidence.
