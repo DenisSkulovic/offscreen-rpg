@@ -48,3 +48,17 @@ Separate negative scenarios: use an isolated specimen lacking a documented requi
 ## Receipt
 
 Record tested full SHA; host/target identity (nonsecret); scenario; start/end and duration; command/exit; expected vs observed result; mutation status; resource custody/cleanup; remaining gates. Record counts for each usability metric and explicit approvals. Distinguish PASS, FAIL and NOT RUN. Preserve raw local receipts privately; commit only redacted evidence. Integration custodian reconciles current main, reruns affected mandatory seams and records integrated SHA before retirement. No integration while correctness or required acceptance gates remain open.
+
+## Focused regression receipt: PASS (2026-11-26)
+
+Owner-operated WSL run at exact candidate `f20225ef9af45845032a0cb03006ee38718e576d`, Node v24.19.0, /usr/bin/flock, clean acceptance worktree fast-forwarded to candidate. All four batches completed, no failures, skips, cancellations or timeouts:
+
+| Batch | Passed | Wall time |
+| --- | ---: | ---: |
+| Tenant classifier, orchestration and adapter | 49/49 | 0.138s |
+| Mutation guard, real local flock and child fixtures | 20/20 | 9.537s |
+| Provider install, readiness and proof harness | 55/55 | 0.336s |
+| Infrastructure CLI | 36/36 | 0.398s |
+| Total | 160/160 | 10.409s across test batches |
+
+Terminal ended with FOCUSED ACCEPTANCE PASSED. Negative foundation messages were expected fixture output; no live provisioning was performed by the selected tests. This receipt closes the focused regression gate for the tested SHA, not the uninterrupted fresh tenant, live SDK/protocol, fresh-agent or integration gates. No repair or paid model call was required. Next: select and verify an isolated live acceptance target before mutation.
