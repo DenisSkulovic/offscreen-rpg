@@ -698,7 +698,8 @@ export function defaultPlatformRunner(argv, options = {}) {
   const result = spawnSync(argv[0], argv.slice(1), {
     encoding: 'utf8',
     env: { ...process.env, ...(options.env ?? {}) },
-    timeout: options.phaseId === 'temporal' ? 1_200_000 : 600_000,
+    timeout: ['cnpg', 'postgres'].includes(options.phaseId) ? 1_830_000 : options.phaseId === 'temporal' ? 1_200_000 : 600_000,
+    ...(['cnpg', 'postgres'].includes(options.phaseId) ? { killSignal: 'SIGKILL' } : {}),
     maxBuffer: 8 * 1024 * 1024,
     windowsHide: true,
   });
