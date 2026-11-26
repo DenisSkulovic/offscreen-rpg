@@ -36,7 +36,7 @@ const ROLLOUT_WAIT_MS = 180_000;
 const KUBECTL_READ_MS = 15_000;
 const REDIS_EXEC_MS = 15_000;
 const CLEANUP_RESERVE_MS = 180_000;
-const NAMESPACE_ABSENT_BUDGET_MS = 30_000;
+const NAMESPACE_ABSENT_BUDGET_MS = 120_000;
 const ENDPOINT_RECOVERY_MS = 180_000;
 
 /** @type {Set<string>} */
@@ -655,7 +655,7 @@ async function verifyNamespaceAbsent(runner, target, budgetMs) {
         '-o',
         'json',
       ],
-      { timeoutMs: KUBECTL_READ_MS },
+      { timeoutMs: Math.max(1, Math.min(KUBECTL_READ_MS, deadline - Date.now())) },
     );
     const resolved = await Promise.resolve(result);
     if (!resolved.ok || resolved.timedOut || resolved.missing || (resolved.stderr ?? '').trim()) {
@@ -797,7 +797,7 @@ export async function runVerifiedSmokeNamespaceCleanup(
   const absence = await verifyNamespaceAbsent(
     run,
     target,
-    NAMESPACE_ABSENT_BUDGET_MS,
+    Math.max(0, Math.min(NAMESPACE_ABSENT_BUDGET_MS, remainingMs())),
   );
   if (!absence.ok) {
     if (absence.uncertain) {
