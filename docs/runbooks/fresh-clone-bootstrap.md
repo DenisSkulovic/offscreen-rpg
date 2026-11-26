@@ -28,7 +28,9 @@ OFFSCREEN_POSTGRES_MAINTENANCE=authorized node infra/environments/infra-cli.mjs 
 OFFSCREEN_POSTGRES_MAINTENANCE=authorized node infra/environments/infra-cli.mjs up --env release --services postgres --json
 ```
 
-Only after both baseline ensures succeed, proceed with ordinary core ensure (which re-observes compatible PostgreSQL without granting maintenance authorization):
+Before Temporal installation, verify that no connection-enabled non-template database grants PUBLIC CONNECT. Fresh baselines currently require a separately authorized PostgreSQL ACL maintenance operation; do not silently revoke privileges on occupied databases. See [Temporal maintenance guidance](kubernetes-temporal.md). Automatic fresh-baseline ACL policy is outstanding. Stop if the isolation check fails.
+
+Only after both baseline ensures and the isolation prerequisite succeed, proceed with ordinary core ensure (which re-observes compatible PostgreSQL without granting maintenance authorization):
 
 ```bash
 node infra/environments/infra-cli.mjs up --env dev --services core --human
@@ -45,4 +47,4 @@ Run `pnpm infra:verify --suite diagnostic` and relevant service-specific proofs 
 
 Follow [owned development environment](dev-worktree-stacks.md) for local configuration and `pnpm dev`, `pnpm dev:status`, `pnpm dev:stop`. Do not copy release credentials to development or authorize paid model calls through setup. Release application build/deploy is a separate optional path in [local development](local-development.md).
 
-Initial integrated cold acceptance is pending. Record exact tested SHA and failures; fix the source, not only the running cluster.
+Initial release core readiness and combined reuse were observed at `b16fe6d7` after explicit PostgreSQL ACL maintenance; release Gateway 28.562 s, combined core reuse 14.494 s, status 4/4 READY. Development object storage has a repaired specimen and retained pending receipt; development Temporal has an incomplete non-login role and credential. Uninterrupted integrated cold acceptance remains pending. Record exact tested SHA and failures; fix the source, not only the running cluster.
