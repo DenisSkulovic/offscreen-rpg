@@ -554,24 +554,33 @@ def probe_management() -> int:
     host = os.environ.get("AMQP_HOST", "rabbitmq")
     user = os.environ["AMQP_USER"]
     password = os.environ["AMQP_PASS"]
+    management_url = f"http://{host}:15672/api/overview"
     auth_handler = urllib.request.HTTPPasswordMgrWithDefaultRealm()
-    auth_handler.add_password(None, f"http://{host}", user, password)
-    opener = urllib.request.build_opener(urllib.request.HTTPBasicAuthHandler(auth_handler))
-    opener.addheaders = [("Accept", "application/json")]
-    try:
-        with opener.open(f"http://{host}:15672/api/overview", timeout=10) as response:
-            if response.status != 200:
-                print("MGMT-STATUS-FAIL", file=sys.stderr)
-                return 1
-        with opener.open(f"http://{host}:15692/metrics", timeout=10) as response:
-            body = response.read(4096)
-            if b"rabbitmq" not in body:
-                print("METRICS-PREFIX-FAIL", file=sys.stderr)
-                return 1
-    except (urllib.error.URLError, TimeoutError, ValueError):
-        print("MGMT-PROBE-FAIL", file=sys.stderr)
-        return 1
-    print("MGMT-OK", flush=True)
+    auth_handler.add_password(None, management_url, user, password)
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({}),
+        urllib.request.HTTPBasicAuthHandler(auth_handler),
+    )
+    metrics_opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    for stage, client, url in (
+        ("MGMT", opener, management_url),
+        ("METRICS", metrics_opener, f"http://{host}:15692/metrics"),
+    ):
+        try:
+            with client.open(url, timeout=10) as response:
+                if response.status != 200:
+                    print(f"{stage}-STATUS-FAIL status={response.status}", file=sys.stderr)
+                    return 1
+                if stage == "METRICS" and b"rabbitmq" not in response.read(4096):
+                    print("METRICS-PREFIX-FAIL", file=sys.stderr)
+                    return 1
+        except urllib.error.HTTPError as error:
+            print(f"{stage}-HTTP-FAIL status={error.code}", file=sys.stderr)
+            return 1
+        except (urllib.error.URLError, TimeoutError, ValueError):
+            print(f"{stage}-TRANSPORT-FAIL", file=sys.stderr)
+            return 1
+        print(f"{stage}-OK", flush=True)
     return 0
 
 
