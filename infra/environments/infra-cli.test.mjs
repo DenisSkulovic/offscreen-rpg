@@ -1867,3 +1867,68 @@ test('rabbitmq observer maps unreadable inventory to unreadable service state', 
     );
   }
 });
+
+for (const profileId of ['dev', 'release']) {
+  for (const outcome of ['converges', 'wait-fails', 'still-unready']) {
+    test(`cold ${profileId} node readiness: ${outcome}`, () => {
+      const healthy = profileId === 'dev' ? devWarmRun : releaseWarmRun;
+      const creates = [];
+      const waits = [];
+      let reads = 0;
+      const result = runInfraUp({
+        profileId, services: 'none',
+        runner: argv => { creates.push(argv); return { ok: true, status: 0 }; },
+        run: (command, args, options) => {
+          if (command === 'kubectl' && args.includes('nodes')) {
+            if (args.includes('wait')) {
+              waits.push({ args, options });
+              return { ok: outcome !== 'wait-fails' };
+            }
+            reads++;
+            return { ok: true, stdout: JSON.stringify({ items: [
+              { status: { conditions: [{ type: 'Ready', status: reads > 1 && outcome === 'converges' ? 'True' : 'False' }] } },
+            ] }) };
+          }
+          return healthy(creates.length > 0)(command, args);
+        },
+      });
+      assert.equal(result.ok, outcome === 'converges');
+      assert.equal(creates.length, 1);
+      assert.equal(waits.length, 1);
+      assert.deepEqual(waits[0], {
+        args: ['--context', 'kind-offscreen-' + profileId, 'wait', '--for=condition=Ready', 'nodes', '--all', '--timeout=120s'],
+        options: { timeoutMs: 125000 },
+      });
+      assert.equal(reads, outcome === 'wait-fails' ? 1 : 2);
+    });
+  }
+}
+
+test('cold release waits for storage availability and reobserves', () => {
+  let created = false;
+  let reads = 0;
+  let waits = 0;
+  const result = runInfraUp({
+    profileId: 'release', services: 'none',
+    runner: () => { created = true; return { ok: true, status: 0 }; },
+    run: (command, args, options) => {
+      if (command === 'kubectl' && args.some(x => x.includes('local-path-provisioner'))) {
+        if (args.includes('wait')) {
+          waits++;
+          assert.equal(options.timeoutMs, 125000);
+          assert.ok(args.includes('--timeout=120s'));
+          return { ok: true };
+        }
+        reads++;
+        return { ok: true, stdout: JSON.stringify({
+          metadata: { name: 'local-path-provisioner', namespace: 'local-path-storage' },
+          status: { conditions: [{ type: 'Available', status: reads > 1 ? 'True' : 'False' }] },
+        }) };
+      }
+      return releaseWarmRun(created)(command, args);
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(reads, 2);
+  assert.equal(waits, 1);
+});
