@@ -250,6 +250,9 @@ export async function ensureObjectStorage(profileId, deps = {}) {
           metadata: {
             name: OBJECT_STORE_ADMIN_SECRET,
             namespace,
+            labels: profileId === 'dev'
+              ? { 'offscreen.dev/owner': profile.ownerValue }
+              : { app: 'object-store', 'offscreen.rpg/lab': profile.ownerValue },
           },
           stringData: {
             'access-key-id': credentials.accessKeyId,
