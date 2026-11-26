@@ -1,6 +1,7 @@
 # DESIGN ONLY; admin Secret must be supplied by separately approved lifecycle.
 fullnameOverride: obs-grafana
 replicas: 1
+automountServiceAccountToken: false
 rbac: {create: false}
 serviceAccount:
   automountServiceAccountToken: false

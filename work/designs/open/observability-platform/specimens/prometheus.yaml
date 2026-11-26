@@ -9,6 +9,7 @@ configmapReload:
 server:
   fullnameOverride: obs-prometheus
   replicaCount: 1
+  automountServiceAccountToken: false
   extraFlags: [web.enable-otlp-receiver]
   retention: 7d
   retentionSize: 3GB
@@ -23,6 +24,7 @@ server:
     promote_resource_attributes: [deployment.environment.name, service.namespace, service.name]
   service:
     type: ClusterIP
+    servicePort: 9090
 scrapeConfigs:
   prometheus: {enabled: true}
   kubernetes-api-servers: {enabled: false}

@@ -3,6 +3,7 @@ fullnameOverride: obs-loki
 deploymentMode: Monolithic
 loki:
   auth_enabled: false
+  automountServiceAccountToken: false
   analytics: {reporting_enabled: false}
   commonConfig: {replication_factor: 1}
   storage: {type: filesystem}
@@ -47,3 +48,9 @@ chunksCache: {enabled: false}
 resultsCache: {enabled: false}
 ruler: {enabled: false}
 rollout_operator: {enabled: false}
+
+serviceAccount:
+  automountServiceAccountToken: false
+sidecar:
+  rules:
+    enabled: false
