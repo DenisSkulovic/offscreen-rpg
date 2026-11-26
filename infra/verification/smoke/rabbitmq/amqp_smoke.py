@@ -179,18 +179,16 @@ class AmqpWire:
         # verify PLAIN and en_US are offered in start-ok fields (bounded scan)
         if b"PLAIN" not in start_body or b"en_US" not in start_body:
             raise ProtocolFailure("auth-mechanism")
-        client_props = pack_longstr(
-            json.dumps(
-                {"capabilities": {"authentication_failure_close": True}},
-                separators=(",", ":"),
-            ).encode()
-        )
+        # AMQP field table: capabilities (F = nested table), boolean (t).
+        capabilities = pack_shortstr("authentication_failure_close") + b"t\x01"
+        properties = pack_shortstr("capabilities") + b"F" + pack_longstr(capabilities)
+        client_props = pack_longstr(properties)
         response = b"\x00" + user.encode() + b"\x00" + password.encode()
         self.send_method(
             0,
             10,
             11,
-            struct.pack(">I", 0) + pack_shortstr("PLAIN") + pack_longstr(response) + client_props,
+            client_props + pack_shortstr("PLAIN") + pack_longstr(response) + pack_shortstr("en_US"),
         )
         try:
             tune = self.expect(deadline_at, 10, 30, 0)
