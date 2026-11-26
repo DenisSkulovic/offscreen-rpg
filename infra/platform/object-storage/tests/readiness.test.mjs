@@ -418,7 +418,6 @@ function answerChainKubectl(args, chain) {
 const NATIVE_DEV_VALUES_YAML = `mode: development
 namespace: offscreen-dev-objects
 storageClass: standard
-image: docker.io/chrislusf/seaweedfs:4.54
 `;
 
 const HELM_HISTORY_ANNOTATIONS = {
