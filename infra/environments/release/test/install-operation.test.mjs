@@ -29,6 +29,17 @@ test('install.sh wires operation begin/end bridge without raw args', () => {
   assert.doesNotMatch(source, /persist.*\$[@*]/);
 });
 
+test('release install resolves object storage binding before render', () => {
+  const source = readFileSync(join(RELEASE_DIR, '../install.sh'), 'utf8');
+  assert.ok(
+    source.indexOf('resolve_release_object_storage_binding') <
+      source.indexOf('render_release_section migration'),
+  );
+  assert.match(source, /OFFSCREEN_RELEASE_OBJECT_STORAGE_BINDING/);
+  assert.match(source, /chmod 0600 "\$\{OBJECT_STORAGE_BINDING\}"/);
+  assert.ok(source.includes('binding.mjs" render'));
+});
+
 test('release install shell bridge records success span', () => {
   const stateRoot = tempStateRoot();
   const repoRoot = join(RELEASE_DIR, '../../..');

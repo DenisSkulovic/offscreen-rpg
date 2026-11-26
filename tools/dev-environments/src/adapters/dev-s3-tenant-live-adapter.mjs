@@ -7,6 +7,8 @@ import {
   DEV_S3_PVC,
   DEV_S3_SECRET,
 } from '../../../../infra/platform/object-storage/dev-bootstrap.mjs';
+import { parsePolicyDocumentStrict } from '../../../../infra/platform/object-storage/providers/seaweedfs/provision.mjs';
+import { deriveDevS3Tenant } from './dev-s3-tenant.mjs';
 
 const TRANSPORT_TIMEOUT_MS = 60_000;
 const REQUIRED_SECRET_KEYS = ['access-key-id', 'secret-access-key'];
@@ -191,6 +193,44 @@ export function parseWeedUserList(text) {
     .filter((name) => typeof name === 'string' && name.length > 0);
 }
 
+/**
+ * @param {string} text
+ */
+export function parseWeedUserShow(text) {
+  const source = String(text ?? '').trim();
+  const start = source.indexOf('{');
+  if (start < 0) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(source.slice(start));
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== 'object') return null;
+  const policies = Array.isArray(parsed.policies)
+    ? parsed.policies
+    : Array.isArray(parsed.policyNames)
+      ? parsed.policyNames
+      : [];
+  const credentials = Array.isArray(parsed.credentials)
+    ? parsed.credentials.map((item) => ({
+        accessKey: item.accessKey ?? item.access_key ?? '',
+        status: item.status ?? item.state ?? '',
+      }))
+    : [];
+  return {
+    name: parsed.name,
+    enabled: parsed.status === 'enabled' || parsed.enabled === true,
+    source: typeof parsed.source === 'string' ? parsed.source : '',
+    policies,
+    actions: Array.isArray(parsed.actions) ? parsed.actions : [],
+    serviceAccounts: Array.isArray(parsed.serviceAccounts)
+      ? parsed.serviceAccounts
+      : [],
+    credentials,
+  };
+}
+
 function parseCredentials(text) {
   const source = String(text ?? '');
   const labeledAccess = source.match(/access key:\s*(\S+)/i);
@@ -262,7 +302,11 @@ function storeSecret(exec, names, credentials) {
   return { secret: retained.name, uid: retained.uid };
 }
 
-export function createDevS3LiveAdapter({ exec = run } = {}) {
+export function createDevS3LiveAdapter({
+  exec = run,
+  headBucket: headBucketProbe,
+  bucketPolicies: bucketPoliciesProbe,
+} = {}) {
   return {
     identity() {
       const deploy = JSON.parse(
@@ -310,10 +354,10 @@ export function createDevS3LiveAdapter({ exec = run } = {}) {
       return found ? { owner: found.owner, name: found.name } : null;
     },
     user(name) {
-      const text = weed('s3.user.list\nexit\n', exec);
-      const names = parseWeedUserList(text);
-      if (!names.includes(name)) return null;
-      return { owner: name, name };
+      const text = weed(`s3.user.show -name ${name}\nexit\n`, exec);
+      const shown = parseWeedUserShow(text);
+      if (!shown || shown.name !== name) return null;
+      return { owner: name, ...shown };
     },
     secret(name) {
       const body = readSecretObject(exec, name);
@@ -336,33 +380,91 @@ export function createDevS3LiveAdapter({ exec = run } = {}) {
       }
       return storeSecret(exec, names, credentials);
     },
-    recoverUser(names) {
-      const output = weed('s3.iam.export\nexit\n', exec);
-      const start = output.indexOf('{');
-      const end = output.lastIndexOf('}');
-      const parsed = JSON.parse(output.slice(start, end + 1));
-      const identity = parsed.identities?.find(
-        (item) => item.name === names.user,
+    policyInventory() {
+      const text = weed('s3.policy -list\nexit\n', exec);
+      const matches = String(text ?? '').match(/"([^"]+)"/g) ?? [];
+      return matches.map((item) => item.replaceAll('"', ''));
+    },
+    policyDocument(names) {
+      const text = weed(
+        `s3.policy -get -name ${names.policyName}\nexit\n`,
+        exec,
       );
-      const policy = `${names.bucket}-${names.user}-readwrite`;
-      const shared = (parsed.identities ?? []).filter(
-        (item) =>
-          item.name !== names.user && item.policyNames?.includes(policy),
-      );
-      if (
-        !identity ||
-        identity.credentials?.length !== 1 ||
-        identity.policyNames?.join(',') !== policy ||
-        shared.length
-      ) {
-        const error = new Error('existing identity is not recoverable');
-        error.code = 'identity-not-recoverable';
-        throw error;
+      const start = text.indexOf('{');
+      if (start < 0) return null;
+      try {
+        return parsePolicyDocumentStrict(text.slice(start));
+      } catch {
+        return null;
       }
-      return storeSecret(exec, names, {
-        accessKeyId: identity.credentials[0].accessKey,
-        secretAccessKey: identity.credentials[0].secretKey,
-      });
+    },
+    headBucket(names) {
+      if (typeof headBucketProbe === 'function') {
+        return headBucketProbe(names);
+      }
+      return 'unknown';
+    },
+    bucketPolicies() {
+      if (typeof bucketPoliciesProbe === 'function') {
+        return bucketPoliciesProbe();
+      }
+      // An unread admin inventory is not an empty one.
+      return null;
+    },
+    groupsEmpty() {
+      const text = weed('s3.user.list -groups\nexit\n', exec);
+      if (/unavailable|not found|error/i.test(text)) return null;
+      const parsed = parseWeedUserList(text);
+      return parsed.length === 0;
+    },
+    readObservation(slotNames) {
+      const names = slotNames.policyName
+        ? slotNames
+        : deriveDevS3Tenant(slotNames.slotId ?? slotNames);
+      const unreadable = {
+        bucket: null,
+        user: null,
+        policyInventory: null,
+        policyDocument: null,
+        groupsEmpty: null,
+        secret: null,
+        bucketPolicies: null,
+        headBucket: null,
+        unreadable: true,
+      };
+      try {
+        const bucket = this.bucket(names.bucket);
+        const user = this.user(names.user);
+        const secretObj = readSecretObject(exec, names.secret);
+        let secret = null;
+        if (secretObj) {
+          const retained = readPresentSecret(secretObj, names.secret);
+          const decodedAccess =
+            secretObj.data?.['access-key-id'] != null
+              ? Buffer.from(secretObj.data['access-key-id'], 'base64').toString(
+                  'utf8',
+                )
+              : (secretObj.stringData?.['access-key-id'] ?? '');
+          secret = {
+            name: retained.name,
+            uid: retained.uid,
+            accessKeyId: decodedAccess,
+          };
+        }
+        return {
+          bucket: bucket ? { name: names.bucket, owner: bucket.owner } : null,
+          user,
+          policyInventory: this.policyInventory(),
+          policyDocument: this.policyDocument(names),
+          groupsEmpty: this.groupsEmpty(),
+          secret,
+          bucketPolicies: this.bucketPolicies(),
+          headBucket: this.headBucket(names),
+          unreadable: false,
+        };
+      } catch {
+        return unreadable;
+      }
     },
     access() {
       return { status: 'deferred' };

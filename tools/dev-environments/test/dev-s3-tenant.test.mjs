@@ -3,8 +3,10 @@ import test from 'node:test';
 import {
   deriveDevS3Tenant,
   ensureDevS3Tenant,
+  mockObservationForStore,
   planDevS3Tenant,
 } from '../src/adapters/dev-s3-tenant.mjs';
+import { expectedTenantPolicy } from '../../../infra/platform/object-storage/providers/seaweedfs/provision.mjs';
 
 const TOKEN = 'kind-offscreen-dev-s3-tenant-live';
 
@@ -25,6 +27,8 @@ function adapter() {
     buckets: { 'dev-s3-proof': { owner: 'admin-d0e0666e' } },
     users: {},
     secrets: {},
+    policyInventory: [],
+    accessKeyId: 'AK-DEV-MOCK',
     log: [],
   };
   return {
@@ -33,8 +37,11 @@ function adapter() {
     bucket: (name) => state.buckets[name] ?? null,
     user: (name) => state.users[name] ?? null,
     secret: (name) => state.secrets[name] ?? null,
+    readObservation(names) {
+      return mockObservationForStore(state, names);
+    },
     createBucket(names) {
-      state.buckets[names.bucket] = { owner: 'pending' };
+      state.buckets[names.bucket] = { owner: names.user };
       state.log.push(`create ${names.bucket}`);
     },
     provisionUser(names) {
@@ -42,12 +49,19 @@ function adapter() {
         owner: names.user,
         bucket: names.bucket,
         role: 'readwrite',
+        policies: [names.policyName],
+        source: 'dynamic',
+        enabled: true,
+        credentials: [{ accessKey: state.accessKeyId, status: 'Active' }],
       };
-      state.buckets[names.bucket] = { owner: names.user };
+      if (!state.policyInventory.includes(names.policyName)) {
+        state.policyInventory.push(names.policyName);
+      }
       const secret = {
         name: names.secret,
         uid: `uid-${names.secret}`,
         owner: 'offscreen-dev',
+        accessKeyId: state.accessKeyId,
       };
       state.secrets[names.secret] = secret;
       state.log.push(`provision ${names.user}`);
@@ -64,11 +78,35 @@ function adapter() {
   };
 }
 
+function completeStore(names, state, overrides = {}) {
+  state.buckets[names.bucket] = { owner: names.user };
+  state.users[names.user] = {
+    policies: [names.policyName],
+    source: 'dynamic',
+    enabled: true,
+    bucket: names.bucket,
+    role: 'readwrite',
+    credentials: [{ accessKey: state.accessKeyId, status: 'Active' }],
+  };
+  state.secrets[names.secret] = {
+    name: names.secret,
+    uid: `uid-${names.secret}`,
+    owner: 'offscreen-dev',
+    accessKeyId: state.accessKeyId,
+  };
+  state.policyInventory = [names.policyName];
+  return mockObservationForStore(state, names, {
+    headBucket: 'ok',
+    ...overrides,
+  });
+}
+
 test('slot identity is bucket-scoped and the plan does not expose credentials', () => {
   const names = deriveDevS3Tenant('dev-1');
   assert.equal(names.bucket, 'offscreen-dev-1');
   assert.equal(names.user, 'dev-1');
   assert.equal(names.secret, 'dev-1-s3');
+  assert.equal(names.policyName, 'offscreen-dev-1-dev-1-readwrite');
   const plan = planDevS3Tenant('dev-1');
   assert.equal(plan.readOnly, true);
   assert.equal(JSON.stringify(plan).includes('secret-access-key'), false);
@@ -104,21 +142,26 @@ test('two tenants stay scoped and re-entry keeps the secret uid', async () => {
   );
 });
 
-test('deferred access evidence is not proof of scope enforcement', async () => {
+test('deferred or missing HeadBucket refuses reuse instead of succeeding', async () => {
   const store = adapter();
+  const names = deriveDevS3Tenant('dev-1');
+  completeStore(names, store.state);
+  store.readObservation = () =>
+    mockObservationForStore(store.state, names, { headBucket: 'unknown' });
   store.access = () => ({ status: 'deferred' });
   const result = await ensureDevS3Tenant({
     slotId: 'dev-1',
     authorizeLive: TOKEN,
     adapter: store,
   });
-  assert.equal(result.ok, true);
-  assert.equal(result.accessEvidence, 'not-exercised');
-  assert.equal(result.mutated, true);
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0].id, 'scope-not-enforced');
 });
 
 test('a supplied negative access check refuses instead of succeeding', async () => {
   const store = adapter();
+  const names = deriveDevS3Tenant('dev-1');
+  completeStore(names, store.state);
   store.access = () => ({
     ownWrite: true,
     otherWrite: true,
@@ -131,11 +174,11 @@ test('a supplied negative access check refuses instead of succeeding', async () 
   });
   assert.equal(result.ok, false);
   assert.equal(result.refusals[0].id, 'scope-not-enforced');
-  assert.equal(result.mutated, true);
 });
 
 test('warm tenant reuse does not count as mutation', async () => {
   const store = adapter();
+  const names = deriveDevS3Tenant('dev-1');
   const first = await ensureDevS3Tenant({
     slotId: 'dev-1',
     authorizeLive: TOKEN,
@@ -164,11 +207,12 @@ test('foreign objects, missing commands, partial state and probes do not continu
     'foreign-bucket',
   );
   const partial = adapter();
-  partial.createBucket(deriveDevS3Tenant('dev-1'));
+  partial.state.buckets['offscreen-dev-1'] = { owner: 'dev-1' };
   partial.state.secrets['dev-1-s3'] = {
     name: 'dev-1-s3',
     uid: 'kept',
     owner: 'offscreen-dev',
+    accessKeyId: 'AK',
   };
   const recovered = await ensureDevS3Tenant({
     slotId: 'dev-1',
@@ -176,7 +220,7 @@ test('foreign objects, missing commands, partial state and probes do not continu
     adapter: partial,
   });
   assert.equal(recovered.refusals[0].id, 'partial-secret');
-  assert.equal(partial.state.buckets['offscreen-dev-1'].owner, 'pending');
+  assert.equal(partial.state.log.length, 0);
   const missing = adapter();
   missing.identity = () => ({ ...host(), commands: ['s3.bucket.create'] });
   assert.equal(
@@ -199,4 +243,47 @@ test('foreign objects, missing commands, partial state and probes do not continu
     ).refusals[0].id,
     'injected-probe',
   );
+});
+
+test('orphan policy inventory refuses without writes', async () => {
+  const store = adapter();
+  const names = deriveDevS3Tenant('dev-1');
+  store.readObservation = () =>
+    mockObservationForStore(store.state, names, {
+      policyInventory: [names.policyName],
+      policyDocument: expectedTenantPolicy(names.bucket),
+      headBucket: null,
+    });
+  const result = await ensureDevS3Tenant({
+    slotId: 'dev-1',
+    authorizeLive: TOKEN,
+    adapter: store,
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, false);
+  assert.equal(result.refusals[0].id, 'tenant-refused');
+  assert.equal(store.state.log.length, 0);
+});
+
+test('wrong access key refuses reuse', async () => {
+  const store = adapter();
+  const names = deriveDevS3Tenant('dev-1');
+  completeStore(names, store.state);
+  store.state.secrets[names.secret].accessKeyId = 'AK-WRONG';
+  const result = await ensureDevS3Tenant({
+    slotId: 'dev-1',
+    authorizeLive: TOKEN,
+    adapter: store,
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.refusals[0].id, 'tenant-refused');
+  assert.equal(result.mutated, false);
+});
+
+test('dev-10 policy name does not satisfy dev-1 tenant', () => {
+  const dev1 = deriveDevS3Tenant('dev-1');
+  const dev10 = deriveDevS3Tenant('dev-10');
+  assert.notEqual(dev1.policyName, dev10.policyName);
+  assert.equal(dev1.policyName, 'offscreen-dev-1-dev-1-readwrite');
+  assert.equal(dev10.policyName, 'offscreen-dev-10-dev-10-readwrite');
 });

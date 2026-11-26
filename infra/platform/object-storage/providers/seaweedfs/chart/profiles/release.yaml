@@ -1,0 +1,3 @@
+mode: release
+namespace: lab-objects
+storageClass: local-path

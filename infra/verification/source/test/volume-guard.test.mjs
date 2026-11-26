@@ -22,6 +22,9 @@ const RELEASE_SMOKE_SH = join(VERIFY_ROOT, 'smoke/release.sh');
 const GUARDED_SCRIPTS = [
   join(REPO_ROOT, 'infra/platform/postgres/release-install.mjs'),
   join(VERIFY_ROOT, 'smoke/postgres/smoke.sh'),
+];
+
+const RETIRED_OBJECT_STORAGE_SMOKES = [
   join(VERIFY_ROOT, 'smoke/object-storage/smoke.sh'),
   join(
     REPO_ROOT,
@@ -487,6 +490,19 @@ uid_delete lab-b pod probe-server uid-owned
         /volume_guard_end/,
         `${label} must call volume_guard_end`,
       );
+    }
+  });
+
+  test('retired object-storage smokes exit before any volume command', () => {
+    for (const scriptPath of RETIRED_OBJECT_STORAGE_SMOKES) {
+      const body = readFileSync(scriptPath, 'utf8');
+      const label = scriptPath.startsWith(REPO_ROOT)
+        ? scriptPath.slice(REPO_ROOT.length + 1)
+        : scriptPath.slice(VERIFY_ROOT.length + 1);
+      assert.match(body, /refusing retired/, label);
+      assert.doesNotMatch(body, /volume_guard_begin/, label);
+      assert.doesNotMatch(body, /\bkubectl\b/, label);
+      assert.doesNotMatch(body, /\bdocker\b/, label);
     }
   });
 });

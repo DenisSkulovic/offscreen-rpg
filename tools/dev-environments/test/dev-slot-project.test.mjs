@@ -4,6 +4,7 @@ import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { DEV_CNPG_NAMESPACE } from '../../../infra/platform/postgres/dev-bootstrap.mjs';
 import { DEV_S3_NAMESPACE } from '../../../infra/platform/object-storage/dev-bootstrap.mjs';
+import { validateObjectStorageBinding } from '../../../infra/platform/object-storage/binding.mjs';
 import {
   applyDevSlotSecret,
   assertDevSchemaProjectionProof,
@@ -796,6 +797,58 @@ test('deterministic app comparison preserves tokens and auth hash', () => {
       }),
     /secret field mismatch: better-auth-secret/,
   );
+});
+
+test('external objectStorage does not read the local Seaweed backing secret', () => {
+  const { kubectl, calls } = stubKubectl('dev-2');
+  let backingS3Reads = 0;
+  const trackingRead = (kubectlFn, namespace, name, slotId, deps) => {
+    if (namespace === DEV_S3_NAMESPACE) backingS3Reads += 1;
+    return readOwnedBackingSecret(kubectlFn, namespace, name, slotId, deps);
+  };
+  const external = validateObjectStorageBinding({
+    bucket: 'hosted-bucket',
+    region: 'eu-west-1',
+    endpoint: 'https://s3.example.com',
+    forcePathStyle: false,
+    credentials: { mode: 'default-chain' },
+  });
+  const record = {
+    slotId: 'dev-2',
+    worktreePath: '/tmp/wt-2',
+    cluster: PROFILE.clusterName,
+    namespace: 'offscreen-dev-2',
+    ports: { game: 13104, control: 13105, tilt: 13106, spare: 13107 },
+    processIdentity: null,
+    resourceUids: {},
+    lease: null,
+  };
+  const result = projectDevSlot({
+    record,
+    oauth,
+    schemaProof: schemaProof('dev-2', 25),
+    objectStorage: external,
+    deps: {
+      kubectl,
+      randomBytes: () => Buffer.alloc(24, 1),
+      readOwnedBackingSecret: trackingRead,
+    },
+  });
+  assert.equal(backingS3Reads, 0);
+  assert.equal(
+    calls.some(
+      (item) =>
+        item.args.includes(DEV_S3_NAMESPACE) &&
+        item.args.includes('get') &&
+        item.args.includes('secret'),
+    ),
+    false,
+  );
+  assert.equal(result.s3Uid, null);
+  const creates = calls.filter((item) => item.args.includes('create'));
+  assert.equal(creates.length, 2);
+  const docText = JSON.stringify(result.documents);
+  assert.equal(docText.includes('OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID'), false);
 });
 
 test('readOwnedBackingSecret refuses unreadable backing secret', () => {

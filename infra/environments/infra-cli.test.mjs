@@ -1437,6 +1437,28 @@ test(
   },
 );
 
+test('object-storage status maps native installer states on dev and release', () => {
+  for (const profileId of ['dev', 'release']) {
+    const cases = [
+      ['absent', 'not-installed', 'namespace absent'],
+      ['native-noop', 'installed', 'native compatible'],
+      ['unknown', 'unreadable', 'cluster unreachable'],
+      ['refused', 'not-ready', 'legacy structural'],
+    ];
+    for (const [nativeState, serviceState, reason] of cases) {
+      const observed = observeSelectedServiceState(
+        profileId,
+        'object-storage',
+        {
+          statusObjectStorage: () => ({ state: nativeState, reason }),
+        },
+      );
+      assert.equal(observed.state, serviceState);
+      assert.equal(observed.detail, reason);
+    }
+  }
+});
+
 test('inventoryKindClusters requires exact kind success', () => {
   const unreadable = inventoryKindClusters(() => ({
     ok: false,

@@ -297,6 +297,26 @@
                   "value": "1"
                 },
                 {
+                  "name": "OFFSCREEN_DOCUMENT_STORE",
+                  "value": "s3"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
+                  "value": "offscreen-dev-1"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_REGION",
+                  "value": "us-east-1"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_ENDPOINT",
+                  "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE",
+                  "value": "true"
+                },
+                {
                   "name": "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID",
                   "valueFrom": {
                     "secretKeyRef": {
@@ -306,14 +326,6 @@
                   }
                 },
                 {
-                  "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
-                  "value": "offscreen-dev-1"
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_S3_ENDPOINT",
-                  "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
-                },
-                {
                   "name": "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY",
                   "valueFrom": {
                     "secretKeyRef": {
@@ -321,10 +333,6 @@
                       "name": "dev-1-s3"
                     }
                   }
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_STORE",
-                  "value": "s3"
                 }
               ],
               "image": "offscreen-dev-workspace:dev-1-api",
@@ -447,6 +455,26 @@
                   "value": "1"
                 },
                 {
+                  "name": "OFFSCREEN_DOCUMENT_STORE",
+                  "value": "s3"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
+                  "value": "offscreen-dev-1"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_REGION",
+                  "value": "us-east-1"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_ENDPOINT",
+                  "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE",
+                  "value": "true"
+                },
+                {
                   "name": "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID",
                   "valueFrom": {
                     "secretKeyRef": {
@@ -456,14 +484,6 @@
                   }
                 },
                 {
-                  "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
-                  "value": "offscreen-dev-1"
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_S3_ENDPOINT",
-                  "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
-                },
-                {
                   "name": "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY",
                   "valueFrom": {
                     "secretKeyRef": {
@@ -471,10 +491,6 @@
                       "name": "dev-1-s3"
                     }
                   }
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_STORE",
-                  "value": "s3"
                 }
               ],
               "image": "offscreen-dev-workspace:dev-1-authority",
@@ -744,6 +760,34 @@
                   "value": "1"
                 },
                 {
+                  "name": "TEMPORAL_ADDRESS",
+                  "value": "temporal-frontend.offscreen-dev-temporal.svc.cluster.local:7233"
+                },
+                {
+                  "name": "TEMPORAL_NAMESPACE",
+                  "value": "offscreen-dev-1"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_STORE",
+                  "value": "s3"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
+                  "value": "offscreen-dev-1"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_REGION",
+                  "value": "us-east-1"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_ENDPOINT",
+                  "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
+                },
+                {
+                  "name": "OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE",
+                  "value": "true"
+                },
+                {
                   "name": "OFFSCREEN_DOCUMENT_S3_ACCESS_KEY_ID",
                   "valueFrom": {
                     "secretKeyRef": {
@@ -753,14 +797,6 @@
                   }
                 },
                 {
-                  "name": "OFFSCREEN_DOCUMENT_S3_BUCKET",
-                  "value": "offscreen-dev-1"
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_S3_ENDPOINT",
-                  "value": "http://object-store.offscreen-dev-objects.svc.cluster.local:8333"
-                },
-                {
                   "name": "OFFSCREEN_DOCUMENT_S3_SECRET_ACCESS_KEY",
                   "valueFrom": {
                     "secretKeyRef": {
@@ -768,18 +804,6 @@
                       "name": "dev-1-s3"
                     }
                   }
-                },
-                {
-                  "name": "OFFSCREEN_DOCUMENT_STORE",
-                  "value": "s3"
-                },
-                {
-                  "name": "TEMPORAL_ADDRESS",
-                  "value": "temporal-frontend.offscreen-dev-temporal.svc.cluster.local:7233"
-                },
-                {
-                  "name": "TEMPORAL_NAMESPACE",
-                  "value": "offscreen-dev-1"
                 }
               ],
               "image": "offscreen-dev-workspace:dev-1-worker",

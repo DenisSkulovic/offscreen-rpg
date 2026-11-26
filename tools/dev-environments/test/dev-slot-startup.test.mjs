@@ -33,6 +33,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { execPath } from 'node:process';
 import { allocateDevWorktreeOwner } from '../src/domain/dev-worktree-allocator.mjs';
 import {
+  admitOwnedDevS3Tenant,
   applyOwnedSlotWorkloads,
   reconcileDevSlot,
   planSlotImageBuilds,
@@ -326,6 +327,41 @@ test('an existing slot reuses the same identities without a rebuild flag', async
     second.identities.secretUids.app,
   );
   assert.equal(second.ok, true);
+});
+
+test('admitOwnedDevS3Tenant refuses before tenant ensure without native-noop', async () => {
+  let ensureCalls = 0;
+  const refused = await admitOwnedDevS3Tenant(
+    { slotId: 'dev-1' },
+    {
+      status: () => ({ state: 'refused', reason: 'legacy occupied' }),
+      ensureTenant: async () => {
+        ensureCalls += 1;
+        return { ok: true };
+      },
+    },
+  );
+  assert.equal(refused.ok, false);
+  assert.equal(refused.detail, 'legacy occupied');
+  assert.equal(ensureCalls, 0);
+});
+
+test('admitOwnedDevS3Tenant calls tenant ensure once on native-noop', async () => {
+  let ensureCalls = 0;
+  const admitted = await admitOwnedDevS3Tenant(
+    { slotId: 'dev-2' },
+    {
+      status: () => ({ state: 'native-noop', reason: 'ready' }),
+      ensureTenant: async (input) => {
+        ensureCalls += 1;
+        assert.equal(input.slotId, 'dev-2');
+        assert.equal(input.authorizeLive, 'kind-offscreen-dev-s3-tenant-live');
+        return { ok: true, slotId: input.slotId };
+      },
+    },
+  );
+  assert.equal(admitted.ok, true);
+  assert.equal(ensureCalls, 1);
 });
 
 test('sql, s3, and temporal failures stop before workloads and keep retained ids', async () => {

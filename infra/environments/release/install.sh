@@ -164,16 +164,27 @@ verify_helm() {
   fi
 }
 
+OBJECT_STORAGE_BINDING="${RENDER_WORK}/object-storage-binding.json"
+
+resolve_release_object_storage_binding() {
+  if ! node "${RELEASE_DIR}/binding.mjs" write-native "${OBJECT_STORAGE_BINDING}"; then
+    echo "Refusing install: could not resolve release object storage binding." >&2
+    exit 1
+  fi
+  chmod 0600 "${OBJECT_STORAGE_BINDING}"
+}
+
 render_release_section() {
   local section="$1"
   local outfile="$2"
-  if ! node "${RENDER_MJS}" release "${section}" >"${outfile}"; then
+  if ! node "${RELEASE_DIR}/binding.mjs" render "${section}" "${OBJECT_STORAGE_BINDING}" >"${outfile}"; then
     echo "Refusing install: could not render release ${section} manifests." >&2
     exit 1
   fi
 }
 
 verify_helm
+resolve_release_object_storage_binding
 render_release_section migration "${RENDER_WORK}/migration.yaml"
 if image_selected game-authority; then
   render_release_section authority "${RENDER_WORK}/authority.yaml"
@@ -237,6 +248,7 @@ prepare_release_apply() {
 progress start credentials
 echo "Preparing release Secrets from the lab database, object store, and root .env…"
 export OFFSCREEN_REPO_ROOT="${REPO_ROOT}"
+export OFFSCREEN_RELEASE_OBJECT_STORAGE_BINDING="${OBJECT_STORAGE_BINDING}"
 if ! node "${RELEASE_DIR}/credentials.mjs"; then
   echo "Refusing install: release credential preparation failed." >&2
   exit 1
@@ -244,6 +256,7 @@ fi
 
 progress done credentials
 # Content is an application prerequisite, not an optional smoke scenario.
+export OFFSCREEN_RELEASE_OBJECT_STORAGE_BINDING="${OBJECT_STORAGE_BINDING}"
 if ! node "${RELEASE_DIR}/content.mjs"; then
   echo "Refusing install: pinned release content preparation failed." >&2
   exit 1

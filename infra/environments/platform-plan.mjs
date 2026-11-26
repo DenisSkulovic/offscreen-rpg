@@ -98,23 +98,22 @@ const DEV_SUPPORTED_SERVICES = new Set([
 
 const DEV_ENSURE_ENV = Object.freeze({
   cnpg: { OFFSCREEN_DEV_CNPG_ENSURE: 'authorized' },
-  'object-storage': { OFFSCREEN_DEV_S3_ENSURE: 'authorized' },
 });
+
+const OBJECT_STORAGE_INSTALL = join(
+  REPO_ROOT,
+  'infra/platform/object-storage/providers/seaweedfs/install.mjs',
+);
 
 const DEV_CLI = Object.freeze({
   cnpg: join(
     REPO_ROOT,
     'tools/dev-environments/src/adapters/dev-cnpg-bootstrap-cli.mjs',
   ),
-  'object-storage': join(
-    REPO_ROOT,
-    'tools/dev-environments/src/adapters/dev-object-store-bootstrap-cli.mjs',
-  ),
 });
 
 const RELEASE_INSTALL = Object.freeze({
   postgres: join(REPO_ROOT, 'infra/platform/postgres/install.sh'),
-  'object-storage': join(REPO_ROOT, 'infra/platform/object-storage/install.sh'),
   gateway: join(REPO_ROOT, 'infra/platform/gateway/install.sh'),
   observability: join(REPO_ROOT, 'infra/platform/observability/install.sh'),
 });
@@ -332,22 +331,23 @@ export function corePhases(profileId, command, selectedServices) {
       });
       continue;
     }
+    if (logicalId === 'object-storage') {
+      phases.push({
+        id: 'object-storage',
+        argv: [process.execPath, OBJECT_STORAGE_INSTALL, subcommand, profileId],
+        env: mutate
+          ? { OFFSCREEN_OBJECT_STORAGE_ENSURE: 'authorized' }
+          : undefined,
+        mutate,
+      });
+      continue;
+    }
     if (profileId === 'dev') {
       if (logicalId === 'postgres') {
         phases.push({
           id: 'cnpg',
           argv: [process.execPath, DEV_CLI.cnpg, subcommand],
           env: command === 'ensure' ? { ...DEV_ENSURE_ENV.cnpg } : undefined,
-          mutate,
-        });
-      } else if (logicalId === 'object-storage') {
-        phases.push({
-          id: 'object-storage',
-          argv: [process.execPath, DEV_CLI['object-storage'], subcommand],
-          env:
-            command === 'ensure'
-              ? { ...DEV_ENSURE_ENV['object-storage'] }
-              : undefined,
           mutate,
         });
       }
@@ -396,7 +396,8 @@ function plannedPreflightSteps(profileId, command, selectedServices) {
     profileId === 'release' ||
     selectedServices.includes('temporal') ||
     selectedServices.includes('redis') ||
-    selectedServices.includes('rabbitmq')
+    selectedServices.includes('rabbitmq') ||
+    selectedServices.includes('object-storage')
   ) {
     steps.push('helm');
   }
@@ -525,6 +526,7 @@ export function runEnsurePreflight(profileId, command, deps = {}) {
       selectedServices.includes('temporal') ||
       selectedServices.includes('redis') ||
       selectedServices.includes('rabbitmq') ||
+      selectedServices.includes('object-storage') ||
       (profileId === 'release' &&
         (chartServices.length > 0 || selectedServices.includes('gateway')))
     ) {
@@ -675,6 +677,9 @@ export function redactPlatformReceipt(receipt) {
  */
 export function platformRunnerSpawnTimeout(phaseId, argv) {
   if ((phaseId === 'redis' || phaseId === 'rabbitmq') && argv[2] === 'ensure') {
+    return undefined;
+  }
+  if (phaseId === 'object-storage') {
     return undefined;
   }
   if (['cnpg', 'postgres'].includes(phaseId)) {

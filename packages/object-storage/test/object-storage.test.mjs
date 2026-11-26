@@ -304,6 +304,172 @@ test('S3 adapter keeps conditional put, path style and bounded get', async () =>
   );
 });
 
+test('requireBucket uses HeadBucket only and maps denial to unavailable', async () => {
+  const commands = [];
+  const client = {
+    async send(command) {
+      commands.push(command);
+      const name = command.constructor.name;
+      if (name === 'HeadBucketCommand') {
+        const error = new Error('NoSuchBucket');
+        error.name = 'NoSuchBucket';
+        error.$metadata = { httpStatusCode: 404 };
+        throw error;
+      }
+      throw new Error(`unexpected ${name}`);
+    },
+  };
+  const storage = new S3ObjectStorage({
+    bucket: 'lab',
+    region: 'us-east-1',
+    client,
+  });
+  await assert.rejects(
+    () => storage.requireBucket(),
+    (error) =>
+      error instanceof ObjectStorageError && error.code === 'unavailable',
+  );
+  assert.equal(
+    commands.filter((c) => c.constructor.name === 'HeadBucketCommand').length,
+    1,
+  );
+  assert.equal(
+    commands.filter((c) => c.constructor.name === 'CreateBucketCommand').length,
+    0,
+  );
+
+  const denied = [];
+  const deniedClient = {
+    async send(command) {
+      denied.push(command);
+      const error = new Error('Forbidden');
+      error.name = 'Forbidden';
+      error.$metadata = { httpStatusCode: 403 };
+      throw error;
+    },
+  };
+  const deniedStorage = new S3ObjectStorage({
+    bucket: 'lab',
+    region: 'us-east-1',
+    client: deniedClient,
+  });
+  await assert.rejects(
+    () => deniedStorage.requireBucket(),
+    (error) =>
+      error instanceof ObjectStorageError && error.code === 'unavailable',
+  );
+  assert.equal(
+    denied.filter((c) => c.constructor.name === 'CreateBucketCommand').length,
+    0,
+  );
+
+  const okCommands = [];
+  const okClient = {
+    async send(command) {
+      okCommands.push(command);
+      if (command.constructor.name !== 'HeadBucketCommand') {
+        throw new Error(`unexpected ${command.constructor.name}`);
+      }
+      return {};
+    },
+  };
+  await new S3ObjectStorage({
+    bucket: 'lab',
+    region: 'us-east-1',
+    client: okClient,
+  }).requireBucket();
+  assert.equal(
+    okCommands.filter((c) => c.constructor.name === 'CreateBucketCommand')
+      .length,
+    0,
+  );
+});
+
+test('ensureBucket rejects BucketAlreadyExists and get maps 403 to unavailable', async () => {
+  const createCommands = [];
+  const createClient = {
+    async send(command) {
+      createCommands.push(command);
+      const name = command.constructor.name;
+      if (name === 'HeadBucketCommand') {
+        const error = new Error('NoSuchBucket');
+        error.name = 'NoSuchBucket';
+        error.$metadata = { httpStatusCode: 404 };
+        throw error;
+      }
+      if (name === 'CreateBucketCommand') {
+        const error = new Error('Bucket already exists');
+        error.name = 'BucketAlreadyExists';
+        throw error;
+      }
+      throw new Error(`unexpected ${name}`);
+    },
+  };
+  await assert.rejects(
+    () =>
+      new S3ObjectStorage({
+        bucket: 'lab',
+        region: 'us-east-1',
+        client: createClient,
+      }).ensureBucket(),
+    (error) =>
+      error instanceof ObjectStorageError && error.code === 'unavailable',
+  );
+
+  const forbiddenClient = {
+    async send(command) {
+      if (command.constructor.name === 'GetObjectCommand') {
+        const error = new Error('Forbidden');
+        error.name = 'Forbidden';
+        error.$metadata = { httpStatusCode: 403 };
+        throw error;
+      }
+      throw new Error(`unexpected ${command.constructor.name}`);
+    },
+  };
+  await assert.rejects(
+    () =>
+      new S3ObjectStorage({
+        bucket: 'lab',
+        region: 'us-east-1',
+        client: forbiddenClient,
+      }).get('objects/a.bin', 8),
+    (error) =>
+      error instanceof ObjectStorageError && error.code === 'unavailable',
+  );
+});
+
+test('putIfAbsent maps HTTP 409 to unavailable without overwrite', async () => {
+  const objects = new Map([['held.bin', Buffer.from('prior')]]);
+  const putCommands = [];
+  const client = {
+    async send(command) {
+      const name = command.constructor.name;
+      if (name === 'PutObjectCommand') {
+        putCommands.push(command);
+        assert.equal(command.input.IfNoneMatch, '*');
+        const error = new Error('Conflict');
+        error.name = 'Conflict';
+        error.$metadata = { httpStatusCode: 409 };
+        throw error;
+      }
+      throw new Error(`unexpected ${name}`);
+    },
+  };
+  const storage = new S3ObjectStorage({
+    bucket: 'lab',
+    region: 'us-east-1',
+    client,
+  });
+  await assert.rejects(
+    () => storage.putIfAbsent('held.bin', Buffer.from('new'), 'text/plain'),
+    (error) =>
+      error instanceof ObjectStorageError && error.code === 'unavailable',
+  );
+  assert.equal(putCommands.length, 1);
+  assert.deepEqual(objects.get('held.bin'), Buffer.from('prior'));
+});
+
 test('oversize stream and bad keys never touch the client', async () => {
   let sent = false;
   const storage = new S3ObjectStorage({

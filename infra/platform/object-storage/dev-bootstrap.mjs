@@ -6,6 +6,11 @@ import {
   renderPlatformYaml,
 } from '../common/render.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
+import {
+  ensureObjectStorage,
+  planObjectStorage,
+  statusObjectStorage,
+} from './providers/seaweedfs/install.mjs';
 
 const devProfile = readPlatformProfile('dev');
 const releaseProfile = readPlatformProfile('release');
@@ -388,39 +393,37 @@ export function waitForDevObjectStoreReadiness(deps) {
 
 /**
  * @param {object} probe
+ * @param {{ run?: import('../common/commands.mjs').runPlatformCommand }} [deps]
  */
-export function planDevObjectStore(probe) {
-  const assessment = assessDevObjectStore(probe);
+export function planDevObjectStore(probe, deps = {}) {
+  void probe;
   return {
-    mode: 'plan',
+    ...planObjectStorage('dev', { run: deps.run }),
     readOnly: true,
-    context: DEV_S3_CONTEXT,
-    namespace: DEV_S3_NAMESPACE,
-    image: DEV_S3_IMAGE,
-    storageClass: DEV_S3_STORAGE_CLASS,
-    serviceType: 'ClusterIP',
-    secretName: DEV_S3_SECRET,
-    secretState: assessment.secret,
     manifest: renderDevObjectStore(),
-    refusals: assessment.refusals,
-    actions: [],
   };
 }
 
 /**
  * @param {object} probe
+ * @param {{ run?: import('../common/commands.mjs').runPlatformCommand }} [deps]
  */
-export function statusDevObjectStore(probe) {
-  const assessment = assessDevObjectStore(probe);
-  return { mode: 'status', readOnly: true, ...assessment, actions: [] };
+export function statusDevObjectStore(probe, deps = {}) {
+  void probe;
+  return {
+    ...statusObjectStorage('dev', { run: deps.run }),
+    readOnly: true,
+  };
 }
 
 /**
  * @param {object} probe
  * @param {{ authorize?: boolean, failAfterSecret?: boolean }} [options]
+ * @param {{ run?: import('../common/commands.mjs').runPlatformCommand }} [deps]
  */
-export function ensureDevObjectStore(probe, options = {}) {
-  const plan = planDevObjectStore(probe);
+export function ensureDevObjectStore(probe, options = {}, deps = {}) {
+  void probe;
+  const plan = planObjectStorage('dev', { run: deps.run });
   if (!options.authorize) {
     return {
       ...plan,
@@ -430,7 +433,6 @@ export function ensureDevObjectStore(probe, options = {}) {
       mutated: false,
       manifest: undefined,
       refusals: [
-        ...plan.refusals,
         {
           id: 'ensure-not-authorized',
           detail: 'live object-store ensure was not authorized',
@@ -438,67 +440,13 @@ export function ensureDevObjectStore(probe, options = {}) {
       ],
     };
   }
-  if (plan.refusals.length > 0) {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: false,
-      mutated: false,
-      manifest: undefined,
-    };
-  }
-  const assessment = assessDevObjectStore(probe);
-  const complete =
-    assessment.namespace === 'owned' &&
-    assessment.secret === 'owned' &&
-    assessment.pvc === 'owned' &&
-    assessment.deployment === 'owned' &&
-    assessment.service === 'owned';
-  if (complete) {
-    return {
-      ...plan,
-      mode: 'ensure',
-      readOnly: false,
-      ok: true,
-      mutated: false,
-      manifest: undefined,
-      actions: [
-        { op: 'reuse-secret' },
-        { op: 'verify-readiness', context: DEV_S3_CONTEXT },
-      ],
-    };
-  }
-  /** @type {{ op: string, context?: string, [key: string]: unknown }[]} */
-  const actions = [];
-  if (assessment.namespace !== 'owned') {
-    actions.push({
-      op: 'ensure-namespace',
-      context: DEV_S3_CONTEXT,
-      name: DEV_S3_NAMESPACE,
-    });
-  }
-  if (assessment.secret === 'owned') {
-    actions.push({ op: 'reuse-secret', name: DEV_S3_SECRET });
-  } else if (
-    assessment.secret === 'absent' &&
-    assessment.pvc === 'absent' &&
-    assessment.deployment === 'absent'
-  ) {
-    actions.push({
-      op: 'create-secret',
-      context: DEV_S3_CONTEXT,
-      namespace: DEV_S3_NAMESPACE,
-      name: DEV_S3_SECRET,
-    });
-  }
   if (options.failAfterSecret) {
     return {
       ...plan,
       mode: 'ensure',
       readOnly: false,
       ok: false,
-      mutated: true,
+      mutated: false,
       manifest: undefined,
       refusals: [
         {
@@ -506,167 +454,69 @@ export function ensureDevObjectStore(probe, options = {}) {
           detail: 'workloads were not applied; the secret was not deleted',
         },
       ],
-      actions,
+      actions: [],
     };
   }
-  actions.push({ op: 'apply-workloads', context: DEV_S3_CONTEXT });
-  actions.push({ op: 'verify-readiness', context: DEV_S3_CONTEXT });
+  if (plan.state === 'native-noop') {
+    return {
+      ...plan,
+      mode: 'ensure',
+      readOnly: false,
+      ok: true,
+      mutated: false,
+      manifest: undefined,
+      actions: [],
+    };
+  }
+  if (plan.state === 'absent') {
+    return {
+      ...plan,
+      mode: 'ensure',
+      readOnly: false,
+      ok: true,
+      mutated: false,
+      manifest: undefined,
+      actions: [],
+    };
+  }
   return {
     ...plan,
     mode: 'ensure',
     readOnly: false,
-    ok: true,
-    mutated: true,
+    ok: false,
+    mutated: false,
     manifest: undefined,
-    actions,
+    refusals: [{ id: 'install-refused', detail: plan.reason }],
+    actions: [],
   };
 }
 
 /**
  * @param {{
- *   collect: () => object,
- *   run: (command: string, args: string[], options?: { input?: string }) => { ok: boolean, stderr?: string },
+ *   collect?: () => object,
+ *   run?: (command: string, args: string[], options?: { input?: string }) => { ok: boolean, stderr?: string },
  *   generateCredentials?: () => { accessKeyId: string, secretAccessKey: string },
  *   renderDeps?: { run?: import('../common/commands.mjs').runPlatformCommand },
+ *   stateRoot?: string,
+ *   readIdentity?: (profileId: 'dev' | 'release') => Promise<{ state: string, identity?: object, reason?: string }>,
+ *   now?: () => number,
+ *   budgetMs?: number,
+ *   mutationCommands?: string[],
  * }} deps
  */
-export function executeAuthorizedDevObjectStore(deps) {
-  const renderDeps = deps.renderDeps ?? {};
-  const decision = ensureDevObjectStore(deps.collect(), { authorize: true });
-  if (!decision.ok && decision.actions.length === 0) {
-    return { ...decision, mutated: false };
-  }
-  const again = ensureDevObjectStore(deps.collect(), { authorize: true });
-  if (!again.ok && again.actions.length === 0) {
-    return { ...again, mutated: false };
-  }
-  const completed = [];
-  for (const action of again.actions) {
-    if (action.op === 'reuse-secret') {
-      completed.push(action);
-      continue;
-    }
-    if (action.op === 'ensure-namespace') {
-      const created = deps.run(
-        'kubectl',
-        ['--context', DEV_S3_CONTEXT, 'apply', '-f', '-'],
-        { input: namespaceManifest(renderDeps) },
-      );
-      completed.push({ op: 'ensure-namespace', context: DEV_S3_CONTEXT });
-      if (!created.ok) {
-        return {
-          ...again,
-          ok: false,
-          mutated: true,
-          refusals: [
-            { id: 'ensure-namespace-failed', detail: 'namespace apply failed' },
-          ],
-          actions: completed,
-        };
-      }
-      continue;
-    }
-    if (action.op === 'verify-readiness') {
-      const ready = waitForDevObjectStoreReadiness(deps);
-      completed.push({
-        op: 'verify-readiness',
-        context: DEV_S3_CONTEXT,
-        pvcPhase: ready.pvcPhase,
-        availableReplicas: ready.availableReplicas,
-        s3Status: ready.s3Status,
-      });
-      if (!ready.ok) {
-        return {
-          ...again,
-          ok: false,
-          mutated: completed.some(
-            (item) =>
-              item.op !== 'reuse-secret' && item.op !== 'verify-readiness',
-          ),
-          refusals: [
-            {
-              id: 'readiness-failed',
-              detail: 'PVC, Deployment, or S3 endpoint did not become ready',
-            },
-          ],
-          actions: completed,
-        };
-      }
-      continue;
-    }
-    if (action.op === 'create-secret') {
-      const credentials = deps.generateCredentials?.() ?? {
-        accessKeyId: '',
-        secretAccessKey: '',
-      };
-      if (!credentials.accessKeyId || !credentials.secretAccessKey) {
-        return {
-          ...again,
-          ok: false,
-          mutated: false,
-          refusals: [
-            {
-              id: 'credential-generation-failed',
-              detail: 'admin credentials were not generated',
-            },
-          ],
-          actions: completed,
-        };
-      }
-      const created = deps.run(
-        'kubectl',
-        ['--context', DEV_S3_CONTEXT, 'create', '-f', '-'],
-        { input: devSecretManifest(credentials) },
-      );
-      completed.push({ op: 'create-secret', name: DEV_S3_SECRET });
-      if (!created.ok) {
-        return {
-          ...again,
-          ok: false,
-          mutated: true,
-          refusals: [
-            {
-              id: 'create-secret-failed',
-              detail: 'secret create failed or conflicted',
-            },
-          ],
-          actions: completed,
-        };
-      }
-      continue;
-    }
-    const applied = deps.run(
-      'kubectl',
-      ['--context', DEV_S3_CONTEXT, 'apply', '-f', '-'],
-      { input: workloadManifest(renderDeps) },
-    );
-    completed.push({ op: action.op, context: action.context });
-    if (!applied.ok) {
-      return {
-        ...again,
-        ok: false,
-        mutated: true,
-        refusals: [
-          {
-            id: 'apply-workloads-failed',
-            detail: 'workload apply failed; owned secret was not deleted',
-          },
-        ],
-        actions: completed,
-      };
-    }
-  }
-  const mutating = new Set([
-    'ensure-namespace',
-    'create-secret',
-    'apply-workloads',
-  ]);
-  return {
-    ...again,
-    ok: true,
-    mutated: completed.some((action) => mutating.has(action.op)),
-    actions: completed,
-  };
+export async function executeAuthorizedDevObjectStore(deps) {
+  void deps.collect;
+  void deps.renderDeps;
+  return ensureObjectStorage('dev', {
+    authorize: true,
+    run: deps.run,
+    generateCredentials: deps.generateCredentials,
+    stateRoot: deps.stateRoot,
+    readIdentity: deps.readIdentity,
+    now: deps.now,
+    budgetMs: deps.budgetMs,
+    mutationCommands: deps.mutationCommands,
+  });
 }
 
 export {

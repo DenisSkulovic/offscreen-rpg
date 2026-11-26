@@ -6,15 +6,11 @@ The game document adapter stays on [Selected document store](../technical/platfo
 
 ## What this procedure is
 
-Run one SeaweedFS process in `lab-objects` behind a ClusterIP Service named `object-store` on port 8333. The process is `weed mini` with its data directory on a `local-path` persistent volume. The bucket name is `lab-objects`. `infra/platform/object-storage/install.sh` creates the Kubernetes Secret `object-store-s3` in the cluster. The access key and secret key are not written into Git. `infra/verification/smoke/object-storage/smoke.sh` reads that Secret and does not create or rotate it.
+Run one SeaweedFS process in `lab-objects` behind a ClusterIP Service named `object-store` on port 8333. The process is `weed mini` with its data directory on a `local-path` persistent volume. The bucket name is `lab-objects`. `infra/platform/object-storage/install.sh` creates the Kubernetes Secret `object-store-s3` in the cluster. The access key and secret key are not written into Git.
 
-The readiness and liveness probes request `http://127.0.0.1:8333/`. With the smoke credentials, that request is refused with HTTP 403. HTTP 200 is the unauthenticated mode. The probe accepts either code so it knows the port answered. A 403 does not prove that an object can be stored. The put, get, and delete in the smoke are that proof.
+`infra/verification/smoke/object-storage/smoke.sh` refuses immediately with exit code 2 and is not the current proof. It no longer reads admin credentials, deletes a Pod, or writes objects. The native SDK replacement proof is separate and not this script.
 
-`infra/verification/smoke/object-storage/smoke.sh` checks the S3 calls, then Pod replacement:
-
-- put a random-prefix `lifecycle.txt`, get the same bytes back, delete it, and show that a later head reports the object missing
-- put a random-prefix `restart.txt`, delete the store Pod after setting `OFFSCREEN_OBJECT_STORAGE_POD_DELETE_CONFIRM` to the Pod uid, and get that object back from the replacement Pod
-- the persistent volume claim uid stays the same and the Pod uid changes
+The readiness and liveness probes request `http://127.0.0.1:8333/`. With store credentials, that request may be refused with HTTP 403. HTTP 200 is the unauthenticated mode. The probe accepts either code so it knows the port answered. A 403 or a Ready Pod does not prove that an object can be stored.
 
 A container that becomes Ready is not this proof. The put, get, and delete have to succeed. The object that was deleted has to stay missing after the Pod is replaced.
 
@@ -28,16 +24,16 @@ MinIO is not the lab store. `minio/minio` pulls are blocked in this environment,
 
 ## What it must not do
 
-- Do not treat a Ready Pod as proof of S3. The smoke has to put, get, and delete an object.
+- Do not treat a Ready Pod as proof of S3. Object-storage scenarios stay gated until the scoped native SDK replacement proof exists.
 - Do not treat Pod replacement as a backup. The object is on the local-path volume. Deleting the kind cluster deletes the node disk that holds that volume. There is no backup job and no second replica.
-- Do not put an access key, a secret key, or a Secret manifest in Git. The installer creates the Secret and does not print it. The smoke does not create or overwrite credentials.
+- Do not put an access key, a secret key, or a Secret manifest in Git. The installer creates the Secret and does not print it. The retired smoke no longer creates or overwrites credentials.
 - Do not use a NodePort or LoadBalancer Service. Only port 8333 is on the Service. `weed mini` also listens inside the Pod for its master, filer, and admin ports. Those ports are not published on the host.
 - Do not point the game or the API at this Service. `OFFSCREEN_DOCUMENT_STORE` stays unchanged.
 - Do not delete Docker volumes outside this cluster. If `offscreen-rpg_postgres-data` or `offscreen-rpg_temporal-data` already exist, they must remain after `down.sh`. A clone that has neither volume is valid.
 
 ## Recovery limit
 
-Deleting the store Pod does not delete an object that was still in the bucket. The bytes are on the persistent volume. The Deployment starts a new Pod and attaches the same claim. The smoke checks that the claim uid is unchanged and that the new Pod uid is different.
+Deleting the store Pod does not delete an object that was still in the bucket. The bytes are on the persistent volume. The Deployment starts a new Pod and attaches the same claim. A historical acceptance run once checked that the claim uid was unchanged and that the Pod uid changed across replacement; that retired smoke is not the current proof.
 
 Deleting the kind cluster does not preserve local-path data and is not a backup. The provisioner stores files on the kind node disk, under `/opt/local-path-provisioner`, and `kind delete cluster` removes that node. Recreating the cluster creates an empty volume. Pod replacement and cluster deletion are different events.
 
@@ -65,7 +61,7 @@ infra/clusters/kind/release/destroy.sh kind-offscreen-release
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
 
-When local Docker already has the two pins, the smoke saves each image and imports it into each kind node with `ctr images import`. `kind load docker-image` is not used. If the import fails, the kubelet may still pull the same pin. `install.sh` applies the platform chart through the guarded installer. The smoke applies only `infra/verification/smoke/object-storage/client.yaml`, uses a random proof key prefix under `lab-objects`, and deletes that prefix and the client Pod when it exits. Before the intentional store Pod deletion, set `OFFSCREEN_OBJECT_STORAGE_POD_DELETE_CONFIRM` to the current store Pod uid printed by the smoke. `down.sh` deletes the cluster, including the claim and the local-path files on the node. The smoke does not delete Compose volumes.
+`install.sh` applies the platform chart through the guarded installer. Invoking `infra/verification/smoke/object-storage/smoke.sh` after install prints the refusal to stderr and exits 2; that command is not the current proof and does not configure users, copy admin credentials, delete Pods, or write objects. `down.sh` deletes the cluster, including the claim and the local-path files on the node. The retired smoke did not delete Compose volumes.
 
 ## Failure
 

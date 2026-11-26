@@ -4,7 +4,7 @@
  */
 
 import { spawnSync } from 'node:child_process';
-import { observeDevObjectStoreReady } from '../../../../infra/platform/object-storage/readiness.mjs';
+import { statusObjectStorage } from '../../../../infra/platform/object-storage/providers/seaweedfs/install.mjs';
 import { observeDevPostgresReady } from '../../../../infra/platform/postgres/readiness.mjs';
 import { observeTemporalReady } from '../../../../infra/platform/temporal/readiness.mjs';
 
@@ -57,17 +57,25 @@ export function sampleCnpgReady(run) {
 }
 
 /**
+ * @param {{ state: string, reason?: string }} status
+ */
+export function objectStoreReadinessFromNativeState(status) {
+  return { ok: status.state === 'native-noop', detail: status.reason };
+}
+
+/**
  * @param {(command: string, args: string[]) => { status: number | null, stdout?: string, stderr?: string }} run
  */
 export function sampleObjectStoreReady(run) {
-  return observeDevObjectStoreReady({ run: adaptRunForPlatform(run) });
+  const status = statusObjectStorage('dev', { run: adaptRunForPlatform(run) });
+  return objectStoreReadinessFromNativeState(status);
 }
 
 /**
  * @param {(command: string, args: string[]) => { status: number | null, stdout?: string, stderr?: string }} run
  */
 export function sampleTemporalReady(run) {
-  return observeDevTemporalReady({ run: adaptRunForPlatform(run) });
+  return observeTemporalReady('dev', { run: adaptRunForPlatform(run) });
 }
 
 /**

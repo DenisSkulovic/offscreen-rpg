@@ -51,7 +51,7 @@ async function main() {
     startupStage = 'document-store';
     const documentStore = createDocumentStoreFromEnv(process.env);
     if (documentStore instanceof S3DocumentStore) {
-      await documentStore.ensureBucket();
+      await documentStore.requireBucket();
     }
     startupStage = 'default-rules';
     const defaultRules = await resolveStartupDefaultRules(

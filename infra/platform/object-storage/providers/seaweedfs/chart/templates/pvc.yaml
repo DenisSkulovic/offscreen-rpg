@@ -1,0 +1,27 @@
+{{- include "seaweedfs-object-store.validate" . -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: object-store-data
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    helm.sh/resource-policy: keep
+  labels:
+{{- if eq .Values.mode "development" }}
+    offscreen.dev/owner: offscreen-dev
+{{- else }}
+    app: object-store
+    offscreen.rpg/lab: disposable
+{{- end }}
+spec:
+{{- if eq .Values.mode "development" }}
+  accessModes: [ReadWriteOnce]
+{{- else }}
+  accessModes:
+    - ReadWriteOnce
+{{- end }}
+  volumeMode: Filesystem
+  storageClassName: {{ .Values.storageClass }}
+  resources:
+    requests:
+      storage: 2Gi

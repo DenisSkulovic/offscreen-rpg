@@ -1,10 +1,15 @@
 import { spawnSync } from 'node:child_process';
-import { accessSync, constants, lstatSync } from 'node:fs';
+import { accessSync, constants, lstatSync, readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
+import { parse } from 'yaml';
 import { formatManifestDocuments } from '../platform/common/manifest-output.mjs';
+import {
+  assertBindingsOverlayPermitted,
+  validateObjectStorageBinding,
+} from '../platform/object-storage/binding.mjs';
 
 const workloadsRoot = join(dirname(fileURLToPath(import.meta.url)));
 const chartPath = join(workloadsRoot, 'chart');
@@ -508,14 +513,16 @@ export function renderWorkloadDocuments(
     throw new Error(`unsupported section: ${section}`);
   }
   if (profile === 'development') {
-    if (!bindings || typeof bindings !== 'object') {
-      throw new Error('development bindings are required');
-    }
+    assertBindingsOverlayPermitted(bindings);
   } else if (bindings != null && Object.keys(bindings).length > 0) {
     throw new Error('release profile does not accept bindings');
   }
 
   const profilePath = join(profilesRoot, `${profile}.yaml`);
+  if (profile === 'release') {
+    const document = parse(readFileSync(profilePath, 'utf8'));
+    validateObjectStorageBinding(document?.release?.objectStorage);
+  }
   /** @type {Record<string, unknown>} */
   const overlay = { section };
   if (profile === 'development') overlay.bindings = bindings;

@@ -63,6 +63,22 @@ export const ADDITIONAL_PLATFORM_TESTS = Object.freeze([
     requiresHelm: true,
   },
   {
+    file: 'infra/platform/object-storage/tests/binding.test.mjs',
+    requiresHelm: false,
+  },
+  {
+    file: 'infra/platform/object-storage/tests/mutation-guard.test.mjs',
+    requiresHelm: false,
+  },
+  {
+    file: 'infra/platform/object-storage/tests/provision.test.mjs',
+    requiresHelm: false,
+  },
+  {
+    file: 'infra/verification/smoke/object-storage/proof.test.mjs',
+    requiresHelm: false,
+  },
+  {
     file: 'infra/platform/rabbitmq/tests/install.test.mjs',
     requiresHelm: false,
   },

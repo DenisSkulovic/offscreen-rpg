@@ -8,7 +8,7 @@ import {
   runPlatformCommand,
 } from '../platform/common/commands.mjs';
 import { readPlatformProfile } from '../platform/common/profile.mjs';
-import { observeDevObjectStoreReady } from '../platform/object-storage/readiness.mjs';
+import { statusObjectStorage } from '../platform/object-storage/providers/seaweedfs/install.mjs';
 import { observeDevPostgresReady } from '../platform/postgres/readiness.mjs';
 import { RELEASE_CNPG_CLUSTER } from '../platform/postgres/config.mjs';
 import { assessCnpgClusterTopologyReadiness } from '../platform/postgres/cluster-readiness.mjs';
@@ -507,23 +507,6 @@ function observeReleaseServiceState(serviceId, deps = {}) {
     };
   }
 
-  if (serviceId === 'object-storage') {
-    const deployment = read(
-      'deployment',
-      'object-store',
-      profile.namespaces.objectStorage,
-    );
-    if (deployment.state === 'unreadable') {
-      return { state: 'unreadable', detail: deployment.reason };
-    }
-    if (deployment.state === 'absent') {
-      return { state: 'not-installed' };
-    }
-    return {
-      state: deploymentIsReady(deployment.object) ? 'installed' : 'not-ready',
-    };
-  }
-
   if (serviceId === 'temporal') {
     const release = observeTemporalRelease('release', { run });
     if (release.state === 'absent') return { state: 'not-installed' };
@@ -580,12 +563,27 @@ export function observeSelectedServiceState(profileId, serviceId, deps = {}) {
     return { state: 'unreadable', detail: supported.refusal.message };
   }
 
+  if (serviceId === 'object-storage') {
+    const run = deps.run ?? runPlatformCommand;
+    const native =
+      deps.statusObjectStorage?.(profileId) ??
+      statusObjectStorage(profileId, { run });
+    /** @type {Record<string, 'not-installed' | 'installed' | 'unreadable' | 'not-ready'>} */
+    const stateByNative = {
+      absent: 'not-installed',
+      'native-noop': 'installed',
+      unknown: 'unreadable',
+      refused: 'not-ready',
+    };
+    return {
+      state: stateByNative[native.state] ?? 'unreadable',
+      detail: native.reason,
+    };
+  }
+
   if (profileId === 'dev') {
     if (serviceId === 'postgres') {
       return devReadinessToServiceState(observeDevPostgresReady(deps));
-    }
-    if (serviceId === 'object-storage') {
-      return devReadinessToServiceState(observeDevObjectStoreReady(deps));
     }
     if (serviceId === 'temporal') {
       const release = observeTemporalRelease('dev', deps);

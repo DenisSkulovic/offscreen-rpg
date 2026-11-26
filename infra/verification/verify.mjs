@@ -118,6 +118,13 @@ export const SOURCE_SUITE_DEFINITIONS = Object.freeze([
       'infra/verification/dev-environments/selective-profile-programme.test.mjs',
     ]),
   },
+  {
+    id: 'object-storage-proof',
+    requiresHelm: false,
+    files: Object.freeze([
+      'infra/verification/smoke/object-storage/proof.test.mjs',
+    ]),
+  },
 ]);
 
 /** Stable catalog IDs from infra/verification/CAPABILITIES.md */

@@ -5,7 +5,12 @@ import {
   DEV_S3_PVC,
   DEV_S3_SECRET,
 } from '../../../../infra/platform/object-storage/dev-bootstrap.mjs';
-import { deriveDevSqlTenant } from '../rendering/dev-sql-tenant-contract.mjs';
+import {
+  classifyTenantObservation,
+  deriveObjectStorageTenant,
+  ensureObjectStorageTenant,
+  expectedTenantPolicy,
+} from '../../../../infra/platform/object-storage/providers/seaweedfs/provision.mjs';
 
 const LIVE_TOKEN = 'kind-offscreen-dev-s3-tenant-live';
 
@@ -16,23 +21,24 @@ function refusal(id, detail) {
 function stopped(id, detail, extra = {}) {
   return {
     ok: false,
-    mutated: Boolean(extra.retained?.length),
+    mutated: Boolean(extra.mutated),
     refusals: [refusal(id, detail)],
     ...extra,
   };
 }
 
 export function deriveDevS3Tenant(slotId) {
-  const names = deriveDevSqlTenant(slotId);
+  const tenant = deriveObjectStorageTenant('dev', slotId);
   return {
-    slotId: names.slotId,
-    bucket: `offscreen-dev-${names.digits}`,
-    user: names.slotId,
-    secret: `dev-${names.digits}-s3`,
-    context: DEV_S3_CONTEXT,
-    namespace: DEV_S3_NAMESPACE,
-    owner: DEV_S3_OWNER,
-    role: 'readwrite',
+    slotId: tenant.slotId,
+    bucket: tenant.bucket,
+    user: tenant.user,
+    secret: tenant.secret,
+    policyName: tenant.policyName,
+    context: tenant.context,
+    namespace: tenant.namespace,
+    owner: tenant.owner,
+    role: tenant.role,
   };
 }
 
@@ -83,6 +89,112 @@ function assertHost(host) {
   return null;
 }
 
+const PROVISION_REFUSAL_MAP = {
+  'bucket-owner-mismatch': 'foreign-bucket',
+  'orphan-policy': 'tenant-refused',
+  'partial-tuple': 'tenant-refused',
+  'secret-name': 'partial-secret',
+  'head-bucket': 'scope-not-enforced',
+  'observation-unreadable': 'tenant-unknown',
+  'required-inventory-missing': 'tenant-unknown',
+  'bucket-policy-unknown': 'tenant-unknown',
+  'write-ambiguous': 'tenant-unknown',
+  'write-failed': 'tenant-unknown',
+};
+
+function mapProvisionRefusal(reason, state, extra = {}) {
+  const id =
+    state === 'unknown'
+      ? (PROVISION_REFUSAL_MAP[reason] ?? 'tenant-unknown')
+      : (PROVISION_REFUSAL_MAP[reason] ?? 'tenant-refused');
+  return stopped(id, reason, extra);
+}
+
+/**
+ * @param {object} adapter
+ * @param {ReturnType<typeof deriveDevS3Tenant>} names
+ */
+function readObservationFromAdapter(adapter, names) {
+  if (typeof adapter.readObservation === 'function') {
+    return adapter.readObservation(names);
+  }
+
+  const bucket = adapter.bucket(names.bucket);
+  const userRaw = adapter.user(names.user);
+  const secretRaw = adapter.secret(names.secret);
+  const policyInventory =
+    typeof adapter.policyInventory === 'function'
+      ? adapter.policyInventory(names)
+      : null;
+  const policyDocument =
+    typeof adapter.policyDocument === 'function'
+      ? adapter.policyDocument(names)
+      : null;
+  const groupsEmpty =
+    typeof adapter.groupsEmpty === 'function'
+      ? adapter.groupsEmpty(names)
+      : null;
+  const bucketPolicies =
+    typeof adapter.bucketPolicies === 'function'
+      ? adapter.bucketPolicies(names)
+      : null;
+
+  let headBucket =
+    typeof adapter.headBucket === 'function' ? adapter.headBucket(names) : null;
+
+  const user =
+    userRaw == null
+      ? null
+      : {
+          name: names.user,
+          enabled: userRaw.enabled !== false,
+          source: userRaw.source ?? 'dynamic',
+          policies: userRaw.policies ?? [],
+          actions: userRaw.actions ?? [],
+          serviceAccounts: userRaw.serviceAccounts ?? [],
+          credentials: userRaw.credentials ?? [],
+        };
+
+  let secretObservation = null;
+  if (secretRaw) {
+    const accessKeyId =
+      secretRaw.accessKeyId ?? user?.credentials?.[0]?.accessKey ?? '';
+    secretObservation = {
+      name: secretRaw.name ?? names.secret,
+      uid: secretRaw.uid,
+      accessKeyId,
+    };
+  }
+
+  if (headBucket == null && typeof adapter.access === 'function') {
+    const access = adapter.access(names);
+    if (access?.status === 'deferred') {
+      headBucket = 'unknown';
+    } else if (
+      access &&
+      access.ownWrite === true &&
+      access.otherWrite === false &&
+      access.adminDistributed === false
+    ) {
+      headBucket = 'ok';
+    } else if (access) {
+      headBucket = 'denied';
+    }
+  }
+
+  return {
+    bucket: bucket ? { name: names.bucket, owner: bucket.owner } : null,
+    user,
+    policyInventory,
+    policyDocument,
+    groupsEmpty,
+    secret: secretObservation,
+    bucketPolicies,
+    headBucket,
+    unreadable: Boolean(adapter.observationUnreadable),
+  };
+}
+
 export async function ensureDevS3Tenant({ slotId, authorizeLive, adapter }) {
   if (authorizeLive !== LIVE_TOKEN)
     return stopped(
@@ -97,57 +209,138 @@ export async function ensureDevS3Tenant({ slotId, authorizeLive, adapter }) {
   const binding = assertHost(adapter.identity());
   if (binding) return binding;
   const names = deriveDevS3Tenant(slotId);
-  const retained = [];
-  const bucket = adapter.bucket(names.bucket);
-  if (bucket && bucket.owner !== names.user && bucket.owner !== 'pending')
-    return stopped('foreign-bucket', bucket.owner, { retained });
-  const identity = adapter.user(names.user);
-  if (identity && identity.owner !== names.user)
-    return stopped('foreign-identity', identity.owner, { retained });
-  const secret = adapter.secret(names.secret);
-  if (secret && secret.owner !== DEV_S3_OWNER)
-    return stopped('foreign-secret', names.secret, { retained });
-  if (identity && !secret)
+
+  const preliminary = readObservationFromAdapter(adapter, names);
+  if (preliminary.user && !preliminary.secret) {
+    const secret = adapter.secret(names.secret);
+    const retained = secret ? [{ name: secret.name, uid: secret.uid }] : [];
     return stopped('partial-identity', names.user, { retained });
-  if (!identity && secret)
+  }
+  if (!preliminary.user && preliminary.secret) {
+    const secret = adapter.secret(names.secret);
+    const retained = secret ? [{ name: secret.name, uid: secret.uid }] : [];
     return stopped('partial-secret', names.secret, { retained });
-  let mutated = false;
-  if (!bucket) {
-    adapter.createBucket(names);
-    mutated = true;
   }
+
+  const result = await ensureObjectStorageTenant('dev', {
+    authorize: true,
+    slotId,
+    readObservation: async () => readObservationFromAdapter(adapter, names),
+    writeFresh: async (tenant) => {
+      if (typeof adapter.writeFresh === 'function') {
+        return adapter.writeFresh(tenant);
+      }
+      const before = readObservationFromAdapter(adapter, names);
+      const classified = classifyTenantObservation(tenant, before);
+      if (classified.state !== 'absent') {
+        return { ok: false, mutated: false, reason: 'write-refused' };
+      }
+      adapter.createBucket(names);
+      adapter.provisionUser(names);
+      return { ok: true, mutated: true };
+    },
+  });
+
+  const retained = [];
+  const secret = adapter.secret(names.secret);
   if (secret) retained.push({ name: secret.name, uid: secret.uid });
-  if (!identity) {
-    const created = adapter.provisionUser(names);
-    retained.push({ name: created.secret, uid: created.uid });
-    mutated = true;
-  }
-  const after = adapter.access(names);
-  if (after?.status === 'deferred') {
-    return {
-      ok: true,
-      mutated,
-      refusals: [],
+
+  if (!result.ok) {
+    return mapProvisionRefusal(result.reason, result.state, {
+      mutated: result.mutated,
       retained,
-      bucket: names.bucket,
-      user: names.user,
-      accessEvidence: 'not-exercised',
-    };
+    });
+  }
+
+  const observation = readObservationFromAdapter(adapter, names);
+  const after = adapter.access?.(names);
+  if (result.state === 'reuse' && observation.headBucket !== 'ok') {
+    return stopped('scope-not-enforced', names.bucket, {
+      retained,
+      mutated: false,
+    });
   }
   if (
-    after.ownWrite !== true ||
-    after.otherWrite !== false ||
-    after.adminDistributed === true
+    result.state === 'reuse' &&
+    after &&
+    after.status !== 'deferred' &&
+    (after.ownWrite !== true ||
+      after.otherWrite !== false ||
+      after.adminDistributed === true)
   ) {
-    return stopped('scope-not-enforced', names.bucket, { retained, mutated });
+    return stopped('scope-not-enforced', names.bucket, {
+      retained,
+      mutated: result.mutated,
+    });
   }
+
+  const accessEvidence =
+    observation.headBucket === 'ok' ||
+    (after &&
+      after.status !== 'deferred' &&
+      after.ownWrite === true &&
+      after.otherWrite === false)
+      ? 'exercised'
+      : 'not-exercised';
+
   return {
     ok: true,
-    mutated,
+    mutated: result.mutated,
     refusals: [],
     retained,
     bucket: names.bucket,
     user: names.user,
-    accessEvidence: 'exercised',
+    accessEvidence,
+  };
+}
+
+export function mockObservationForStore(store, names, options = {}) {
+  const bucket = store.buckets[names.bucket] ?? null;
+  const user = store.users[names.user] ?? null;
+  const secret = store.secrets[names.secret] ?? null;
+  const policyInventory =
+    options.policyInventory ?? store.policyInventory ?? [];
+  const policyOnRecord =
+    policyInventory.includes(names.policyName) ||
+    (user?.policies ?? []).includes(names.policyName);
+  const policyDocument =
+    options.policyDocument ??
+    (policyOnRecord ? expectedTenantPolicy(names.bucket) : null);
+  return {
+    bucket: bucket
+      ? {
+          name: names.bucket,
+          owner: bucket.owner === 'pending' ? names.user : bucket.owner,
+        }
+      : null,
+    user: user
+      ? {
+          name: names.user,
+          enabled: user.enabled !== false,
+          source: user.source ?? 'dynamic',
+          policies: user.policies ?? [names.policyName],
+          actions: user.actions ?? [],
+          serviceAccounts: user.serviceAccounts ?? [],
+          credentials: user.credentials ?? [
+            {
+              accessKey: secret?.accessKeyId ?? store.accessKeyId ?? 'AK-MOCK',
+              status: 'Active',
+            },
+          ],
+        }
+      : null,
+    policyInventory,
+    policyDocument,
+    groupsEmpty: options.groupsEmpty ?? true,
+    secret: secret
+      ? {
+          name: secret.name,
+          uid: secret.uid,
+          accessKeyId: secret.accessKeyId ?? store.accessKeyId ?? 'AK-MOCK',
+        }
+      : null,
+    bucketPolicies: options.bucketPolicies ?? [],
+    headBucket: options.headBucket ?? (user && bucket && secret ? 'ok' : null),
+    unreadable: Boolean(options.unreadable),
   };
 }

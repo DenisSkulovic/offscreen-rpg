@@ -1,0 +1,226 @@
+import { randomBytes } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import process from 'node:process';
+import { runPlatformCommand } from '../../../platform/common/commands.mjs';
+import { planObjectStorage } from '../../../platform/object-storage/providers/seaweedfs/install.mjs';
+
+const VALID_PROFILES = new Set(['dev', 'release']);
+export const PROOF_NAMESPACE_PATTERN = /^offscreen-s3-proof-[0-9a-f]{32}$/;
+
+/**
+ * @param {string[]} args
+ * @returns {{ ok: true, profile: string, plan: boolean, live: boolean, confirmDisposable: boolean, cleanup: boolean } | { ok: false, stderr: string }}
+ */
+function parseArgv(args) {
+  /** @type {string | null} */
+  let profile = null;
+  let plan = false;
+  let live = false;
+  let confirmDisposable = false;
+  let cleanup = false;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const token = args[index];
+    if (token === '--plan') {
+      plan = true;
+      continue;
+    }
+    if (token === '--live') {
+      live = true;
+      continue;
+    }
+    if (token === '--confirm-disposable') {
+      confirmDisposable = true;
+      continue;
+    }
+    if (token === '--cleanup') {
+      cleanup = true;
+      continue;
+    }
+    if (token === '--profile') {
+      const value = args[index + 1];
+      if (value === undefined || value.startsWith('--')) {
+        return {
+          ok: false,
+          stderr: 'object-storage proof: --profile requires a value\n',
+        };
+      }
+      profile = value;
+      index += 1;
+      continue;
+    }
+    if (token.startsWith('--profile=')) {
+      profile = token.slice('--profile='.length);
+      continue;
+    }
+    return {
+      ok: false,
+      stderr: `object-storage proof: unknown argument ${token}\n`,
+    };
+  }
+
+  if (profile === null) {
+    return {
+      ok: false,
+      stderr: 'object-storage proof: --profile is required\n',
+    };
+  }
+  if (!VALID_PROFILES.has(profile)) {
+    return {
+      ok: false,
+      stderr: `object-storage proof: unsupported profile ${profile}\n`,
+    };
+  }
+  if (plan === live) {
+    return {
+      ok: false,
+      stderr: 'object-storage proof: specify exactly one of --plan or --live\n',
+    };
+  }
+  if (plan && (confirmDisposable || cleanup)) {
+    return {
+      ok: false,
+      stderr:
+        'object-storage proof: --confirm-disposable and --cleanup require --live\n',
+    };
+  }
+
+  return { ok: true, profile, plan, live, confirmDisposable, cleanup };
+}
+
+export function createProofNamespace() {
+  return `offscreen-s3-proof-${randomBytes(16).toString('hex')}`;
+}
+
+/**
+ * @param {{ cleanupRequested: boolean, namespace: string, expectedUid: string | undefined, observedUid: string | undefined, uncertainMutation: boolean }} input
+ * @returns {{ action: 'refuse', reason: string } | { action: 'delete', request: { namespace: string, body: { apiVersion: string, kind: string, preconditions: { uid: string } } } }}
+ */
+export function decideProofNamespaceCleanup(input) {
+  if (input.cleanupRequested !== true) {
+    return { action: 'refuse', reason: 'cleanup-not-requested' };
+  }
+  if (input.uncertainMutation === true) {
+    return { action: 'refuse', reason: 'uncertain-mutation' };
+  }
+  if (!PROOF_NAMESPACE_PATTERN.test(input.namespace)) {
+    return { action: 'refuse', reason: 'namespace-not-proof' };
+  }
+  const { expectedUid, observedUid } = input;
+  if (
+    typeof expectedUid !== 'string' ||
+    expectedUid.length === 0 ||
+    typeof observedUid !== 'string' ||
+    observedUid.length === 0 ||
+    expectedUid !== observedUid
+  ) {
+    return { action: 'refuse', reason: 'uid-mismatch' };
+  }
+  return {
+    action: 'delete',
+    request: {
+      namespace: input.namespace,
+      body: {
+        apiVersion: 'v1',
+        kind: 'DeleteOptions',
+        preconditions: { uid: expectedUid },
+      },
+    },
+  };
+}
+
+/**
+ * @param {string[]} args
+ * @param {{
+ *   plan?: (profile: string) => void | Promise<void>,
+ *   platformRun?: import('../../../platform/common/commands.mjs').runPlatformCommand,
+ *   ensure?: (ctx: { profile: string, namespace: string }) => void | Promise<void>,
+ *   cleanup?: (namespace: string) => void | Promise<void>,
+ *   createNamespace?: () => string,
+ * }} [deps]
+ * @returns {Promise<{ exitCode: number, stderr: string, stdout: string, wrote: boolean }>}
+ */
+export async function runObjectStorageProof(args, deps = {}) {
+  const parsed = parseArgv(args);
+  if (!parsed.ok) {
+    return { exitCode: 2, stderr: parsed.stderr, stdout: '', wrote: false };
+  }
+
+  if (parsed.live && !parsed.confirmDisposable) {
+    return {
+      exitCode: 2,
+      stderr:
+        'refusing object-storage proof mutation without --confirm-disposable\n',
+      stdout: '',
+      wrote: false,
+    };
+  }
+
+  if (parsed.plan) {
+    if (typeof deps.plan === 'function') {
+      await deps.plan(parsed.profile);
+      return { exitCode: 0, stderr: '', stdout: '', wrote: false };
+    }
+    if (typeof deps.platformRun !== 'function') {
+      return {
+        exitCode: 2,
+        stderr: 'object-storage proof plan is not wired\n',
+        stdout: '',
+        wrote: false,
+      };
+    }
+    const planResult = planObjectStorage(parsed.profile, {
+      run: deps.platformRun,
+    });
+    return {
+      exitCode: 0,
+      stderr: '',
+      stdout: `${JSON.stringify(planResult)}\n`,
+      wrote: false,
+    };
+  }
+
+  const namespace =
+    typeof deps.createNamespace === 'function'
+      ? deps.createNamespace()
+      : createProofNamespace();
+
+  if (typeof deps.ensure !== 'function') {
+    return {
+      exitCode: 2,
+      stderr:
+        'object-storage proof live ensure is owner-operated and not wired in this entrypoint\n',
+      stdout: '',
+      wrote: false,
+    };
+  }
+
+  try {
+    await deps.ensure({ profile: parsed.profile, namespace });
+  } catch {
+    return { exitCode: 1, stderr: '', stdout: '', wrote: true };
+  }
+
+  if (parsed.cleanup && typeof deps.cleanup === 'function') {
+    await deps.cleanup(namespace);
+  }
+
+  return { exitCode: 0, stderr: '', stdout: '', wrote: true };
+}
+
+const isMain =
+  process.argv[1] !== undefined &&
+  fileURLToPath(import.meta.url) === process.argv[1];
+
+if (isMain) {
+  const result = await runObjectStorageProof(process.argv.slice(2), {
+    platformRun: runPlatformCommand,
+  });
+  if (result.stdout) {
+    process.stdout.write(result.stdout);
+  }
+  if (result.stderr) {
+    process.stderr.write(result.stderr);
+  }
+  process.exitCode = result.exitCode;
+}

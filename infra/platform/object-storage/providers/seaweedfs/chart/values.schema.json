@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["mode", "namespace", "storageClass", "image"],
+  "properties": {
+    "mode": { "enum": ["development", "release"] },
+    "namespace": { "type": "string", "minLength": 1 },
+    "storageClass": { "type": "string", "minLength": 1 },
+    "image": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

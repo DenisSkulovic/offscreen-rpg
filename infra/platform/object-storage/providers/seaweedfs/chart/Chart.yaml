@@ -1,0 +1,5 @@
+apiVersion: v2
+name: platform-object-storage-seaweedfs
+description: Native SeaweedFS object store chart for dev and release lab profiles
+type: application
+version: 0.1.0

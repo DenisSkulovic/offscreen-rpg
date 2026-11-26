@@ -72,15 +72,34 @@ function stubPlatformRun(options) {
   function run(command, args, opts = {}) {
     invocations.push({ command, args, input: opts.input });
     if (command !== 'kubectl') {
-      return { ok: false, status: 1, stdout: '', stderr: '', timedOut: false, missing: false };
+      return {
+        ok: false,
+        status: 1,
+        stdout: '',
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
     }
     const joined = args.join(' ');
-    const deny = denyReads.find((rule) => rule.every((part) => joined.includes(part)));
+    const deny = denyReads.find((rule) =>
+      rule.every((part) => joined.includes(part)),
+    );
     if (deny) {
-      return { ok: false, status: 1, stdout: '', stderr: 'denied', timedOut: false, missing: false };
+      return {
+        ok: false,
+        status: 1,
+        stdout: '',
+        stderr: 'denied',
+        timedOut: false,
+        missing: false,
+      };
     }
 
-    if (joined.includes('create namespace') && joined.includes('--dry-run=client')) {
+    if (
+      joined.includes('create namespace') &&
+      joined.includes('--dry-run=client')
+    ) {
       const name = args[args.indexOf('namespace') + 1];
       return {
         ok: true,
@@ -92,11 +111,25 @@ function stubPlatformRun(options) {
       };
     }
     if (joined.includes(' apply ') && joined.includes('-f -')) {
-      return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+      return {
+        ok: true,
+        status: 0,
+        stdout: '',
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
     }
     if (joined.includes(' create ') && joined.includes('-f -')) {
       if (createFails) {
-        return { ok: false, status: 1, stdout: '', stderr: '', timedOut: false, missing: false };
+        return {
+          ok: false,
+          status: 1,
+          stdout: '',
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
       }
       try {
         const body = JSON.parse(opts.input ?? '{}');
@@ -111,12 +144,30 @@ function stubPlatformRun(options) {
       } catch {
         // ignore malformed create input in negative cases
       }
-      return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+      return {
+        ok: true,
+        status: 0,
+        stdout: '',
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
     }
 
-    if (args.includes('gateway') && args.includes('lab-edge') && joined.includes('get ')) {
+    if (
+      args.includes('gateway') &&
+      args.includes('lab-edge') &&
+      joined.includes('get ')
+    ) {
       if (gatewayLabel === 'absent') {
-        return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+        return {
+          ok: true,
+          status: 0,
+          stdout: '',
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
       }
       return {
         ok: true,
@@ -134,7 +185,10 @@ function stubPlatformRun(options) {
       };
     }
 
-    if (joined.includes(' get namespace ') || (joined.includes(' get ') && args.includes('namespace'))) {
+    if (
+      joined.includes(' get namespace ') ||
+      (joined.includes(' get ') && args.includes('namespace'))
+    ) {
       const nameIndex = args.indexOf('namespace');
       const name = args[nameIndex + 1];
       const label = namespaceLabels[name];
@@ -151,7 +205,14 @@ function stubPlatformRun(options) {
         };
       }
       if (label === 'absent') {
-        return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+        return {
+          ok: true,
+          status: 0,
+          stdout: '',
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
       }
       return {
         ok: true,
@@ -168,8 +229,20 @@ function stubPlatformRun(options) {
       };
     }
 
-    if (args.includes('cluster.postgresql.cnpg.io') && args.includes('lab-pg')) {
-      return { ok: true, stdout: JSON.stringify({ metadata: { name: 'lab-pg', namespace: 'lab-postgres', uid: 'pg-cluster-uid' } }) };
+    if (
+      args.includes('cluster.postgresql.cnpg.io') &&
+      args.includes('lab-pg')
+    ) {
+      return {
+        ok: true,
+        stdout: JSON.stringify({
+          metadata: {
+            name: 'lab-pg',
+            namespace: 'lab-postgres',
+            uid: 'pg-cluster-uid',
+          },
+        }),
+      };
     }
 
     if (
@@ -185,8 +258,15 @@ function stubPlatformRun(options) {
             name: 'lab-pg-app',
             namespace: 'lab-postgres',
             labels: { 'cnpg.io/cluster': backingPgClusterLabel },
-            ownerReferences: [{ apiVersion: 'postgresql.cnpg.io/v1', kind: 'Cluster',
-              name: 'lab-pg', uid: backingPgOwnerUid, controller: true }],
+            ownerReferences: [
+              {
+                apiVersion: 'postgresql.cnpg.io/v1',
+                kind: 'Cluster',
+                name: 'lab-pg',
+                uid: backingPgOwnerUid,
+                controller: true,
+              },
+            ],
           },
           data: { uri: Buffer.from(backingPgUri).toString('base64') },
         }),
@@ -208,11 +288,14 @@ function stubPlatformRun(options) {
           metadata: {
             name: 'object-store-s3',
             namespace: 'lab-objects',
-            labels: { 'offscreen.rpg/lab': 'disposable' },
           },
           data: {
-            'access-key-id': Buffer.from(backingS3['access-key-id']).toString('base64'),
-            'secret-access-key': Buffer.from(backingS3['secret-access-key']).toString('base64'),
+            'access-key-id': Buffer.from(backingS3['access-key-id']).toString(
+              'base64',
+            ),
+            'secret-access-key': Buffer.from(
+              backingS3['secret-access-key'],
+            ).toString('base64'),
           },
         }),
         stderr: '',
@@ -222,7 +305,7 @@ function stubPlatformRun(options) {
     }
 
     for (const namespace of APP_NAMESPACES) {
-      for (const secretName of ['game-db', 'game-runtime']) {
+      for (const secretName of ['game-db', 'game-runtime', 'game-s3']) {
         const key = `${namespace}/${secretName}`;
         const entry = secrets[key];
         if (
@@ -232,7 +315,14 @@ function stubPlatformRun(options) {
         ) {
           const created = createdSecrets.get(key);
           if (!entry && !created) {
-            return { ok: true, status: 0, stdout: '', stderr: '', timedOut: false, missing: false };
+            return {
+              ok: true,
+              status: 0,
+              stdout: '',
+              stderr: '',
+              timedOut: false,
+              missing: false,
+            };
           }
           if (!entry && created) {
             return {
@@ -253,7 +343,14 @@ function stubPlatformRun(options) {
             };
           }
           if (entry === 'unreadable') {
-            return { ok: false, status: 1, stdout: '', stderr: '', timedOut: false, missing: false };
+            return {
+              ok: false,
+              status: 1,
+              stdout: '',
+              stderr: '',
+              timedOut: false,
+              missing: false,
+            };
           }
           if (entry === 'foreign') {
             return {
@@ -294,11 +391,22 @@ function stubPlatformRun(options) {
       }
     }
 
-    return { ok: false, status: 2, stdout: '', stderr: `unexpected: ${joined}`, timedOut: false, missing: false };
+    return {
+      ok: false,
+      status: 2,
+      stdout: '',
+      stderr: `unexpected: ${joined}`,
+      timedOut: false,
+      missing: false,
+    };
   }
 
-  return { run, invocations };
+  return { run, invocations, createdSecrets };
 }
+
+const nativeObjectStorage = () => ({
+  statusObjectStorage: () => ({ state: 'native-noop' }),
+});
 
 test('parseRootDotEnv requires three keys and minimum auth length', () => {
   const root = mkdtempSync(join(tmpdir(), 'release-env-'));
@@ -307,7 +415,10 @@ test('parseRootDotEnv requires three keys and minimum auth length', () => {
     'GITHUB_CLIENT_SECRET=sec',
     'BETTER_AUTH_SECRET=short',
   ]);
-  assert.throws(() => assertApprovedLocalEnv(parseRootDotEnv(root)), /at least 32/);
+  assert.throws(
+    () => assertApprovedLocalEnv(parseRootDotEnv(root)),
+    /at least 32/,
+  );
   writeEnv(root, ['GITHUB_CLIENT_ID=id']);
   assert.throws(
     () => assertApprovedLocalEnv(parseRootDotEnv(root)),
@@ -327,11 +438,14 @@ test('fresh install creates all absent secrets once', () => {
     repoRoot: root,
     run,
     randomToken: () => 'd'.repeat(48),
+    ...nativeObjectStorage(),
   });
   assert.equal(receipt.ok, true);
-  assert.equal(receipt.mutations, 6);
-  const creates = invocations.filter((item) => item.args.includes('create') && item.args.includes('-f'));
-  assert.equal(creates.length, 6);
+  assert.equal(receipt.mutations, 9);
+  const creates = invocations.filter(
+    (item) => item.args.includes('create') && item.args.includes('-f'),
+  );
+  assert.equal(creates.length, 9);
 });
 
 test('partial consistent reuse creates only missing projections', () => {
@@ -342,24 +456,33 @@ test('partial consistent reuse creates only missing projections', () => {
     `BETTER_AUTH_SECRET=${'y'.repeat(32)}`,
   ]);
   const runtime = {
-    'access-key-id': 'key',
-    'secret-access-key': 'sek',
     'better-auth-secret': 'y'.repeat(32),
     'github-client-id': 'id',
     'github-client-secret': 'sec',
     ...TOKENS,
   };
+  const s3 = { 'access-key-id': 'key', 'secret-access-key': 'sek' };
   const { run, invocations } = stubPlatformRun({
     secrets: {
-      'lab-edge/game-db': { data: { uri: Buffer.from('postgresql://lab/app').toString('base64') } },
+      'lab-edge/game-db': {
+        data: { uri: Buffer.from('postgresql://lab/app').toString('base64') },
+      },
       'lab-edge/game-runtime': { stringData: runtime },
+      'lab-edge/game-s3': { stringData: s3 },
       'lab-authority/game-runtime': { stringData: runtime },
+      'lab-authority/game-s3': { stringData: s3 },
     },
   });
-  const receipt = ensureReleaseCredentials({ repoRoot: root, run });
-  assert.equal(receipt.mutations, 3);
-  const creates = invocations.filter((item) => item.args.includes('create') && item.args.includes('-f'));
-  assert.equal(creates.length, 3);
+  const receipt = ensureReleaseCredentials({
+    repoRoot: root,
+    run,
+    ...nativeObjectStorage(),
+  });
+  assert.equal(receipt.mutations, 4);
+  const creates = invocations.filter(
+    (item) => item.args.includes('create') && item.args.includes('-f'),
+  );
+  assert.equal(creates.length, 4);
 });
 
 test('conflicting tokens refuse with zero kubectl creates', () => {
@@ -370,8 +493,6 @@ test('conflicting tokens refuse with zero kubectl creates', () => {
     `BETTER_AUTH_SECRET=${'z'.repeat(32)}`,
   ]);
   const runtimeA = {
-    'access-key-id': 'key',
-    'secret-access-key': 'sek',
     'better-auth-secret': 'z'.repeat(32),
     'github-client-id': 'id',
     'github-client-secret': 'sec',
@@ -388,11 +509,18 @@ test('conflicting tokens refuse with zero kubectl creates', () => {
     },
   });
   assert.throws(
-    () => ensureReleaseCredentials({ repoRoot: root, run }),
+    () =>
+      ensureReleaseCredentials({
+        repoRoot: root,
+        run,
+        ...nativeObjectStorage(),
+      }),
     /game-authority-service-token/,
   );
   assert.equal(
-    invocations.some((item) => item.args.includes('create') && item.args.includes('-f')),
+    invocations.some(
+      (item) => item.args.includes('create') && item.args.includes('-f'),
+    ),
     false,
   );
 });
@@ -408,9 +536,19 @@ test('denied secret read refuses with zero mutations', () => {
     secrets: {},
     denyReads: [['get', 'secret', 'game-db']],
   });
-  assert.throws(() => ensureReleaseCredentials({ repoRoot: root, run }), /unreadable/);
+  assert.throws(
+    () =>
+      ensureReleaseCredentials({
+        repoRoot: root,
+        run,
+        ...nativeObjectStorage(),
+      }),
+    /unreadable/,
+  );
   assert.equal(
-    invocations.some((item) => item.args.includes('create') && item.args.includes('-f')),
+    invocations.some(
+      (item) => item.args.includes('create') && item.args.includes('-f'),
+    ),
     false,
   );
 });
@@ -429,9 +567,19 @@ test('database uri drift refuses before create', () => {
       },
     },
   });
-  assert.throws(() => ensureReleaseCredentials({ repoRoot: root, run }), /uri/);
+  assert.throws(
+    () =>
+      ensureReleaseCredentials({
+        repoRoot: root,
+        run,
+        ...nativeObjectStorage(),
+      }),
+    /uri/,
+  );
   assert.equal(
-    invocations.some((item) => item.args.includes('create') && item.args.includes('-f')),
+    invocations.some(
+      (item) => item.args.includes('create') && item.args.includes('-f'),
+    ),
     false,
   );
 });
@@ -444,10 +592,18 @@ test('reconcileTokenFields and decodeSecretStringData', () => {
   assert.equal(decoded.uri, 'postgresql://x');
   assert.equal(decoded.note, 'n');
   const chosen = reconcileTokenFields(
-    [{ 'game-authority-service-token': TOKENS['game-authority-service-token'] }, null],
+    [
+      {
+        'game-authority-service-token': TOKENS['game-authority-service-token'],
+      },
+      null,
+    ],
     ['game-authority-service-token'],
   );
-  assert.equal(chosen['game-authority-service-token'], TOKENS['game-authority-service-token']);
+  assert.equal(
+    chosen['game-authority-service-token'],
+    TOKENS['game-authority-service-token'],
+  );
   assert.throws(
     () =>
       reconcileTokenFields(
@@ -469,12 +625,114 @@ test('mismatchedFieldNames reports oauth drift without values', () => {
   );
   assert.deepEqual(names, ['github-client-id']);
 });
+test('native release projects only scoped S3 keys into game-s3', () => {
+  const root = mkdtempSync(join(tmpdir(), 'release-s3-'));
+  writeEnv(root, [
+    'GITHUB_CLIENT_ID=id',
+    'GITHUB_CLIENT_SECRET=sec',
+    `BETTER_AUTH_SECRET=${'s'.repeat(32)}`,
+  ]);
+  const { run, createdSecrets } = stubPlatformRun({ secrets: {} });
+  ensureReleaseCredentials({
+    repoRoot: root,
+    run,
+    randomToken: () => 'e'.repeat(48),
+    ...nativeObjectStorage(),
+  });
+  for (const namespace of APP_NAMESPACES) {
+    const created = createdSecrets.get(`${namespace}/game-s3`);
+    assert.ok(created, `${namespace}/game-s3 should be created`);
+    assert.deepEqual(Object.keys(created.stringData).sort(), [
+      'access-key-id',
+      'secret-access-key',
+    ]);
+    assert.equal(created.stringData['access-key-id'], 'key');
+    assert.equal(created.stringData['secret-access-key'], 'sek');
+  }
+});
+
+test('occupied release object storage refuses with zero secret writes', () => {
+  const root = mkdtempSync(join(tmpdir(), 'release-occupied-'));
+  writeEnv(root, [
+    'GITHUB_CLIENT_ID=id',
+    'GITHUB_CLIENT_SECRET=sec',
+    `BETTER_AUTH_SECRET=${'o'.repeat(32)}`,
+  ]);
+  const { run, invocations } = stubPlatformRun({ secrets: {} });
+  assert.throws(
+    () =>
+      ensureReleaseCredentials({
+        repoRoot: root,
+        run,
+        statusObjectStorage: () => ({
+          state: 'refused',
+          reason: 'occupied legacy',
+        }),
+      }),
+    /not native-noop/,
+  );
+  assert.equal(
+    invocations.some(
+      (item) => item.args.includes('create') && item.args.includes('-f'),
+    ),
+    false,
+  );
+});
+
+test('game-s3 projection does not copy admin-only runtime fields', () => {
+  const root = mkdtempSync(join(tmpdir(), 'release-admin-only-'));
+  writeEnv(root, [
+    'GITHUB_CLIENT_ID=id',
+    'GITHUB_CLIENT_SECRET=sec',
+    `BETTER_AUTH_SECRET=${'m'.repeat(32)}`,
+  ]);
+  const { run, createdSecrets } = stubPlatformRun({ secrets: {} });
+  ensureReleaseCredentials({
+    repoRoot: root,
+    run,
+    randomToken: () => 'f'.repeat(48),
+    ...nativeObjectStorage(),
+  });
+  for (const namespace of APP_NAMESPACES) {
+    const created = createdSecrets.get(`${namespace}/game-s3`);
+    assert.ok(created);
+    for (const forbidden of [
+      'better-auth-secret',
+      'github-client-id',
+      'github-client-secret',
+      'game-authority-service-token',
+    ]) {
+      assert.equal(created.stringData[forbidden], undefined);
+    }
+  }
+});
+
 test('CNPG app Secret with stale controller UID refuses before credential projection', () => {
   const root = mkdtempSync(join(tmpdir(), 'release-owner-'));
-  writeEnv(root, ['GITHUB_CLIENT_ID=id', 'GITHUB_CLIENT_SECRET=sec', 'BETTER_AUTH_SECRET=' + 'a'.repeat(32)]);
-  for (const options of [{ backingPgOwnerUid: 'stale-cluster-uid' }, { backingPgClusterLabel: 'foreign' }, { namespaceLabels: { 'lab-postgres': 'foreign' } }]) {
+  writeEnv(root, [
+    'GITHUB_CLIENT_ID=id',
+    'GITHUB_CLIENT_SECRET=sec',
+    'BETTER_AUTH_SECRET=' + 'a'.repeat(32),
+  ]);
+  for (const options of [
+    { backingPgOwnerUid: 'stale-cluster-uid' },
+    { backingPgClusterLabel: 'foreign' },
+    { namespaceLabels: { 'lab-postgres': 'foreign' } },
+  ]) {
     const { run, invocations } = stubPlatformRun(options);
-    assert.throws(() => ensureReleaseCredentials({ repoRoot: root, run }), /ownership mismatch/);
-    assert.ok(!invocations.some(item => item.args.includes('create') && item.args.includes('-f')));
+    assert.throws(
+      () =>
+        ensureReleaseCredentials({
+          repoRoot: root,
+          run,
+          ...nativeObjectStorage(),
+        }),
+      /ownership mismatch/,
+    );
+    assert.ok(
+      !invocations.some(
+        (item) => item.args.includes('create') && item.args.includes('-f'),
+      ),
+    );
   }
 });

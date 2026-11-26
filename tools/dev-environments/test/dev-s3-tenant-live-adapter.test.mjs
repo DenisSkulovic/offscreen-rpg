@@ -11,7 +11,9 @@ import {
   parseCredentials,
   parseWeedBucketList,
   parseWeedUserList,
+  parseWeedUserShow,
 } from '../src/adapters/dev-s3-tenant-live-adapter.mjs';
+import { expectedTenantPolicy } from '../../../infra/platform/object-storage/providers/seaweedfs/provision.mjs';
 
 const TOKEN = 'kind-offscreen-dev-s3-tenant-live';
 
@@ -80,7 +82,16 @@ test('prefix collision keeps dev-1 distinct from dev-10', () => {
   const exec = (command, args, input) => {
     if (String(input).includes('s3.bucket.list'))
       return WEED_BUCKET_LIST_FIXTURE;
-    if (String(input).includes('s3.user.list')) return WEED_USER_LIST_FIXTURE;
+    if (String(input).includes('s3.user.show -name dev-1')) {
+      return JSON.stringify({
+        name: 'dev-1',
+        status: 'enabled',
+        source: 'dynamic',
+        policies: ['offscreen-dev-1-dev-1-readwrite'],
+        credentials: [{ accessKey: 'AK1', status: 'Active' }],
+      });
+    }
+    if (String(input).includes('s3.user.show')) return '';
     return '';
   };
   const adapter = createDevS3LiveAdapter({ exec });
@@ -141,6 +152,10 @@ test('provision stores the secret with create and the receipt has only a uid', (
     JSON.stringify(calls.map((call) => call.args)).includes('SK'),
     false,
   );
+  assert.equal(
+    JSON.stringify(calls.map((call) => call.args)).includes('iam.export'),
+    false,
+  );
 });
 
 test('credential create conflicts refuse with an actionable retry message', () => {
@@ -173,17 +188,29 @@ test('credential create conflicts refuse with an actionable retry message', () =
 test('existing tenant reuse retains the secret uid without recreating credentials', async () => {
   const calls = [];
   const names = deriveDevS3Tenant('dev-1');
+  const policyDoc = JSON.stringify(expectedTenantPolicy(names.bucket));
   const exec = (command, args, input) => {
     calls.push({ args, input });
     const joined = args.join(' ');
     if (String(input).includes('s3.bucket.list')) {
       return ` ${names.bucket}\tsize:0\tlogical:0\tchunk:0\towner:"${names.user}"\n`;
     }
-    if (String(input).includes('s3.user.list')) {
-      return JSON.stringify([
-        { name: names.user, status: 'enabled', policies: [], keys: 1 },
-      ]);
+    if (String(input).includes(`s3.user.show -name ${names.user}`)) {
+      return JSON.stringify({
+        name: names.user,
+        status: 'enabled',
+        source: 'dynamic',
+        policies: [names.policyName],
+        actions: [],
+        serviceAccounts: [],
+        credentials: [{ accessKey: 'AK', status: 'Active' }],
+      });
     }
+    if (String(input).includes('s3.policy -list')) {
+      return `"${names.policyName}"\n`;
+    }
+    if (String(input).includes('s3.policy -get')) return policyDoc;
+    if (String(input).includes('s3.user.list -groups')) return '[]';
     if (
       joined.includes(`get secret ${names.secret}`) &&
       joined.includes('--ignore-not-found')
@@ -198,7 +225,7 @@ test('existing tenant reuse retains the secret uid without recreating credential
             'offscreen.dev/slot': 'dev-1',
           },
         },
-        data: { 'access-key-id': 'YWs=', 'secret-access-key': 'U0s=' },
+        data: { 'access-key-id': 'QUs=', 'secret-access-key': 'U0s=' },
       });
     }
     if (joined.includes('get deploy')) {
@@ -222,7 +249,11 @@ test('existing tenant reuse retains the secret uid without recreating credential
       return 's3.bucket.create s3.user.provision';
     return '';
   };
-  const adapter = createDevS3LiveAdapter({ exec });
+  const adapter = createDevS3LiveAdapter({
+    exec,
+    headBucket: () => 'ok',
+    bucketPolicies: () => [],
+  });
   const result = await ensureDevS3Tenant({
     slotId: 'dev-1',
     authorizeLive: TOKEN,
@@ -230,7 +261,7 @@ test('existing tenant reuse retains the secret uid without recreating credential
   });
   assert.equal(result.ok, true);
   assert.equal(result.mutated, false);
-  assert.equal(result.accessEvidence, 'not-exercised');
+  assert.equal(result.accessEvidence, 'exercised');
   assert.deepEqual(result.retained, [{ name: names.secret, uid: 'uid-kept' }]);
   assert.equal(
     calls.some((call) => String(call.args).includes('create')),
@@ -242,6 +273,7 @@ test('existing tenant reuse retains the secret uid without recreating credential
     ),
     false,
   );
+  assert.equal(JSON.stringify(result).includes('secret-access-key'), false);
 });
 
 test('live adapter access defers scope proof until an explicit trial', () => {
@@ -256,7 +288,9 @@ test('partial secret state refuses before bucket creation with zero writes', asy
     calls.push({ args, input });
     const joined = args.join(' ');
     if (String(input).includes('s3.bucket.list')) return '';
-    if (String(input).includes('s3.user.list')) return '[]';
+    if (String(input).includes('s3.user.show')) return '';
+    if (String(input).includes('s3.policy -list')) return '';
+    if (String(input).includes('s3.user.list -groups')) return '[]';
     if (
       joined.includes(`get secret ${names.secret}`) &&
       joined.includes('--ignore-not-found')
@@ -311,4 +345,20 @@ test('partial secret state refuses before bucket creation with zero writes', asy
     calls.some((call) => call.args.includes('create')),
     false,
   );
+});
+
+test('live adapter does not expose recoverUser or s3.iam.export', () => {
+  const adapter = createDevS3LiveAdapter({ exec: () => '' });
+  assert.equal('recoverUser' in adapter, false);
+  assert.equal(typeof adapter.readObservation, 'function');
+  assert.equal(adapter.bucketPolicies(), null);
+});
+
+test('user show without status or source is not treated as an enabled dynamic user', () => {
+  const shown = parseWeedUserShow(
+    '{"name":"dev-1","policies":["offscreen-dev-1-dev-1-readwrite"]}',
+  );
+  assert.equal(shown.enabled, false);
+  assert.equal(shown.source, '');
+  assert.equal(shown.credentials[0]?.status ?? '', '');
 });
