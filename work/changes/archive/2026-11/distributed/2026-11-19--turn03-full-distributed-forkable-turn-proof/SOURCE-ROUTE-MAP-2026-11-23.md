@@ -1,3 +1,6 @@
+> **Terminal owner disposition:** TURN03 cancelled by owner 2026-11-27 because the monorepo and agent runtime will be fundamentally redesigned. Legacy scripted-path proof and architecture-specific recovery matrix are retired, not transferred as pending requirements. Historical evidence retained; no PASS inferred, existing implementation untouched. Future acceptance must be designed against the new architecture; preserve authorization, private data isolation, authoritative state integrity, idempotency, financial safety and truthful evidence. No dispatch or live authorization.
+> All previous status, prerequisites, commissions and instructions below are historical only.
+
 # TURN03 | current source-to-proof route map (2026-11-23)
 
 **Inspected:** uploaded lean source snapshot `a755b183405b` matching integration HEAD at planning start, cross-checked against GitHub. **Status:** source finding, **no release-lab execution**. The new [next execution plan](NEXT-EXECUTION-2026-11-23.md) controls the implementation order.

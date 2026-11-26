@@ -1,3 +1,6 @@
+> **Terminal owner disposition:** TURN03 cancelled by owner 2026-11-27 because the monorepo and agent runtime will be fundamentally redesigned. Legacy scripted-path proof and architecture-specific recovery matrix are retired, not transferred as pending requirements. Historical evidence retained; no PASS inferred, existing implementation untouched. Future acceptance must be designed against the new architecture; preserve authorization, private data isolation, authoritative state integrity, idempotency, financial safety and truthful evidence. No dispatch or live authorization.
+> All previous status, prerequisites, commissions and instructions below are historical only.
+
 # TURN03 R2 | Real release operator design and custody map
 
 **Source inspection:** `undertaking/storyteller-workshop@44ca5dbd`, 2026-11-23; R1 independently executing in Cursor. **Planner-only design**, no implementation or live acceptance. No change to R1-owned `infra/kubernetes/lab/app-release/turn03/{run,run.test,adversarial.test}.mjs`.

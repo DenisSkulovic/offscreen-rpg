@@ -361,3 +361,5 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [WR10](storyteller/2026-11-22--wr10-private-writer-round-protocol/CHANGE.md) (Done source scope 2026-11-26; security/financial acceptance retained).
 
 - [PUBDIAG](storyteller/2026-11-22--pubdiag-writer-publication-failure-log/CHANGE.md) (Done source scope 2026-11-26; telemetry hardening concern retained).
+
+- [TURN03](distributed/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) (Cancelled 2026-11-27; legacy scripted proof retired, historical evidence retained).

@@ -36,16 +36,15 @@
 
 ## Current / immediate work
 
-**2026-11-23 source-only commissions:** [TURN03-R2C scripted player-smoke composition](../archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) is archived Done at injected-trace tier, 9/9. [TURN03-R2D](../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) is archived Done at injected-query tier, 6/6. Neither produces cross-Pod PASS. R2A and R2B remain archived Done at source-only tier. Parent TURN03 and its real operator stay OPEN.
+**2026-11-23 source-only commissions:** [TURN03-R2C scripted player-smoke composition](../archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) is archived Done at injected-trace tier, 9/9. [TURN03-R2D](../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) is archived Done at injected-query tier, 6/6. Neither produces cross-Pod PASS. R2A and R2B remain archived Done at source-only tier. Parent TURN03 cancelled; legacy operator not commissioned.
 
 
-**2026-11-23:** [TURN03-R2A secure HTTP transport](../archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) is Done as an injected fake-fetch check. It is not a live login or cross-Pod PASS. [TURN03-R2B pinned fixture verifier](../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) is Done as an injected read-only check. [TURN03-R2D causal SQL observer](../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) is Done as an injected read-only query check, 6/6. It is not a live database read or cross-Pod PASS. Parent [TURN03](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) stays OPEN.
+**2026-11-23:** [TURN03-R2A secure HTTP transport](../archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) is Done as an injected fake-fetch check. It is not a live login or cross-Pod PASS. [TURN03-R2B pinned fixture verifier](../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) is Done as an injected read-only check. [TURN03-R2D causal SQL observer](../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) is Done as an injected read-only query check, 6/6. It is not a live database read or cross-Pod PASS. Parent [TURN03](../archive/2026-11/distributed/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) is cancelled (legacy acceptance retired).
 
 
 | Change | Why it remains open |
 | --- | --- |
 | [MA12 API Lab isolation](2026-11-22--ma12-production-api-lab-isolation/CHANGE.md) | Commissioned wave / production API workspace closure |
-| [TURN03 cold distributed game proof](2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) | Commissioned proof, true cold-kind gates unresolved |
 | [CL01 terminal player](2026-11-22--cl01-terminal-player-client/CHANGE.md) | Next-wave dependent on MA12 source rebase |
 
 ## Existing incomplete or terminal-reconciliation obligations

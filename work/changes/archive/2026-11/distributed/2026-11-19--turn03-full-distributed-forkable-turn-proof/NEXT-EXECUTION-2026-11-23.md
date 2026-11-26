@@ -1,10 +1,13 @@
+> **Terminal owner disposition:** TURN03 cancelled by owner 2026-11-27 because the monorepo and agent runtime will be fundamentally redesigned. Legacy scripted-path proof and architecture-specific recovery matrix are retired, not transferred as pending requirements. Historical evidence retained; no PASS inferred, existing implementation untouched. Future acceptance must be designed against the new architecture; preserve authorization, private data isolation, authoritative state integrity, idempotency, financial safety and truthful evidence. No dispatch or live authorization.
+> All previous status, prerequisites, commissions and instructions below are historical only.
+
 # TURN03 | next execution route after current-head audit
 
-**2026-11-23 · source baseline `a755b183` · Existing Change remains OPEN.** [Source map](SOURCE-ROUTE-MAP-2026-11-23.md) · [release audit](../../../undertakings/storyteller-workshop/RELEASE-PROOF-AUDIT-2026-11-23.md).
+**2026-11-23 · source baseline `a755b183` · Existing Change remains OPEN.** [Source map](SOURCE-ROUTE-MAP-2026-11-23.md) · [release audit](../../../../../undertakings/storyteller-workshop/RELEASE-PROOF-AUDIT-2026-11-23.md).
 
 ## Next R2 source-only lanes after R2A/R2B landed (2026-11-23)
 
-R2A secure HTTP, R2B pinned fixture verification, [R2C scripted player-smoke composition](../../archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) and [R2D causal SQL observer](../../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) are **Done at injected fake tier**. R2C is 9/9 and is not a live session. R2D is 6/6 and is not a live SQL read. Neither is a cross-Pod PASS. TURN03 stays OPEN. No live cluster, DB access, OAuth login, release install, paid send or Pod deletion is authorized.
+R2A secure HTTP, R2B pinned fixture verification, [R2C scripted player-smoke composition](../../storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) and [R2D causal SQL observer](../../storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) are **Done at injected fake tier**. R2C is 9/9 and is not a live session. R2D is 6/6 and is not a live SQL read. Neither is a cross-Pod PASS. TURN03 stays OPEN. No live cluster, DB access, OAuth login, release install, paid send or Pod deletion is authorized.
 
 ## R2 source-only parallel implementation lanes (2026-11-23)
 
@@ -12,10 +15,10 @@ R2A secure HTTP, R2B pinned fixture verification, [R2C scripted player-smoke com
 
 | Supporting Change | Exclusive code write | Proof level |
 | --- | --- | --- |
-| [TURN03-R2A secure HTTP transport](../../archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) | `turn03/live-http.mjs` + test, source-only Done | Injected fake fetch. 6/6 PASS. Not a live login or cross-Pod PASS. TURN03 stays OPEN |
-| [TURN03-R2B pinned fixture verifier](../../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) | `turn03/fixture-pins.mjs` + test, source-only Done | Injected read-only DocumentStore. 7/7 PASS. Not a live or cross-Pod PASS. TURN03 stays OPEN |
-| [TURN03-R2C scripted player smoke](../../archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) | `turn03/player-smoke.mjs` + test, source-only Done | Injected route. 9/9 PASS. Not a live session or cross-Pod PASS. TURN03 stays OPEN |
-| [TURN03-R2D causal SQL observer](../../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) | `turn03/causal-sql.mjs` + test, source-only Done | Injected query. 6/6 PASS. Not a live SQL read or cross-Pod PASS. TURN03 stays OPEN |
+| [TURN03-R2A secure HTTP transport](../../storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) | `turn03/live-http.mjs` + test, source-only Done | Injected fake fetch. 6/6 PASS. Not a live login or cross-Pod PASS. TURN03 stays OPEN |
+| [TURN03-R2B pinned fixture verifier](../../storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) | `turn03/fixture-pins.mjs` + test, source-only Done | Injected read-only DocumentStore. 7/7 PASS. Not a live or cross-Pod PASS. TURN03 stays OPEN |
+| [TURN03-R2C scripted player smoke](../../storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) | `turn03/player-smoke.mjs` + test, source-only Done | Injected route. 9/9 PASS. Not a live session or cross-Pod PASS. TURN03 stays OPEN |
+| [TURN03-R2D causal SQL observer](../../storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) | `turn03/causal-sql.mjs` + test, source-only Done | Injected query. 6/6 PASS. Not a live SQL read or cross-Pod PASS. TURN03 stays OPEN |
 
 ```mermaid
 flowchart LR
