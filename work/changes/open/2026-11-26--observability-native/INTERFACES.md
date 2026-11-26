@@ -28,3 +28,6 @@ T05 common/cli.mjs native render branch; platform-plan corePhases native argv; p
 
 ## Proof supervisor interface (T07)
 See OWNER-ACCEPTANCE.md for fixed operation signatures, helper ownership, private receipt and budget contract. Adds health operation to earlier proof CLI; no runtime application enrollment.
+
+## Boundary adapters and authorization
+[PUBLIC-CLI.md](PUBLIC-CLI.md) selects exact adapters, public authorization, nonzero malformed-receipt handling and preflight deadline ownership. These refine earlier interface text; no change to defended R34.

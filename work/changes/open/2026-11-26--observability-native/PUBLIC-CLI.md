@@ -1,0 +1,41 @@
+# Public CLI and boundary reconciliation | B05
+
+Verified against owner archive cb66dfab; planning HEAD 46dc271ba70908a241e0cdba7ddca01d380d25b6. No source changes since compatibility baseline. Exact current anchors: package.json:61–63; infra-cli.mjs dispatchInfraCli/runInfraUp/runInfraStatus; platform-plan.mjs corePhases/runPlatformPlan/defaultPlatformRunner; common/commands.mjs runPlatformCommand/assertPlatformTarget; diagnostic-engine.mjs runCommand/commandOutcome; provisioning.mjs buildProvisioningChecks.
+
+## Public route (selected)
+
+Public plan is a static preview, not an inventory observation: dispatchInfraCli calls buildInfraEnsurePreview, and release plan phases are preview-only. Preserve this contract; do not add live writes or imply release preview proves occupancy. A11 uses public status for read-only legacy observation AND direct native plan for admission/refusal (no ensure). Public status exits zero even on service not-ready; inspect cluster and service state/reason. Missing cluster is not verified service absence. T05 native status must retain structural reason and pending in bounded detail; no global exit change.
+
+A6 normal isolated dev bootstrap is a separate explicit owner operation, before observability admission. Public up can create missing cluster (runInfraUp cluster-ensure); never treat it as an existing-cluster-only command. Owner confirms isolated normal target, executes bootstrap separately and verifies exact cluster UID and normal baseline before A6/A9. Under cooperative exclusive operator custody, no concurrent deletion/recreation. A9 wrapper must refuse if target disappears or changes; no automated bootstrap by fault harness. Public up sets per-service authorization only through selected mutating corePhases: use OFFSCREEN_OBSERVABILITY_ENSURE=authorized; direct worker requires exact value and explicit context, never inherit this flag in plan/status. Public selection of up is the authorization at CLI boundary; no new global flag. Do not hand-edit unrelated authorization.
+
+Exact A6 public commands, from clean tested checkout on approved isolated host:
+```bash
+pnpm infra:up --env dev --services none --json
+pnpm infra:plan --env dev --services observability --json
+pnpm infra:status --env dev --services observability --json
+pnpm infra:up --env dev --services observability --json
+pnpm infra:status --env dev --services observability --json
+OFFSCREEN_OBSERVABILITY_PROOF=authorized node infra/verification/smoke/observability/proof.mjs health dev kind-offscreen-dev
+pnpm infra:up --env dev --services observability --json
+pnpm infra:status --env dev --services observability --json
+```
+Bootstrap only if separately approved; capture expected kube-system UID and verify target before first and repeat ensure. Stop if status cluster != present or initial service != verified absent; native ensure repeats under custody. Capture before/after stable UID/resourceVersion facts through health helper (run health again after repeat) and compare. Require public JSON ok:true, exitCode:0, selectedServices exactly observability, phase complete, receipt.phases exactly one observability phase with ready and mutation confirmed on fresh, none on repeat. Require health receipts on same cluster UID and source SHA. No use of status exit code alone. Bootstrap may take longer than observability worker budget; separate operation, never inside provisioning ensure supervisor. A9 public ensure argv is node infra/environments/infra-cli.mjs up --env dev --services observability --json; run twice only under isolated fault harness, second must refuse before write. A11 conditional read-only:
+```bash
+pnpm infra:plan --env release --services observability --json
+pnpm infra:status --env release --services observability --json
+node infra/platform/observability/install.mjs plan release kind-offscreen-lab
+```
+Static preview alone is not A11 evidence. Require occupied legacy state from actual observer, direct native refusal, no mutation. If no occupied target, report live NOT-RUN conditional, source fixture mandatory.
+
+## Receipt adapters and public timeout fixes
+
+Existing platform runner returns {ok,status,stdout,stderr}, common runPlatformCommand returns same plus timedOut/missing, diagnostic runCommand returns {code,signal,reason,stdout,stderr}. Do not pass these as though exitCode were present. T04 receipt module exports normalizePlatformResult(result) and normalizeDiagnosticResult(result) to normalized {ok,exitCode,stdout,signal,timedOut}; reject missing status/code, inconsistent success, timeout/error/overflow; preserve known nonzero completed worker receipt as failure, not unconditional possible mutation if a valid terminal failure explicitly proves none. Unknown/malformed outcome is possible mutation only for launched ensure. For failure with valid receipt, enforce ordered phase prefix, reason/state and mutation coherence; no fabricated success. T05 ensure branch must return nonzero public exitCode when worker receipt malformed even if child status=0 (existing RabbitMQ failure branch can return zero; do not copy that defect). Native plan/status distinct validated structural result, not parseEnsureReceipt. Diagnostic evaluator rejects outer command failure before parsing. Provisioning evaluator requires exact one observability phase, selected service and public exit/receipt agreement; no accepting absence or missing phase. Do not modify RabbitMQ behavior as collateral.
+
+Public preflight R33 240s starts at runInfraUp entry for exact selected observability ensure on already-present target, includes inventory and cluster verification and runEnsurePreflight; pass a single scoped runner/deadline through both, cap every preflight external command, fail closed before worker launch. Do not impose observability-specific budget on unrelated multi-service phases: for mixed selection enforce separate bounded 240s preflight for shared public preflight, and start worker budget at actual launch; provisioning 1800s applies only exact single-service invocation with cluster prerequisite. Existing runPlatformCommand does not use SIGKILL; observability scoped runner implements explicit SIGKILL and output limits locally, never silently fall back. Preserve generic runner for other services. Exact exemption platformRunnerSpawnTimeout requires phaseId observability, argv[0] process.execPath, argv[1] exact native install absolute path, argv[2] ensure, argv length5, known profile and matching context. No exemption for arbitrary argv. No outer spawnSync timeout for exact native ensure; inner bounded worker and enclosing provisioning group enforce R33. Native status/plan bounded independently.
+
+## Budget correction discovered in review
+
+Prior health gate 360s cannot accommodate a worst-case 345s observation, Grafana port-forward and four HTTP queries plus 120s cleanup. Select health 720s total, with 120s cleanup reserve; use one native observer entry with same identity, not a repeated standalone observation. Signals 900s, resources 600s, persistence 2400s, outage 1800s, partial-install 3900s retain prior ceilings subject to phase admission. A9 two public up commands each <=1800s leave 300s reserve within 3900s; wrapper quota work occurs inside worker budget. Disruption cleanup reserve is not borrowed for forward work. If no room for next phase plus reserve, fail with partial receipt; no green result. These are proof supervision decisions, not changes to defended native installer/observer budgets.
+
+## Additional focused proof
+T04 adapters: platform status=0 malformed receipt, nonzero valid no-mutation refusal, contradictory ok/status, diagnostic valid-looking stdout after timeout, duplicate or non-prefix phases. T05 public result test verifies invalid worker receipt with zero subprocess status produces public exit 1; direct plan uses structural parser; existing preview stays static; scoped public preflight fake-clock tests include cluster verification and no worker after expiry. T06 provisioning actual public JSON selection and exact phase cardinality, reject outer timeout even with plausible receipt. T07 health deadline fixture worst-case native observer + datasource query/cleanup, no double preflight. Source quality: pnpm repo:code-quality:changed and git diff --check (run on implementation worktree per repo standard).

@@ -10,7 +10,9 @@ Target: OBSERVABILITY-NATIVE @ main e182a5d0991785708e6e25175f3edeff852cb862; de
 | G3 | UNVERIFIED | expanded cards and focused commands exist; individual cold simulation pending; T07 helper mapping and adaptation now selected |
 | G4 | UNVERIFIED | no legal first dispatch until promotion |
 | G5 | provisional | serial execution avoids child overlap; external shared writers must be checked |
-| G6 | UNVERIFIED | frozen acceptance matrix exists; focused and harness commands specified; public plan/ensure/status syntax and isolated target prerequisite not verified |
+| G6 | UNVERIFIED | frozen acceptance matrix exists; focused and harness commands specified; public commands and adapters reconciled against snapshot; isolated target prerequisite unverified |
 | G7 | UNVERIFIED | closure route defined, no cold-read receipt |
 
 No source implementation or cluster action. Planner must complete these checks before calling Ready; no architectural research delegated to Cursor. Design defense is not packet readiness.
+
+B05 targeted adversarial review found static public plan mistaken for live observation, status exit-code ambiguity, runner shape mismatch, zero-exit malformed receipt risk, and infeasible health deadline; corrected in PUBLIC-CLI.md. Full per-task cold review still pending; no Ready claim.
