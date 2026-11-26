@@ -39,7 +39,7 @@ for profile, ns, sc in [("dev","offscreen-dev-observability","standard"),("relea
             identity=(d.get("kind"),m.get("namespace"),m.get("name"))
             require(identity not in seen,prefix+": duplicate identity "+str(identity))
             seen.add(identity)
-            require(not m.get("annotations",{}).get("helm.sh/hook"),prefix+": unexpected hook")
+            require(not (m.get("annotations") or {}).get("helm.sh/hook"),prefix+": unexpected hook")
             require(d.get("kind") in ("ServiceAccount","ConfigMap","Service","Deployment","StatefulSet","PersistentVolumeClaim"),prefix+": unexpected kind "+str(d.get("kind")))
         if role=="loki":
             require(not any(d.get("metadata",{}).get("name")=="obs-loki-memcached" for d in docs),prefix+": unused memcached identity")
