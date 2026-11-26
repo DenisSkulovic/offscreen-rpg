@@ -768,7 +768,7 @@ function validateDataMountinfo(mountinfoText, hostPath) {
  * @param {unknown} expected
  */
 function jsonExact(actual, expected) {
-  return JSON.stringify(actual) === JSON.stringify(expected);
+  return isDeepStrictEqual(actual, expected);
 }
 
 /**
