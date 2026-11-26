@@ -1,3 +1,6 @@
+# Observability platform renewal | R33
+2026-11-26. Submitted for independent defense pass 02, not approved or commissioned. Original baseline 2138ae4a4a188c5dce54e2f77d4211d6ab4f1ed3; current compatibility a81e275821496e478ba55ae3dce5e72cf63d5dfd. Read [committee pass 01](committee/pass-01.md), [R30](R30.md), [R33](R33.md) (latest normative precedence), [frozen inventory](specimens/expected-inventory.json), [R31/R32 evidence](EVIDENCE.md), [designer self-defense pass 02](SELF-DEFENSE.md). R31 offline and R32 real Helm quota feasibility PASS; actual integrated acceptance unrun, isolated normal-profile host prerequisite and full caller line review disclosed. Committee adjudicates sufficiency. No implementation dispatch.
+
 # Observability platform renewal | R30
 2026-11-26. [Committee pass 01](committee/pass-01.md): REVISE AND RE-DEFEND. [R30](R30.md) supersedes inconsistent lifecycle, identity, inventory and proof contracts below. Remaining gates: exact rendered inventory, caller audit, fault-injection feasibility and revised self-defense. Not ready for re-defense or implementation. Prior R29 checkpoint retained below.
 
