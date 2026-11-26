@@ -24,3 +24,5 @@
 **Deferred earlier packets (not counted among the 2026-11-22 gym proposals):** OBS04, TURN04, MA06 and MA09 remain unselected/deferred as of this classification. They are preserved in the corresponding category index and must undergo source review before promotion. Partial/in-flight DIST03, live-edge K8S11, and old WR05/WR09 umbrella reconciliation remain in `open/` until their true disposition is decided.
 
 **2026-11-22 promotion:** HR01/HR02/HR03 were promoted together to the near-term Open set. Execution remains subject to the actual post-CL01/WR11 source gates in [the next-wave plan](../../undertakings/storyteller-workshop/NEXT-WAVE.md).
+
+**2026-11-26:** VER04 deferred to [platform operations](platform-operations/2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md); outstanding DB10 proof retained, execution commission withdrawn.

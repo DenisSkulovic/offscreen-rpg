@@ -1,6 +1,8 @@
+> VER04 source prerequisite is unsatisfied following owner deferral on 2026-11-26. No dispatch while this dependency remains unmet.
+
 # VER05 | Bounded Composer tasks
 
-Baseline 0c45ae7318295398d706511b9d702720a55c8a92; main; VER02/03/04 source joined. Requires verified local dev Kind and pinned CNPG operator already installed for live; no operator changes. MODEL=Composer Standard / DEPTH=PATCH. One child at a time. Parent owns manifests, lockfile and join. Read normative verification contract once; dispatch only selected task + anchors. All commands from repo root; stop on actual safety/semantic contradiction; no live mutation unless separately invoked by operator. Receipt paths, command, result, source/fixture/live tier, cleanup and SHA.
+Baseline 0c45ae7318295398d706511b9d702720a55c8a92; main; VER02/03 source joined; VER04 deferred, prerequisite not satisfied. Requires verified local dev Kind and pinned CNPG operator already installed for live; no operator changes. MODEL=Composer Standard / DEPTH=PATCH. One child at a time. Parent owns manifests, lockfile and join. Read normative verification contract once; dispatch only selected task + anchors. All commands from repo root; stop on actual safety/semantic contradiction; no live mutation unless separately invoked by operator. Receipt paths, command, result, source/fixture/live tier, cleanup and SHA.
 
 ## T01 | Owned CNPG topology plan
 

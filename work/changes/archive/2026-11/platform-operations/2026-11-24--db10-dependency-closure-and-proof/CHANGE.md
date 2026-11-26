@@ -1,6 +1,6 @@
 # DB10 | Final graph guard and integrated DB proof
 
-**State:** Done (source scope only; owner-approved closure 2026-11-26). T01–T03 joined main at `a658f707aeb93d425f3712cbcd63a577855cf1d8`; live SQL NOT RUN, transferred to [VER04](../../../../open/2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md). Historical full graph failure remains unverified on current HEAD; no PASS credit. Prior execution instructions below are historical, not commission.
+**State:** Done (source scope only; owner-approved closure 2026-11-26). T01–T03 joined main at `a658f707aeb93d425f3712cbcd63a577855cf1d8`; live SQL NOT RUN, transferred to [VER04](../../../../backlog/platform-operations/2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md). Historical full graph failure remains unverified on current HEAD; no PASS credit. Prior execution instructions below are historical, not commission.
 
 [Selected architecture](../../../../../../docs/technical/platform/database-infrastructure.md) · [Parallel program and frozen interfaces](../../../../../undertakings/storyteller-workshop/DB-PARALLEL.md) · [TASKS](TASKS.md)
 

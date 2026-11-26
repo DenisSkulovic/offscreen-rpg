@@ -37,3 +37,5 @@ DXK09 superseded; remaining acceptance is in the permanent capability catalog.
 INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execution plan](../../../undertakings/storyteller-workshop/INF-PARALLEL.md).
 
 - [INF38 selective application profiles](2026-11-24--inf38-selective-dev-profiles/CHANGE.md): deferred, selected design retained; no current commission. Refresh when selective activation is needed.
+
+- [VER04 database transaction, migration and recovery programme](2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md): deferred; owns transferred DB10 proof, no current commission. Refresh current DB/runtime and resource contracts when selected for dedicated reliability verification.

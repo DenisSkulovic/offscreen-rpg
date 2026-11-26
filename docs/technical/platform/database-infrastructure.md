@@ -89,4 +89,4 @@ DB12–DB14 source repairs above are fixture-exercised, not live-observed. A suc
 
 [Controlled database operations](database-operations.md) owns exceptional reviewed local data operations and their audit/checkpoint contract; ordinary schema migration and domain DML ownership above remain unchanged. DBOPS03–DBOPS05 source-land catalog/CLI, enrollment/atomic ledger, and resumable batched runner in `tools/db-operations` (fixture-tested; live NOT RUN). DBOPS06 offline schema review is Done source-only. No live permission from this programme.
 
-**DB10 closure (2026-11-26):** Source scope accepted at a658f707; live SQL NOT RUN and transferred to [VER04](../../../work/changes/open/2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md). Historical module graph refusal not certified resolved; no new source or runtime PASS.
+**DB10 closure (2026-11-26):** Source scope accepted at a658f707; live SQL NOT RUN and transferred to [VER04](../../../work/changes/backlog/platform-operations/2026-11-25--ver04-db-transaction-migration-recovery-programme/CHANGE.md). Historical module graph refusal not certified resolved; no new source or runtime PASS.
