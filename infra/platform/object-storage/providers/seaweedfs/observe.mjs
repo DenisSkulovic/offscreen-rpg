@@ -740,7 +740,7 @@ function controllerOwner(ownerReferences) {
  * @param {string} mountinfoText
  * @param {string} hostPath
  */
-function validateDataMountinfo(mountinfoText, hostPath) {
+function validateDataMountinfo(mountinfoText, hostPath, directoryIdentity) {
   const entries = parseMountinfoEntries(mountinfoText);
   const dataMounts = entries.filter((entry) => entry.mountPoint === '/data');
   if (dataMounts.length !== 1) {
@@ -754,7 +754,9 @@ function validateDataMountinfo(mountinfoText, hostPath) {
   if (!opts.includes('rw') || opts.includes('ro')) {
     return { ok: false, reason: '/data mount is not read-write' };
   }
-  if (!mountRootMatchesHostPath(mount.root, hostPath)) {
+  if (!mountRootMatchesHostPath(mount.root, hostPath) &&
+      !(directoryIdentity && /^[0-9]+:[0-9]+$/.test(directoryIdentity.node) &&
+        directoryIdentity.node === directoryIdentity.pod)) {
     return {
       ok: false,
       reason: '/data mount root does not match bound PV hostPath',
@@ -1183,6 +1185,7 @@ function validateLiveStructuralChain(chain) {
   const mountinfo = validateDataMountinfo(
     chain.mountinfo,
     pv.spec.hostPath.path,
+    chain.directoryIdentity,
   );
   if (!mountinfo.ok) {
     return mountinfo;
@@ -1305,6 +1308,7 @@ export function classifyObjectStorageObservation(profileId, observation) {
     secretDataKeys: observation.secretDataKeys,
     secretLabels: observation.secretLabels,
     mountinfo: observation.mountinfo,
+    directoryIdentity: observation.directoryIdentity,
   });
   if (!structural.ok) {
     const identity =
@@ -1614,6 +1618,7 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
       : { ok: false, item: undefined };
 
   let mountinfo;
+  let directoryIdentity;
   if (podPick.ok && podPick.item?.metadata?.name) {
     const execResult = run('kubectl', [
       '--context',
@@ -1630,6 +1635,40 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
       return { state: 'unknown', reason: 'object-store mountinfo exec failed' };
     }
     mountinfo = execResult.stdout ?? '';
+    // Kind's /var volume can translate the underlying mount root. In that
+    // case verify directory identity on the exact local node and selected pod.
+    const hostPath = pvRead.body?.spec?.hostPath?.path;
+    const nodeName = podPick.item.spec?.nodeName;
+    const dataMount = parseMountinfoEntries(mountinfo).find(entry => entry.mountPoint === '/data');
+    if (dataMount && typeof hostPath === 'string' &&
+        !mountRootMatchesHostPath(dataMount.root, hostPath)) {
+      const allowedNodes = [profile.clusterName + '-control-plane', profile.clusterName + '-worker'];
+      const expectedPath = '/var/local-path-provisioner/' + 'pvc-' + pvcBody?.metadata?.uid + '_' + namespace + '_object-store-data';
+      if (!allowedNodes.includes(nodeName) || hostPath !== expectedPath ||
+          process.env.DOCKER_HOST || process.env.DOCKER_CONTEXT || process.env.DOCKER_TLS_VERIFY) {
+        return { state: 'unknown', reason: 'untrusted Kind mount translation target' };
+      }
+      const context = run('docker', ['context', 'show']);
+      if (!context.ok || !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(context.stdout.trim())) {
+        return { state: 'unknown', reason: 'Docker context unreadable' };
+      }
+      const endpoint = run('docker', ['context', 'inspect', context.stdout.trim(), '--format', '{{.Endpoints.docker.Host}}']);
+      const transport = endpoint.stdout?.trim();
+      if (!endpoint.ok || !(transport?.startsWith('unix:///') || transport === 'npipe:////./pipe/dockerDesktopLinuxEngine')) {
+        return { state: 'unknown', reason: 'nonlocal Docker endpoint' };
+      }
+      const node = run('docker', ['inspect', '--format', '{{ index .Config.Labels "io.x-k8s.kind.cluster" }}', nodeName]);
+      if (!node.ok || node.stdout.trim() !== profile.clusterName) {
+        return { state: 'unknown', reason: 'Kind node ownership mismatch' };
+      }
+      const nodeStat = run('docker', ['exec', nodeName, 'stat', '-Lc', '%d:%i', hostPath]);
+      const podStat = run('kubectl', ['--context', contextName, 'exec', '-n', namespace,
+        podPick.item.metadata.name, '--', 'stat', '-Lc', '%d:%i', '/data']);
+      if (!nodeStat.ok || !podStat.ok) {
+        return { state: 'unknown', reason: 'storage directory identity unreadable' };
+      }
+      directoryIdentity = { node: nodeStat.stdout.trim(), pod: podStat.stdout.trim() };
+    }
   }
 
   const endpointSlicePick = exactlyOne(
@@ -1655,6 +1694,7 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
       secretDataKeys,
       secretLabels,
       mountinfo,
+      directoryIdentity,
     },
   };
 }
