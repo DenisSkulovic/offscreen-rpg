@@ -344,6 +344,17 @@ export function prepareFaultValidatedChartCopy(run, profileId, namespace) {
   valuesRecord.image = FAULT_ONLY_REDIS_IMAGE;
   writeFileSync(valuesPath, stringify(valuesRecord));
 
+  // Preserve the production schema; change only the image const in the isolated fault copy.
+  const schemaPath = join(chartRoot, 'values.schema.json');
+  const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
+  if (schema.properties?.image?.const !== 'docker.io/library/redis@sha256:987c376c727652f99625c7d205a1cba3cb2c53b92b0b62aade2bd48ee1593232') {
+    rmSync(chartRoot, { recursive: true, force: true });
+    throw new Error('refused: unexpected source image schema');
+  }
+  schema.properties.image.const = FAULT_ONLY_REDIS_IMAGE;
+  writeFileSync(schemaPath, JSON.stringify(schema, null, 2) + '\n');
+
+
   const merged = readMergedValuesData(chartRoot, profileId);
   if (merged.image !== FAULT_ONLY_REDIS_IMAGE) {
     rmSync(chartRoot, { recursive: true, force: true });

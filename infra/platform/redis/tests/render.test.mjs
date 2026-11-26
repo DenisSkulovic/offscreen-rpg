@@ -11,6 +11,8 @@ import { runPlatformCommand } from '../../common/commands.mjs';
 import { readPlatformProfile } from '../../common/profile.mjs';
 import {
   lintRedisChart,
+  prepareFaultValidatedChartCopy,
+  FAULT_ONLY_REDIS_IMAGE,
   renderRedisChart,
   renderRedisChartForTarget,
 } from '../config.mjs';
@@ -606,4 +608,18 @@ test('negative: lintRedisChart refuses HELM_DRIVER override in runner env', () =
       process.env.HELM_DRIVER = previous;
     }
   }
+});
+
+test('real Helm validates isolated fault chart while production rejects zero digest', () => {
+  const namespace = 'offscreen-redis-proof-0123456789abcdef0123456789abcdef';
+  for (const profile of ['dev', 'release']) {
+    const fault = prepareFaultValidatedChartCopy(runPlatformCommand, profile, namespace);
+    try {
+      const result = helm(['template', 'redis', fault.chartRoot, '--namespace', namespace,
+        '-f', join(fault.chartRoot, 'values.yaml'), '-f', join(fault.chartRoot, 'profiles', profile === 'dev' ? 'development.yaml' : 'release.yaml')]);
+      assert.equal(result.ok, true, result.stderr || result.stdout);
+      assert.ok(result.stdout.includes(FAULT_ONLY_REDIS_IMAGE));
+    } finally { fault.dispose(); }
+  }
+  assert.equal(renderWithValuesOverlay('image: ' + FAULT_ONLY_REDIS_IMAGE + '\n').ok, false);
 });
