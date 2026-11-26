@@ -668,6 +668,7 @@ export function runInfraUp(input) {
   );
   if (!selection.ok) {
     return {
+      contextName: profile.contextName,
       ok: false,
       exitCode: 2,
       phase: 'selection',
@@ -692,6 +693,7 @@ export function runInfraUp(input) {
     progressReporter?.phaseFail('cluster-inventory');
     process.stderr.write(`cluster inventory: ${inventory.reason}\n`);
     return {
+      contextName: profile.contextName,
       ok: false,
       exitCode: 1,
       phase: 'cluster-inventory',
@@ -723,6 +725,7 @@ export function runInfraUp(input) {
       progressReporter?.phaseFail('cluster-ensure');
       process.stderr.write('cluster ensure failed\n');
       return {
+        contextName: profile.contextName,
         ok: false,
         exitCode: result.status ?? 1,
         phase: 'cluster-ensure',
@@ -746,6 +749,7 @@ export function runInfraUp(input) {
     const message = error instanceof Error ? error.message : String(error);
     process.stderr.write(`${message}\n`);
     return {
+      contextName: profile.contextName,
       ok: false,
       exitCode: 1,
       phase: 'cluster-verify',
@@ -756,6 +760,7 @@ export function runInfraUp(input) {
 
   if (selection.selected.length === 0) {
     return {
+      contextName: profile.contextName,
       ok: true,
       exitCode: 0,
       phase: 'cluster-ready',
@@ -780,11 +785,13 @@ export function runInfraUp(input) {
 
   if (!receipt.ok) {
     const refusal = receipt.refusals[0];
-    const message = refusal?.message ?? 'platform ensure failed';
+    const failedPhase = receipt.phases.find((phase) => !phase.ok)?.id;
+    const message = refusal?.id ? `platform ensure refused: ${refusal.id}` : `platform ensure failed: ${failedPhase ?? 'unknown phase'}`;
     process.stderr.write(`${message}\n`);
   }
 
   return {
+    contextName: profile.contextName,
     ok: receipt.ok,
     exitCode: receipt.exitCode,
     phase: receipt.ok ? 'complete' : 'platform-ensure',
