@@ -112,7 +112,9 @@ function validBundle(bundle, now) {
     if (!/^-----BEGIN CERTIFICATE-----\s+[A-Za-z0-9+/=\s]+-----END CERTIFICATE-----$/.test(pem)) return false;
     const cert = new X509Certificate(pem);
     const host = 'cnpg-webhook-service.cnpg-system.svc';
-    return !cert.ca && cert.subjectAltName === 'DNS:' + host &&
+    return !cert.ca && cert.subject === 'CN=' + host &&
+      cert.issuer.split('\n').sort().join('\n') === 'CN=cnpg-ca-secret\nOU=cnpg-system' &&
+      cert.subjectAltName === 'DNS:' + host &&
       cert.checkHost(host, { subject: 'never', wildcards: false }) === host &&
       Date.parse(cert.validFrom) <= now && now < Date.parse(cert.validTo);
   } catch { return false; }
