@@ -502,3 +502,40 @@ test('cross-tenant proof refuses an already bridged known database', () => {
   });
   assert.equal(result.refusals[0].id, 'cross-tenant');
 });
+
+
+function temporalCatalog() {
+  const catalog = createFakeSqlCatalog();
+  for (const name of ['temporal', 'temporal_visibility']) {
+    catalog.databases[name] = { oid: name, owner: 'temporal', allowConnections: true,
+      publicConnect: false, publicTemporary: false, connect: ['temporal'] };
+  }
+  catalog.roles.temporal = { login: true };
+  return catalog;
+}
+
+for (const scenario of ['verified', 'missing-proof', 'failed-proof', 'partial', 'foreign-owner', 'public-connect', 'public-temp', 'foreign-grant', 'rogue']) {
+  test(`Temporal persistence admission: ${scenario}`, () => {
+    const catalog = temporalCatalog();
+    if (scenario === 'partial') delete catalog.databases.temporal_visibility;
+    if (scenario === 'foreign-owner') catalog.databases.temporal.owner = 'postgres';
+    if (scenario === 'public-connect') catalog.databases.temporal.publicConnect = true;
+    if (scenario === 'public-temp') catalog.databases.temporal.publicTemporary = true;
+    if (scenario === 'foreign-grant') catalog.databases.temporal.connect.push('dev_1_run');
+    if (scenario === 'rogue') catalog.databases.rogue = { ...catalog.databases.temporal };
+    const adapter = adapterFor(catalog);
+    if (scenario !== 'missing-proof') adapter.verifyTemporalPersistence = () => ({ ok: scenario !== 'failed-proof' });
+    const before = structuredClone(catalog.databases.temporal);
+    const result = executeDevSqlTenants({
+      knownSlots: ['dev-1'], selectedSlot: 'dev-1', authorizeLive: TOKEN, adapter,
+    });
+    assert.equal(result.ok, scenario === 'verified');
+    assert.deepEqual(catalog.databases.temporal, before);
+    assert.equal(adapter.sql.some(line => line.includes('"temporal') ), false);
+    if (scenario !== 'verified') {
+      assert.equal(result.refusals[0].id, scenario === 'rogue' ? 'unexpected-database' : 'temporal-persistence-unverified');
+      assert.equal(adapter.sql.length, 0);
+      assert.equal(adapter.store.length, 0);
+    }
+  });
+}
