@@ -1,11 +1,11 @@
-# Object storage platform | R9 second-defense candidate
+# Object storage platform | archived design
 
 2026-11-26 · integration main `88b6ebae6acb1664c8c571aadd8cc4385dbb40eb` · designer ChatGPT.
-**State: DEFENDED by independent pass 02; owner accepted 2026-11-26 and selected target promoted.** No implementation or migration authorized. Next review: source implementation receipt and structural acceptance.
+**State: Accepted and promoted; archived by owner 2026-11-27.** Bounded R9 accepted on 2026-11-26 after independent pass 02. Source integrated on main at `5079a086`; heavy acceptance and occupied legacy admission remain pending under the implementation Change. [Original complete dossier](https://github.com/DenisSkulovic/offscreen-rpg/tree/79e00fb1e81563133c1588fea35dd1960571c79e/work/designs/open/object-storage-platform). Research, proposals, experiments and review instructions below are historical, not dispatch authority. No migration, credential transition or live mutation permission.
 
 Canonical authority: [native object storage](../../../../docs/technical/platform/object-storage-infrastructure.md). [Implementation Change](../../../changes/open/2026-11-26--object-storage-native/CHANGE.md). Actual occupied admission still gated. [Pass 02](committee/pass-02.md) committed at abf279fe586a9b2d99c6b554e9e62e68bc2b4dc3.
 
-## Normative reading order
+## Historical design reading order
 
 - [R9 committee closure evidence](R9.md): controlling scope, observed IAM and storage evidence, remaining gates.
 - [R8 committee response](R8.md): custody and authorization amendments, subordinate to R9.
@@ -27,4 +27,4 @@ S3 data-plane portability; SeaweedFS 4.54 only a minimal local provider. One nat
 
 Owner observed both local providers running, pinned image, PVCs bound, no listed Helm releases. Owner SDK experiment against two existing dev tenants passed conditional writes, one winner among eight simultaneous writes, authentication and cross-tenant denial. No fresh Helm installation, new scoped release identity, guard implementation, hosted or migrated deployment tested. R7 specifies required source and isolated live structural proof.
 
-Self-defense verdict DEFENDED for fresh local structural renewal and source-level provider-neutral binding, including design of read-only legacy classification. Actual occupied legacy admission remains evidence-gated until complete classifier readback and owner acceptance. R9 records observed continuity and targeted IAM readback, not full compatibility certification. Destructive adoption/cutover, existing release credential migration and actual external hosted deployment separately gated. Independent committee must commit verdict against frozen candidate SHA before owner acceptance or implementation packet planning. No further designer edits during review.
+Self-defense verdict DEFENDED for fresh local structural renewal and source-level provider-neutral binding, including design of read-only legacy classification. Actual occupied legacy admission remains evidence-gated until complete classifier readback and owner acceptance. R9 records observed continuity and targeted IAM readback, not full compatibility certification. Destructive adoption/cutover, existing release credential migration and actual external hosted deployment separately gated. The independent committee gate was completed by pass 02 before owner acceptance. Remaining implementation and operational gates belong to the open Change; no new acceptance is claimed.
