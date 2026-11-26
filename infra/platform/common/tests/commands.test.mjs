@@ -922,7 +922,7 @@ test('release bootstrap creates only absent baseline after local node identity p
 
 
 test('qualified plural CRD and PV reads remain cluster scoped', () => {
-  for (const resource of ['customresourcedefinitions.apiextensions.k8s.io', 'persistentvolumes']) {
+  for (const resource of ['customresourcedefinitions.apiextensions.k8s.io', 'persistentvolumes', 'clusterroles.rbac.authorization.k8s.io', 'clusterrolebindings.rbac.authorization.k8s.io', 'mutatingwebhookconfigurations.admissionregistration.k8s.io', 'validatingwebhookconfigurations.admissionregistration.k8s.io']) {
     const spec = { profileId: 'dev', resource, name: 'specimen' };
     const args = ['--context', devKind.contextName, 'get', resource, 'specimen', '--ignore-not-found', '-o', 'json'];
     const body = { metadata: { name: 'specimen' } };
