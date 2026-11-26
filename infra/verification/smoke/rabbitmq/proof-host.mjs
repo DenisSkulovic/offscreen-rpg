@@ -883,7 +883,7 @@ async function createProofPod(ctx, role, command) {
     timeoutMs: 120_000,
   });
   if (!waited.ok) {
-    return { ok: false, reason: `${role}-pod-wait` };
+    return { ok: false, reason: `${role}-${waited.reason ?? 'pod-wait'}` };
   }
   const logs = await ctx.runner({ op: 'pod-logs', name, uid: created.uid });
   return {
