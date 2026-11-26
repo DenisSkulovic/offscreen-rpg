@@ -82,6 +82,7 @@ test('prefix collision keeps dev-1 distinct from dev-10', () => {
   const exec = (command, args, input) => {
     if (String(input).includes('s3.bucket.list'))
       return WEED_BUCKET_LIST_FIXTURE;
+    if (String(input).includes('s3.user.list')) return WEED_USER_LIST_FIXTURE;
     if (String(input).includes('s3.user.show -name dev-1')) {
       return JSON.stringify({
         name: 'dev-1',
@@ -195,6 +196,7 @@ test('existing tenant reuse retains the secret uid without recreating credential
     if (String(input).includes('s3.bucket.list')) {
       return ` ${names.bucket}\tsize:0\tlogical:0\tchunk:0\towner:"${names.user}"\n`;
     }
+    if (String(input).includes('s3.user.list')) return JSON.stringify([{ name: names.user }]);
     if (String(input).includes(`s3.user.show -name ${names.user}`)) {
       return JSON.stringify({
         name: names.user,
@@ -210,7 +212,7 @@ test('existing tenant reuse retains the secret uid without recreating credential
       return `"${names.policyName}"\n`;
     }
     if (String(input).includes('s3.policy -get')) return policyDoc;
-    if (String(input).includes('s3.user.list -groups')) return '[]';
+    if (String(input).includes('s3.group.list')) return '[]';
     if (
       joined.includes(`get secret ${names.secret}`) &&
       joined.includes('--ignore-not-found')
@@ -288,9 +290,10 @@ test('partial secret state refuses before bucket creation with zero writes', asy
     calls.push({ args, input });
     const joined = args.join(' ');
     if (String(input).includes('s3.bucket.list')) return '';
+    if (String(input).includes('s3.user.list')) return '[]';
     if (String(input).includes('s3.user.show')) return '';
     if (String(input).includes('s3.policy -list')) return '';
-    if (String(input).includes('s3.user.list -groups')) return '[]';
+    if (String(input).includes('s3.group.list')) return '[]';
     if (
       joined.includes(`get secret ${names.secret}`) &&
       joined.includes('--ignore-not-found')
@@ -361,4 +364,14 @@ test('user show without status or source is not treated as an enabled dynamic us
   assert.equal(shown.enabled, false);
   assert.equal(shown.source, '');
   assert.equal(shown.credentials[0]?.status ?? '', '');
+});
+
+ test('missing user is established by successful inventory, never targeted NotFound', () => {
+  const adapter = createDevS3LiveAdapter({ exec: (_command, _args, input) => {
+    if (String(input).includes('s3.user.list')) return '[]';
+    throw new Error('unexpected detail call');
+  } });
+  assert.equal(adapter.user('dev-1'), null);
+  assert.throws(() => parseWeedUserList(''));
+  assert.throws(() => parseWeedUserList('[{}]'));
 });
