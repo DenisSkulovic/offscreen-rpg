@@ -113,39 +113,28 @@ describe('content-bootstrap credential decisions', () => {
 describe('object-storage smoke contract', () => {
   const body = readFileSync(OBJECT_SMOKE, 'utf8');
 
-  test('requires install and existing secret; does not provision store', () => {
-    assert.match(body, /install\.sh first/);
-    assert.match(body, /get secret object-store-s3/);
-    assert.doesNotMatch(body, /platform\/object-storage\/store\.yaml/);
-    assert.doesNotMatch(body, /create secret generic object-store-s3/);
-  });
-
-  test('uses random proof prefix and absent client guard', () => {
-    assert.match(body, /PROOF_PREFIX=.*openssl rand/);
-    assert.match(body, /get pod "\$CLIENT_NAME"/);
-    assert.match(body, /delete-object.*LIFECYCLE_KEY/);
-    assert.match(body, /OFFSCREEN_OBJECT_STORAGE_POD_DELETE_CONFIRM/);
-    assert.match(body, /pvc_uid_after.*pvc_uid_before/);
+  test('refuses before any write', () => {
+    assert.match(
+      body,
+      /refusing retired object-storage smoke: this script no longer reads admin credentials, deletes a Pod, or writes objects\. The native SDK proof is the replacement and is not this script\./,
+    );
+    assert.doesNotMatch(body, /weed shell/);
+    assert.doesNotMatch(body, /s3\.configure/);
+    assert.doesNotMatch(body, /from-literal=.*secret-access-key/);
   });
 });
 
 describe('document-access smoke contract', () => {
   const body = readFileSync(DOCUMENT_ACCESS_SMOKE, 'utf8');
 
-  test('requires install and existing secret; does not provision store', () => {
-    assert.match(body, /install\.sh first/);
-    assert.match(body, /get secret object-store-s3/);
-    assert.doesNotMatch(body, /platform\/object-storage\/store\.yaml/);
-    assert.doesNotMatch(body, /apply -f.*store\.yaml/);
-    assert.doesNotMatch(body, /create secret generic object-store-s3/);
-  });
-
-  test('create-only writer and guarded reader bootstrap', () => {
-    assert.match(body, /decide-writer/);
-    assert.match(body, /decide-reader/);
-    assert.match(body, /create secret generic document-writer-s3/);
-    assert.match(body, /Repair the partial reader state/);
-    assert.match(body, /document-reader-s3/);
+  test('refuses before any write', () => {
+    assert.match(
+      body,
+      /refusing retired document-access smoke: this script no longer configures SeaweedFS users or copies admin credentials\. Document access scenarios stay gated until a scoped replacement proof exists\./,
+    );
+    assert.doesNotMatch(body, /weed shell/);
+    assert.doesNotMatch(body, /s3\.configure/);
+    assert.doesNotMatch(body, /from-literal=.*secret-access-key/);
   });
 });
 
@@ -156,18 +145,14 @@ test('retired duplicate platform store manifest is absent', () => {
 describe('content-bootstrap smoke contract', () => {
   const body = readFileSync(BOOTSTRAP_SMOKE, 'utf8');
 
-  test('does not install store or admin secret', () => {
-    assert.match(body, /install\.sh first/);
-    assert.doesNotMatch(body, /store\.yaml/);
-    assert.doesNotMatch(body, /create secret generic object-store-s3/);
-  });
-
-  test('create-only importer and guarded reader bootstrap', () => {
-    assert.match(body, /decide-importer/);
-    assert.match(body, /decide-reader/);
-    assert.match(body, /create secret generic content-importer-s3/);
-    assert.match(body, /Repair the partial reader state/);
-    assert.match(body, /OFFSCREEN_CONTENT_BOOTSTRAP_FAULT_INJECTION/);
+  test('refuses before any write', () => {
+    assert.match(
+      body,
+      /refusing retired content-bootstrap smoke: this script no longer configures SeaweedFS users or copies admin credentials\. Content scenarios stay gated until a scoped replacement proof exists\./,
+    );
+    assert.doesNotMatch(body, /weed shell/);
+    assert.doesNotMatch(body, /s3\.configure/);
+    assert.doesNotMatch(body, /from-literal=.*secret-access-key/);
   });
 });
 
@@ -180,21 +165,28 @@ describe('platform install boundary', () => {
 });
 
 describe('runbooks match split ownership', () => {
-  test('object storage runbook names install then smoke', () => {
+  test('object storage runbook names install and gates smoke', () => {
     const body = readFileSync(OBJECT_RUNBOOK, 'utf8');
     assert.match(body, /infra\/platform\/object-storage\/install\.sh/);
     assert.doesNotMatch(
       body,
       /applies `infra\/platform\/object-storage\/store\.yaml`/,
     );
-    assert.match(body, /OFFSCREEN_OBJECT_STORAGE_POD_DELETE_CONFIRM/);
+    assert.match(
+      body,
+      /infra\/verification\/smoke\/object-storage\/smoke\.sh.*(refuses|is not the current proof)/is,
+    );
+    assert.doesNotMatch(body, /OFFSCREEN_OBJECT_STORAGE_POD_DELETE_CONFIRM/);
   });
 
-  test('content bootstrap runbook requires existing store', () => {
+  test('content bootstrap runbook requires existing store and gates smoke', () => {
     const body = readFileSync(BOOTSTRAP_RUNBOOK, 'utf8');
     assert.match(body, /infra\/platform\/object-storage\/install\.sh/);
     assert.doesNotMatch(body, /applies the existing SeaweedFS store manifest/);
-    assert.match(body, /create-only/i);
-    assert.match(body, /content-importer-s3/);
+    assert.match(
+      body,
+      /infra\/verification\/release-acceptance\/content-bootstrap\/smoke\.sh.*(refuses|is not the current proof)/is,
+    );
+    assert.doesNotMatch(body, /s3\.configure/);
   });
 });

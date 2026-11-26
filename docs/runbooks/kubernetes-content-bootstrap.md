@@ -10,13 +10,13 @@ A local `fixture-pin.json` from [Content package authoring](content-package-auth
 
 The release lifecycle creates an importer and a fresh independent reader Job in lab-edge using the existing game-runtime S3 credential projection, so the reader verifies actual application access. Both Jobs must report the pinned hashes; the current Job UID and runtime image provenance are checked. A repeated invocation replaces only its own terminal Jobs using UID preconditions, never a running or foreign Job. Content publication is immutable and idempotent. The reader Job receipt is used by stack status; it is historical evidence, not a new S3 read on every status command.
 
-This operational read verification does not claim least privilege. The separate acceptance smoke below still owns the independently provisioned read-only S3 identity proof.
+This operational read verification does not claim least privilege. `infra/verification/release-acceptance/content-bootstrap/smoke.sh` refuses immediately and is not the current proof. Content scenarios stay gated until a scoped replacement proof exists.
 
 ## What this procedure is
 
-`infra/verification/release-acceptance/content-bootstrap/smoke.sh` requires an installed store from [Kubernetes object storage](kubernetes-object-storage.md). It does not apply store manifests or create `object-store-s3`. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
+Install the store with `infra/platform/object-storage/install.sh` from [Kubernetes object storage](kubernetes-object-storage.md) first. The bucket is `lab-objects`. The Service is `object-store.lab-objects.svc.cluster.local` on port 8333, ClusterIP only.
 
-The smoke then runs two Jobs in `lab-content-bootstrap`:
+`infra/verification/release-acceptance/content-bootstrap/smoke.sh` no longer runs acceptance Jobs. It refuses before any write. The manifests below describe what a historical acceptance run exercised in `lab-content-bootstrap`:
 
 - `fixture-importer` runs `scripts/repo-tools/import-pinned-fixture.mjs --s3` against that store. It checks the pinned world, rule, and start checksums. It does not write `fixture-pin.json`.
 - `fixture-reader` is a different Pod. It runs `scripts/repo-tools/read-pinned-fixture.mjs --s3` and must return those same three hashes.
@@ -27,7 +27,7 @@ Game Authority and Storyteller are not started. The Nest API and the worker are 
 
 ## Credentials
 
-The store admin Secret `object-store-s3` in `lab-objects` comes from `infra/platform/object-storage/install.sh`. The smoke reads it only while creating or verifying `content-importer-s3`. That importer Secret is create-only: an existing Secret with the same bytes is reused; a byte mismatch is refused. The reader Job reads `content-reader-s3`. When that Secret already exists, the smoke reuses it and does not reconfigure the store. When both the reader Secret and a confirmed-absent `content-reader` identity are missing, the smoke adds the identity with `s3.configure` and the action `Read` on `lab-objects`, then creates `content-reader-s3`. If identity state is ambiguous, the smoke refuses instead of overwriting credentials. A failed reader configure leaves partial state and requires explicit repair; this smoke does not blind-rotate keys. None of those values are written into Git. The smoke refuses to run if this directory contains a Secret manifest or an `AKIA` literal.
+The store Secret `object-store-s3` in `lab-objects` comes from `infra/platform/object-storage/install.sh`. The retired acceptance smoke no longer copies admin credentials or configures SeaweedFS users. Job Secrets `content-importer-s3` and `content-reader-s3` remain described in the manifests for historical reference; provisioning them through this smoke path is gated until a scoped replacement proof exists. None of those values are written into Git.
 
 ## What the jobs must show
 
@@ -75,11 +75,11 @@ infra/clusters/kind/release/destroy.sh kind-offscreen-release
 
 Hold `/tmp/offscreen-k8s-cluster.lock` from `up.sh` through `down.sh`. If the cluster already exists, stop. Do not delete a cluster this shell did not create.
 
-When local Docker already has SeaweedFS and the bootstrap image, the smoke loads each image onto every kind node with `kind load docker-image`. A `docker save | docker exec -i ctr import` loop is not used: that loop can consume the node list and leave the worker without the image. On 2026-11-20 that loop left `offscreen-lab-content-bootstrap:boot02` off `offscreen-release-worker`, and the importer stayed `ErrImageNeverPull` until `kind load` put the image on both nodes.
+Invoking `infra/verification/release-acceptance/content-bootstrap/smoke.sh` after install prints the refusal to stderr and exits 2. That command is not the current proof and does not configure users or copy admin credentials.
 
 ## Failure
 
-If the read-only identity cannot be added, or partial reader state needs repair, leave the Change unproven. Do not give the reader the writer Secret and call that least privilege. Do not set `OFFSCREEN_CONTENT_BOOTSTRAP_FAULT_INJECTION` unless a separately authorized repair procedure says so.
+If a scoped replacement proof cannot establish read-only access, leave the Change unproven. Do not give the reader the writer Secret and call that least privilege.
 
 If the reader hashes differ, the proof failed.
 
