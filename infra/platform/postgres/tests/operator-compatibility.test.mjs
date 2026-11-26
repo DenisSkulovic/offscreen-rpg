@@ -39,3 +39,12 @@ test('measured namespace defaults do not overwrite authored fields', () => {
   assert.equal(expected.metadata.labels['kubernetes.io/metadata.name'], 'cnpg-system');
   assert.throws(() => expectedOperatorObject({ ...ns, spec: {} }), /conflicts/);
 });
+
+test('committed vendor artifact has the exact pinned inventory', () => {
+  const artifact = loadOperatorArtifact();
+  assert.equal(artifact.inventory.length, 26);
+  assert.equal(new Set(artifact.inventory.map(entry => entry.id)).size, 26);
+  assert.equal(artifact.inventory.filter(entry => entry.object.kind === 'CustomResourceDefinition').length, 11);
+  assert.equal(artifact.inventory.filter(entry => entry.object.kind === 'Secret').length, 0);
+  for (const entry of artifact.inventory) assert.doesNotThrow(() => expectedOperatorObject(entry.object));
+});

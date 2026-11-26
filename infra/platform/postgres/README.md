@@ -7,7 +7,7 @@ Navigation and operator entrypoints for local CloudNativePG installation, baseli
 | Surface | Role |
 | --- | --- |
 | `pnpm infra:postgres` → `topology-cli.mjs` | Read-only `plan` / `status` and mutating `ensure` for instance count and owned clusters |
-| `install.sh` | Release baseline: pinned operator + one primary in `lab-postgres` (invoked from release stack install) |
+| `install.sh` | Release baseline: native create-only installation or compatible reuse; preserves the live instance count |
 | `release-install.mjs` | Programmatic release CNPG install path used by environment assembly |
 | `dev-bootstrap.mjs` | Dev CNPG plan/status/ensure exports (`bootstrap/dev-*.mjs`) |
 | `infra/environments/{dev,release}/platform.mjs` | Environment-level platform ensure ordering (postgres among other backing services) |
@@ -23,9 +23,15 @@ Navigation and operator entrypoints for local CloudNativePG installation, baseli
 
 ```
 bootstrap/
-  dev-plan.mjs, dev-execution.mjs     # Dev baseline create/reuse
-  release-plan.mjs, release-execution.mjs, release-observation.mjs
-  observation-helpers.mjs
+  ensure.mjs          # Single native baseline mutation owner
+  operator.mjs        # Pinned inventory and effective object policy
+  compatibility.mjs   # Typed effective Cluster spec comparison
+  reference/          # Measured dev/release admission references
+  observation.mjs     # Full inventory + narrow writable-primary observation
+  custody.mjs         # Monotonic deadline and cooperating writer lock
+  projection.mjs      # Read-only legacy diagnostic projection
+  dev-plan.mjs, release-plan.mjs, dev-execution.mjs, release-execution.mjs
+  release-observation.mjs, observation-helpers.mjs
 topology/
   arguments.mjs   # CLI parsing, owned vs baseline mode
   baseline.mjs    # Baseline plan/ensure/status control
@@ -36,7 +42,11 @@ topology.mjs      # Public control API + receipt assembly
 topology-presentation.mjs  # Human output (no schema change)
 ```
 
-Baseline cluster creation stays with bootstrap/install paths. Instance scaling and owned experiment clusters go through `topology-cli.mjs` only.
+Baseline cluster creation stays with the shared native worker. The exact upstream operator manifest belongs in `vendor/cnpg-1.30.2.yaml`; its SHA256 must match `operator.pin`. No network download occurs during baseline ensure.
+
+Existing compatible baselines are observed, not reapplied. Creation requires explicit maintenance quiescence (`OFFSCREEN_POSTGRES_MAINTENANCE=authorized`) in addition to the entrypoint authorization. Stop topology, tenant and Temporal writers first; the local lock only coordinates baseline writers. Unknown mutation outcomes stop without retries. Do not use ordinary ensure to repair a partial operator inventory.
+
+ Instance scaling and owned experiment clusters go through `topology-cli.mjs` only.
 
 ## State and mutation ownership
 
@@ -64,7 +74,7 @@ Profiles: **dev** → context `kind-offscreen-dev`, baseline `dev-pg`; **release
 ## Tests
 
 ```bash
-node --test infra/platform/postgres/tests/topology-presentation.test.mjs
-node --test infra/platform/postgres/tests/topology.test.mjs
-node --test infra/platform/postgres/tests/readiness.test.mjs
+node --test infra/platform/postgres/tests/*.test.mjs
+node --test tools/dev-environments/test/dev-cnpg-bootstrap.test.mjs
+node --test infra/environments/platform-plan.test.mjs
 ```
