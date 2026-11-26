@@ -47,4 +47,12 @@ Run `pnpm infra:verify --suite diagnostic` and relevant service-specific proofs 
 
 Follow [owned development environment](dev-worktree-stacks.md) for local configuration and `pnpm dev`, `pnpm dev:status`, `pnpm dev:stop`. Do not copy release credentials to development or authorize paid model calls through setup. Release application build/deploy is a separate optional path in [local development](local-development.md).
 
-Initial release core readiness and combined reuse were observed at `b16fe6d7` after explicit PostgreSQL ACL maintenance; release Gateway 28.562 s, combined core reuse 14.494 s, status 4/4 READY. Development object storage has a repaired specimen and retained pending receipt; development Temporal has an incomplete non-login role and credential. Uninterrupted integrated cold acceptance remains pending. Record exact tested SHA and failures; fix the source, not only the running cluster.
+## Acceptance checkpoint (26 November 2026)
+
+- Core: dev 3/3 and release 4/4 READY; combined reuse 12.315 s and 12.732 s respectively. Explicit PostgreSQL ACL maintenance was required. Dev object storage and Temporal are repaired specimens, not uninterrupted fresh acceptance. The object-storage pending receipt was manually reconciled and archived after identity review; the incomplete Temporal role/Secret were explicitly removed before successful provisioning.
+- Redis: fresh install and repeated ensure passed on both profiles.
+- RabbitMQ dev: at `7d69be0a`, live ordinary smoke completed in 2.837 s, with SMOKE-PUBLISHED, SMOKE-EMPTY, MGMT-OK, METRICS-OK and a separate same-run wrong-password Pod log AUTH-REFUSED 403. At `7f8296bc`, 44 focused Node tests passed and structural observation returned ready; repeat ensure reported mutation none in 1.717 s. At `7d69be0a`, 14 Python tests passed. Original installation timed out on a defective inventory observer; corrected uninterrupted fresh acceptance remains unproven.
+- RabbitMQ proof limitations: supervisor does not enforce negative-auth result or complete fixture cleanup; terminal failure diagnostics and disruptive proof runner remain incomplete. Do not run durability or worker-loss modes. Failed and successful proof fixtures retained pending scoped cleanup. Fresh release RabbitMQ runtime remains separately gated.
+- Outstanding: automatic fresh PostgreSQL ACL policy, remaining bootstrap source/diagnostic hardening, uninterrupted integrated cold acceptance, observability and application workload acceptance.
+
+Record exact tested SHA and failures; fix the source, not only the running cluster.
