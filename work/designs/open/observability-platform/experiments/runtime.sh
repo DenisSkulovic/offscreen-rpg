@@ -69,42 +69,4 @@ if (( failed )); then
   echo "E03 READINESS FAILED; isolated cluster retained: $name"
   exit 1
 fi
-# Let kubectl allocate a local port, then parse its actual loopback address.
-kubectl --kubeconfig "$KUBECONFIG" --context "$ctx" -n "$ns" port-forward --address 127.0.0.1 svc/obs-grafana :80 >"$out/forward.log" 2>&1 &
-pf=$!
-port=""
-for i in $(seq 1 30); do
-  port="$(sed -n 's/^Forwarding from 127\.0\.0\.1:\([0-9]*\) ->.*/\1/p' "$out/forward.log" | head -n 1)"
-  [[ -z "$port" ]] || break
-  kill -0 "$pf" || exit 1
-  sleep 1
-done
-[[ "$port" =~ ^[0-9]+$ ]]
-base="http://127.0.0.1:$port"
-curl --noproxy '*' --fail --silent --show-error --max-time 15 --netrc-file "$out/grafana.netrc" "$base/api/datasources" >"$out/datasources.json"
-python3 - "$out/datasources.json" <<'PY'
-import json,sys
-d=json.load(open(sys.argv[1]))
-assert {x["uid"]:x["url"] for x in d}=={"offscreen-metrics":"http://obs-prometheus:9090","offscreen-logs":"http://obs-loki:3100","offscreen-traces":"http://obs-tempo:3200"}
-print("Datasource inventory: PASS")
-PY
-for uid in offscreen-metrics offscreen-logs offscreen-traces; do
-  if curl --noproxy '*' --fail-with-body --silent --show-error --max-time 30 --netrc-file "$out/grafana.netrc" "$base/api/datasources/uid/$uid/health" >"$out/$uid.health.json"; then
-    python3 - "$out/$uid.health.json" <<'PY' || failed=1
-import json,sys
-d=json.load(open(sys.argv[1]))
-print(d)
-assert d.get("status","").lower()=="ok"
-PY
-  else
-    cat "$out/$uid.health.json"
-    failed=1
-  fi
-done
-# Node-wide Docker measurement includes control plane, storage provisioner and observability.
-# No metrics-server installation. Pod-level resource measurements deferred.
-timeout 20s docker stats --no-stream "$name-control-plane" | tee "$out/node-stats.txt" || failed=1
-echo "Cluster retained: $name"
-echo "Evidence directory: $out"
-echo "E03 status: $([[ "$failed" == 0 ]] && echo PASS || echo FAIL)"
-exit "$failed"
+bash "$here/runtime-health.sh" "$out"
