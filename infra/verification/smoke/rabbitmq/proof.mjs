@@ -138,21 +138,23 @@ export function createKubectlProofRunner(context, ns) {
         );
         return { ok: true, uid: uid.stdout.trim(), stdout: created.stdout };
       }
-      case 'pod-wait':
-        return runPlatformCommand(
-          'kubectl',
-          [
-            '--context',
-            context,
-            '-n',
-            ns,
-            'wait',
-            `--for=jsonpath={.status.phase}=${request.phase ?? 'Succeeded'}`,
-            `pod/${request.name}`,
-            `--timeout=${Math.floor(Number(request.timeoutMs ?? 120_000) / 1000)}s`,
-          ],
-          { timeoutMs: Number(request.timeoutMs ?? 120_000) },
-        );
+      case 'pod-wait': {
+        const deadline = performance.now() + Number(request.timeoutMs ?? 120_000);
+        if (!request.uid) return { ok: false, reason: 'pod-uid-missing' };
+        while (performance.now() < deadline) {
+          const result = runPlatformCommand('kubectl', [
+            '--context', context, '-n', ns, 'get', 'pod', String(request.name), '-o', 'json',
+          ], { timeoutMs: Math.min(API_TIMEOUT_MS, Math.max(1, Math.floor(deadline - performance.now()))) });
+          if (!result.ok) return { ok: false, reason: 'pod-read-failed' };
+          let pod;
+          try { pod = JSON.parse(result.stdout); } catch { return { ok: false, reason: 'pod-json-invalid' }; }
+          if (pod.metadata?.uid !== request.uid || pod.metadata?.deletionTimestamp) return { ok: false, reason: 'pod-identity-changed' };
+          if (pod.status?.phase === 'Failed') return { ok: false, reason: 'pod-terminal-failed' };
+          if (pod.status?.phase === (request.phase ?? 'Succeeded')) return { ok: true };
+          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, Math.min(500, Math.max(0, deadline - performance.now())));
+        }
+        return { ok: false, reason: 'pod-wait-timeout' };
+      }
       case 'pod-wait-ready':
         return runPlatformCommand(
           'kubectl',
@@ -392,6 +394,10 @@ async function main(argv, env = process.env) {
     });
     console.log(JSON.stringify(plan));
     return plan.ok ? 0 : 1;
+  }
+  if (parsed.mode !== 'smoke' || parsed.context !== 'kind-offscreen-dev') {
+    console.error('REFUSED live-proof-mode-or-context-not-accepted');
+    return 1;
   }
   const result = await runLiveProof(parsed);
   console.log(JSON.stringify({ schema: 1, ...result }));
