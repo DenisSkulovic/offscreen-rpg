@@ -17,7 +17,6 @@ Existing classifications below are historical starting points, not fresh disposi
 | Item | Status |
 | --- | --- |
 | [Redis platform](open/redis-platform/README.md) | Existing dossier; individual retirement review pending |
-| [Gateway platform](open/gateway-platform/README.md) | Existing dossier; individual retirement review pending |
 | [RabbitMQ platform](open/rabbitmq-platform/README.md) | R10 independently defended and owner accepted; source Change commissioned, retained for acceptance traceability |
 | [Object storage platform](open/object-storage-platform/README.md) | R9 defended/owner accepted; canonical promoted, source Change commissioned; retained for acceptance traceability; occupied admission separately gated |
 | [Code architecture health](open/code-architecture-health/README.md) | Unresolved code ownership/trust-boundary investigation; concrete CQ Change packets remain separate |

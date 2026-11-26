@@ -2,7 +2,7 @@
 
 Status: **ACCEPTED — STRUCTURAL INTEGRATION.** Existing release and isolated fresh installation, repeat ensure, quick/long SSE and attachment refusal passed. See ACCEPTANCE-OBSERVATIONS.md. Disposable specimen cleanup remains separately controlled.
 
-Authority: [R5 design](../../../../work/designs/open/gateway-platform/README.md) and [local gateway target](../../../../docs/runbooks/kubernetes-gateway.md). [Tasks](TASKS.md) · [Execution and source map](EXECUTION.md) · [Proof](PROOF.md).
+Authority: [R5 design](../../../../work/designs/archive/gateway-platform/README.md) and [local gateway target](../../../../docs/runbooks/kubernetes-gateway.md). [Tasks](TASKS.md) · [Execution and source map](EXECUTION.md) · [Proof](PROOF.md).
 
 Outcome: checksum-verified vendored native chart/bundle, one installer, no host Docker image/Helm alias prerequisite, local streaming-compatible defaults, truthful readiness, repeat-safe bundle reuse. Preserve lab-gateway/gateway-system, lab-traefik, lab-edge/lab-edge, listener web and Service port 80, same namespace attachment, application routes and DNS. No production hosting, dev gateway, namespace rename, controller upgrade or application edits.
 
