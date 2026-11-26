@@ -22,8 +22,8 @@ A human or coding agent starting with a fresh clone can prepare the supported wo
 | 1 | bash infra/host/check.sh | Detect host, architecture, tools, Docker reachability, supported path and missing prerequisites |
 | 2 | bash infra/host/setup.sh | Prepare supported CLI tools; report manual prerequisites and stop if blocked |
 | 3 | pnpm install --frozen-lockfile (existing) | Workspace dependencies installed |
-| 4 | pnpm infra:cluster:create --env dev | Owned dev foundation ready |
-| 5 | pnpm infra:cluster:create --env release | Owned release foundation ready |
+| 4 | node infra/environments/infra-cli.mjs up --env dev --services none --human | Owned dev foundation ready |
+| 5 | node infra/environments/infra-cli.mjs up --env release --services none --human | Owned release foundation ready |
 | 6 | pnpm infra:up --env dev --services core --human (existing) | Selected dev services ready |
 | 7 | pnpm infra:up --env release --services core --human (existing) | Selected release services ready |
 | 8 | pnpm infra:verify --suite diagnostic (existing) | Diagnostic receipt; not automatically full protocol acceptance |
@@ -48,6 +48,18 @@ Alternatives: single mega-installer (rejected: mixes privilege and failure domai
 
 Focused source fixtures: OS detection and unsupported no-write behavior; missing/wrong tools; Docker unavailable/foreign context; help and malformed flags; cluster absent/compatible/foreign/partial/unreadable cases using fake runners; preserve current CLI contracts. Human/ChatGPT heavy proof: record exact tested SHA; verify zero Kind clusters, Docker images/volumes and stale registry state; run documented WSL path in order, record phase outcomes and timings; verify both cluster foundations and selected services using existing service-specific protocol checks; repeat safe ensure and observe no destructive changes; launch/observe/park one owned dev slot without paid model calls. Stop on first unexpected failure, retain evidence, fix source then repeat affected proof. Release application and optional services only under their existing separate authorization and acceptance scopes. Native Linux/macOS live proof NOT RUN / NOT IMPLEMENTED. Fresh-clone test must use a separate checkout without inherited .env or build receipts; host-tool installation proof on a genuinely unprepared host is separate from current Docker-empty workstation proof.
 
+## R2: source and workstation findings (2026-11-26)
+
+Owner-operated WSL specimen: Ubuntu 24.04.5 x86-64, WSL2, Docker Desktop 29.9.3, 12 CPUs, 19 GiB RAM / 15 GiB available; Node 24.19.0 and pnpm 11.19.0 via mise, Kind 0.33.0, kubectl 1.37.2, Helm 3.22.1, Tilt 0.35.2, Python 3.12.3 and PyYAML 6.0.1. These are observed reference versions, not universal compatibility claims. WSL filesystem capacity is not Windows physical free space.
+
+Use existing .node-version and package.json packageManager as host Node/pnpm version owners; infra/images/common/toolchain.pin owns container image digest and must agree on versions, not be repurposed as a host installer manifest. Kind/kubectl/Docker reference versions are documented in docs/runbooks/kubernetes-lab.md; other observed tools are reference values pending exact compatibility checks. Initial host setup is conservative: Ubuntu package prerequisites via explicitly approved package manager operation, missing pinned CLI binaries via documented official installation instructions, no automatic privileged mutation or replacement of installed version managers. check.sh is Bash-first; setup.sh dispatches and reports actionable missing prerequisites, and may prepare user-local tools only where download verification and exact source are established. Unsupported paths refuse before mutation. No requirement to adopt mise.
+
+Reuse infra:up --services none, not new cluster aliases. Source infra/environments/infra-cli.mjs lines 690–768 confirms empty selection returns cluster-ready, but newly created path skips the common verify branch. Move the existing assertPlatformTarget, verifyClusterNodesReady, and release local-path verification after successful creation OR existing inventory, preserving error receipts and no implicit repair; focused tests must prove newly created bad foundation cannot return ready. Existing verifier checks node readiness, not full DNS/storage behavior; extend only when cold acceptance exposes need, and document separate foundation probes. Existing release storage guard remains. No claim that dev has equivalent storage provisioning.
+
+Observed pnpm infra:plan triggered interactive modules reinstall (31.3s, 901 reused packages). Do not attribute cause without evidence. Prefer direct node entrypoints for infra plan/status/up in onboarding after explicit dependency install, retaining pnpm aliases for established workflows. The existing plan with none is a service-selection preview (no live observed, phases none), not a cluster creation plan. Document this explicitly; use status for observation. No new package-manager settings in this design.
+
+Cold proof order: host check, explicit dependency install if needed, direct node status for both contexts, dev none, release none, explicit status, dev core, release core, service-specific proofs and repeat ensures. Optional services remain separate. No live creation yet.
+
 ## Remaining before implementation
 
-Inspect exact existing host tool/pin owners, dev bootstrap foundation predicates and infra:up call sites; choose precise wrapper behavior and setup installation policy. Check current main drift and reconcile canonical runbook/technical contract before commissioning a bounded Change. No implementation or live provisioning performed by this design commit.
+Host tool/pin owners, cluster entrypoints and common verification gap inspected. Remaining: exact host check version predicates and official installation recipe verification, focused test anchors, and owner acceptance of the deliberately conservative setup policy. Check current main drift and reconcile canonical runbook/technical contract before commissioning a bounded Change. No implementation or live provisioning performed by this design commit.
