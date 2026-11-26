@@ -246,7 +246,12 @@ function assertNoDuplicateJsonKeys(text) {
         index++;
       }
       if (index >= text.length) break;
-      const key = text.slice(keyStart, index);
+      let key;
+      try {
+        key = JSON.parse(text.slice(keyStart - 1, index + 1));
+      } catch {
+        throw new Error('policy JSON is malformed');
+      }
       index++;
       let cursor = index;
       while (cursor < text.length && /\s/.test(text[cursor])) cursor++;
@@ -302,13 +307,16 @@ export function classifyTenantObservation(tenant, observation) {
     return { state: 'unknown', reason: 'observation-unreadable' };
   }
   if (
-    observation.policyInventory === null ||
-    observation.groupsEmpty === null ||
-    observation.bucketPolicies === null
+    !Array.isArray(observation.policyInventory) ||
+    observation.policyInventory.some(name => typeof name !== 'string' || !name) ||
+    new Set(observation.policyInventory).size !== observation.policyInventory.length ||
+    typeof observation.groupsEmpty !== 'boolean' ||
+    !Array.isArray(observation.bucketPolicies)
   ) {
     return { state: 'unknown', reason: 'required-inventory-missing' };
   }
-  if (observation.bucketPolicies.some((entry) => entry.state === 'unknown')) {
+  if (observation.bucketPolicies.some((entry) => !entry || typeof entry.name !== 'string' || !entry.name || !['absent', 'present'].includes(entry.state)) ||
+      new Set(observation.bucketPolicies.map(entry => entry.name)).size !== observation.bucketPolicies.length) {
     return { state: 'unknown', reason: 'bucket-policy-unknown' };
   }
 
@@ -347,11 +355,11 @@ export function classifyTenantObservation(tenant, observation) {
   }
 
   const reuseChecks = () => {
-    if (!observation.bucket || observation.bucket.owner !== tenant.user) {
+    if (!observation.bucket || observation.bucket.name !== tenant.bucket || observation.bucket.owner !== tenant.user) {
       return 'bucket-owner-mismatch';
     }
     const user = observation.user;
-    if (!user || user.enabled !== true) return 'user-disabled';
+    if (!user || user.name !== tenant.user || user.enabled !== true) return 'user-disabled';
     if (user.source !== 'dynamic') return 'user-source';
     if (
       !Array.isArray(user.policies) ||
@@ -369,14 +377,15 @@ export function classifyTenantObservation(tenant, observation) {
     ) {
       return 'user-service-accounts';
     }
-    if (!observation.secret || observation.secret.name !== tenant.secret) {
+    if (!observation.secret || observation.secret.name !== tenant.secret ||
+        typeof observation.secret.uid !== 'string' || !observation.secret.uid) {
       return 'secret-name';
     }
     const credentials = user.credentials ?? [];
-    if (credentials.length !== 1) return 'credential-count';
+    if (!Array.isArray(credentials) || credentials.length !== 1) return 'credential-count';
     const credential = credentials[0];
     if (
-      typeof credential.accessKey !== 'string' ||
+      !credential || typeof credential.accessKey !== 'string' || !credential.accessKey ||
       typeof credential.status !== 'string' ||
       credential.status.toLowerCase() !== 'active'
     ) {

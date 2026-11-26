@@ -4,7 +4,7 @@ import { readPlatformProfile } from '../../../common/profile.mjs';
 
 const requireSdk = createRequire(new URL('../../../../../packages/object-storage/package.json', import.meta.url));
 
-function credentials(profile, name, slotId) {
+function credentials(profile, name, slotId, expected) {
   const raw = execFileSync('kubectl', ['--context', profile.contextName, '-n',
     profile.namespaces.objectStorage, 'get', 'secret', name, '-o', 'json'],
   { encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -18,6 +18,7 @@ function credentials(profile, name, slotId) {
   const accessKeyId = Buffer.from(secret.data?.['access-key-id'] ?? '', 'base64').toString('utf8');
   const secretAccessKey = Buffer.from(secret.data?.['secret-access-key'] ?? '', 'base64').toString('utf8');
   if (!accessKeyId || !secretAccessKey) throw new Error('credential missing');
+  if (expected && (secret.metadata.uid !== expected.uid || accessKeyId !== expected.accessKeyId)) throw new Error('credential observation changed');
   return { accessKeyId, secretAccessKey };
 }
 
@@ -62,7 +63,7 @@ async function withForward(profile, action) {
   }
 }
 
-export async function observeDevS3Sdk(tenant, observation) {
+export async function observeDevS3Sdk(tenant, observation, expectedBucketNames) {
   const profile = readPlatformProfile('dev');
   if (tenant.context !== profile.contextName || tenant.namespace !== profile.namespaces.objectStorage)
     throw new Error('wrong S3 target');
@@ -75,18 +76,25 @@ export async function observeDevS3Sdk(tenant, observation) {
       clients.push(client);
       return client;
     };
-    const send = (client, command) => client.send(command, { abortSignal: AbortSignal.timeout(10000) });
+    const deadline = performance.now() + 60_000;
+    const send = (client, command) => {
+      const remaining = Math.floor(deadline - performance.now());
+      if (remaining < 1) throw new Error('S3 observation budget exhausted');
+      return client.send(command, { abortSignal: AbortSignal.timeout(Math.min(10_000, remaining)) });
+    };
     try {
       const admin = makeClient(credentials(profile, 'object-store-s3'));
       const bucketPolicies = [];
       const names = new Set();
       let token;
       const tokens = new Set();
+      let pages = 0;
       do {
+        if (++pages > 256) throw new Error('bucket inventory page limit');
         const page = await send(admin, new sdk.ListBucketsCommand(token ? { ContinuationToken: token } : {}));
         if (!Array.isArray(page.Buckets)) throw new Error('bucket inventory missing');
         for (const bucket of page.Buckets) {
-          if (!bucket.Name || names.has(bucket.Name) || names.size >= 256) throw new Error('bucket inventory invalid');
+          if (typeof bucket.Name !== 'string' || !bucket.Name || names.has(bucket.Name) || names.size >= 256) throw new Error('bucket inventory invalid');
           names.add(bucket.Name);
           try {
             await send(admin, new sdk.GetBucketPolicyCommand({ Bucket: bucket.Name }));
@@ -97,13 +105,16 @@ export async function observeDevS3Sdk(tenant, observation) {
           }
         }
         token = page.ContinuationToken;
+        if (token != null && typeof token !== 'string') throw new Error('invalid continuation token');
         if (token && tokens.has(token)) throw new Error('bucket inventory pagination loop');
         if (token) tokens.add(token);
       } while (token);
-      if (names.has(tenant.bucket) !== Boolean(observation.bucket)) throw new Error('bucket inventories disagree');
+      if (!Array.isArray(expectedBucketNames) || names.size !== expectedBucketNames.length ||
+          expectedBucketNames.some(name => !names.has(name)) ||
+          names.has(tenant.bucket) !== Boolean(observation.bucket)) throw new Error('bucket inventories disagree');
       let headBucket = null;
       if (observation.secret && observation.bucket && observation.user) {
-        const scoped = makeClient(credentials(profile, tenant.secret, tenant.slotId));
+        const scoped = makeClient(credentials(profile, tenant.secret, tenant.slotId, observation.secret));
         await send(scoped, new sdk.HeadBucketCommand({ Bucket: tenant.bucket }));
         headBucket = 'ok';
       }

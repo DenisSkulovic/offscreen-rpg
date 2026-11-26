@@ -190,7 +190,7 @@ test('ensureObjectStorageTenant all absent calls writeFresh once', async () => {
   const result = await ensureObjectStorageTenant('dev', {
     authorize: true,
     slotId: 'dev-1',
-    readObservation: async () => absentObservation(tenant),
+    readObservation: async () => writes === 0 ? absentObservation(tenant) : completeObservation(tenant),
     writeFresh: async () => {
       writes += 1;
       return { ok: true, mutated: true };
@@ -312,4 +312,30 @@ test('unreadable observation is unknown', () => {
     }).state,
     'unknown',
   );
+});
+
+
+test('escaped duplicate JSON keys refuse', () => {
+  assert.throws(() => parsePolicyDocumentStrict('{"Version":"x","\\u0056ersion":"y"}'), /duplicate/);
+});
+
+test('malformed inventories refuse as unknown', () => {
+  const tenant = deriveObjectStorageTenant('dev', 'dev-1');
+  for (const overrides of [
+    { policyInventory: ['x', 'x'] },
+    { bucketPolicies: [{ name: 'x', state: 'unexpected' }] },
+    { bucketPolicies: [{ name: 'x', state: 'absent' }, { name: 'x', state: 'absent' }] },
+    { groupsEmpty: undefined },
+  ]) assert.equal(classifyTenantObservation(tenant, absentObservation(tenant, overrides)).state, 'unknown');
+});
+
+test('fresh write without exact readback cannot succeed', async () => {
+  const tenant = deriveObjectStorageTenant('dev', 'dev-1');
+  const result = await ensureObjectStorageTenant('dev', {
+    authorize: true, slotId: 'dev-1',
+    readObservation: async () => absentObservation(tenant),
+    writeFresh: async () => ({ ok: true, mutated: true }),
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, true);
 });

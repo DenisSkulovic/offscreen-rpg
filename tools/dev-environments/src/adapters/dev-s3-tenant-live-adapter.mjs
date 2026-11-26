@@ -491,7 +491,8 @@ function createAdapter({
         unreadable: true,
       };
       try {
-        const bucket = this.bucket(names.bucket);
+        const buckets = parseWeedBucketList(weed('s3.bucket.list\nexit\n', exec));
+        const bucket = buckets.find(entry => entry.name === names.bucket) ?? null;
         const user = this.user(names.user);
         const secretObj = readSecretObject(exec, names.secret);
         let secret = null;
@@ -522,7 +523,7 @@ function createAdapter({
           unreadable: false,
         };
         if (exec === run) {
-          Object.assign(observation, await observeDevS3Sdk(names, observation));
+          Object.assign(observation, await observeDevS3Sdk(names, observation, buckets.map(entry => entry.name)));
         }
         return observation;
       } catch {
