@@ -25,7 +25,7 @@ import {
   stopAfterUnknownConfirm,
   validateQueueName,
 } from './proof-host.mjs';
-import { main } from './proof.mjs';
+import { main, createKubectlProofRunner } from './proof.mjs';
 
 const BASELINE = {
   baselineUid: 'base-1',
@@ -592,3 +592,30 @@ for (const [fault, reason] of [
     if (fault === 'unknown-create') assert.equal(receipt.pendingFixture.role, 'smoke');
   });
 }
+
+test('live identity adapter requests exact resource kinds, scope and names', async () => {
+  const calls = [];
+  const context = 'kind-offscreen-dev';
+  const ns = 'offscreen-dev-rabbitmq';
+  const runner = createKubectlProofRunner(context, ns, { run(command, args) {
+    calls.push([command, ...args]);
+    return { ok: true, stdout: 'uid-' + calls.length };
+  } });
+  assert.deepEqual(await runner({ op: 'capture-identities' }), {
+    ok: true, identities: { vhost: '/', namespaceUid: 'uid-1', crUid: 'uid-2', serviceUid: 'uid-3', secretUid: 'uid-4' },
+  });
+  const get = (kind, name, namespaced) => ['kubectl', '--context', context, ...(namespaced ? ['-n', ns] : []), 'get', kind, name, '-o', 'jsonpath={.metadata.uid}'];
+  assert.deepEqual(calls, [
+    get('namespace', ns, false),
+    get('rabbitmqclusters.rabbitmq.com', 'rabbitmq', true),
+    get('service', 'rabbitmq', true),
+    get('secret', 'rabbitmq-default-user', true),
+  ]);
+});
+
+test('live identity adapter refuses failed or empty UID observations', async () => {
+  for (const response of [{ ok: false, stdout: 'uid' }, { ok: true, stdout: ' ' }]) {
+    const runner = createKubectlProofRunner('kind-offscreen-dev', 'offscreen-dev-rabbitmq', { run: () => response });
+    assert.deepEqual(await runner({ op: 'capture-identities' }), { ok: false, reason: 'identity-read-namespaceUid' });
+  }
+});
