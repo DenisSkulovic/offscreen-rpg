@@ -1,7 +1,6 @@
 import { spawn } from 'node:child_process';
 import http from 'node:http';
 import { createDevS3LiveAdapter } from '../../../tools/dev-environments/src/adapters/dev-s3-tenant-live-adapter.mjs';
-import { deriveDevS3Tenant } from '../../../tools/dev-environments/src/adapters/dev-s3-tenant.mjs';
 import { ensureDevS3Tenant } from '../../../tools/dev-environments/src/adapters/dev-s3-tenant.mjs';
 import { signS3Request } from '../../../tools/dev-environments/src/adapters/dev-object-store-s3-proof.mjs';
 import {
@@ -137,9 +136,12 @@ async function matrix(label, left, right, admin) {
 }
 
 const adapter = createDevS3LiveAdapter();
-const recovered = adapter.secret('dev-1-s3')
-  ? null
-  : adapter.recoverUser(deriveDevS3Tenant('dev-1'));
+if (!adapter.secret('dev-1-s3')) {
+  console.error(
+    'refusing dev S3 trial: a missing tenant Secret is not recovered',
+  );
+  process.exit(1);
+}
 const first = await ensureDevS3Tenant({
   slotId: 'dev-1',
   authorizeLive: TOKEN,
