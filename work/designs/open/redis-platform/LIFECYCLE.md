@@ -64,3 +64,7 @@ Selection retained for fresh local pools with cooperating-writer discipline; no 
 ## R5 decision after native experiment
 
 [Release lifecycle experiment](experiments/lifecycle/results.md) passed all scoped checks. Select native Helm for fresh local pools as candidate architecture. No arbitrary-writer safety, full compatibility or migration claim. Continue with [integration and cutover](INTEGRATION.md); formal defense remains pending.
+
+## R6 scope and observer
+
+See [TARGET.md](TARGET.md) for current baseline target and explicit compatible-state observation requirements. Owner census supports quiesced legacy replacement at original DNS, not automatic adoption. The disposable fixture observer does not establish complete compatibility. Formal defense pending.
