@@ -312,6 +312,8 @@ The model may introduce a temporary identifier for a new person or item. The app
 
 ## Selected document store
 
+[Native local object storage and S3 binding](object-storage-infrastructure.md) owns the accepted infrastructure target and deployment binding. Its implementation is pending; the immutable document semantics below are unchanged.
+
 **Selected ENG05 contract, 2026-11-13.** Canonical prose and manifests are immutable content-addressed documents. PostgreSQL keeps mutable gameplay and the publication root. The store is not a second item or clock ledger.
 
 Preserve the local store's semantics for every adapter: canonical JSON, SHA-256 identity, 1 MiB maximum, schema validation, hash checks on read, and typed `missing`, `corrupt`, `too-large` and `unavailable` errors. `put` is create-if-absent. A preexisting object is idempotent only when the bytes agree. Never overwrite a mismatched object. Do not fall back to model prose.
