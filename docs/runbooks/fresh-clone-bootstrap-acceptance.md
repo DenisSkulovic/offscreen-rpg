@@ -1,6 +1,6 @@
 # Local bootstrap engineering acceptance
 
-This is an engineering proof procedure, not a second bootstrap runbook. Ordinary agents use [fresh-clone bootstrap](fresh-clone-bootstrap.md). Current source correction checkpoint: 8689d1b61084b708895b691c7133ae2b07c3a7cd; subsequent documentation commits do not imply tested source. Integration is held pending mandatory correctness evidence.
+This is an engineering proof procedure, not a second bootstrap runbook. Ordinary agents use [fresh-clone bootstrap](fresh-clone-bootstrap.md). Current source correction checkpoint: 8689d1b61084b708895b691c7133ae2b07c3a7cd; subsequent documentation commits do not imply tested source. Owner disposition below narrows this increment to the demonstrated source and operational baseline; deferred runtime outcomes remain unaccepted.
 
 ## A. Focused source regression (owner-operated, no cluster writes)
 
@@ -61,4 +61,12 @@ Owner-operated WSL run at exact candidate `f20225ef9af45845032a0cb03006ee38718e5
 | Infrastructure CLI | 36/36 | 0.398s |
 | Total | 160/160 | 10.409s across test batches |
 
-Terminal ended with FOCUSED ACCEPTANCE PASSED. Negative foundation messages were expected fixture output; no live provisioning was performed by the selected tests. This receipt closes the focused regression gate for the tested SHA, not the uninterrupted fresh tenant, live SDK/protocol, fresh-agent or integration gates. No repair or paid model call was required. Next: select and verify an isolated live acceptance target before mutation.
+Terminal ended with FOCUSED ACCEPTANCE PASSED. Negative foundation messages were expected fixture output; no live provisioning was performed by the selected tests. This receipt closes the focused regression gate for the tested SHA, not the uninterrupted fresh tenant, live SDK/protocol, fresh-agent or integration gates. No repair or paid model call was required. Subsequent live observation and owner disposition are recorded below.
+
+## Live observation receipt: PASS (2026-11-26)
+
+At exact candidate `2c86204e07cc3320912375aeaba536b7bef7e21c`, the owner verified supported Windows/WSL x86-64 host admission (11,598 MiB available), a separate clean detached worktree without workspace dependencies, and registry v1 with dev-1 owned and next sequence 2. Ordinary pnpm dev supports this registry; reserve/attach require v2 and were not run. No migration or reservation occurred. Namespace offscreen-dev-1 existed; offscreen-dev-2 absent; provider pending receipt absent. Live adapter observation classified dev-1 tuple-exact/reuse with unchanged Secret UID and dev-2 tuple-absent (bucket, principal, Secret absent). Both assertions passed in about 3 seconds. No tenant mutation took place. Independent native Ubuntu VM Docker isolation was observed, but the VM lacks required tools and a Git checkout and is outside the supported host setup profile; it was shut down and preserved.
+
+## Owner disposition: bounded integration, deferred outcome (2026-11-26)
+
+Owner explicitly stopped the standalone campaign: exercise fresh agent onboarding when a real feature needs it. No Claude subscription is available or required. Cursor or another fresh agent may be used later. Preserve all three host clusters, parked dev-1, the fresh unallocated checkout and VM disk. The independent agent experiment (including negative operational scenarios), uninterrupted fresh tenant mutation on the correction set, subsequent warm startup and parking are NOT RUN. Source tests and read-only live admission are not substitutes for these. Earlier repaired tenant/application startup remains historical proof, not fresh proof on this revision. The risk is a fresh provisioning or operational usability defect that appears only on actual startup; existing guarded mutation/refusal contracts remain in force. Planner and owner own the next feature's ordinary startup proof under sections B/C, with exact integrated SHA, absence, successful creation, no pending receipt, readiness, reuse and parking. No automatic repair, authorization relaxation or credential exposure is permitted. Do not mark the unverified outcome Done. Hosted, unsupported-host preparation, release RabbitMQ and full S3 protocol isolation remain separately gated.
