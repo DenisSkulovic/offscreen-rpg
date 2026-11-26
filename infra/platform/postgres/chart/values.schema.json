@@ -82,7 +82,9 @@
             "database": { "type": "string" },
             "owner": { "type": "string" },
             "localeCType": { "type": "string" },
-            "localeCollate": { "type": "string" }
+            "localeCollate": { "type": "string" },
+            "postInitSQL": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+            "postInitApplicationSQL": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
           },
           "additionalProperties": false
         }
