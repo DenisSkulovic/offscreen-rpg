@@ -312,6 +312,58 @@ async function listNamespacedInventory(runner, target, types) {
 }
 
 /**
+ * Verify every dynamic workload descendant before namespace deletion.
+ * @param {Parameters<typeof listNamespacedInventory>[0]} run
+ * @param {Parameters<typeof listNamespacedInventory>[1]} target
+ * @param {string[]} lines
+ */
+async function verifyCleanupDescendants(run, target, lines) {
+  const names = new Set(lines);
+  const read = async (kind, name) => {
+    const result = await Promise.resolve(run('kubectl',
+      [...kubectlScopeArgs(target, 'get'), kind, name, '-o', 'json'],
+      { timeoutMs: KUBECTL_READ_MS }));
+    if (!result.ok || result.timedOut || (result.stderr ?? '').trim()) return null;
+    try {
+      const object = JSON.parse(result.stdout ?? '');
+      const m = object?.metadata;
+      return m?.name === name && m.namespace === target.namespace &&
+        typeof m.uid === 'string' && m.uid.length && !m.deletionTimestamp ? object : null;
+    } catch { return null; }
+  };
+  const ownedBy = (object, kind, parent) => {
+    const refs = object?.metadata?.ownerReferences;
+    return parent && Array.isArray(refs) && refs.length === 1 &&
+      refs[0].kind === kind && refs[0].uid === parent.metadata.uid &&
+      refs[0].name === parent.metadata.name && refs[0].controller === true;
+  };
+  const rsNames = [...names].filter(n => n.startsWith('replicaset.apps/'));
+  const podNames = [...names].filter(n => n.startsWith('pod/') && n !== 'pod/redis-client');
+  const slices = [...names].filter(n => n.startsWith('endpointslice.discovery.k8s.io/'));
+  const deployment = rsNames.length || podNames.length
+    ? await read('deployment', DEPLOYMENT_NAME) : null;
+  const service = slices.length ? await read('service', SERVICE_NAME) : null;
+  const replicaSets = [];
+  for (const item of rsNames) {
+    const object = await read('replicaset.apps', item.split('/')[1]);
+    if (!ownedBy(object, 'Deployment', deployment)) return { ok: false, reason: 'cleanup-replicaset-owner' };
+    replicaSets.push(object);
+  }
+  for (const item of podNames) {
+    const object = await read('pod', item.split('/')[1]);
+    if (!replicaSets.some(rs => ownedBy(object, 'ReplicaSet', rs))) return { ok: false, reason: 'cleanup-pod-owner' };
+  }
+  for (const item of slices) {
+    const object = await read('endpointslice.discovery.k8s.io', item.split('/')[1]);
+    if (!ownedBy(object, 'Service', service) ||
+        object?.metadata?.labels?.['kubernetes.io/service-name'] !== SERVICE_NAME) {
+      return { ok: false, reason: 'cleanup-endpointslice-owner' };
+    }
+  }
+  return { ok: true };
+}
+
+/**
  * @param {(command: string, args: string[], options?: object) => ReturnType<typeof runPlatformCommand>} runner
  * @param {import('./inventory.mjs').RedisInventoryTarget} target
  * @param {{ uid: string }} identity
@@ -714,6 +766,12 @@ export async function runVerifiedSmokeNamespaceCleanup(
       await Promise.resolve(runWrite(command, args, options))
     );
 
+  if (!SMOKE_NAMESPACE_PATTERN.test(target.namespace) ||
+      target.namespace !== `offscreen-redis-proof-${proofNonce}` ||
+      target.contextName !== `kind-offscreen-${profileId}` || !['dev', 'release'].includes(profileId)) {
+    return { ok: false, detail: 'cleanup-target-refused', retainReceipt: true };
+  }
+
   if (remainingMs() < CLEANUP_RESERVE_MS) {
     return { ok: false, detail: 'proof-cleanup-budget', retainReceipt: true };
   }
@@ -764,12 +822,24 @@ export async function runVerifiedSmokeNamespaceCleanup(
     };
   }
 
+  // Names are only the admission allowlist, not proof of descendant ownership.
+  const owned = await verifyCleanupDescendants(run, target, inventoryListed.lines);
+  if (!owned.ok) {
+    return { ok: false, detail: owned.reason, retainReceipt: true };
+  }
+  const finalIdentity = await readAndVerifyNamespaceIdentity(
+    run, target, namespaceIdentity, proofNonce, profileId,
+  );
+  if (!finalIdentity.ok) {
+    return { ok: false, detail: finalIdentity.reason, retainReceipt: true };
+  }
+
   const deleteBody = {
     apiVersion: 'v1',
     kind: 'DeleteOptions',
     preconditions: {
       uid: namespaceIdentity.uid,
-      resourceVersion: namespaceBeforeDelete.resourceVersion,
+      resourceVersion: finalIdentity.resourceVersion,
     },
   };
   const deleteNs = await writeRun(

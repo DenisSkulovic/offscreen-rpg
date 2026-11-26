@@ -131,9 +131,10 @@ export function buildHappyProofRunner(target) {
     JSON.stringify({
       metadata: {
         name: SERVER_POD,
+        namespace: target.namespace,
         uid: serverPodUid,
         ownerReferences: [
-          { kind: 'ReplicaSet', uid: RS_UID, controller: true },
+          { kind: 'ReplicaSet', name: 'redis-abc', uid: RS_UID, controller: true },
         ],
       },
       status: {
@@ -222,6 +223,7 @@ export function buildHappyProofRunner(target) {
       return ok(
         JSON.stringify({
           metadata: {
+            name: 'redis', namespace: target.namespace,
             uid: DEPLOYMENT_UID,
             resourceVersion: deploymentRv.value,
           },
@@ -252,6 +254,12 @@ export function buildHappyProofRunner(target) {
           metadata: { uid: CONFIG_UID, resourceVersion: '12' },
         }),
       );
+    }
+    if (args.includes('replicaset.apps') && args.includes('json')) {
+      return ok(JSON.stringify({ metadata: {
+        name: 'redis-abc', namespace: target.namespace, uid: RS_UID,
+        ownerReferences: [{kind: 'Deployment', name: 'redis', uid: DEPLOYMENT_UID, controller: true}],
+      }}));
     }
     if (args.includes('replicasets.apps') && args.includes('json')) {
       return ok(
@@ -850,4 +858,22 @@ test('post-scale-up Service PING tolerates dataplane convergence but requires PO
   });
   assert.equal(injected, true);
   assert.equal(result.ok, true, JSON.stringify(result));
+});
+
+test('cleanup refuses a foreign ReplicaSet even with an allowed resource kind', async () => {
+  const target = { ...releaseTarget, namespace: PROOF_NAMESPACE };
+  const runner = buildHappyProofRunner(target);
+  const result = await runVerifiedSmokeNamespaceCleanup(target, 'release', {
+    ...proofDeps(target, runner),
+    run: (command, args) => {
+      if (args.includes('replicaset.apps') && args.includes('json')) {
+        return ok(JSON.stringify({metadata: {name: 'redis-abc', namespace: target.namespace, uid: RS_UID,
+          ownerReferences: [{kind:'Deployment', name:'redis', uid:'foreign', controller:true}]}}));
+      }
+      return runner.run(command,args);
+    },
+  });
+  assert.equal(result.ok,false);
+  assert.equal(result.detail,'cleanup-replicaset-owner');
+  assert.equal(runner.commands.some(([,args])=>args.includes('--raw')),false);
 });
