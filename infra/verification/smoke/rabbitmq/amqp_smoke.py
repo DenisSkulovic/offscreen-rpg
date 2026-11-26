@@ -550,6 +550,14 @@ def run_durable_get(sock: socket.socket, queue: str, run_id: str) -> int:
     return 0
 
 
+def has_rabbitmq_metric(body: bytes) -> bool:
+    # Require an actual RabbitMQ sample, not a substring in a comment.
+    return any(
+        line.startswith(b"rabbitmq_") and b" " in line
+        for line in body.splitlines()
+    )
+
+
 def probe_management() -> int:
     host = os.environ.get("AMQP_HOST", "rabbitmq")
     user = os.environ["AMQP_USER"]
@@ -571,9 +579,15 @@ def probe_management() -> int:
                 if response.status != 200:
                     print(f"{stage}-STATUS-FAIL status={response.status}", file=sys.stderr)
                     return 1
-                if stage == "METRICS" and b"rabbitmq" not in response.read(4096):
-                    print("METRICS-PREFIX-FAIL", file=sys.stderr)
-                    return 1
+                if stage == "METRICS":
+                    limit = 1024 * 1024
+                    body = response.read(limit + 1)
+                    if len(body) > limit:
+                        print("METRICS-SIZE-LIMIT", file=sys.stderr)
+                        return 1
+                    if not has_rabbitmq_metric(body):
+                        print("METRICS-SAMPLE-MISSING", file=sys.stderr)
+                        return 1
         except urllib.error.HTTPError as error:
             print(f"{stage}-HTTP-FAIL status={error.code}", file=sys.stderr)
             return 1
