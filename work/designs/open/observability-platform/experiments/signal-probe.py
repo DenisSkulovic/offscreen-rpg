@@ -1,8 +1,9 @@
 """Synthetic OTLP HTTP probe. No credentials or application payloads."""
 import json, pathlib, secrets, sys, time, urllib.request, urllib.parse, urllib.error
 out=pathlib.Path(sys.argv[1])
-collector,prom,loki,tempo=sys.argv[2:]
+collector,prom,loki,tempo=sys.argv[2:6]
 opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+replay=json.loads(sys.argv[6]) if len(sys.argv)==7 else None
 run=secrets.token_hex(8)
 trace=secrets.token_hex(16)
 parent=secrets.token_hex(8)
@@ -10,6 +11,8 @@ child=secrets.token_hex(8)
 now=time.time_ns()
 service="obs-e04-probe"
 marker="obs-e04-"+run
+if replay:
+    run,trace,parent,child,marker,now=(replay[k] for k in ("run","trace","parent","child","marker","now"))
 def attr(k,v): return {"key":k,"value":{"stringValue":v}}
 resource={"attributes":[attr("service.name",service),attr("service.instance.id",run),attr("deployment.environment.name","synthetic")]}
 scope={"name":"offscreen.synthetic"}
@@ -30,8 +33,8 @@ payloads={
 "logs":{"resourceLogs":[{"resource":resource,"scopeLogs":[{"scope":scope,"logRecords":[{"timeUnixNano":str(now),"observedTimeUnixNano":str(now),"severityNumber":9,"severityText":"INFO","body":{"stringValue":marker},"traceId":trace,"spanId":child,"attributes":[attr("probe.run",run)]}]}]}]},
 "metrics":{"resourceMetrics":[{"resource":resource,"scopeMetrics":[{"scope":scope,"metrics":[{"name":"offscreen_probe_events","sum":{"aggregationTemporality":2,"isMonotonic":True,"dataPoints":[{"startTimeUnixNano":str(now-1000000000),"timeUnixNano":str(now),"asInt":"7","attributes":[attr("probe_run",run)]}]}}]}]}]}
 }
-(out/"identity.json").write_text(json.dumps(dict(run=run,trace=trace,parent=parent,child=child,marker=marker),indent=2))
-for signal,payload in payloads.items():
+(out/"identity.json").write_text(json.dumps(dict(run=run,trace=trace,parent=parent,child=child,marker=marker,now=now),indent=2))
+for signal,payload in (() if replay else payloads.items()):
     response=call(collector,"/v1/"+signal,data=payload)
     (out/f"{signal}.receipt.json").write_text(json.dumps(response))
     partial=response.get("partialSuccess",{})
@@ -60,7 +63,7 @@ def metrics_check(d):
 checks={
 "trace":(tempo,"/api/traces/"+trace,None,trace_check),
 "log":(loki,"/loki/api/v1/query_range",{"query":'{service_name="'+service+'"} |= "'+marker+'"',"start":str(now-60000000000),"end":str(now+60000000000)},logs_check),
-"metric":(prom,"/api/v1/query",{"query":'offscreen_probe_events_total{probe_run="'+run+'"}'},metrics_check)}
+"metric":(prom,"/api/v1/query",{"query":'offscreen_probe_events_total{probe_run="'+run+'"}', **({"time":str(now/1e9+2)} if replay else {})},metrics_check)}
 deadline=time.monotonic()+90
 pending=set(checks)
 while pending and time.monotonic()<deadline:
@@ -75,5 +78,5 @@ while pending and time.monotonic()<deadline:
         except (OSError,ValueError,RuntimeError,urllib.error.URLError) as e:
             (out/f"{name}.error.txt").write_text(str(e))
     if pending: time.sleep(2)
-print("E04-A", "PASS" if not pending else "FAIL: "+",".join(sorted(pending)))
+print("E04-B QUERY" if replay else "E04-A", "PASS" if not pending else "FAIL: "+",".join(sorted(pending)))
 sys.exit(bool(pending))
