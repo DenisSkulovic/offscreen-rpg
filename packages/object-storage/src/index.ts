@@ -13,3 +13,4 @@ export {
   type S3Client,
   type S3ObjectStorageConfig,
 } from './s3-object-storage.js';
+export { runInjectedScopedProof } from './proof-matrix.js';
