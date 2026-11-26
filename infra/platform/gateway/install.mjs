@@ -657,7 +657,7 @@ function assertLiveControllerMatchesRender(
     );
   }
   if (
-    liveDeployment?.spec?.template?.spec?.hostNetwork !==
+    (liveDeployment?.spec?.template?.spec?.hostNetwork ?? false) !==
     rendered.deployment.spec.template.spec.hostNetwork
   ) {
     throw new Error(

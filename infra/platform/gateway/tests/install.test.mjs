@@ -133,7 +133,7 @@ const bundleDocs = parseGatewayApiBundle(
 
 /**
  * @param {Record<string, object | 'absent' | 'unreadable'>} objects
- * @param {{ helmRelease?: 'absent' | 'deployed' | 'foreign', helmChart?: string, storedValues?: 'selected' | 'timeout-drift', liveArgs?: 'rendered' | 'rev11' | 'duplicate-read', crdExtra?: string[], timeoutOn?: string, gatewaySystemBusy?: boolean, labForeign?: boolean, bundleDrift?: boolean, dockerFails?: boolean, dockerTimedOut?: boolean, dockerNonLoopback?: boolean, staleGatewayCondition?: boolean }} [options]
+ * @param {{ liveHostNetwork?: 'omitted' | 'enabled', helmRelease?: 'absent' | 'deployed' | 'foreign', helmChart?: string, storedValues?: 'selected' | 'timeout-drift', liveArgs?: 'rendered' | 'rev11' | 'duplicate-read', crdExtra?: string[], timeoutOn?: string, gatewaySystemBusy?: boolean, labForeign?: boolean, bundleDrift?: boolean, dockerFails?: boolean, dockerTimedOut?: boolean, dockerNonLoopback?: boolean, staleGatewayCondition?: boolean }} [options]
  */
 function makeFixture(objects, options = {}) {
   const calls = [];
@@ -164,7 +164,9 @@ function makeFixture(objects, options = {}) {
       replicas: 1,
       template: {
         spec: {
-          hostNetwork: false,
+          ...(options.liveHostNetwork === 'omitted'
+            ? {}
+            : { hostNetwork: options.liveHostNetwork === 'enabled' }),
           containers: [
             {
               image: renderedDeployment.spec.template.spec.containers[0].image,
@@ -1072,3 +1074,17 @@ test('command timeout is classified without sleeping', () => {
   assert.match(result.error ?? '', /timed out|inventory/);
   assert.equal(mutatingCalls(fx.calls).length, 0);
 });
+
+for (const liveHostNetwork of /** @type {const} */ (['omitted', 'enabled'])) {
+  test(`live hostNetwork ${liveHostNetwork} matches only safe default`, () => {
+    const fx = makeFixture({}, { helmRelease: 'deployed', liveHostNetwork });
+    fx.seedBundlePresent();
+    fx.seedHelmPresent();
+    const result = ensureGatewayInstall({ run: fx.run, gatewayRoot: gatewayDir });
+    assert.equal(result.ok, liveHostNetwork === 'omitted', result.error);
+    if (liveHostNetwork === 'enabled') {
+      assert.match(result.error ?? '', /hostNetwork differs/);
+    }
+    assert.equal(mutatingCalls(fx.calls).length, 0);
+  });
+}
