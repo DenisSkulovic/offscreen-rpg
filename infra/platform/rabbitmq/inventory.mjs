@@ -175,13 +175,13 @@ export function rabbitmqTargetFromProfile(profileId) {
  * @param {ReturnType<typeof runPlatformCommand>} result
  */
 function kubectlFailureStatus(result) {
-  if (result.status != null) {
-    return result.status;
-  }
-  const match = String(result.stderr ?? '').match(
-    /(?:^|\s)(404|403|401|500)(?:\s|$)/,
-  );
-  return match ? Number.parseInt(match[1], 10) : null;
+  // kubectl's process status is not an HTTP status.
+  if (result.status !== 1) return null;
+  const stderr = String(result.stderr ?? '').trim();
+  if (/^Error from server \(NotFound\): the server could not find the requested resource\.?$/.test(stderr)) return 404;
+  if (/^Error from server \(Forbidden\):/.test(stderr)) return 403;
+  if (/^Error from server \(Unauthorized\):/.test(stderr)) return 401;
+  return null;
 }
 
 /**
