@@ -21,6 +21,14 @@ import {
 } from '../clusters/kind/manager/host-probe.mjs';
 import { createInfraProgressReporter } from './infra-progress.mjs';
 import { loadVerifiedPins } from '../platform/gateway/install.mjs';
+import {
+  lintObservability,
+  renderObservabilityDocuments,
+} from '../platform/observability/artifacts.mjs';
+import {
+  normalizePlatformResult,
+  parseEnsureReceipt,
+} from '../platform/observability/receipt.mjs';
 
 const environmentsRoot = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = resolve(environmentsRoot, '../..');
@@ -50,7 +58,13 @@ const DEV_SUPPORTED_SERVICES = new Set([
   'temporal',
   'redis',
   'rabbitmq',
+  'observability',
 ]);
+
+const OBSERVABILITY_INSTALL = join(
+  REPO_ROOT,
+  'infra/platform/observability/install.mjs',
+);
 
 /** @typedef {'plan' | 'ensure'} PlatformCommand */
 
@@ -115,7 +129,6 @@ const DEV_CLI = Object.freeze({
 const RELEASE_INSTALL = Object.freeze({
   postgres: join(REPO_ROOT, 'infra/platform/postgres/install.sh'),
   gateway: join(REPO_ROOT, 'infra/platform/gateway/install.sh'),
-  observability: join(REPO_ROOT, 'infra/platform/observability/install.sh'),
 });
 
 /**
@@ -331,6 +344,23 @@ export function corePhases(profileId, command, selectedServices) {
       });
       continue;
     }
+    if (logicalId === 'observability') {
+      phases.push({
+        id: 'observability',
+        argv: [
+          process.execPath,
+          OBSERVABILITY_INSTALL,
+          subcommand,
+          profileId,
+          readPlatformProfile(profileId).contextName,
+        ],
+        env: mutate
+          ? { OFFSCREEN_OBSERVABILITY_ENSURE: 'authorized' }
+          : undefined,
+        mutate,
+      });
+      continue;
+    }
     if (logicalId === 'object-storage') {
       phases.push({
         id: 'object-storage',
@@ -397,11 +427,12 @@ function plannedPreflightSteps(profileId, command, selectedServices) {
     selectedServices.includes('temporal') ||
     selectedServices.includes('redis') ||
     selectedServices.includes('rabbitmq') ||
-    selectedServices.includes('object-storage')
+    selectedServices.includes('object-storage') ||
+    selectedServices.includes('observability')
   ) {
     steps.push('helm');
   }
-  if (chartServices.length > 0) {
+  if (chartServices.length > 0 || selectedServices.includes('observability')) {
     steps.push('chart-render');
   }
   if (profileId === 'release' && selectedServices.includes('gateway')) {
@@ -456,6 +487,10 @@ export function runChartRenderPreflight(
         run,
       },
     );
+  }
+  if (selectedServices.includes('observability')) {
+    lintObservability(profileId, { run });
+    renderObservabilityDocuments(profileId, { run });
   }
 }
 
@@ -527,6 +562,7 @@ export function runEnsurePreflight(profileId, command, deps = {}) {
       selectedServices.includes('redis') ||
       selectedServices.includes('rabbitmq') ||
       selectedServices.includes('object-storage') ||
+      selectedServices.includes('observability') ||
       (profileId === 'release' &&
         (chartServices.length > 0 || selectedServices.includes('gateway')))
     ) {
@@ -536,7 +572,10 @@ export function runEnsurePreflight(profileId, command, deps = {}) {
       progress?.phaseOk('preflight:helm');
       steps.push('helm');
     }
-    if (chartServices.length > 0) {
+    if (
+      chartServices.length > 0 ||
+      selectedServices.includes('observability')
+    ) {
       activeStep = 'chart-render';
       progress?.phaseStart('preflight:chart-render');
       runChartRenderPreflight(profileId, selectedServices, { run });
@@ -675,7 +714,33 @@ export function redactPlatformReceipt(receipt) {
  * @param {string[]} argv
  * @returns {number | undefined}
  */
+/**
+ * @param {string[]} argv
+ */
+function observabilityEnsureSpawnExempt(argv) {
+  if (argv.length !== 5) {
+    return false;
+  }
+  if (argv[0] !== process.execPath) {
+    return false;
+  }
+  if (resolve(argv[1]) !== resolve(OBSERVABILITY_INSTALL)) {
+    return false;
+  }
+  if (argv[2] !== 'ensure') {
+    return false;
+  }
+  const profileId = argv[3];
+  if (profileId !== 'dev' && profileId !== 'release') {
+    return false;
+  }
+  return argv[4] === readPlatformProfile(profileId).contextName;
+}
+
 export function platformRunnerSpawnTimeout(phaseId, argv) {
+  if (phaseId === 'observability' && observabilityEnsureSpawnExempt(argv)) {
+    return undefined;
+  }
   if ((phaseId === 'redis' || phaseId === 'rabbitmq') && argv[2] === 'ensure') {
     return undefined;
   }
@@ -845,6 +910,72 @@ export function runPlatformPlan(plan, runner, deps = {}) {
     progress?.phaseStart(phase.id);
     const result = runner(phase.argv, { env, phaseId: phase.id });
     ran.push(phase);
+    if (phase.id === 'observability' && plan.command === 'ensure') {
+      const normalized = normalizePlatformResult(result);
+      if (!normalized.ok) {
+        progress?.phaseFail(phase.id);
+        phaseReceipts.push({
+          id: phase.id,
+          ok: false,
+          detail: normalized.error ?? 'worker-receipt-missing',
+          mutation: 'possible',
+        });
+        for (const remaining of plan.phases.slice(
+          plan.phases.indexOf(phase) + 1,
+        )) {
+          skipped.push(remaining);
+        }
+        return {
+          ok: false,
+          exitCode: 1,
+          ran,
+          skipped,
+          phases: phaseReceipts,
+          refusals: [],
+          rollback: false,
+        };
+      }
+      const typed = parseEnsureReceipt(normalized);
+      if (!typed.ok) {
+        progress?.phaseFail(phase.id);
+        phaseReceipts.push({
+          id: phase.id,
+          ok: false,
+          detail: String(typed.reasonCode ?? 'invalid-receipt').slice(0, 500),
+          mutation: typed.mutation,
+          state: typed.state,
+          reasonCode: typed.reasonCode,
+          pending: typed.pending,
+          completedPhases: typed.completedPhases,
+        });
+        for (const remaining of plan.phases.slice(
+          plan.phases.indexOf(phase) + 1,
+        )) {
+          skipped.push(remaining);
+        }
+        return {
+          ok: false,
+          exitCode: 1,
+          ran,
+          skipped,
+          phases: phaseReceipts,
+          refusals: [],
+          rollback: false,
+        };
+      }
+      progress?.phaseOk(phase.id);
+      phaseReceipts.push({
+        id: phase.id,
+        ok: true,
+        detail: typed.reasonCode,
+        mutation: typed.mutation,
+        state: typed.state,
+        reasonCode: typed.reasonCode,
+        pending: typed.pending,
+        completedPhases: typed.completedPhases,
+      });
+      continue;
+    }
     if (phase.id === 'rabbitmq') {
       const typed = parseRabbitmqPhaseReceipt(result);
       if (!typed.ok) {

@@ -334,6 +334,8 @@ const NOT_IMPLEMENTED_SUITES = new Set(['smoke', 'full']);
 export function parseVerifyArgs(argv) {
   let suite;
   let json = false;
+  let observability = false;
+  let observabilityCount = 0;
   /** @type {string[]} */
   const positional = [];
 
@@ -349,6 +351,11 @@ export function parseVerifyArgs(argv) {
     }
     if (token === '--json') {
       json = true;
+      continue;
+    }
+    if (token === '--observability') {
+      observability = true;
+      observabilityCount += 1;
       continue;
     }
     if (token.startsWith('--')) {
@@ -367,6 +374,20 @@ export function parseVerifyArgs(argv) {
   if (!suite) {
     return { ok: false, exitCode: 2, message: 'missing --suite' };
   }
+  if (observabilityCount > 1) {
+    return {
+      ok: false,
+      exitCode: 2,
+      message: 'duplicate --observability option',
+    };
+  }
+  if (observability && suite === 'source') {
+    return {
+      ok: false,
+      exitCode: 2,
+      message: '--observability is only valid with diagnostic suite',
+    };
+  }
   if (NOT_IMPLEMENTED_SUITES.has(suite)) {
     return {
       ok: false,
@@ -378,7 +399,7 @@ export function parseVerifyArgs(argv) {
     return { ok: false, exitCode: 2, message: `unknown suite: ${suite}` };
   }
 
-  return { ok: true, suite, json };
+  return { ok: true, suite, json, observability };
 }
 
 /**
@@ -722,6 +743,7 @@ if (IS_CLI_MAIN) {
         catalogIds: CATALOG_SCENARIO_IDS,
         checkCapabilityLinks: DIAGNOSTIC_CHECK_CAPABILITY_LINKS,
         json: parsed.json,
+        observability: parsed.observability === true,
       });
     } catch (error) {
       process.stderr.write('Diagnostic stopped: ' + error.message + '\n');

@@ -17,7 +17,7 @@ Current baseline 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. See [selected target]
 | Release platform ensure | `node infra/environments/release/platform.mjs ensure kind-offscreen-release` |
 | Release application | explicit image build then `pnpm stack:up`; [release runbook](kubernetes-lab.md) |
 | Release observation / application stop | `pnpm stack:status`, `pnpm stack:down` |
-| Optional release services | individual [Redis](kubernetes-redis.md), [RabbitMQ](kubernetes-rabbitmq.md), [observability](kubernetes-observability.md) runbooks |
+| Optional platform services (dev or release when selected) | individual [Redis](kubernetes-redis.md), [RabbitMQ](kubernetes-rabbitmq.md), [native observability](kubernetes-observability.md) runbooks; observability is structural on both profiles, dev is the primary live target |
 | Inspect cluster UI | [Tilt / Headlamp](kubernetes-developer-ui.md) |
 | Verify expected capabilities | `pnpm infra:verify --suite source`; `pnpm infra:verify --suite diagnostic` (source + existing local readiness, private per-run JSON); [catalog](../../infra/verification/CAPABILITIES.md) |
 | Inspect platform manifests (readable YAML) | `pnpm infra:render <service> <dev\|release> [section]` (default section `all`); direct CLI defaults to compact legacy JSON: `node infra/platform/common/cli.mjs render <service> <dev\|release> [section] [--format yaml\|json\|legacy]` |

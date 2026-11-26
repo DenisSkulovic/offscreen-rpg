@@ -85,7 +85,28 @@ function assertResourceType(value, field) {
  */
 function isClusterScopedRead(resource) {
   const lower = resource.toLowerCase();
-  return ['namespace', 'namespaces', 'ns', 'pv', 'persistentvolume', 'persistentvolumes', 'customresourcedefinition', 'customresourcedefinitions', 'crd', 'crds', 'customresourcedefinition.apiextensions.k8s.io', 'customresourcedefinitions.apiextensions.k8s.io', 'clusterrole.rbac.authorization.k8s.io', 'clusterroles.rbac.authorization.k8s.io', 'clusterrolebinding.rbac.authorization.k8s.io', 'clusterrolebindings.rbac.authorization.k8s.io', 'mutatingwebhookconfiguration.admissionregistration.k8s.io', 'mutatingwebhookconfigurations.admissionregistration.k8s.io', 'validatingwebhookconfiguration.admissionregistration.k8s.io', 'validatingwebhookconfigurations.admissionregistration.k8s.io'].includes(lower);
+  return [
+    'namespace',
+    'namespaces',
+    'ns',
+    'pv',
+    'persistentvolume',
+    'persistentvolumes',
+    'customresourcedefinition',
+    'customresourcedefinitions',
+    'crd',
+    'crds',
+    'customresourcedefinition.apiextensions.k8s.io',
+    'customresourcedefinitions.apiextensions.k8s.io',
+    'clusterrole.rbac.authorization.k8s.io',
+    'clusterroles.rbac.authorization.k8s.io',
+    'clusterrolebinding.rbac.authorization.k8s.io',
+    'clusterrolebindings.rbac.authorization.k8s.io',
+    'mutatingwebhookconfiguration.admissionregistration.k8s.io',
+    'mutatingwebhookconfigurations.admissionregistration.k8s.io',
+    'validatingwebhookconfiguration.admissionregistration.k8s.io',
+    'validatingwebhookconfigurations.admissionregistration.k8s.io',
+  ].includes(lower);
 }
 
 /**
@@ -98,9 +119,15 @@ export function readPlatformObject(
 ) {
   const profile = readPlatformProfile(profileId);
   assertResourceType(resource, 'resource');
-  const rbacResource = /^(?:clusterroles?|clusterrolebindings?|roles?|rolebindings?)(?:\.rbac\.authorization\.k8s\.io)?$/.test(resource);
+  const rbacResource =
+    /^(?:clusterroles?|clusterrolebindings?|roles?|rolebindings?)(?:\.rbac\.authorization\.k8s\.io)?$/.test(
+      resource,
+    );
   if (rbacResource && typeof name === 'string' && name.includes(':')) {
-    if (name.length > 253 || !name.split(':').every(part => DNS_LABEL.test(part))) {
+    if (
+      name.length > 253 ||
+      !name.split(':').every((part) => DNS_LABEL.test(part))
+    ) {
       throw new Error('invalid name');
     }
   } else {
@@ -289,7 +316,10 @@ function assertTargetIdentity(profileId, run) {
 }
 
 /** Read-only ownership assertion. */
-export function assertPlatformTarget(profileId, { run = runPlatformCommand } = {}) {
+export function assertPlatformTarget(
+  profileId,
+  { run = runPlatformCommand } = {},
+) {
   const { profile, port } = assertTargetIdentity(profileId, run);
   if (profileId === 'dev') {
     const baseline = readPlatformObject(
@@ -315,6 +345,7 @@ export function assertPlatformTarget(profileId, { run = runPlatformCommand } = {
       clusterName: profile.clusterName,
       contextName: profile.contextName,
       port,
+      baselineUid: uid,
     };
   }
 
@@ -341,48 +372,114 @@ export function assertPlatformTarget(profileId, { run = runPlatformCommand } = {
     clusterName: profile.clusterName,
     contextName: profile.contextName,
     port,
+    baselineUid: labNamespace.object.metadata.uid,
   };
 }
 
 /** Explicit cluster-bootstrap action; never adopts or relabels an existing namespace. */
-export function ensureReleaseOwnershipBaseline({ run = runPlatformCommand } = {}) {
+export function ensureReleaseOwnershipBaseline({
+  run = runPlatformCommand,
+} = {}) {
   const profile = readPlatformProfile('release');
   // Bind the API endpoint to the actual local Kind control-plane container.
-  if (process.env.DOCKER_HOST || process.env.DOCKER_CONTEXT || process.env.DOCKER_TLS_VERIFY) throw new Error('Docker endpoint override refused');
+  if (
+    process.env.DOCKER_HOST ||
+    process.env.DOCKER_CONTEXT ||
+    process.env.DOCKER_TLS_VERIFY
+  )
+    throw new Error('Docker endpoint override refused');
   const context = run('docker', ['context', 'show']);
-  if (!context.ok || !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(context.stdout.trim())) throw new Error('Docker context unreadable');
-  const endpoint = run('docker', ['context', 'inspect', context.stdout.trim(), '--format', '{{json .Endpoints.docker.Host}}']);
+  if (
+    !context.ok ||
+    !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(context.stdout.trim())
+  )
+    throw new Error('Docker context unreadable');
+  const endpoint = run('docker', [
+    'context',
+    'inspect',
+    context.stdout.trim(),
+    '--format',
+    '{{json .Endpoints.docker.Host}}',
+  ]);
   const host = endpoint.ok ? JSON.parse(endpoint.stdout) : null;
-  if (typeof host !== 'string' || !(host.startsWith('unix:///') || host === 'npipe:////./pipe/dockerDesktopLinuxEngine')) {
+  if (
+    typeof host !== 'string' ||
+    !(
+      host.startsWith('unix:///') ||
+      host === 'npipe:////./pipe/dockerDesktopLinuxEngine'
+    )
+  ) {
     throw new Error('nonlocal Docker endpoint');
   }
-  const node = run('docker', ['inspect', profile.clusterName + '-control-plane']);
+  const node = run('docker', [
+    'inspect',
+    profile.clusterName + '-control-plane',
+  ]);
   if (!node.ok) throw new Error('release control-plane unreadable');
   const containers = JSON.parse(node.stdout);
   const cp = containers[0];
   const bindings = cp?.NetworkSettings?.Ports?.['6443/tcp'] ?? [];
-  if (containers.length !== 1 || cp?.Config?.Labels?.['io.x-k8s.kind.cluster'] !== profile.clusterName ||
-      cp?.Config?.Labels?.['io.x-k8s.kind.role'] !== 'control-plane' || cp?.State?.Running !== true ||
-      !bindings.some(b => b.HostIp === '127.0.0.1' && b.HostPort === String(RELEASE_API_PORT))) {
+  if (
+    containers.length !== 1 ||
+    cp?.Config?.Labels?.['io.x-k8s.kind.cluster'] !== profile.clusterName ||
+    cp?.Config?.Labels?.['io.x-k8s.kind.role'] !== 'control-plane' ||
+    cp?.State?.Running !== true ||
+    !bindings.some(
+      (b) =>
+        b.HostIp === '127.0.0.1' && b.HostPort === String(RELEASE_API_PORT),
+    )
+  ) {
     throw new Error('release control-plane identity mismatch');
   }
-  const config = run('kubectl', ['--context', profile.contextName, 'config', 'view', '--minify', '-o', 'json']);
+  const config = run('kubectl', [
+    '--context',
+    profile.contextName,
+    'config',
+    'view',
+    '--minify',
+    '-o',
+    'json',
+  ]);
   if (!config.ok) throw new Error('release kubeconfig unreadable');
   const body = JSON.parse(config.stdout);
-  if (body.users?.some(u => u.user?.exec || u.user?.['auth-provider']) || body.clusters?.some(c => c.cluster?.['proxy-url'])) throw new Error('external authentication or proxy refused');
+  if (
+    body.users?.some((u) => u.user?.exec || u.user?.['auth-provider']) ||
+    body.clusters?.some((c) => c.cluster?.['proxy-url'])
+  )
+    throw new Error('external authentication or proxy refused');
   assertTargetIdentity('release', run);
-  const spec = { profileId: 'release', resource: 'namespace', name: RELEASE_BASELINE_NAMESPACE };
+  const spec = {
+    profileId: 'release',
+    resource: 'namespace',
+    name: RELEASE_BASELINE_NAMESPACE,
+  };
   const existing = readPlatformObject(spec, { run });
-  if (existing.state === 'unreadable') throw new Error('release baseline unreadable');
+  if (existing.state === 'unreadable')
+    throw new Error('release baseline unreadable');
   if (existing.state === 'present') {
-    if (existing.object.metadata?.labels?.[profile.ownerLabel + '/lab'] !== profile.ownerValue || !existing.object.metadata?.uid) {
+    if (
+      existing.object.metadata?.labels?.[profile.ownerLabel + '/lab'] !==
+        profile.ownerValue ||
+      !existing.object.metadata?.uid
+    ) {
       throw new Error('release baseline has foreign ownership');
     }
     return { ok: true, mutated: false };
   }
-  const created = run('kubectl', ['--context', profile.contextName, 'create', '-f', '-'], {
-    input: JSON.stringify({ apiVersion: 'v1', kind: 'Namespace', metadata: { name: spec.name, labels: { [profile.ownerLabel + '/lab']: profile.ownerValue } } }),
-  });
+  const created = run(
+    'kubectl',
+    ['--context', profile.contextName, 'create', '-f', '-'],
+    {
+      input: JSON.stringify({
+        apiVersion: 'v1',
+        kind: 'Namespace',
+        metadata: {
+          name: spec.name,
+          labels: { [profile.ownerLabel + '/lab']: profile.ownerValue },
+        },
+      }),
+    },
+  );
   if (!created.ok) throw new Error('release baseline creation failed');
   assertPlatformTarget('release', { run });
   return { ok: true, mutated: true };

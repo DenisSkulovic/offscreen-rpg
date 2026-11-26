@@ -14,6 +14,7 @@ const PLATFORM_HOME = Object.freeze({
       objectStorage: 'offscreen-dev-objects',
       redis: 'offscreen-dev-redis',
       rabbitmq: 'offscreen-dev-rabbitmq',
+      observability: 'offscreen-dev-observability',
     }),
   }),
   release: Object.freeze({
@@ -26,6 +27,7 @@ const PLATFORM_HOME = Object.freeze({
       objectStorage: 'lab-objects',
       redis: 'lab-a',
       rabbitmq: 'offscreen-rabbitmq',
+      observability: 'offscreen-observability',
     }),
   }),
 });
@@ -52,6 +54,7 @@ export function readPlatformProfile(profileId) {
       objectStorage: home.namespaces.objectStorage,
       redis: home.namespaces.redis ?? null,
       rabbitmq: home.namespaces.rabbitmq,
+      observability: home.namespaces.observability,
     },
   };
 }

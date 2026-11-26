@@ -20,7 +20,7 @@ Source-adjacent package procedures may remain beside code.
 | [Kubernetes object storage](kubernetes-object-storage.md) | How do I run one disposable SeaweedFS store, and what survives a Pod deletion? |
 | [Kubernetes document access](kubernetes-document-access.md) | How do two isolated Jobs share one object, and what fails closed? |
 | [Kubernetes content bootstrap](kubernetes-content-bootstrap.md) | How does a disposable Job import the pinned Seyda Neen fixture into the lab object store? |
-| [Kubernetes observability](kubernetes-observability.md) | How do I record one synthetic two-hop trace and a missing hop on the disposable cluster? |
+| [Kubernetes observability](kubernetes-observability.md) | How do I plan/ensure the optional native five-release stack and run authorized synthetic proof on a disposable cluster? |
 | [Kubernetes Temporal](kubernetes-temporal.md) | How do I provision, inspect and operate the native Helm Temporal release with shared CNPG? |
 | [Kubernetes service skeletons](kubernetes-skeletons.md) | How do I run four synthetic placeholders, and what does a duplicate operation id do? |
 | [Local integration tests](local-integration-tests.md) | How do I run provider-free database and identity checks on a disposable database? |

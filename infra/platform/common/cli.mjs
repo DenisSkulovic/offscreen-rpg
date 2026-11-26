@@ -7,6 +7,7 @@ import {
   assertPlatformRenderRequest,
   renderPlatformDocuments,
 } from './render.mjs';
+import { renderObservabilityDocuments } from '../observability/artifacts.mjs';
 
 const ACCEPTED_FORMATS = new Set(['yaml', 'json', 'legacy']);
 
@@ -194,14 +195,25 @@ function parsePlatformCliArgv(argv) {
 function runRenderCli(service, profile, section, format) {
   try {
     let documents;
-    if (service === 'redis') {
+    if (service === 'observability') {
+      if (section !== 'all') {
+        throw new Error('Observability supports only the all section');
+      }
+      if (profile !== 'dev' && profile !== 'release') {
+        throw new Error(`unsupported profile: ${profile}`);
+      }
+      documents = renderObservabilityDocuments(profile);
+    } else if (service === 'redis') {
       if (section !== 'all') {
         throw new Error('Redis chart supports only the all section');
       }
       const rendered = renderRedisChart(profile);
       documents = [rendered.configMap, rendered.deployment, rendered.service];
     } else if (service === 'temporal') {
-      if (section !== 'all') throw new Error('Temporal upstream chart supports only the all section');
+      if (section !== 'all')
+        throw new Error(
+          'Temporal upstream chart supports only the all section',
+        );
       documents = renderTemporalChart(profile);
     } else {
       assertPlatformRenderRequest(service, profile, section);

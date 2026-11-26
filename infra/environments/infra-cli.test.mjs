@@ -16,6 +16,7 @@ import {
   dispatchInfraCli,
   inventoryKindClusters,
   observeSelectedServiceState,
+  observabilityReadinessToServiceState,
   parseInfraCliArgs,
   runInfraCliArgv,
   runInfraStatus,
@@ -1220,7 +1221,8 @@ test('up cold release path invokes up.sh when cluster is absent', () => {
   const result = runInfraUp({
     profileId: 'release',
     services: 'none',
-    run: (command, args) => releaseWarmRun(runnerCalls.length > 0)(command, args),
+    run: (command, args) =>
+      releaseWarmRun(runnerCalls.length > 0)(command, args),
     runner: (argv) => {
       runnerCalls.push(argv);
       return { ok: true, status: 0 };
@@ -1876,8 +1878,12 @@ for (const profileId of ['dev', 'release']) {
       const waits = [];
       let reads = 0;
       const result = runInfraUp({
-        profileId, services: 'none',
-        runner: argv => { creates.push(argv); return { ok: true, status: 0 }; },
+        profileId,
+        services: 'none',
+        runner: (argv) => {
+          creates.push(argv);
+          return { ok: true, status: 0 };
+        },
         run: (command, args, options) => {
           if (command === 'kubectl' && args.includes('nodes')) {
             if (args.includes('wait')) {
@@ -1885,9 +1891,26 @@ for (const profileId of ['dev', 'release']) {
               return { ok: outcome !== 'wait-fails' };
             }
             reads++;
-            return { ok: true, stdout: JSON.stringify({ items: [
-              { status: { conditions: [{ type: 'Ready', status: reads > 1 && outcome === 'converges' ? 'True' : 'False' }] } },
-            ] }) };
+            return {
+              ok: true,
+              stdout: JSON.stringify({
+                items: [
+                  {
+                    status: {
+                      conditions: [
+                        {
+                          type: 'Ready',
+                          status:
+                            reads > 1 && outcome === 'converges'
+                              ? 'True'
+                              : 'False',
+                        },
+                      ],
+                    },
+                  },
+                ],
+              }),
+            };
           }
           return healthy(creates.length > 0)(command, args);
         },
@@ -1896,7 +1919,15 @@ for (const profileId of ['dev', 'release']) {
       assert.equal(creates.length, 1);
       assert.equal(waits.length, 1);
       assert.deepEqual(waits[0], {
-        args: ['--context', 'kind-offscreen-' + profileId, 'wait', '--for=condition=Ready', 'nodes', '--all', '--timeout=120s'],
+        args: [
+          '--context',
+          'kind-offscreen-' + profileId,
+          'wait',
+          '--for=condition=Ready',
+          'nodes',
+          '--all',
+          '--timeout=120s',
+        ],
         options: { timeoutMs: 125000 },
       });
       assert.equal(reads, outcome === 'wait-fails' ? 1 : 2);
@@ -1909,10 +1940,17 @@ test('cold release waits for storage availability and reobserves', () => {
   let reads = 0;
   let waits = 0;
   const result = runInfraUp({
-    profileId: 'release', services: 'none',
-    runner: () => { created = true; return { ok: true, status: 0 }; },
+    profileId: 'release',
+    services: 'none',
+    runner: () => {
+      created = true;
+      return { ok: true, status: 0 };
+    },
     run: (command, args, options) => {
-      if (command === 'kubectl' && args.some(x => x.includes('local-path-provisioner'))) {
+      if (
+        command === 'kubectl' &&
+        args.some((x) => x.includes('local-path-provisioner'))
+      ) {
         if (args.includes('wait')) {
           waits++;
           assert.equal(options.timeoutMs, 125000);
@@ -1920,10 +1958,20 @@ test('cold release waits for storage availability and reobserves', () => {
           return { ok: true };
         }
         reads++;
-        return { ok: true, stdout: JSON.stringify({
-          metadata: { name: 'local-path-provisioner', namespace: 'local-path-storage' },
-          status: { conditions: [{ type: 'Available', status: reads > 1 ? 'True' : 'False' }] },
-        }) };
+        return {
+          ok: true,
+          stdout: JSON.stringify({
+            metadata: {
+              name: 'local-path-provisioner',
+              namespace: 'local-path-storage',
+            },
+            status: {
+              conditions: [
+                { type: 'Available', status: reads > 1 ? 'True' : 'False' },
+              ],
+            },
+          }),
+        };
       }
       return releaseWarmRun(created)(command, args);
     },
@@ -1931,4 +1979,120 @@ test('cold release waits for storage availability and reobserves', () => {
   assert.equal(result.ok, true);
   assert.equal(reads, 2);
   assert.equal(waits, 1);
+});
+
+test('up refuses observability ensure before cluster ensure when cluster missing', () => {
+  let clusterEnsureLaunched = false;
+  const result = runInfraUp({
+    profileId: 'dev',
+    services: 'observability',
+    runner: (argv, options) => {
+      if (options?.phaseId === 'cluster-ensure') {
+        clusterEnsureLaunched = true;
+      }
+      return { ok: true, status: 0, stdout: '', stderr: '' };
+    },
+    run: (command, args) => {
+      if (command === 'kind' && args[0] === 'get') {
+        return { ok: true, stdout: '' };
+      }
+      return { ok: true, stdout: '', stderr: '' };
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.phase, 'cluster-inventory');
+  assert.equal(clusterEnsureLaunched, false);
+  assert.match(result.message ?? '', /--services none/);
+});
+
+test('up warm observability skips node readiness waits', () => {
+  const waits = [];
+  const result = runInfraUp({
+    profileId: 'dev',
+    services: 'observability',
+    runner: () => ({
+      ok: false,
+      status: 1,
+      stdout: '',
+      stderr: 'stop-after-preflight',
+    }),
+    run: (command, args) => {
+      const helm = helmOk(command, args);
+      if (helm) {
+        return helm;
+      }
+      if (command === 'kind' && args[0] === 'get') {
+        return { ok: true, stdout: 'offscreen-dev\n' };
+      }
+      if (command === 'kubectl' && args.includes('config')) {
+        return { ok: true, stdout: kubectlConfigJson('dev', DEV_PORT) };
+      }
+      if (command === 'kubectl' && args.includes('offscreen-dev-system')) {
+        return {
+          ok: true,
+          stdout: JSON.stringify({
+            metadata: {
+              name: 'offscreen-dev-system',
+              uid: 'baseline-uid',
+              labels: { 'offscreen.dev/owner': DEV_CLUSTER_OWNER },
+            },
+          }),
+        };
+      }
+      if (command === 'kubectl' && args.includes('nodes')) {
+        return {
+          ok: true,
+          stdout: JSON.stringify({
+            items: [
+              {
+                status: {
+                  conditions: [{ type: 'Ready', status: 'True' }],
+                },
+              },
+            ],
+          }),
+        };
+      }
+      if (command === 'kubectl' && args.includes('wait')) {
+        waits.push(args);
+        return { ok: true, stdout: '', stderr: '' };
+      }
+      if (command === 'cat' && args[0] === '/proc/meminfo') {
+        return { ok: true, stdout: 'MemAvailable: 999999 kB\n' };
+      }
+      return { ok: true, stdout: '', stderr: '' };
+    },
+    memoryMiB: 99_999,
+  });
+  assert.equal(waits.length, 0);
+  assert.equal(result.phase, 'platform-ensure');
+});
+
+test('observeSelectedServiceState routes observability on both profiles', () => {
+  for (const profileId of ['dev', 'release']) {
+    const observed = observeSelectedServiceState(profileId, 'observability', {
+      run: () => ({ ok: false, stdout: '', stderr: 'missing target' }),
+      observability: { verifyArchive: false },
+    });
+    assert.notEqual(observed.state, 'unsupported');
+    assert.equal(observed.state, 'unreadable');
+  }
+  assert.equal(
+    observabilityReadinessToServiceState({
+      state: 'ready',
+      pending: true,
+      reasonCode: 'pending',
+    }).state,
+    'not-ready',
+  );
+  assert.equal(
+    observabilityReadinessToServiceState({ state: 'ready', pending: false })
+      .state,
+    'installed',
+  );
+  assert.equal(
+    observabilityReadinessToServiceState({ state: 'absent' }).state,
+    'not-installed',
+  );
 });

@@ -364,6 +364,25 @@ export const INF08_SUCCESSOR_RELOCATIONS = [
 
 // Historical relocation rows remain immutable. These specific destinations were
 // retired by the upstream Temporal Helm replacement, not silently omitted.
+const RETIRED_OBSERVABILITY_DESTINATIONS = new Set([
+  'infra/platform/observability/collector.yaml',
+  'infra/platform/observability/collector-config.yaml',
+  'infra/platform/observability/chart/Chart.yaml',
+  'infra/platform/observability/chart/values.yaml',
+  'infra/platform/observability/chart/values.schema.json',
+  'infra/platform/observability/chart/profiles/release.yaml',
+  'infra/platform/observability/chart/templates/collector.yaml',
+  'infra/platform/observability/chart/templates/_helpers.tpl',
+  'infra/platform/observability/chart/files/collector-config.yaml',
+  'infra/platform/observability/install.sh',
+  'infra/verification/smoke/observability/assert_signals.py',
+  'infra/verification/smoke/observability/hop.py',
+  'infra/verification/smoke/observability/hops.yaml',
+  'infra/verification/smoke/observability/setup.sh',
+  'infra/verification/smoke/observability/smoke.sh',
+  'infra/verification/smoke/observability/tests/setup.test.mjs',
+]);
+
 const RETIRED_TEMPORAL_DESTINATIONS = new Set([
   'tools/dev-environments/src/adapters/dev-temporal-bootstrap-cli.mjs',
   'tools/dev-environments/src/adapters/dev-temporal-bootstrap.mjs',
@@ -401,8 +420,10 @@ const RETIRED_TEMPORAL_DESTINATIONS = new Set([
 ]);
 
 function retiredTemporalDestination(root, destination) {
-  return RETIRED_TEMPORAL_DESTINATIONS.has(destination) &&
-    !existsSync(join(root, destination));
+  return (
+    RETIRED_TEMPORAL_DESTINATIONS.has(destination) &&
+    !existsSync(join(root, destination))
+  );
 }
 
 function effectiveMoveDestination(destination) {
@@ -484,8 +505,20 @@ export function assertInf15PlatformChartSuccessors(root) {
         : row.to;
     const oldExists = existsSync(join(root, row.from));
     const newExists = existsSync(join(root, destination));
+    if (RETIRED_OBSERVABILITY_DESTINATIONS.has(row.to)) {
+      assert.equal(
+        oldExists || newExists,
+        false,
+        'retired observability chart path reappeared',
+      );
+      continue;
+    }
     if (RETIRED_TEMPORAL_DESTINATIONS.has(row.to)) {
-      assert.equal(oldExists || newExists, false, 'retired Temporal chart path reappeared');
+      assert.equal(
+        oldExists || newExists,
+        false,
+        'retired Temporal chart path reappeared',
+      );
       continue;
     }
     if (INF15_STAGING_PREDECESSOR_PATHS.includes(row.from)) {
@@ -507,13 +540,21 @@ export function assertInf15PlatformChartSuccessors(root) {
     }
     if (row.from === redisHistoricalFrom) {
       const redisTemplateDir = 'infra/platform/redis/chart/templates';
-      for (const name of ['configmap.yaml', 'service.yaml', 'deployment.yaml']) {
+      for (const name of [
+        'configmap.yaml',
+        'service.yaml',
+        'deployment.yaml',
+      ]) {
         if (!existsSync(join(root, redisTemplateDir, name))) {
-          throw new Error(`INF15 Redis chart successor missing: ${redisTemplateDir}/${name}`);
+          throw new Error(
+            `INF15 Redis chart successor missing: ${redisTemplateDir}/${name}`,
+          );
         }
       }
       if (existsSync(join(root, row.to))) {
-        throw new Error(`INF15 Redis monolithic template must be retired: ${row.to}`);
+        throw new Error(
+          `INF15 Redis monolithic template must be retired: ${row.to}`,
+        );
       }
     }
   }
@@ -699,7 +740,10 @@ export function assertLabInventoryCoverage(rows, trackedLabPaths) {
         repoRoot,
         effectiveMoveDestination(row.to),
       ) ||
-        retiredTemporalDestination(repoRoot, effectiveMoveDestination(row.to)) ||
+        retiredTemporalDestination(
+          repoRoot,
+          effectiveMoveDestination(row.to),
+        ) ||
         (effectiveMoveDestination(row.to) === INF16_RETIRED_RELEASE_TILT_PATH &&
           !existsSync(join(repoRoot, INF16_RETIRED_RELEASE_TILT_PATH))))
     ) {
@@ -759,7 +803,11 @@ export function assertStagedMovePaths(
     const oldExists = existsSync(join(root, row.from));
     const newExists = existsSync(join(root, destination));
     if (RETIRED_TEMPORAL_DESTINATIONS.has(destination)) {
-      assert.equal(oldExists || newExists, false, 'retired Temporal move path reappeared');
+      assert.equal(
+        oldExists || newExists,
+        false,
+        'retired Temporal move path reappeared',
+      );
       continue;
     }
     if (oldExists && newExists) {
@@ -840,7 +888,10 @@ test('root dev, stack and context entry points exist as named by the atlas', () 
     false,
   );
   assert.match(tiltfile, /allow_k8s_contexts\('kind-offscreen-dev'\)/);
-  assert.doesNotMatch(tiltfile, /allow_k8s_contexts\('kind-offscreen-release'\)/);
+  assert.doesNotMatch(
+    tiltfile,
+    /allow_k8s_contexts\('kind-offscreen-release'\)/,
+  );
   assert.doesNotMatch(tiltfile, /infra\/dev\/Tiltfile/);
   assert.match(tiltfile, /sync-plan\.mjs --tilt/);
   assertInf16ReleaseTiltRetirement(repoRoot);
@@ -878,6 +929,39 @@ test('tracked INF-MOVE-MAP inventory matches HEAD and selected layout', () => {
   }
 });
 
+test('native observability replacement owns the current files and retires old paths', () => {
+  for (const path of RETIRED_OBSERVABILITY_DESTINATIONS) {
+    assert.equal(existsSync(join(repoRoot, path)), false, path);
+  }
+  for (const path of [
+    'infra/platform/observability/artifacts.mjs',
+    'infra/platform/observability/install.mjs',
+    'infra/platform/observability/receipt.mjs',
+    'infra/platform/observability/identity.mjs',
+    'infra/platform/observability/inventory.mjs',
+    'infra/platform/observability/readiness.mjs',
+    'infra/platform/observability/custody.mjs',
+    'infra/platform/observability/specimens/pins.yaml',
+    'infra/platform/observability/specimens/image-lock-candidate.tsv',
+    'infra/platform/observability/specimens/expected-inventory.json',
+    'infra/platform/observability/vendor/opentelemetry-collector-0.183.2.tgz',
+    'infra/platform/observability/vendor/prometheus-31.0.0.tgz',
+    'infra/platform/observability/vendor/loki-21.6.0.tgz',
+    'infra/platform/observability/vendor/tempo-3.2.1.tgz',
+    'infra/platform/observability/vendor/grafana-14.6.1.tgz',
+    'infra/verification/smoke/observability/proof.mjs',
+    'infra/verification/smoke/observability/tests/proof.test.mjs',
+    'infra/verification/smoke/observability/signal-probe.py',
+    'infra/verification/smoke/observability/tests/test_signal_probe.py',
+  ]) {
+    assert.ok(existsSync(join(repoRoot, path)), path);
+  }
+  assert.equal(
+    existsSync(join(repoRoot, 'infra/platform/observability/chart')),
+    false,
+  );
+});
+
 test('native Temporal replacement owns the current files and retires old paths', () => {
   for (const path of RETIRED_TEMPORAL_DESTINATIONS) {
     assert.equal(existsSync(join(repoRoot, path)), false, path);
@@ -895,7 +979,10 @@ test('native Temporal replacement owns the current files and retires old paths',
   ]) {
     assert.ok(existsSync(join(repoRoot, path)), path);
   }
-  assert.equal(existsSync(join(repoRoot, 'infra/platform/temporal/chart')), false);
+  assert.equal(
+    existsSync(join(repoRoot, 'infra/platform/temporal/chart')),
+    false,
+  );
 });
 
 test('fixture negative: duplicate destination is rejected', () => {

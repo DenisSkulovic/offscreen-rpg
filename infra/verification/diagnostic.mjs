@@ -9,6 +9,8 @@ import {
   diagnosticExcerpt,
   executeChecks,
 } from './diagnostic-engine.mjs';
+import { OBSERVABILITY_SUPERVISOR_MS } from './diagnostic-live.mjs';
+import { evaluateObservationReceipt } from '../platform/observability/receipt.mjs';
 
 // Explicit source-only allowlist: do not discover and run arbitrary live proof files.
 export const ADDITIONAL_PLATFORM_TESTS = Object.freeze([
@@ -87,6 +89,26 @@ export const ADDITIONAL_PLATFORM_TESTS = Object.freeze([
     file: 'infra/platform/observability/tests/render.test.mjs',
     requiresHelm: true,
   },
+  {
+    file: 'infra/platform/observability/tests/identity.test.mjs',
+    requiresHelm: false,
+  },
+  {
+    file: 'infra/platform/observability/tests/inventory.test.mjs',
+    requiresHelm: false,
+  },
+  {
+    file: 'infra/platform/observability/tests/readiness.test.mjs',
+    requiresHelm: false,
+  },
+  {
+    file: 'infra/platform/observability/tests/custody.test.mjs',
+    requiresHelm: false,
+  },
+  {
+    file: 'infra/platform/observability/tests/receipt.test.mjs',
+    requiresHelm: false,
+  },
 ]);
 
 const SERVICES = {
@@ -103,12 +125,19 @@ const SERVICES = {
 
 /**
  * @param {'dev' | 'release'} profile
- * @param {{ rabbitmq?: boolean }} [options]
+ * @param {{ rabbitmq?: boolean, observability?: boolean }} [options]
  */
 export function diagnosticServices(profile, options = {}) {
   const list = [...SERVICES[profile]];
   if (options.rabbitmq) {
     list.push('rabbitmq');
+  }
+  if (
+    profile === 'dev' &&
+    options.observability &&
+    !list.includes('observability')
+  ) {
+    list.push('observability');
   }
   return list;
 }
@@ -122,6 +151,27 @@ const SERVICE_IDS = {
   gateway: 'PL-07',
 };
 
+export function evaluateObservabilityDiagnosticResult(
+  result,
+  { profile, explicitObservability = false },
+) {
+  if (result.reason === 'timeout') {
+    return {
+      status: 'FAIL',
+      reason: 'unreadable',
+      detail: diagnosticExcerpt(result.stderr),
+    };
+  }
+  const allowAbsent = profile === 'release' && !explicitObservability;
+  const mapped = evaluateObservationReceipt(result, { allowAbsent });
+  return {
+    status: mapped.status,
+    reason: diagnosticExcerpt(mapped.reason),
+    state: mapped.state,
+    optional: allowAbsent,
+  };
+}
+
 export function buildDiagnosticChecks({
   repoRoot,
   definitions,
@@ -129,6 +179,7 @@ export function buildDiagnosticChecks({
   parseCounts,
   run = runCommand,
   rabbitmq = false,
+  observability = false,
 }) {
   const checks = [];
   const add = (id, tier, command, args, options = {}) =>
@@ -291,13 +342,29 @@ export function buildDiagnosticChecks({
     const cluster = 'live:' + profile + ':cluster';
     for (const service of [
       'cluster',
-      ...diagnosticServices(profile, { rabbitmq }),
+      ...diagnosticServices(profile, { rabbitmq, observability }),
     ]) {
+      const liveArgs = [
+        'infra/verification/diagnostic-live.mjs',
+        profile,
+        service,
+      ];
+      if (
+        service === 'observability' &&
+        profile === 'release' &&
+        !observability
+      ) {
+        liveArgs.push('--allow-absent');
+      }
+      const timeoutMs =
+        service === 'observability' ? OBSERVABILITY_SUPERVISOR_MS : 180000;
+      const explicitObservability =
+        observability && (profile === 'dev' || profile === 'release');
       add(
         'live:' + profile + ':' + service,
         'LIVE-OBSERVATION',
         node,
-        ['infra/verification/diagnostic-live.mjs', profile, service],
+        liveArgs,
         {
           requires: service === 'cluster' ? [] : [cluster],
           capability:
@@ -306,8 +373,14 @@ export function buildDiagnosticChecks({
                 ? 'CL-01'
                 : 'CL-02'
               : SERVICE_IDS[service],
-          timeoutMs: 180000,
+          timeoutMs,
           evaluate: (result) => {
+            if (service === 'observability') {
+              return evaluateObservabilityDiagnosticResult(result, {
+                profile,
+                explicitObservability,
+              });
+            }
             const observation = JSON.parse(result.stdout);
             const optional = OPTIONAL_EXCLUDED_SERVICES.includes(service);
             return {
@@ -334,6 +407,7 @@ export async function runDiagnostic({
   json = false,
   run = runCommand,
   progress = (text) => process.stderr.write(text),
+  observability = false,
 }) {
   const dir = join(repoRoot, '.offscreen', 'verification');
   mkdirSync(dir, { recursive: true, mode: 0o700 });
@@ -377,6 +451,7 @@ export async function runDiagnostic({
     resolveFiles,
     parseCounts,
     run,
+    observability,
   });
   await executeChecks(checks, {
     onResult(row) {

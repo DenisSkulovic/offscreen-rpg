@@ -7,18 +7,18 @@ import {
   checkLabManifests,
   collectLabYamlFiles,
   discoverImplementedPlatformCharts,
+  isExcludedFromNativeObservabilityValues,
   isExcludedFromRawYamlScan,
   isPlatformServiceTemplatePath,
+  NATIVE_OBSERVABILITY_VALUES_PATHS,
   parseLabYamlFile,
+  validateNativeObservabilityManifests,
 } from './check-lab-manifests.mjs';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = join(fileURLToPath(new URL('.', import.meta.url)), '../..');
 const releaseEnvRoot = join(repoRoot, 'infra/environments/release');
-const probeFixturesRoot = join(
-  repoRoot,
-  'infra/verification/fixtures/probes',
-);
+const probeFixturesRoot = join(repoRoot, 'infra/verification/fixtures/probes');
 
 test('infra tree contains Kubernetes YAML manifests', () => {
   const files = collectLabYamlFiles(releaseEnvRoot);
@@ -41,6 +41,9 @@ test('all lab Kubernetes YAML parses', () => {
   assert.ok(result.fileCount > 0);
   assert.ok(result.helm);
   assert.equal(result.helm.releaseDocumentCount, 12);
+  assert.ok(result.helm.nativeObservability);
+  assert.equal(result.helm.nativeObservability.profiles.dev.releases, 5);
+  assert.equal(result.helm.nativeObservability.profiles.release.releases, 5);
 });
 
 test('raw yaml scan skips helm chart templates only', () => {
@@ -88,15 +91,34 @@ test('implemented platform charts are discovered without requiring future servic
   const charts = discoverImplementedPlatformCharts();
   assert.deepEqual(
     charts.map((chart) => chart.service),
-    [
-      'object-storage',
-      'observability',
-      'postgres',
-      'rabbitmq',
-      'redis',
-      'temporal',
-    ],
+    ['object-storage', 'postgres', 'rabbitmq', 'redis'],
   );
+});
+
+test('native observability values are excluded from raw yaml scan', () => {
+  const files = collectLabYamlFiles(join(repoRoot, 'infra/platform'));
+  for (const relative of NATIVE_OBSERVABILITY_VALUES_PATHS) {
+    const absolute = join(repoRoot, relative);
+    assert.equal(
+      isExcludedFromNativeObservabilityValues(absolute),
+      true,
+      relative,
+    );
+    assert.ok(!files.includes(absolute), relative);
+  }
+  assert.ok(files.some((file) => file.endsWith('specimens/pins.yaml')));
+});
+
+test('native observability five-archive manifests validate both profiles', () => {
+  const result = validateNativeObservabilityManifests();
+  for (const profileId of ['dev', 'release']) {
+    assert.equal(result.profiles[profileId].releases, 5);
+    assert.ok(result.profiles[profileId].documents > 0);
+    assert.equal(
+      Object.keys(result.profiles[profileId].releaseDocuments).length,
+      5,
+    );
+  }
 });
 
 test('explicit --root scan skips helm validation', () => {
