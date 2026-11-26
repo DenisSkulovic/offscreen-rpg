@@ -790,22 +790,30 @@ function assertAbsentBundleAdmitsInstall(context, run) {
       'orphan or foreign controller while gateway api bundle is absent',
     );
   }
-  const gateway = readPlatformObject(
-    {
-      profileId: 'release',
-      resource: 'gateway',
-      name: GATEWAY_NAME,
-      namespace: LAB_EDGE_NAMESPACE,
-    },
-    { run },
-  );
-  if (gateway.state === 'unreadable') {
-    throw new Error('gateway unreadable');
+  // CRD absence alone does not establish API absence (e.g. an aggregated API).
+  // Query the native discovery root rather than an unregistered resource type.
+  const discovery = run('kubectl', ['--context', context, 'get', '--raw', '/apis']);
+  if (!discovery.ok || discovery.timedOut || (discovery.stderr ?? '').trim()) {
+    throw new Error('gateway API discovery unreadable');
   }
-  if (gateway.state === 'present') {
-    throw new Error('foreign gateway while gateway api bundle is absent');
+  let groups;
+  try {
+    const body = JSON.parse(discovery.stdout);
+    if (body.apiVersion !== 'v1' || body.kind !== 'APIGroupList' ||
+        !Array.isArray(body.groups) ||
+        body.groups.some(group => typeof group?.name !== 'string' || !group.name)) {
+      throw new Error('invalid discovery');
+    }
+    groups = body.groups;
+  } catch {
+    throw new Error('gateway API discovery malformed');
+  }
+  if (groups.some(group => group.name === 'gateway.networking.k8s.io')) {
+    throw new Error('gateway API served while gateway api bundle is absent');
   }
   for (const id of HELM_OWNED_IDENTITIES) {
+    // GatewayClass belongs to the independently proven absent API group.
+    if (id.kind === 'GatewayClass') continue;
     const read = readHelmIdentity(context, id, run);
     if (read.state === 'unreadable') {
       throw new Error(`preflight unreadable: ${id.kind}/${id.name}`);
@@ -1346,6 +1354,11 @@ export function ensureGatewayInstall(deps = {}) {
         error instanceof Error ? error.message : 'bundle write drift';
       return fail(message);
     }
+    try {
+      assertAbsentBundleAdmitsInstall(context, run);
+    } catch (error) {
+      return fail(error instanceof Error ? error.message : 'bundle admission refused');
+    }
     const apply = run(
       'kubectl',
       [
@@ -1721,6 +1734,20 @@ export function ensureGatewayInstall(deps = {}) {
   }
 
   stage = 'readiness';
+  // On fresh installation the controller reconciles the Gateway asynchronously.
+  // Existing installations remain read-only, with no waiting/reconciliation path.
+  if (mutated) {
+    for (const [resource, condition, namespace] of [
+      [`gatewayclass/${GATEWAY_CLASS_NAME}`, 'Accepted', null],
+      [`gateway/${GATEWAY_NAME}`, 'Programmed', LAB_EDGE_NAMESPACE],
+    ]) {
+      const wait = run('kubectl', [
+        '--context', context, ...(namespace ? ['-n', namespace] : []),
+        'wait', `--for=condition=${condition}`, resource, '--timeout=120s',
+      ], { timeoutMs: 130_000 });
+      if (!wait.ok) return fail(`readiness wait failed: ${resource}`);
+    }
+  }
   try {
     assertLoopbackExposure(context, profile, run);
     assessReadiness(context, run);

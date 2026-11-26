@@ -378,6 +378,15 @@ function makeFixture(objects, options = {}) {
       throw new Error(`unexpected command: ${command}`);
     }
 
+    if (args.includes('--raw') && args.includes('/apis')) {
+      if (options.discoveryUnreadable) return {...ok(), ok:false, status:1, stderr:'Forbidden'};
+      if (options.discoveryMalformed) return ok('{}');
+      const served = options.discoveryGatewayServed ||
+        inventory.has(`gateway/${LAB_EDGE_NAMESPACE}/${GATEWAY_NAME}`);
+      return ok(JSON.stringify({apiVersion:'v1', kind:'APIGroupList',
+        groups: served ? [{name:'gateway.networking.k8s.io'}] : []}));
+    }
+
     if (args.includes('config') && args.includes('view')) {
       return ok(
         JSON.stringify({
@@ -1054,7 +1063,7 @@ test('absent bundle and foreign gateway refuse before any write', () => {
   assert.equal(result.ok, false);
   assert.match(
     result.error ?? '',
-    /foreign gateway while gateway api bundle is absent/,
+    /gateway API served while gateway api bundle is absent/,
   );
   assert.equal(mutatingCalls(fx.calls).length, 0);
 });
@@ -1088,3 +1097,35 @@ for (const liveHostNetwork of /** @type {const} */ (['omitted', 'enabled'])) {
     assert.equal(mutatingCalls(fx.calls).length, 0);
   });
 }
+
+for (const [option, message] of [
+  ['discoveryUnreadable', /discovery unreadable/],
+  ['discoveryMalformed', /discovery malformed/],
+  ['discoveryGatewayServed', /API served while/],
+]) {
+  test(`fresh bundle refuses ${option} before writes`, () => {
+    const fx = makeFixture({}, {helmRelease:'absent', [option]:true});
+    fx.seedBundleAbsent();
+    fx.seedHelmAbsent();
+    const result = ensureGatewayInstall({run:fx.run, gatewayRoot:gatewayDir});
+    assert.equal(result.ok,false);
+    assert.match(result.error ?? '',message);
+    assert.equal(mutatingCalls(fx.calls).length,0);
+  });
+}
+test('fresh bundle never queries unregistered Gateway resource kinds', () => {
+  const fx = makeFixture({}, {helmRelease:'absent'});
+  fx.seedBundleAbsent();
+  fx.seedHelmAbsent();
+  let applied = false;
+  const run = (command,args,opts) => {
+    if (command === 'kubectl' && args.includes('apply') && args.includes('--server-side')) applied = true;
+    if (!applied && command === 'kubectl' && args.includes('get') &&
+        (args.includes('gateway') || args.includes('gatewayclass'))) {
+      throw new Error('unregistered gateway API queried');
+    }
+    return fx.run(command,args,opts);
+  };
+  const result = ensureGatewayInstall({run,gatewayRoot:gatewayDir});
+  assert.equal(result.ok,true,result.error);
+});
