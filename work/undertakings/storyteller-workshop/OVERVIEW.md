@@ -13,7 +13,7 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 
 ## Achieved and unresolved
 
-- 2026-11-26: Observability R34 independently defended; [draft native platform packet](../../changes/open/2026-11-26--observability-native/CHANGE.md) under planner review. No source or runtime credit; estimates unchanged (~75/40/30/45 ±20pp).
+- 2026-11-26: Observability R34 independently defended; [native platform packet](../../changes/open/2026-11-26--observability-native/CHANGE.md) source-only commissioned with T01 artifact gate. No source or runtime credit; estimates unchanged (~75/40/30/45 ±20pp).
 
 - Redis native R9 structural architecture independently defended and owner accepted; [implementation packet](../../changes/open/2026-11-26--redis-native-baseline/CHANGE.md) source commissioned; live and integration held. INF60 suspended. No runtime or outcome credit; estimates unchanged.
 
