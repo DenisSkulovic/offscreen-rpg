@@ -88,6 +88,13 @@ export const SOURCE_SUITE_DEFINITIONS = Object.freeze([
       'infra/verification/dev-environments/selective-profile-programme.test.mjs',
     ]),
   },
+  {
+    id: 'object-storage-proof',
+    requiresHelm: false,
+    files: Object.freeze([
+      'infra/verification/smoke/object-storage/proof.test.mjs',
+    ]),
+  },
 ]);
 
 /** Stable catalog IDs from infra/verification/CAPABILITIES.md */
@@ -284,7 +291,9 @@ export const DIAGNOSTIC_CHECK_CAPABILITY_LINKS = Object.freeze({
     'MON-08',
     'MON-09',
   ]),
-  'source:infra/monitoring/tests/operation-event.test.mjs': Object.freeze(['MON-07']),
+  'source:infra/monitoring/tests/operation-event.test.mjs': Object.freeze([
+    'MON-07',
+  ]),
 });
 
 const NOT_IMPLEMENTED_SUITES = new Set(['smoke', 'full']);
@@ -497,7 +506,12 @@ export function runSourceVerification(options = {}) {
 
   for (const definition of SOURCE_SUITE_DEFINITIONS) {
     const files = resolveSuiteFiles(repoRoot, definition);
-    const command = [process.execPath, '--test', '--test-reporter=tap', ...files];
+    const command = [
+      process.execPath,
+      '--test',
+      '--test-reporter=tap',
+      ...files,
+    ];
     const started = now();
 
     if (files.length === 0) {
@@ -540,13 +554,17 @@ export function runSourceVerification(options = {}) {
       continue;
     }
 
-    const result = run(process.execPath, ['--test', '--test-reporter=tap', ...files], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      timeout: timeoutMs,
-      maxBuffer: 64 * 1024 * 1024,
-      shell: false,
-    });
+    const result = run(
+      process.execPath,
+      ['--test', '--test-reporter=tap', ...files],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        timeout: timeoutMs,
+        maxBuffer: 64 * 1024 * 1024,
+        shell: false,
+      },
+    );
 
     const durationMs = now() - started;
     const stdout = result.stdout ?? '';
