@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { parseAllDocuments } from 'yaml';
 import { runPlatformCommand } from '../common/commands.mjs';
 import {
@@ -46,7 +47,57 @@ const RESERVED_CONFIGMAP = 'redis-config';
  * @param {unknown} b
  */
 function stableEqual(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
+  return isDeepStrictEqual(a, b);
+}
+
+// Normalize only the native defaults observed in the installed specimen.
+function servicePortsWithDefaults(ports) {
+  return Array.isArray(ports)
+    ? ports.map((port) => ({ protocol: 'TCP', ...port }))
+    : ports;
+}
+
+function containerWithDefaults(container) {
+  const withDefaults = {
+    terminationMessagePath: '/dev/termination-log',
+    terminationMessagePolicy: 'File',
+    ...container,
+  };
+  if (Array.isArray(container.ports)) {
+    withDefaults.ports = container.ports.map((port) => ({
+      protocol: 'TCP',
+      ...port,
+    }));
+  }
+  for (const key of ['readinessProbe', 'livenessProbe']) {
+    if (container[key] != null) {
+      withDefaults[key] = {
+        failureThreshold: 3,
+        successThreshold: 1,
+        ...container[key],
+      };
+    }
+  }
+  return withDefaults;
+}
+
+function containersWithDefaults(containers) {
+  return Array.isArray(containers)
+    ? containers.map(containerWithDefaults)
+    : containers;
+}
+
+function volumesWithDefaults(volumes) {
+  return Array.isArray(volumes)
+    ? volumes.map((volume) =>
+        volume.configMap
+          ? {
+              ...volume,
+              configMap: { defaultMode: 420, ...volume.configMap },
+            }
+          : volume,
+      )
+    : volumes;
 }
 
 /**
@@ -304,7 +355,10 @@ export function assessRedisReadyState(live, desired) {
   }
   const desiredSvcSpec = /** @type {{ spec?: object }} */ (desired.service).spec;
   if (
-    !stableEqual(liveSvc.spec?.ports, desiredSvcSpec?.ports) ||
+    !stableEqual(
+      servicePortsWithDefaults(liveSvc.spec?.ports),
+      servicePortsWithDefaults(desiredSvcSpec?.ports),
+    ) ||
     liveSvc.spec?.type !== desiredSvcSpec?.type
   ) {
     return { ok: false, detail: 'service spec drift' };
@@ -325,10 +379,16 @@ export function assessRedisReadyState(live, desired) {
   const desiredTemplate = /** @type {{ spec?: { template?: object } }} */ (
     desired.deployment
   ).spec?.template;
-  if (!stableEqual(liveTemplate?.spec?.containers, desiredTemplate?.spec?.containers)) {
+  if (!stableEqual(
+    containersWithDefaults(liveTemplate?.spec?.containers),
+    containersWithDefaults(desiredTemplate?.spec?.containers),
+  )) {
     return { ok: false, detail: 'live deployment template mismatch' };
   }
-  if (!stableEqual(liveTemplate?.spec?.volumes, desiredTemplate?.spec?.volumes)) {
+  if (!stableEqual(
+    volumesWithDefaults(liveTemplate?.spec?.volumes),
+    volumesWithDefaults(desiredTemplate?.spec?.volumes),
+  )) {
     return { ok: false, detail: 'live volume mismatch' };
   }
 

@@ -698,3 +698,38 @@ test('runReadinessProtocol enforces identical run_id across four INFO replies', 
   assert.equal(result.ok, false);
   assert.equal(result.state, 'unready');
 });
+
+test('observed API defaults and reordered selectors match the native manifest', () => {
+  const docs = buildDesiredManifestDocs();
+  const dep = docs[1];
+  const svc = docs[2];
+  delete svc.spec.ports[0].protocol;
+  for (const key of ['readinessProbe', 'livenessProbe']) {
+    delete dep.spec.template.spec.containers[0][key].failureThreshold;
+    delete dep.spec.template.spec.containers[0][key].successThreshold;
+  }
+  const desired = buildDesiredProjection(docs);
+  const live = liveBundle();
+  live.service.spec.selector = {
+    'app.kubernetes.io/instance': 'redis',
+    'app.kubernetes.io/name': 'redis',
+  };
+  const container = live.deployment.spec.template.spec.containers[0];
+  container.ports[0].protocol = 'TCP';
+  container.terminationMessagePath = '/dev/termination-log';
+  container.terminationMessagePolicy = 'File';
+  live.deployment.spec.template.spec.volumes[0].configMap.defaultMode = 420;
+  assert.equal(assessRedisReadyState(live, desired).ok, true);
+  const driftCases = [
+    (copy) => { copy.service.spec.ports[0].protocol = 'UDP'; },
+    (copy) => { copy.deployment.spec.template.spec.containers[0].ports[0].hostPort = 6379; },
+    (copy) => { copy.deployment.spec.template.spec.containers[0].readinessProbe.failureThreshold = 4; },
+    (copy) => { copy.deployment.spec.template.spec.containers[0].terminationMessagePolicy = 'FallbackToLogsOnError'; },
+    (copy) => { copy.deployment.spec.template.spec.volumes[0].configMap.defaultMode = 511; },
+  ];
+  for (const drift of driftCases) {
+    const copy = JSON.parse(JSON.stringify(live));
+    drift(copy);
+    assert.equal(assessRedisReadyState(copy, desired).ok, false);
+  }
+});
