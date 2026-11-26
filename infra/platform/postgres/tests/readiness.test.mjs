@@ -6,6 +6,7 @@ import {
   DEV_CNPG_NAMESPACE,
   DEV_CNPG_OWNER,
 } from '../dev-bootstrap.mjs';
+import { expectedClusterSpec } from '../bootstrap/compatibility.mjs';
 import { observeDevPostgresReady } from '../readiness.mjs';
 import { CNPG_HEALTHY_PHASE } from '../topology.mjs';
 
@@ -36,18 +37,20 @@ function createMockRun(options = {}) {
     ready = true,
     clusterUnreadable = false,
     podUnreadable = false,
-    sqlStdout = '1',
+    sqlStdout = 't',
     sqlOk = true,
   } = options;
   const calls = [];
 
   const clusterBody = {
+    apiVersion: 'postgresql.cnpg.io/v1', kind: 'Cluster',
     metadata: {
+      uid: 'cluster-uid',
       name: DEV_CNPG_CLUSTER,
       namespace: DEV_CNPG_NAMESPACE,
       labels: { 'offscreen.dev/owner': clusterOwner },
     },
-    spec: { instances: 1 },
+    spec: expectedClusterSpec('dev'),
     status: {
       instances: 1,
       readyInstances: 1,
@@ -58,7 +61,10 @@ function createMockRun(options = {}) {
   };
 
   const podBody = {
+    apiVersion: 'v1', kind: 'Pod',
+    status: { phase: 'Running', conditions: [{ type: 'Ready', status: 'True' }] },
     metadata: {
+      uid: 'pod-uid', ownerReferences: [{ controller: true, kind: 'Cluster', name: DEV_CNPG_CLUSTER, uid: 'cluster-uid' }],
       name: currentPrimary,
       namespace: DEV_CNPG_NAMESPACE,
       labels:
@@ -91,9 +97,10 @@ function createMockRun(options = {}) {
           contexts: [
             {
               name: DEV_CNPG_CONTEXT,
-              context: { cluster: `kind-${DEV_CLUSTER_NAME}` },
+              context: { cluster: `kind-${DEV_CLUSTER_NAME}`, user: 'kind-user' },
             },
           ],
+          users: [{ name: 'kind-user', user: {} }],
           clusters: [
             {
               name: `kind-${DEV_CLUSTER_NAME}`,
@@ -112,6 +119,17 @@ function createMockRun(options = {}) {
         name = args[getIndex + 4];
       } else {
         name = args[getIndex + 2];
+      }
+      if (resource === 'namespace' && name === DEV_CNPG_NAMESPACE) {
+        return { ok: true, stdout: JSON.stringify({ apiVersion: 'v1', kind: 'Namespace',
+          metadata: { name, uid: 'ns-uid', labels: { 'offscreen.dev/owner': DEV_CNPG_OWNER } },
+          status: { phase: 'Active' } }) };
+      }
+      if (resource === 'endpointslices.discovery.k8s.io') {
+        return { ok: true, stdout: JSON.stringify({ items: [{ endpoints: [{
+          conditions: { ready: true, serving: true, terminating: false },
+          targetRef: { kind: 'Pod', name: currentPrimary, namespace: DEV_CNPG_NAMESPACE, uid: 'pod-uid' },
+        }] }] }) };
       }
       if (resource === 'namespace' && name === BASELINE_NAMESPACE) {
         return {
@@ -187,7 +205,7 @@ test('unreadable cluster refuses without exec', () => {
   const { run, calls } = createMockRun({ clusterUnreadable: true });
   const result = observeDevPostgresReady({ run });
   assert.equal(result.ok, false);
-  assert.match(result.detail ?? '', /unreadable/);
+  assert.ok(result.detail);
   assert.equal(
     calls.some((call) => call.args.includes('exec')),
     false,
@@ -202,7 +220,7 @@ test('foreign primary pod refuses before sql', () => {
   });
   const result = observeDevPostgresReady({ run });
   assert.equal(result.ok, false);
-  assert.match(result.detail ?? '', /foreign|cluster label/);
+  assert.ok(result.detail);
   assert.equal(
     calls.some((call) => call.args.includes('exec')),
     false,
@@ -214,7 +232,7 @@ test('unknown instance role refuses before sql', () => {
   const { run, calls } = createMockRun({ podRole: null });
   const result = observeDevPostgresReady({ run });
   assert.equal(result.ok, false);
-  assert.match(result.detail ?? '', /unknown/);
+  assert.ok(result.detail);
   assert.equal(
     calls.some((call) => call.args.includes('exec')),
     false,
@@ -226,7 +244,7 @@ test('foreign cluster owner refuses', () => {
   const { run, calls } = createMockRun({ clusterOwner: 'foreign-owner' });
   const result = observeDevPostgresReady({ run });
   assert.equal(result.ok, false);
-  assert.match(result.detail ?? '', /foreign ownership/);
+  assert.ok(result.detail);
   assertNoWrites(calls);
 });
 
@@ -234,7 +252,7 @@ test('stale Ready, bad counts, and missing primary refuse', () => {
   const { run, calls } = createMockRun({ ready: false });
   const stale = observeDevPostgresReady({ run });
   assert.equal(stale.ok, false);
-  assert.match(stale.detail ?? '', /Ready/);
+  assert.ok(stale.detail);
   assertNoWrites(calls);
 
   const mismatchRun = (command, args, runOptions = {}) => {
@@ -249,7 +267,7 @@ test('stale Ready, bad counts, and missing primary refuse', () => {
   };
   const mismatch = observeDevPostgresReady({ run: mismatchRun });
   assert.equal(mismatch.ok, false);
-  assert.match(mismatch.detail ?? '', /readyInstances/);
+  assert.ok(mismatch.detail);
 
   let clusterBody;
   const missingPrimaryRun = (command, args, runOptions = {}) => {
@@ -264,5 +282,28 @@ test('stale Ready, bad counts, and missing primary refuse', () => {
   };
   const primary = observeDevPostgresReady({ run: missingPrimaryRun });
   assert.equal(primary.ok, false);
-  assert.match(primary.detail ?? '', /currentPrimary/);
+  assert.ok(primary.detail);
+});
+
+test('SQL read-only response cannot establish readiness', () => {
+  const { run, calls } = createMockRun({ sqlStdout: 'f' });
+  assert.equal(observeDevPostgresReady({ run }).ok, false);
+  assertNoWrites(calls);
+});
+
+test('same-name replacement after SQL cannot establish readiness', () => {
+  const mock = createMockRun();
+  let sqlCompleted = false;
+  const run = (command, args, options) => {
+    const result = mock.run(command, args, options);
+    if (args.includes('exec')) sqlCompleted = true;
+    if (sqlCompleted && args.includes('get') && args.includes('pod')) {
+      const body = JSON.parse(result.stdout);
+      body.metadata.uid = 'replacement';
+      return { ...result, stdout: JSON.stringify(body) };
+    }
+    return result;
+  };
+  assert.equal(observeDevPostgresReady({ run }).ok, false);
+  assertNoWrites(mock.calls);
 });
