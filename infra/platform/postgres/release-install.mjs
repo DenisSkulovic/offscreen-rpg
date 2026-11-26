@@ -49,7 +49,7 @@ export function installReleaseCnpg({ operatorManifestPath, repoRoot }) {
   try {
     if (resolve(repoRoot) !== actualRoot) throw new Error('repository root mismatch');
     work = mkdtempSync(join(tmpdir(), 'offscreen-postgres-'));
-    const before = custody.run('bash', ['-c', 'source "$1"; require_memory; volume_guard_begin "$2"', 'postgres-guard', lib, work], { timeoutMs: 30000 });
+    const before = custody.run('bash', ['-c', 'set -euo pipefail; source "$1"; require_memory; volume_guard_begin "$2"', 'postgres-guard', lib, work], { timeoutMs: 30000 });
     if (!before.ok) throw new Error('guard begin failed');
     began = true;
     // Keep the deadline and lock alive through the final read-only release guard.
@@ -66,7 +66,7 @@ export function installReleaseCnpg({ operatorManifestPath, repoRoot }) {
   } finally {
     try {
       if (began) {
-        const after = custody.run('bash', ['-c', 'source "$1"; volume_guard_end "$2"; assert_loopback_only', 'postgres-guard', lib, work], { timeoutMs: 30000 });
+        const after = custody.run('bash', ['-c', 'set -euo pipefail; source "$1"; volume_guard_end "$2"; assert_loopback_only', 'postgres-guard', lib, work], { timeoutMs: 30000 });
         if (!after.ok || custody.remaining() < 1) {
           result = { ...result, ok: false, stage: 'guard', outcome: result.outcome === 'unknown' ? 'unknown' : 'failed',
             refusals: [...result.refusals, { id: 'guard-unverified', detail: 'Release final guard not verified' }] };

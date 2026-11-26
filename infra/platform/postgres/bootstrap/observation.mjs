@@ -29,7 +29,7 @@ function listObjects(profile, resource, args, run) {
 export function readyEndpoint(profile, namespace, service, pod, run) {
   const slices = listObjects(profile, 'endpointslices.discovery.k8s.io',
     ['-n', namespace, '-l', 'kubernetes.io/service-name=' + service], run);
-  if (!slices) return false;
+  if (!slices || slices.some(slice => !Array.isArray(slice.endpoints))) return false;
   const ready = slices.flatMap(slice => slice.endpoints ?? []).filter(endpoint =>
     endpoint.conditions?.ready === true && endpoint.conditions?.serving === true &&
     endpoint.conditions?.terminating === false);
@@ -61,7 +61,10 @@ function operatorReady(profile, inventory, observations, run) {
   const pods = listObjects(profile, 'pods', ['-n', 'cnpg-system'], run);
   const replicas = listObjects(profile, 'replicasets.apps', ['-n', 'cnpg-system'], run);
   if (!pods || !replicas) return false;
+  const operatorImage = deployment.spec?.template?.spec?.containers?.[0]?.image;
   const owned = pods.filter(pod => podReady(pod) &&
+    pod.spec?.containers?.length === 1 && pod.spec.containers[0].image === operatorImage &&
+    pod.status?.containerStatuses?.length === 1 && pod.status.containerStatuses[0].ready === true &&
     replicas.some(replica => ownerMatches(replica, deployment, 'Deployment') && ownerMatches(pod, replica, 'ReplicaSet')));
   return owned.length === 1 && readyEndpoint(profile, 'cnpg-system', 'cnpg-webhook-service', owned[0], run);
 }
@@ -194,5 +197,5 @@ export function observeWritablePrimary(profileId, { run = runPlatformCommand } =
     podAfter.metadata.labels?.['cnpg.io/cluster'] !== name || podAfter.metadata.labels?.['cnpg.io/instanceRole'] !== 'primary' ||
     !podReady(podAfter) || !ownerMatches(podAfter, clusterAfter, 'Cluster') ||
     !readyEndpoint(profile, ns, name + '-rw', podAfter, run)) return fail('primary identity changed during SQL observation');
-  return { ok: true, primaryPod: primary, namespaceUid: namespace.metadata.uid, clusterUid: cluster.metadata.uid, podUid: pod.metadata.uid };
+  return { ok: true, primaryPod: primary, namespaceUid: namespace.metadata.uid, clusterUid: cluster.metadata.uid, podUid: pod.metadata.uid, instances: after.observedInstances };
 }

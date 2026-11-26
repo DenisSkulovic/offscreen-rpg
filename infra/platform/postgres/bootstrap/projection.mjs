@@ -19,8 +19,9 @@ export function collectProjectedBaseline(profileId, deps = {}) {
   let fullAssessment;
   try {
     artifact = loadOperatorArtifact({ path: deps.operatorManifestPath });
-    observation = collectBaselineObservation(profileId, { artifact, run });
-    fullAssessment = assessBaselineObservation(observation);
+    const candidate = collectBaselineObservation(profileId, { artifact, run });
+    fullAssessment = assessBaselineObservation(candidate);
+    observation = candidate;
   } catch {
     fullAssessment = {
       operator: 'unknown', namespace: 'unknown', cluster: 'unknown',
@@ -32,9 +33,9 @@ export function collectProjectedBaseline(profileId, deps = {}) {
   const ns = observation?.namespace;
   const cluster = observation?.cluster;
   const deploymentEntry = artifact?.inventory.find(entry => entry.object.kind === 'Deployment');
-  const deployment = observation?.observations.get(deploymentEntry?.id);
+  const deployment = observation?.observations?.get(deploymentEntry?.id);
   const crdEntry = artifact?.inventory.find(entry => entry.name === 'clusters.postgresql.cnpg.io');
-  const crd = observation?.observations.get(crdEntry?.id);
+  const crd = observation?.observations?.get(crdEntry?.id);
   for (const [id, observed] of [['postgres-namespace', ns], ['postgres-cluster', cluster], ['cnpg-operator', deployment], ['postgres-crd', crd]]) {
     if (!observed || observed.state === 'unreadable') unreadableReads.push({ id, reason: observed?.reason ?? 'unavailable' });
   }
@@ -67,7 +68,7 @@ export function collectProjectedBaseline(profileId, deps = {}) {
   }
   return {
     context: observation?.target.contextName ?? null,
-    currentContext: null,
+    currentContext: observation?.target.contextName ?? null,
     clusterName: observation?.target.clusterName ?? null,
     apiServer: observation ? 'https://127.0.0.1:' + observation.target.port : null,
     baselineOwner: observation ? profile.ownerValue : null,

@@ -104,6 +104,8 @@ export function ensureBaseline(profileId, deps = {}) {
     }
 
     if (assessed.operator === 'absent') {
+      if (observed.namespace.object?.metadata.uid !== initialNamespaceUid || observed.cluster.object?.metadata.uid !== initialClusterUid)
+        return refuse('identity-changed', 'Baseline changed while acquiring custody');
       if (!locked) return refuse('maintenance-lock-required', 'Operator installation requires custody');
       stage = 'operator';
       writeInFlight = true;
@@ -176,6 +178,7 @@ export function ensureBaseline(profileId, deps = {}) {
     let clusterUid = observed.cluster.object?.metadata.uid;
     const clusterWasAbsent = assessed.cluster === 'absent';
     if (assessed.namespace === 'absent') {
+      if (!locked) return refuse('maintenance-lock-required', 'Namespace creation requires custody');
       stage = 'namespace';
       const created = create(rendered.namespace, 'create-namespace');
       if (created.error) return refuse(created.error, 'Namespace creation stopped', created.state);
@@ -228,7 +231,7 @@ export function ensureBaseline(profileId, deps = {}) {
       if (assessed.observedInstances !== expectedInstances) return refuse('topology-changed', 'Baseline instance count changed');
       if (assessed.operator === 'ready' && assessed.cluster === 'ready') {
         const ready = observeWritablePrimary(profileId, { run });
-        if (ready.ok && ready.namespaceUid === namespaceUid && ready.clusterUid === clusterUid) {
+        if (ready.ok && ready.namespaceUid === namespaceUid && ready.clusterUid === clusterUid && ready.instances === expectedInstances) {
           if (custody.remaining() < 1) break;
           actions.push({ op: 'wait-cluster-ready', outcome: 'ready' });
           if (!confirmedMutations.length) actions.push({ op: 'noop', outcome: 'ready' });
