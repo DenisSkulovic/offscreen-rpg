@@ -1,5 +1,7 @@
 # Decision framework and evidence gaps
 
+R5: [execution architecture comparison](EXECUTION-ARCHITECTURES.md) supplies the mechanism-level rationale and provisional experiment ordering. Gates below remain unchanged.
+
 ## Shared hard gates (not scoreable away)
 G1 TypeScript/Node version-pinned dependency and licensing compatibility, self-hosted without mandatory vendor service.
 G2 One execution-progress authority, deterministic Workflow bundle/replay or explicitly bounded alternative; no duplicate orchestration.

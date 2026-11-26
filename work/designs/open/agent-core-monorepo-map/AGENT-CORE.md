@@ -1,4 +1,4 @@
-# Agent Core | illustrative responsibility tree R4
+# Agent Core | illustrative responsibility tree R5
 
 Outer package placement follows the owner-selected R2 grouping convention; the internal subfolder tree is illustrative, not a selected API, dependency graph or implementation. Generic machinery for bounded agent execution, independent of Storyteller. Preserve earlier conceptual distinction between definition, instance, mission, runtime and durable execution state; whether persistent instances are mandatory remains open.
 
@@ -40,6 +40,9 @@ Reasoning effort: mission chooses desired effort, model capability constrains it
 
 ## R3/R4 runtime direction
 See [current technology-selection dossier](technology-selection/README.md) and [initial research](AGENT-RUNTIME-RESEARCH.md). Vercel, OpenAI Agents and Strands are primary experiment candidates; no chosen dependency. The folders are responsibilities, not a custom implementation quota. SDK-provided loops, delegation, compaction and state machinery may shrink or eliminate folders. Temporal-native integration is promising but must pass custody and authorization experiments. Host owns Worker configuration; Workflow-safe orchestration and Activity-side effects must be separated. No agent framework owns Library authority, billing, or durable financial custody.
+
+## R5 execution hypothesis
+See [execution architecture comparison](technology-selection/EXECUTION-ARCHITECTURES.md). SDK loop in deterministic Workflow, effectful Activities outside it, one admitted mission per Workflow binding, custody-aware guarded inference and explicit child admission. This is a common candidate shape, not selected runtime or transaction contract.
 
 ## Questions before design selection
 - Can a framework provide loop/tool/message machinery without taking over our authority, durable custody and lifecycle semantics? Compare custom TS, suitable current agent SDKs/frameworks, and Temporal-centered/hybrid execution via official docs and specimens; no framework selected.

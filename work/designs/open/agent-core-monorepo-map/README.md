@@ -1,4 +1,4 @@
-# Agent Core and monorepo architecture mapping | R4
+# Agent Core and monorepo architecture mapping | R5
 
 **Status:** open exploratory design; 2026-11-27. Owner and ChatGPT collaborative workshop. Integration baseline `6dbd4c439f1d92733b539cd06a358bb46ca0372e`, main. Clean-slate target thinking; preserve existing source, history, working contracts and data. No implementation commission, canonical promotion, runtime changes or paid calls.
 
@@ -22,6 +22,9 @@ Owner requests serious framework research instead of defaulting to an in-house l
 
 ## R4: technology-selection research
 See [candidate dossiers](technology-selection/README.md) for pinned source evidence, eight alternatives, version register and hard gates. Strands joins Vercel and OpenAI in the primary cohort; no winner selected. Documentation/source skew and exact published artifacts remain material gaps. Next owner review precedes version-pinned provider-free specimens and eventual independent defense.
+
+## R5: compare actual execution machinery
+[Execution architecture comparison](technology-selection/EXECUTION-ARCHITECTURES.md) traces the same mission across all candidates, identifies the trusted Activity identity/custody seam, and proposes Vercel multi-step generation as the first proof candidate, with Strands and OpenAI as alternatives. This is not an adoption decision; exact artifact resolution and provider-free proof remain open.
 
 ## Working documents
 - [Package map](PACKAGE-MAP.md)
