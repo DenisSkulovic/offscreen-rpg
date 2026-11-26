@@ -103,7 +103,7 @@ test('prefix collision keeps dev-1 distinct from dev-10', () => {
   assert.equal(adapter.user('dev-2'), null);
 });
 
-test('provision stores the secret with create and the receipt has only a uid', () => {
+test('provision stores the secret with create and the receipt has only a uid', async () => {
   const calls = [];
   const exec = (command, args, input) => {
     calls.push({ command, args, input });
@@ -135,7 +135,7 @@ test('provision stores the secret with create and the receipt has only a uid', (
     return '';
   };
   const adapter = createDevS3LiveAdapter({ exec });
-  const created = adapter.provisionUser({
+  const created = await adapter.provisionUser({
     slotId: 'dev-1',
     bucket: 'offscreen-dev-1',
     user: 'dev-1',
@@ -160,7 +160,7 @@ test('provision stores the secret with create and the receipt has only a uid', (
   );
 });
 
-test('credential create conflicts refuse with an actionable retry message', () => {
+test('credential create conflicts refuse with an actionable retry message', async () => {
   const exec = (command, args, input) => {
     const joined = args.join(' ');
     if (String(input).includes('s3.user.provision'))
@@ -175,7 +175,7 @@ test('credential create conflicts refuse with an actionable retry message', () =
     return '';
   };
   const adapter = createDevS3LiveAdapter({ exec });
-  assert.throws(
+  await assert.rejects(
     () =>
       adapter.provisionUser({
         slotId: 'dev-1',
@@ -384,4 +384,16 @@ test('policy inventory reads actual Name/Content records and rejects malformed o
   assert.deepEqual(parseWeedPolicyInventory(''), []);
   assert.throws(() => parseWeedPolicyInventory(record + record));
   assert.throws(() => parseWeedPolicyInventory('unexpected output'));
+});
+
+
+test('mixed malformed and duplicate bucket inventories refuse', () => {
+  assert.throws(() => parseWeedBucketList(WEED_BUCKET_LIST_FIXTURE + ' stray-bucket\towner:dev-1\n'));
+  assert.throws(() => parseWeedBucketList(WEED_BUCKET_LIST_FIXTURE + WEED_BUCKET_LIST_FIXTURE));
+});
+
+test('ordinary live adapter cannot invoke a write outside custody', async () => {
+  const adapter = createDevS3LiveAdapter();
+  await assert.rejects(() => adapter.createBucket(deriveDevS3Tenant('dev-1')), /requires provider custody/);
+  await assert.rejects(() => adapter.provisionUser(deriveDevS3Tenant('dev-1')), /requires provider custody/);
 });

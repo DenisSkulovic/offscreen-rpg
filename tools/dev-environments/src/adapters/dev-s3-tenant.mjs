@@ -206,6 +206,13 @@ export async function ensureDevS3Tenant({ slotId, authorizeLive, adapter }) {
       'injected-probe',
       'an injected probe cannot authorize S3 mutation',
     );
+  if (typeof adapter.withCustody === 'function') {
+    return adapter.withCustody((scoped) => ensureAdmittedTenant(slotId, scoped));
+  }
+  return ensureAdmittedTenant(slotId, adapter);
+}
+
+async function ensureAdmittedTenant(slotId, adapter) {
   const binding = assertHost(adapter.identity());
   if (binding) return binding;
   const names = deriveDevS3Tenant(slotId);
@@ -235,8 +242,8 @@ export async function ensureDevS3Tenant({ slotId, authorizeLive, adapter }) {
       if (classified.state !== 'absent') {
         return { ok: false, mutated: false, reason: 'write-refused' };
       }
-      adapter.createBucket(names);
-      adapter.provisionUser(names);
+      await adapter.createBucket(names);
+      await adapter.provisionUser(names);
       return { ok: true, mutated: true };
     },
   });

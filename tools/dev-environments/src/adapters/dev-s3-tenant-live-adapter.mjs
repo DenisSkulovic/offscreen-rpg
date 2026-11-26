@@ -1,4 +1,6 @@
 import { spawnSync } from 'node:child_process';
+import { withObjectStorageMutation } from '../../../../infra/platform/object-storage/providers/seaweedfs/mutation-guard.mjs';
+import { runPlatformCommand } from '../../../../infra/platform/common/commands.mjs';
 import {
   DEV_S3_CONTEXT,
   DEV_S3_IMAGE,
@@ -89,7 +91,7 @@ function readPresentSecret(body, name) {
   }
   const owner = body.metadata.labels?.['offscreen.dev/owner'] ?? null;
   if (owner !== DEV_S3_OWNER) {
-    return { name, uid, owner };
+    throw new Error('foreign tenant secret');
   }
   const slot = body.metadata.labels?.['offscreen.dev/slot'];
   if (slot !== expectedSlotFromSecretName(name)) {
@@ -159,7 +161,7 @@ export function parseWeedBucketList(text) {
     if (ownerMatch) owner = ownerMatch[1];
     entries.push({ name: match[1], owner });
   }
-  if (rejected && entries.length === 0) {
+  if (rejected || new Set(entries.map((entry) => entry.name)).size !== entries.length) {
     const error = new Error('weed bucket list format is not recognized');
     error.code = 'weed-list-unreadable';
     throw error;
@@ -278,7 +280,7 @@ function parseCredentials(text) {
   return null;
 }
 
-function storeSecret(exec, names, credentials) {
+async function storeSecret(exec, names, credentials, write) {
   const manifest = {
     apiVersion: 'v1',
     kind: 'Secret',
@@ -297,7 +299,7 @@ function storeSecret(exec, names, credentials) {
     },
   };
   try {
-    kubectl(['create', '-f', '-'], JSON.stringify(manifest), exec);
+    await write('kubectl', ['--context', DEV_S3_CONTEXT, 'create', '-f', '-'], JSON.stringify(manifest));
   } catch (error) {
     if (String(error.stderr ?? '').match(/AlreadyExists|already exists/i)) {
       const conflict = new Error(
@@ -318,11 +320,48 @@ function storeSecret(exec, names, credentials) {
   return { secret: retained.name, uid: retained.uid };
 }
 
-export function createDevS3LiveAdapter({
+export function createDevS3LiveAdapter(options = {}) {
+  const adapter = createAdapter(options);
+  return {
+    ...adapter,
+    async withCustody(operation) {
+      if (options.exec && options.exec !== run) return operation(adapter);
+      let attempted = false;
+      try {
+        let outcome;
+        await withObjectStorageMutation('dev', async ({ runWrite, identity }) => {
+          if (!identity.targetNamespaceUid || !identity.podUid || !identity.pvcUid || !identity.pvUid) {
+            throw new Error('incomplete provider identity');
+          }
+          const scoped = createAdapter(options, async (command, args, input) => {
+            attempted = true;
+            const result = await runWrite(command, args, { input, timeoutMs: TRANSPORT_TIMEOUT_MS });
+            return result.stdout + result.stderr;
+          });
+          outcome = await operation(scoped);
+          // A read-only refusal is a completed observation, not a completed write.
+          return { ok: outcome.ok || !attempted };
+        }, { run: runPlatformCommand });
+        return outcome;
+      } catch {
+        return {
+          ok: false,
+          mutated: attempted,
+          refusals: [{ id: 'tenant-unknown', detail: 'provider custody refused or incomplete; inspect pending receipt' }],
+        };
+      }
+    },
+  };
+}
+
+function createAdapter({
   exec = run,
   headBucket: headBucketProbe,
   bucketPolicies: bucketPoliciesProbe,
-} = {}) {
+} = {}, guardedWrite) {
+  const write = guardedWrite ?? (exec !== run ? exec : () => {
+    throw new Error('S3 write requires provider custody');
+  });
   return {
     identity() {
       const deploy = JSON.parse(
@@ -382,13 +421,13 @@ export function createDevS3LiveAdapter({
       if (!body) return null;
       return readPresentSecret(body, name);
     },
-    createBucket(names) {
-      weed(`s3.bucket.create -name ${names.bucket}\nexit\n`, exec);
+    async createBucket(names) {
+      await weed(`s3.bucket.create -name ${names.bucket}\nexit\n`, write);
     },
-    provisionUser(names) {
-      const output = weed(
+    async provisionUser(names) {
+      const output = await weed(
         `s3.user.provision -name ${names.user} -bucket ${names.bucket} -role readwrite\nexit\n`,
-        exec,
+        write,
       );
       const credentials = parseCredentials(output);
       if (!credentials) {
@@ -396,8 +435,8 @@ export function createDevS3LiveAdapter({
         error.code = 'credential-capture-failed';
         throw error;
       }
-      const retained = storeSecret(exec, names, credentials);
-      weed(`s3.bucket.owner -name ${names.bucket} -owner ${names.user}\nexit\n`, exec);
+      const retained = await storeSecret(exec, names, credentials, write);
+      await weed(`s3.bucket.owner -name ${names.bucket} -owner ${names.user}\nexit\n`, write);
       return retained;
     },
     policyInventory() {
