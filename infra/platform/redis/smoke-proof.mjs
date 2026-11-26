@@ -516,11 +516,12 @@ async function readSingletonEndpoint(
       slice?.metadata?.namespace !== target.namespace ||
       slice?.metadata?.labels?.['kubernetes.io/service-name'] !== SERVICE_NAME ||
       slice?.addressType !== 'IPv4' ||
-      !Array.isArray(slice.endpoints)
+      !(Array.isArray(slice.endpoints) || (slice.endpoints === null && slice.ports === null))
     ) {
       return { ok: false, state: 'unreadable', reason: 'endpoints-slice-shape' };
     }
-    for (const entry of slice.endpoints) {
+    // Kubernetes retains a controller-owned empty slice with both fields null.
+    for (const entry of slice.endpoints ?? []) {
       if (!Array.isArray(entry?.addresses) || entry.addresses.length !== 1 ||
           entry.targetRef?.kind !== 'Pod' || entry.targetRef?.namespace !== target.namespace ||
           typeof entry.targetRef?.uid !== 'string' ||

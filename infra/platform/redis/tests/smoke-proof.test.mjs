@@ -282,12 +282,12 @@ export function buildHappyProofRunner(target) {
     if (args.includes('endpointslices.discovery.k8s.io') && args.includes('json')) {
       return ok(JSON.stringify({
         apiVersion: 'v1', kind: 'List',
-        items: scaleReplicas === 0 ? [] : [{
+        items: [{
           apiVersion: 'discovery.k8s.io/v1', kind: 'EndpointSlice',
           metadata: { namespace: target.namespace, labels: { 'kubernetes.io/service-name': 'redis' } },
           addressType: 'IPv4',
-          ports: [{ name: 'redis', port: 6379, protocol: 'TCP' }],
-          endpoints: [{ addresses: [SERVER_POD_IP], conditions: { ready: true, serving: true, terminating: false },
+          ports: scaleReplicas === 0 ? null : [{ name: 'redis', port: 6379, protocol: 'TCP' }],
+          endpoints: scaleReplicas === 0 ? null : [{ addresses: [SERVER_POD_IP], conditions: { ready: true, serving: true, terminating: false },
             targetRef: { kind: 'Pod', namespace: target.namespace, uid: serverPodUid } }],
         }],
       }));
@@ -782,4 +782,24 @@ test('client startup polls same UID and timeout absence is never success', async
   assert.equal(result.ok, false);
   assert.equal(result.retainReceipt, true);
   assert.equal(result.detail, 'namespace-absent-unreadable');
+});
+
+test('malformed null endpoint slice with non-null ports refuses before scale', async () => {
+  const target = { ...releaseTarget, namespace: PROOF_NAMESPACE };
+  const runner = buildHappyProofRunner(target);
+  const result = await runRedisSmokeProof(target, 'release', {
+    ...proofDeps(target, runner),
+    run: (command, args) => {
+      const response = runner.run(command, args);
+      if (args.includes('endpointslices.discovery.k8s.io') && args.includes('json')) {
+        const body = JSON.parse(response.stdout);
+        body.items[0].endpoints = null;
+        return ok(JSON.stringify(body));
+      }
+      return response;
+    },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.detail, 'endpoints-slice-shape');
+  assert.equal(runner.commands.some(([, args]) => args.includes('scale')), false);
 });
