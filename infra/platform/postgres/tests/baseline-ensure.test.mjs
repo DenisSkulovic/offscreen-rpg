@@ -20,6 +20,7 @@ test('unauthorized ensure refuses before every command and closes custody', () =
 
 test('missing or invalid artifact fails before any external command', () => {
   let closed = 0;
+  let calls = 0;
   const result = ensureBaseline('release', {
     authorized: true, operatorManifestPath: '/dev/null',
     custody: { run() { calls++; throw Error('unverified artifact command'); }, close() { closed++; } },

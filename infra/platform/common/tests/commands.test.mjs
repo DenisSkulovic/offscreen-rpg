@@ -193,7 +193,7 @@ test('readPlatformProfile accepts dev and release with frozen fields', () => {
     postgres: 'lab-postgres',
     temporal: 'lab-temporal',
     objectStorage: 'lab-objects',
-    redis: null,
+    redis: 'lab-a',
   });
 });
 
