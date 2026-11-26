@@ -6,6 +6,10 @@ The **game** explores what happens when a fictional world keeps coherent state, 
 
 > **Project status:** An evolving local engineering portfolio and experimental game platform, **not a publicly hosted or production-ready RPG**. Product/technical documentation describes selected targets; [STATUS.md](STATUS.md) separates implemented source, tested behavior, incomplete integrations and unproven capabilities.
 
+## Local setup
+
+Start with the [fresh-clone bootstrap runbook](docs/runbooks/fresh-clone-bootstrap.md) for incremental host, cluster and platform preparation. Windows + WSL2 is the initial supported host path; native Linux and macOS setup are not implemented.
+
 ## Two systems, developed together
 
 | The storytelling platform | The engineering ecosystem |
