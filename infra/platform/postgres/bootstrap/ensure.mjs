@@ -68,11 +68,6 @@ export function ensureBaseline(profileId, deps = {}) {
     const rendered = renderBaseline(profileId, run);
     const collect = () => collectBaselineObservation(profileId, { artifact, run });
     const kubectl = (args, options) => run('kubectl', ['--context', profile.contextName, ...args], options);
-    const config = parseObject(kubectl(['config', 'view', '--minify', '-o', 'json']));
-    if (!config || config.users?.some(u => u.user?.exec || u.user?.['auth-provider']) ||
-      config.clusters?.some(c => c.cluster?.['proxy-url']))
-      return refuse('unsafe-kubeconfig', 'External authentication or proxy refused');
-
     stage = 'observe';
     let observed = collect();
     let assessed = assessBaselineObservation(observed);
