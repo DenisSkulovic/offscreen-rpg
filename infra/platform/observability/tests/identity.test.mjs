@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, chmodSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, chmodSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -94,6 +94,28 @@ function devIdentityScript(port = devPort) {
         'config',
         'view',
         '--minify',
+        '-o',
+        'json',
+      ],
+      result: {
+        ok: true,
+        status: 0,
+        stdout: kubectlConfigJson('dev', port),
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      },
+    },
+    {
+      command: 'kubectl',
+      args: [
+        '--context',
+        devKind.contextName,
+        'config',
+        'view',
+        '--minify',
+        '--raw',
+        '--flatten',
         '-o',
         'json',
       ],
@@ -253,6 +275,12 @@ test('captureIdentity binds tuple and private snapshot', () => {
   assert.equal(identity.tuple.baselineUid, 'dev-baseline-uid');
   assert.equal(identity.tuple.targetNamespaceUid, null);
   assert.match(identity.snapshotPath, /snapshot\.json$/);
+  assert.equal(
+    JSON.parse(readFileSync(identity.snapshotPath, 'utf8')).users[0].user[
+      'client-key-data'
+    ],
+    'a2V5',
+  );
   const cleanup = identity.cleanup();
   assert.equal(cleanup.ok, true);
 });
