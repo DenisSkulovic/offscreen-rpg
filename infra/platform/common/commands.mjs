@@ -85,7 +85,7 @@ function assertResourceType(value, field) {
  */
 function isClusterScopedRead(resource) {
   const lower = resource.toLowerCase();
-  return ['namespace', 'namespaces', 'ns', 'customresourcedefinition', 'customresourcedefinitions', 'crd', 'crds'].includes(lower);
+  return ['namespace', 'namespaces', 'ns', 'customresourcedefinition', 'customresourcedefinitions', 'crd', 'crds', 'customresourcedefinition.apiextensions.k8s.io', 'clusterrole.rbac.authorization.k8s.io', 'clusterrolebinding.rbac.authorization.k8s.io', 'mutatingwebhookconfiguration.admissionregistration.k8s.io', 'validatingwebhookconfiguration.admissionregistration.k8s.io'].includes(lower);
 }
 
 /**
