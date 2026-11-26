@@ -56,6 +56,15 @@ export class S3ObjectStorage implements ObjectStorage {
       });
   }
 
+  /** Runtime access check: bucket must exist and be reachable. */
+  async requireBucket() {
+    try {
+      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+    } catch (error) {
+      throw new ObjectStorageError('unavailable', { cause: error });
+    }
+  }
+
   /** Lab/bootstrap only. Not part of the ObjectStorage port. */
   async ensureBucket() {
     try {
@@ -69,7 +78,6 @@ export class S3ObjectStorage implements ObjectStorage {
     try {
       await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
     } catch (error) {
-      if (isAlreadyOwned(error)) return;
       throw new ObjectStorageError('unavailable', { cause: error });
     }
   }
@@ -97,6 +105,9 @@ export class S3ObjectStorage implements ObjectStorage {
       return 'written';
     } catch (error) {
       if (isPreconditionFailed(error)) return 'already-exists';
+      if (isConflict(error)) {
+        throw new ObjectStorageError('unavailable', { cause: error });
+      }
       if (error instanceof ObjectStorageError) throw error;
       throw new ObjectStorageError('unavailable', { cause: error });
     }
@@ -186,15 +197,16 @@ function isPreconditionFailed(error: unknown) {
   );
 }
 
-function isAlreadyOwned(error: unknown) {
-  if (!isS3Exception(error)) {
-    const code =
-      (error as { Code?: string; name?: string }).Code ??
-      (error as { name?: string }).name;
-    return code === 'BucketAlreadyOwnedByYou' || code === 'BucketAlreadyExists';
+function isConflict(error: unknown) {
+  if (isS3Exception(error)) {
+    return error.name === 'Conflict' || error.$metadata.httpStatusCode === 409;
   }
+  const name = (error as { name?: string }).name;
+  const code = (error as { Code?: string }).Code;
   return (
-    error.name === 'BucketAlreadyOwnedByYou' ||
-    error.name === 'BucketAlreadyExists'
+    name === 'Conflict' ||
+    code === 'Conflict' ||
+    (error as { $metadata?: { httpStatusCode?: number } }).$metadata
+      ?.httpStatusCode === 409
   );
 }

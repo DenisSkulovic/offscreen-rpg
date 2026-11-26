@@ -81,6 +81,15 @@ export class S3DocumentStore implements DocumentStore {
     });
   }
 
+  /** Verify bucket exists and is reachable (runtime startup). */
+  async requireBucket() {
+    try {
+      await this.storage.requireBucket();
+    } catch (error) {
+      throw mapStorageError(error);
+    }
+  }
+
   /** Ensure the configured private bucket exists (lab/bootstrap only). */
   async ensureBucket() {
     try {

@@ -5,6 +5,24 @@ import { S3DocumentStore } from './s3-store.js';
 export type DocumentStoreMode = 'local' | 's3';
 
 /**
+ * Parse OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE. Omitted or empty uses
+ * {@link Boolean(endpoint)} (path style when an endpoint is set).
+ */
+export function parseDocumentS3ForcePathStyle(
+  raw: string | undefined,
+  endpoint: string | undefined,
+): boolean {
+  const trimmed = raw?.trim();
+  if (!trimmed) return Boolean(endpoint);
+  const lower = trimmed.toLowerCase();
+  if (lower === 'true' || lower === '1') return true;
+  if (lower === 'false' || lower === '0') return false;
+  throw new Error(
+    `OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE must be true, false, 1, or 0 (got ${JSON.stringify(trimmed)})`,
+  );
+}
+
+/**
  * Resolve the process DocumentStore from environment.
  * Unset OFFSCREEN_DOCUMENT_STORE keeps prior behavior: local when
  * OFFSCREEN_DOCUMENT_ROOT is set, otherwise undefined.
@@ -31,9 +49,10 @@ export function createDocumentStoreFromEnv(
       bucket,
       region,
       ...(endpoint ? { endpoint } : {}),
-      forcePathStyle:
-        env['OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE']?.trim() === '1' ||
-        Boolean(endpoint),
+      forcePathStyle: parseDocumentS3ForcePathStyle(
+        env['OFFSCREEN_DOCUMENT_S3_FORCE_PATH_STYLE'],
+        endpoint,
+      ),
       ...(prefix ? { prefix } : {}),
       ...(accessKeyId && secretAccessKey
         ? { credentials: { accessKeyId, secretAccessKey } }
