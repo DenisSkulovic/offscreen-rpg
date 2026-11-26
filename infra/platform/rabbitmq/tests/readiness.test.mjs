@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   CUSTOM_API_MAP,
+  expectedVendorIdentities,
   discoverApiVersion,
   LEGACY_MESSAGING_NAMESPACE,
   observeRabbitmqInventory,
@@ -257,7 +258,7 @@ function buildRun(overrides = {}) {
 test('absent custom API via discovery classifies prerequisite absence', () => {
   const run = (command, args) => {
     if (args.join(' ').includes('get --raw /apis/cert-manager.io/v1')) {
-      return fail(404);
+      return fail(1, 'Error from server (NotFound): the server could not find the requested resource');
     }
     return ok('');
   };
@@ -270,7 +271,7 @@ test('absent custom API via discovery classifies prerequisite absence', () => {
 
 test('unestablished CRD refuses custom reads', () => {
   const gate = resolveCustomApiGate('Issuer', devTarget, {
-    run: () => fail(404),
+    run: () => fail(1, 'Error from server (NotFound): the server could not find the requested resource'),
     readObject: () => ({
       state: 'present',
       object: {
@@ -284,7 +285,7 @@ test('unestablished CRD refuses custom reads', () => {
 
 test('denied discovery read returns unknown', () => {
   const discovery = discoverApiVersion(devTarget, 'cert-manager.io', 'v1', () =>
-    fail(403),
+    fail(1, 'Error from server (Forbidden): denied'),
   );
   assert.equal(discovery.state, 'unknown');
   assert.equal(discovery.reason, 'discovery-denied');
@@ -335,7 +336,7 @@ test('foreign RabbitmqCluster refuses census', () => {
         );
       }
       if (joined.includes('get --raw')) {
-        return fail(404);
+        return fail(1, 'Error from server (NotFound): the server could not find the requested resource');
       }
       if (joined.includes('rabbitmqclusters.rabbitmq.com')) {
         return ok(
@@ -399,7 +400,7 @@ test('partial install refuses census', () => {
         );
       }
       if (joined.includes('get --raw')) {
-        return fail(404);
+        return fail(1, 'Error from server (NotFound): the server could not find the requested resource');
       }
       if (joined.includes('rabbitmqclusters.rabbitmq.com')) {
         return ok(JSON.stringify({ items: [] }));
@@ -534,4 +535,45 @@ test('custom API map matches R8 certificate issuer and rabbitmq cluster resource
     CUSTOM_API_MAP.RabbitmqCluster.resource,
     'rabbitmqclusters.rabbitmq.com',
   );
+});
+
+
+test('complete vendor and broker census recognizes installation; missing broker or vendor refuses', () => {
+  for (const missing of [null, 'broker', 'vendor']) {
+    const broker = recognizedBroker();
+    const identities = expectedVendorIdentities();
+    const omitted = identities.find(i => i.kind === 'Deployment');
+    const run = (command, args) => {
+      const joined = args.join(' ');
+      if (joined.includes('get --raw')) return ok(JSON.stringify({
+        resources: [{ name: 'rabbitmqclusters' }, { name: 'certificates' }, { name: 'issuers' }],
+      }));
+      if (joined.includes('rabbitmqclusters.rabbitmq.com')) return ok(JSON.stringify({ items: missing === 'broker' ? [] : [broker] }));
+      if (joined.includes('get pv')) return ok(JSON.stringify({ items: [] }));
+      throw new Error('unexpected census command: ' + joined);
+    };
+    const readObject = ({ resource, name, namespace }) => {
+      if (name === LEGACY_MESSAGING_NAMESPACE) return { state: 'absent' };
+      if (resource === CUSTOM_API_MAP.RabbitmqCluster.resource) return missing === 'broker' ? { state: 'absent' } : { state: 'present', object: broker };
+      if (missing === 'vendor' && resource === omitted.resource && name === omitted.name && namespace === omitted.namespace) return { state: 'absent' };
+      return { state: 'present', object: {
+        metadata: { name, namespace, labels: { [NATIVE_DESIGN_LABEL]: NATIVE_DESIGN_VALUE } },
+        status: { conditions: [{ type: 'Established', status: 'True' }] },
+        spec: { versions: [{ served: true }] },
+      } };
+    };
+    const result = observeRabbitmqInventory(devTarget, { skipTargetAssert: true, run, readObject });
+    assert.equal(result.state, missing === null ? 'recognized' : 'partial', JSON.stringify({ missing, reason: result.reason }));
+  }
+});
+
+test('fresh census counts prerequisite absence once and recognizes empty platform', () => {
+  const result = observeRabbitmqInventory(devTarget, {
+    skipTargetAssert: true,
+    readObject: () => ({ state: 'absent' }),
+    run: (command, args) => args.includes('--raw')
+      ? fail(1, 'Error from server (NotFound): the server could not find the requested resource')
+      : ok(JSON.stringify({ items: [] })),
+  });
+  assert.equal(result.state, 'absent');
 });
