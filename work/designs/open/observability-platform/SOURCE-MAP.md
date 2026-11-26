@@ -1,0 +1,15 @@
+# Integration / preservation map
+Main a81e275821496e478ba55ae3dce5e72cf63d5dfd. Source inspection current at this SHA.
+- infra/platform/common/profile.mjs:11–54 add observability namespace per profile, preserve storage and other namespace identities.
+- infra/environments/platform-plan.mjs:29–51 catalog/default dev supported; 117–118 legacy shell map; corePhases native Redis dispatch around304; selectedChartServices374, preflight394–550, execution679. Route observability to native installer both profiles, remove legacy shell and shared chart preflight for this service, preserve default selection and unrelated native services.
+- infra/environments/infra-cli.mjs:530 legacy lab-a deployment/service branch; observeSelectedServiceState and dev selection path replace with bounded native status; preserve CLI receipts and read-only semantics.
+- infra/platform/common/render.mjs:20–31 service registry/release-only, 56–61 namespace mapping, 247–303 render routing, 432–517 render/lint. Retire legacy chart routing for observability or route public render to native validated bundle; never silently render old chart. Compatibility behavior must be explicitly tested.
+- infra/platform/observability/install.sh:16 lab namespace helper, 76–95 legacy apply/rollout/image; replace source with native bundle implementation, no runtime delete or migration. Legacy chart exact object names from chart templates retained as refusal inventory, not installation path.
+- infra/platform/redis/custody.mjs:82–119 lock identity/path, 249–366 admission/flock, 450 pending durability, 500–513 inherited fd, 605 close. Reference semantics for service-local custody; do not alter Redis or import Redis business policy.
+- infra/platform/common/commands.mjs:285 assertPlatformTarget, 340–380 release bootstrap; use existing target checks.
+- infra/verification/diagnostic.mjs:87 source render test, 100 service catalog, 121 PL-06. Update registry and structural diagnostic only; diagnostic not query or mutation. Inspect diagnostic-live.mjs and tests during implementation.
+- infra/verification/smoke/observability/{setup.sh,smoke.sh,assert_signals.py,hop.py,hops.yaml,tests/setup.test.mjs}: old debug-export proof retired/replaced by bounded query proof, preserve two-hop causal intent where applicable; no legacy setup on new platform. Explicitly reconcile runbooks.
+- infra/environments/{platform-plan.test.mjs,infra-cli.test.mjs,infra-cli-operation.test.mjs,infra-presentation.test.mjs}, infra/verification/diagnostic.test.mjs: focused compatibility tests.
+- docs/runbooks/kubernetes-observability.md and docs/technical/observability/telemetry-and-diagnostics.md: canonical promotion only after committee/owner; retain protected evidence separation and truth of runtime status.
+- Preserve infra/monitoring, workstation runbook/technical doc, all domain telemetry/evidence packages, existing other platform services. No application workload changes.
+Residual caller audit: current direct seams inspected; complete git grep/consumer list and exact legacy inventory required before source implementation; no uninspected caller assumed absent.

@@ -1,0 +1,17 @@
+# Designer self-defense | pass 01
+2026-11-26. Reviewer: original ChatGPT designer, not independent committee. Evidence baseline b8bfea981bf022cf8b1ccda255b75d02d51e8bac, integration main a81e275821496e478ba55ae3dce5e72cf63d5dfd. Target TARGET.md; proof ACCEPTANCE.md. Scope bounded structural foundation only.
+
+| Strong objection | Assessment / disposition |
+|---|---|
+| Keep legacy debug Collector or use single LGTM/OpenObserve | Legacy lacks query retention and leaks detailed debug if real data wired; modular native charts match canonical architecture and isolate export paths. Single combined alternative fewer workloads but coupled failure; measured 469MiB low-load working set supports modular economics, not comparative benchmark. Defended. |
+| Telemetry consumes gaming-PC resources | R24 node 2.43GiB inclusive control plane, container 469MiB, requests1408Mi, limits2816Mi; Grafana OOM at256Mi corrected. RSS vs working set unresolved, no downsize, optional shared stack. Capacity gated separately. Defended bounded. |
+| Persistence/retention promises exceed local PVC | Graceful replacements preserve exact records and claim UIDs; no quota or crash durability claim. Storage independent of game, same physical disk. Defended bounded. |
+| Backend failure corrupts app or blocks all signals | R22 log/metric continued; R24 failed spans visible. Bounded queue/retry, application independence explicit, no in-flight survival promise. Revised admission candidate needs A8 rerun. Defended design. |
+| Privacy filters falsely authenticate or hide leakage | R28 positive and negative canary proof, scope/metadata caveats, no real app enrollment, direct backend bypass acknowledged. Synthetic only; no security guarantee for hostile workload. Defended bounded. |
+| Native chart supply chain drifts | R29 all chart hashes and digest equality, rendered tags still present; target requires verified digest-pinned installed render. A1 negative proof required. Defended architecture, implementation pending. |
+| Concurrent ensure and partial install destroy data | R4 pending custody question resolved in TARGET using existing Redis custody semantics, no automatic repair, namespace/refusal and bounded pending ownership. A3–A5/A9 essential. No actual Helm proof claimed. Defended design conditional on implementation acceptance. |
+| Readiness mistaken for functionality | Separate structural classifier and explicit query proof. A6/A7. Defended. |
+| Source integration leaves legacy paths active | SOURCE-MAP.md identifies direct planner/profile/status/render/diagnostic and smoke retirement; legacy never removed live. A2/A12. Defended bounded. |
+
+Counterexample that would invalidate target: if public fresh dev acceptance requires bypassing target guards, or native chart digest pinning cannot preserve validated inventory, or failed install cannot retain ownership without unsafe recovery, do not commission/integrate; reopen design. No new empirical claims. The proposed target resolves provisional lifecycle decisions in R4; no speculative generalized orchestration. Actual source implementation and public CLI proof remain unrun. Existing source anchors inspected at main, not exhaustive whole-repo caller audit; implementation must reconcile remaining callers before edits and committee should challenge completeness.
+Overall designer verdict: DEFENDED for bounded structural design subject to independent review; no implementation or owner acceptance. Explicitly gated scopes as TARGET. 

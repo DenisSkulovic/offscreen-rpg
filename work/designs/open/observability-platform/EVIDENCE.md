@@ -11,7 +11,7 @@ Owner-operated disposable cluster only. Recorded 2026-11-26. Original source bas
 | E04-C | PASS | /tmp/offscreen-obs-outage.qrD4YRjZ; R22 | 8/8 required signal queries, Tempo zero Pods/no ready endpoints, healthy log/metric delivery, fresh trace recovery, same Collector Pod UID and PVC identities |
 | E04-D1 | PASS | /tmp/offscreen-obs-resources.GemmwCCu; R24 | 12 samples/container; combined working set mean 469.4MiB, range 462.0–476.6MiB; Collector scrape UP, queue capacity 4MiB each, accepted 10 spans/sent 8/failed export 2; no capacity or exact loss-accounting claim |
 | E04-D2 | PASS (bounded) | /tmp/offscreen-obs-privacy.XTYoisA7; R28 | Positive correlated signals, repeated negative queries and Collector log canary absence; no general application privacy claim |
-| Final specimen validation | PENDING | R28 | Batch rerenders both profiles, validates native configs and checks locked digest equality |
+| Final specimen validation | PASS | /tmp/offscreen-obs-final.YQJL0f4P; R29 | 10 renders, 8 native validations, 5 locked digests; Grafana startup separately observed |
 | Defense / implementation | PENDING | none | No acceptance or authorization implied |
 
 ## Immutable evidence identifiers
