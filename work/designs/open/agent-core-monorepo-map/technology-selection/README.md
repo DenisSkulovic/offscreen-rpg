@@ -1,8 +1,9 @@
-# Technology selection | R5 | 2026-11-27
+# Technology selection | R6 | 2026-11-27
 
 Open research, not a selected dependency or implementation authorization. Original integration baseline 6dbd4c43; current main checked at 1bf121b488b798f57d1f9f0d738d0f6ba0ce4f11; prior design HEAD 24f79f4fce235bae4723cee1e4436ba197a01f65. Current Worker and Workflows pin Temporal 1.24.0. Owner requests serious candidate-specific investigation before selection and independent defense.
 
 ## Read order
+- [Three P0/P1 specimens](experiments/p0-p1/README.md)
 - [Execution architecture comparison (R5)](EXECUTION-ARCHITECTURES.md)
 - [Comparative decision and hard gates](COMPARISON.md)
 - [Vercel AI SDK](vercel-ai-sdk.md)
@@ -14,6 +15,9 @@ Open research, not a selected dependency or implementation authorization. Origin
 - [Deep Agents](deep-agents.md)
 - [Custom controller baseline](custom-controller.md)
 - [Version and evidence register](VERSION-EVIDENCE.md)
+
+## R6 standing
+Provisional P0/P1 source exists for all three; not installed, compiled or executed. Read-only host and artifact preflight is next. P2 onward extends to owned SQL, recovery, delegation and optional caching/observability. No selected technology.
 
 ## R5 standing
 Compare actual running mechanisms rather than feature totals. Vercel first proof candidate, Strands and OpenAI alternatives; no ratified dependency. R4 source/version evidence retained. Shared trusted Activity binding and uncertainty gate are decisive design seams. No runtime evidence added.

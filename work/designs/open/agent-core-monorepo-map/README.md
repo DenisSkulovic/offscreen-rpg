@@ -1,4 +1,4 @@
-# Agent Core and monorepo architecture mapping | R5
+# Agent Core and monorepo architecture mapping | R6
 
 **Status:** open exploratory design; 2026-11-27. Owner and ChatGPT collaborative workshop. Integration baseline `6dbd4c439f1d92733b539cd06a358bb46ca0372e`, main. Clean-slate target thinking; preserve existing source, history, working contracts and data. No implementation commission, canonical promotion, runtime changes or paid calls.
 
@@ -25,6 +25,9 @@ See [candidate dossiers](technology-selection/README.md) for pinned source evide
 
 ## R5: compare actual execution machinery
 [Execution architecture comparison](technology-selection/EXECUTION-ARCHITECTURES.md) traces the same mission across all candidates, identifies the trusted Activity identity/custody seam, and proposes Vercel multi-step generation as the first proof candidate, with Strands and OpenAI as alternatives. This is not an adoption decision; exact artifact resolution and provider-free proof remain open.
+
+## R6: three runtime POCs
+Owner authorizes experimental specimens across Vercel, Strands and OpenAI with existing local infrastructure. [P0/P1](technology-selection/experiments/p0-p1/README.md) contains candidate-specific native Workflow and fake-model source, shared assertion/measurement launcher and read-only preflight. Runtime NOT RUN; npm registry unavailable from planner container. Next action: owner preflight and exact artifact selection, then bounded owned Temporal run; PostgreSQL/Redis tiers follow only after basic discrimination.
 
 ## Working documents
 - [Package map](PACKAGE-MAP.md)
