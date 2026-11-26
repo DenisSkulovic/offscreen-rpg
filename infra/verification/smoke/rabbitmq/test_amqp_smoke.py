@@ -42,6 +42,23 @@ class BufferSocket:
 
 
 class AmqpSmokeTests(unittest.TestCase):
+    def test_start_ok_exact_wire_encoding(self):
+        sock = BufferSocket([
+            frame(0, 10, 10, b"PLAIN en_US"),
+            frame(0, 10, 30, struct.pack(">HIH", 2047, 131072, 60)),
+            frame(0, 10, 41, b"\x00"),
+            frame(1, 20, 11, b"\x00\x00\x00\x00"),
+        ])
+        amqp_smoke.AmqpWire(sock).connect("broker", "user", "pass")
+        expected = (
+            b"\x00\x00\x00\x31"
+            b"\x0ccapabilitiesF\x00\x00\x00\x1f"
+            b"\x1cauthentication_failure_closet\x01"
+            b"\x05PLAIN\x00\x00\x00\x0a\x00user\x00pass"
+            b"\x05en_US"
+        )
+        self.assertEqual(sock.sent[1], frame(0, 10, 11, expected))
+
     def test_declare_mode_cannot_publish(self):
         self.assertTrue(amqp_smoke.declare_has_publish_path("declare", ["x", "declare", "publish"]))
 
