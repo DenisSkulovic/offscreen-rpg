@@ -1,5 +1,8 @@
 section: all
 mode: placeholder
 namespace: placeholder
+brokerName: placeholder
+storage:
+  storageClass: placeholder
 images:
   broker: placeholder-broker

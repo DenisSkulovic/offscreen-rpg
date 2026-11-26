@@ -2,10 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runPlatformCommand } from './commands.mjs';
-import {
-  POSTGRES_OPERATOR_PIN_KEYS,
-  parsePins,
-} from './pins.mjs';
+import { POSTGRES_OPERATOR_PIN_KEYS, parsePins } from './pins.mjs';
 import { readPlatformProfile } from './profile.mjs';
 
 const commonRoot = dirname(fileURLToPath(import.meta.url));
@@ -22,7 +19,7 @@ export const PLATFORM_SERVICES = new Set([
   'observability',
 ]);
 
-const RELEASE_ONLY_SERVICES = new Set(['rabbitmq', 'observability']);
+const RELEASE_ONLY_SERVICES = new Set(['observability']);
 
 /** @type {Record<string, Set<string>>} */
 const SERVICE_SECTIONS = {
@@ -58,8 +55,7 @@ export function allowedNamespacesForService(service, profileId) {
     const ns = profileId === 'release' ? 'lab-a' : profile.namespaces.redis;
     if (typeof ns === 'string' && ns.length > 0) return new Set([ns]);
   }
-  if (service === 'rabbitmq' && profileId === 'release')
-    return new Set(['messaging']);
+  if (service === 'rabbitmq') return new Set([profile.namespaces.rabbitmq]);
   if (service === 'observability' && profileId === 'release')
     return new Set(['lab-a']);
   return new Set();

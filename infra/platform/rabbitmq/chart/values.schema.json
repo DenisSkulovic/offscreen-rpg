@@ -1,11 +1,37 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "required": ["mode", "namespace", "section", "images"],
+  "required": [
+    "mode",
+    "namespace",
+    "brokerName",
+    "section",
+    "storage",
+    "images",
+    "namespaceLabels",
+    "brokerLabels"
+  ],
   "properties": {
-    "mode": { "enum": ["release"] },
+    "mode": { "enum": ["development", "release"] },
     "namespace": { "type": "string", "minLength": 1 },
+    "brokerName": { "type": "string", "minLength": 1 },
     "section": { "enum": ["all", "namespace", "broker"] },
+    "namespaceLabels": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "brokerLabels": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "storage": {
+      "type": "object",
+      "required": ["storageClass"],
+      "properties": {
+        "storageClass": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
     "images": {
       "type": "object",
       "required": ["broker"],

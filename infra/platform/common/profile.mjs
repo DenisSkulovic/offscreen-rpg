@@ -13,6 +13,7 @@ const PLATFORM_HOME = Object.freeze({
       temporal: 'offscreen-dev-temporal',
       objectStorage: 'offscreen-dev-objects',
       redis: 'offscreen-dev-redis',
+      rabbitmq: 'offscreen-dev-rabbitmq',
     }),
   }),
   release: Object.freeze({
@@ -24,6 +25,7 @@ const PLATFORM_HOME = Object.freeze({
       temporal: 'lab-temporal',
       objectStorage: 'lab-objects',
       redis: 'lab-a',
+      rabbitmq: 'offscreen-rabbitmq',
     }),
   }),
 });
@@ -49,6 +51,7 @@ export function readPlatformProfile(profileId) {
       temporal: home.namespaces.temporal,
       objectStorage: home.namespaces.objectStorage,
       redis: home.namespaces.redis ?? null,
+      rabbitmq: home.namespaces.rabbitmq,
     },
   };
 }

@@ -1,0 +1,13 @@
+mode: development
+namespace: offscreen-dev-rabbitmq
+brokerName: rabbitmq
+namespaceLabels:
+  offscreen.dev/owner: offscreen-dev
+  offscreen.rpg/rabbitmq-design: native-v1
+brokerLabels:
+  offscreen.dev/owner: offscreen-dev
+  offscreen.rpg/rabbitmq-design: native-v1
+storage:
+  storageClass: standard
+images:
+  broker: docker.io/library/rabbitmq:4.3.4-management@sha256:eb5295d083325da5929a5ade766684d4019ffd2bce8bc7e43d6f9a05cafc8646

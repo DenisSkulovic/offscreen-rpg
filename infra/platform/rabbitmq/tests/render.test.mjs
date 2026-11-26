@@ -3,17 +3,17 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { runPlatformCommand } from '../../common/commands.mjs';
+import { readPlatformProfile } from '../../common/profile.mjs';
 import {
   assertPlatformRenderRequest,
   documentIdentity,
   lintPlatformChart,
   renderPlatformDocuments,
 } from '../../common/render.mjs';
+import { BROKER_IMAGE_PIN } from '../vendor-bundles.mjs';
 
 const rabbitmqRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const chartRoot = join(rabbitmqRoot, 'chart');
-
-const BROKER_IMAGE = 'docker.io/library/rabbitmq:4.3.4-management';
 
 function helmRun(command, args, options) {
   if (command !== 'helm') {
@@ -38,92 +38,105 @@ function docMap(docs) {
   return map;
 }
 
-test('lintPlatformChart succeeds for rabbitmq release', () => {
-  lintPlatformChart(
-    { service: 'rabbitmq', profile: 'release' },
-    { chartRoot, run: helmRun },
-  );
-});
+/** @param {'dev' | 'release'} profile */
+function expectedNamespace(profile) {
+  return readPlatformProfile(profile).namespaces.rabbitmq;
+}
 
-test('assertPlatformRenderRequest refuses rabbitmq on dev profile', () => {
-  assert.throws(
-    () => assertPlatformRenderRequest('rabbitmq', 'dev', 'namespace'),
-    /release-only/,
-  );
-});
-
-test('release namespace render matches disposable messaging namespace', () => {
-  const docs = renderPlatformDocuments(
-    { service: 'rabbitmq', profile: 'release', section: 'namespace' },
-    { chartRoot, run: helmRun },
-  );
-  assert.equal(docs.length, 1);
-  assert.equal(docs[0].kind, 'Namespace');
-  assert.equal(docs[0].metadata.name, 'messaging');
-  assert.deepEqual(docs[0].metadata.labels, {
+/** @param {'dev' | 'release'} profile */
+function expectedOwnerLabels(profile) {
+  if (profile === 'dev') {
+    return {
+      'offscreen.dev/owner': 'offscreen-dev',
+      'offscreen.rpg/rabbitmq-design': 'native-v1',
+    };
+  }
+  return {
     'offscreen.rpg/lab': 'disposable',
-  });
-});
+    'offscreen.rpg/rabbitmq-design': 'native-v1',
+  };
+}
 
-test('release broker render matches lab-broker identity storage image resources', () => {
-  const docs = renderPlatformDocuments(
-    { service: 'rabbitmq', profile: 'release', section: 'broker' },
-    { chartRoot, run: helmRun },
-  );
-  assert.equal(docs.length, 1);
-  const broker = docs[0];
+/** @param {'dev' | 'release'} profile */
+function expectedStorageClass(profile) {
+  return profile === 'dev' ? 'standard' : 'local-path';
+}
+
+/** @param {'dev' | 'release'} profile */
+function assertBrokerDocument(broker, profile) {
+  const namespace = expectedNamespace(profile);
   assert.equal(broker.kind, 'RabbitmqCluster');
-  assert.equal(broker.metadata.name, 'lab-broker');
-  assert.equal(broker.metadata.namespace, 'messaging');
+  assert.equal(broker.metadata.name, 'rabbitmq');
+  assert.equal(broker.metadata.namespace, namespace);
+  assert.deepEqual(broker.metadata.labels, expectedOwnerLabels(profile));
   assert.equal(broker.spec.replicas, 1);
-  assert.equal(broker.spec.image, BROKER_IMAGE);
-  assert.equal(broker.spec.delayStartSeconds, 5);
+  assert.equal(broker.spec.image, BROKER_IMAGE_PIN);
   assert.deepEqual(broker.spec.service, { type: 'ClusterIP' });
   assert.deepEqual(broker.spec.persistence, {
-    storageClassName: 'local-path',
-    storage: '1Gi',
+    storageClassName: expectedStorageClass(profile),
+    storage: '5Gi',
   });
   assert.deepEqual(broker.spec.resources, {
     requests: { cpu: '200m', memory: '1Gi' },
     limits: { cpu: '500m', memory: '1Gi' },
   });
-  assert.deepEqual(broker.spec.secretBackend, {
-    externalSecret: { name: 'lab-broker-user' },
+  assert.equal(broker.spec.secretBackend, undefined);
+  assert.equal(broker.spec.rabbitmq, undefined);
+  assert.equal(broker.spec.override, undefined);
+}
+
+for (const profile of /** @type {const} */ (['dev', 'release'])) {
+  test(`lintPlatformChart succeeds for rabbitmq ${profile}`, () => {
+    lintPlatformChart(
+      { service: 'rabbitmq', profile },
+      { chartRoot, run: helmRun },
+    );
   });
-  assert.match(
-    broker.spec.rabbitmq.additionalConfig,
-    /default_queue_type = classic/,
+
+  test(`${profile} namespace render matches native namespace identity and labels`, () => {
+    const docs = renderPlatformDocuments(
+      { service: 'rabbitmq', profile, section: 'namespace' },
+      { chartRoot, run: helmRun },
+    );
+    assert.equal(docs.length, 1);
+    const namespace = docs[0];
+    const name = expectedNamespace(profile);
+    assert.equal(namespace.kind, 'Namespace');
+    assert.equal(namespace.metadata.name, name);
+    assert.deepEqual(namespace.metadata.labels, expectedOwnerLabels(profile));
+  });
+
+  test(`${profile} broker render matches native broker spec`, () => {
+    const docs = renderPlatformDocuments(
+      { service: 'rabbitmq', profile, section: 'broker' },
+      { chartRoot, run: helmRun },
+    );
+    assert.equal(docs.length, 1);
+    assertBrokerDocument(docs[0], profile);
+  });
+
+  test(`${profile} all render emits namespace and broker only`, () => {
+    const docs = renderPlatformDocuments(
+      { service: 'rabbitmq', profile, section: 'all' },
+      { chartRoot, run: helmRun },
+    );
+    assert.equal(docs.length, 2);
+    const byId = docMap(docs);
+    const namespace = expectedNamespace(profile);
+    assert.ok(byId.get(`Namespace/-/${namespace}`));
+    assert.ok(byId.get(`RabbitmqCluster/${namespace}/rabbitmq`));
+  });
+}
+
+test('assertPlatformRenderRequest allows rabbitmq on dev profile', () => {
+  assert.doesNotThrow(() =>
+    assertPlatformRenderRequest('rabbitmq', 'dev', 'namespace'),
   );
-  assert.match(
-    broker.spec.rabbitmq.additionalConfig,
-    /loopback_users\.guest = true/,
-  );
-  const container =
-    broker.spec.override.statefulSet.spec.template.spec.containers[0];
-  assert.equal(container.name, 'rabbitmq');
-  assert.deepEqual(container.volumeMounts, [
-    {
-      mountPath: '/etc/rabbitmq/definitions.json',
-      subPath: 'definitions.json',
-      name: 'definitions',
-    },
-  ]);
-  const volumes = broker.spec.override.statefulSet.spec.template.spec.volumes;
-  assert.deepEqual(volumes, [
-    {
-      name: 'definitions',
-      configMap: { name: 'lab-broker-definitions' },
-    },
-  ]);
 });
 
-test('release all render emits namespace and broker only', () => {
-  const docs = renderPlatformDocuments(
-    { service: 'rabbitmq', profile: 'release', section: 'all' },
-    { chartRoot, run: helmRun },
+test('unsupported rabbitmq section is refused by renderer guard', () => {
+  assert.throws(
+    () => assertPlatformRenderRequest('rabbitmq', 'dev', 'cluster'),
+    /unsupported section/,
   );
-  assert.equal(docs.length, 2);
-  const byId = docMap(docs);
-  assert.ok(byId.get('Namespace/-/messaging'));
-  assert.ok(byId.get('RabbitmqCluster/messaging/lab-broker'));
 });
