@@ -726,3 +726,45 @@ test('runVerifiedSmokeNamespaceCleanup deletes proof namespace with precondition
   const body = JSON.parse(String(deleteInput).trim());
   assert.equal(body.preconditions.uid, NAMESPACE_UID);
 });
+
+test('cleanup recognizes native Endpoints and event aliases but refuses foreign Endpoints', () => {
+  assert.equal(validateCleanupInventory([
+    'endpoints/redis',
+    'event.events.k8s.io/redis.123',
+    'event/redis.123',
+  ]).ok, true);
+  assert.equal(validateCleanupInventory(['endpoints/foreign']).ok, false);
+});
+
+test('cleanup permits only the exact successful core Endpoints warning', async () => {
+  const target = { ...releaseTarget, namespace: PROOF_NAMESPACE };
+  const warning = 'Warning: v1 Endpoints is deprecated in v1.33+; use discovery.k8s.io/v1 EndpointSlice';
+  for (const [resource, stderr, success, expected] of [
+    ['endpoints', warning, true, true],
+    ['endpoints', warning + '\nWarning: other', true, false],
+    ['endpoints', warning, false, false],
+    ['services', warning, true, false],
+  ]) {
+    const runner = buildHappyProofRunner(target);
+    let deleted = false;
+    const result = await runVerifiedSmokeNamespaceCleanup(target, 'release', {
+      run: (command, args) => {
+        if (args.includes('api-resources')) return ok(resource + '\n');
+        if (args.includes('get') && args.includes(resource)) {
+          return { ...ok('endpoints/redis\n'), ok: success, stderr };
+        }
+        if (deleted && args.includes('--ignore-not-found')) return ok('');
+        return runner.run(command, args);
+      },
+      runWrite: async () => {
+        deleted = true;
+        return ok('');
+      },
+      remainingMs: () => 600_000,
+      namespaceIdentity: { uid: NAMESPACE_UID },
+      proofNonce: PROOF_NONCE,
+    });
+    assert.equal(result.ok, expected, JSON.stringify(result));
+    assert.equal(deleted, expected);
+  }
+});

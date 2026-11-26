@@ -53,6 +53,7 @@ const DOCUMENTED_NAMESPACE_DEFAULTS = new Set([
 const OWNED_STATIC_OBJECTS = [
   `deployment.apps/${DEPLOYMENT_NAME}`,
   `service/${SERVICE_NAME}`,
+  `endpoints/${SERVICE_NAME}`,
   `configmap/${CONFIGMAP_NAME}`,
   `pod/${CLIENT_POD_NAME}`,
   `secret/${HELM_RELEASE_SECRET}`,
@@ -210,7 +211,7 @@ export function validateCleanupInventory(listed) {
     if (OWNED_STATIC_OBJECTS.includes(item)) {
       continue;
     }
-    if (item.startsWith('event/') || item.startsWith('events.')) {
+    if (item.startsWith('event/') || item.startsWith('event.events.k8s.io/') || item.startsWith('events.')) {
       continue;
     }
     if (item.startsWith('replicaset.apps/')) {
@@ -294,7 +295,11 @@ async function listNamespacedInventory(runner, target, types) {
     if (!resolved.ok) {
       return { ok: false, reason: 'inventory-type-list-failed', type };
     }
-    if ((resolved.stderr ?? '').trim().length > 0) {
+    const stderr = (resolved.stderr ?? '').trim();
+    const knownEndpointsWarning =
+      type === 'endpoints' &&
+      stderr === 'Warning: v1 Endpoints is deprecated in v1.33+; use discovery.k8s.io/v1 EndpointSlice';
+    if (stderr.length > 0 && !knownEndpointsWarning) {
       return { ok: false, reason: 'inventory-type-list-stderr', type };
     }
     const chunk = (resolved.stdout ?? '')
@@ -717,7 +722,9 @@ export async function runVerifiedSmokeNamespaceCleanup(
   if (!inventoryListed.ok) {
     return {
       ok: false,
-      detail: inventoryListed.reason ?? 'proof-inventory-list',
+      detail: inventoryListed.type
+        ? `${inventoryListed.reason}:${inventoryListed.type}`
+        : inventoryListed.reason ?? 'proof-inventory-list',
       retainReceipt: true,
     };
   }
