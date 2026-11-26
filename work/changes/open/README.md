@@ -1,5 +1,7 @@
 # Open Changes | current and near-term
 
+[RABBITMQ-NATIVE](2026-11-26--rabbitmq-native/CHANGE.md): owner-accepted R10, source-only commission; live acceptance and join held.
+
 [GATEWAY-NATIVE](2026-11-26--gateway-native-baseline/CHANGE.md): owner-selected local gateway renewal, source-only ready upon dispatch; live and join held. Independent committee waived for this scope. No queue change.
 
 [REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): T08a–T08d source corrections implemented on `change/redis-native-baseline-renewal`; isolated lifecycle/fault/idempotency and measured preservation passed; structural integration authorized; residual assurance and canonical cutover open. INF60 suspended. No queue change.

@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+[RABBITMQ-NATIVE](open/2026-11-26--rabbitmq-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and fresh release separately gated.
+
 [OBJECT-STORAGE-NATIVE](open/2026-11-26--object-storage-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and occupied legacy admission separately gated.
 
 [INF51 autonomous verification](archive/2026-11/platform-operations/2026-11-24--inf51-autonomous-verification/CHANGE.md) — Done source, full lifecycle transferred to [INF52](archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) (source Done; live NOT-RUN).
