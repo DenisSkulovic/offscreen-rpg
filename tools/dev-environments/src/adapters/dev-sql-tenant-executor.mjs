@@ -120,6 +120,24 @@ function catalogAllowlist(knownSlots) {
   return allowed;
 }
 
+function admitPlatformDatabases(catalog, adapter, allowed) {
+  const names = ['temporal', 'temporal_visibility'];
+  const present = names.filter(name => Object.hasOwn(catalog.databases, name));
+  if (present.length === 0 && !Object.hasOwn(catalog.roles, 'temporal')) return null;
+  if (present.length !== names.length ||
+      !Object.hasOwn(catalog.roles, 'temporal') ||
+      names.some(name => {
+        const db = catalog.databases[name];
+        return db.owner !== 'temporal' || db.allowConnections !== true ||
+          db.publicConnect !== false || db.publicTemporary !== false ||
+          !Array.isArray(db.connect) || db.connect.some(role => role !== 'temporal');
+      })) return stopped('temporal-persistence-unverified', 'partial or unsafe SQL inventory');
+  const proof = adapter.verifyTemporalPersistence?.();
+  if (proof?.ok !== true) return stopped('temporal-persistence-unverified', 'platform ownership or isolation not proven');
+  for (const name of names) allowed.add(name);
+  return null;
+}
+
 function proveKnownTenantsBeforeWrites(catalog, knownSlots) {
   for (const slotId of knownSlots) {
     const names = deriveDevSqlTenant(slotId);
@@ -309,6 +327,8 @@ export function executeDevSqlTenants({
     return stopped('dev-login-unusable', 'database dev');
 
   const allowed = catalogAllowlist(knownSlots);
+  const platform = admitPlatformDatabases(catalog, adapter, allowed);
+  if (platform) return platform;
   const unexpected = Object.keys(catalog.databases).filter(
     (name) => !allowed.has(name),
   );
