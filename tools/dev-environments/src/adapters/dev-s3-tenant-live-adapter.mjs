@@ -168,7 +168,7 @@ export function parseWeedBucketList(text) {
 
 export function parseWeedUserList(text) {
   const source = String(text ?? '').trim();
-  if (!source) return [];
+  if (!source) throw new Error('weed user inventory missing');
   const start = source.indexOf('[');
   if (start < 0) {
     const error = new Error('weed user list format is not recognized');
@@ -188,9 +188,10 @@ export function parseWeedUserList(text) {
     error.code = 'weed-list-unreadable';
     throw error;
   }
-  return parsed
-    .map((item) => item?.name)
-    .filter((name) => typeof name === 'string' && name.length > 0);
+  const names = parsed.map(item => item?.name);
+  if (names.some(name => typeof name !== 'string' || !name) ||
+      new Set(names).size !== names.length) throw new Error('weed inventory malformed');
+  return names;
 }
 
 /**
@@ -354,9 +355,11 @@ export function createDevS3LiveAdapter({
       return found ? { owner: found.owner, name: found.name } : null;
     },
     user(name) {
+      const inventory = parseWeedUserList(weed('s3.user.list\nexit\n', exec));
+      if (!inventory.includes(name)) return null;
       const text = weed(`s3.user.show -name ${name}\nexit\n`, exec);
       const shown = parseWeedUserShow(text);
-      if (!shown || shown.name !== name) return null;
+      if (!shown || shown.name !== name) throw new Error('weed user detail mismatch');
       return { owner: name, ...shown };
     },
     secret(name) {
@@ -412,7 +415,7 @@ export function createDevS3LiveAdapter({
       return null;
     },
     groupsEmpty() {
-      const text = weed('s3.user.list -groups\nexit\n', exec);
+      const text = weed('s3.group.list\nexit\n', exec);
       if (/unavailable|not found|error/i.test(text)) return null;
       const parsed = parseWeedUserList(text);
       return parsed.length === 0;
@@ -451,11 +454,12 @@ export function createDevS3LiveAdapter({
             accessKeyId: decodedAccess,
           };
         }
+        const policyInventory = this.policyInventory();
         return {
           bucket: bucket ? { name: names.bucket, owner: bucket.owner } : null,
           user,
-          policyInventory: this.policyInventory(),
-          policyDocument: this.policyDocument(names),
+          policyInventory,
+          policyDocument: policyInventory.includes(names.policyName) ? this.policyDocument(names) : null,
           groupsEmpty: this.groupsEmpty(),
           secret,
           bucketPolicies: this.bucketPolicies(),
