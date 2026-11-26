@@ -16,6 +16,7 @@ Existing classifications below are historical starting points, not fresh disposi
 
 | Item | Status |
 | --- | --- |
+| [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
 | [RabbitMQ platform](open/rabbitmq-platform/README.md) | R10 independently defended and owner accepted; source Change commissioned, retained for acceptance traceability |
 | [Code architecture health](open/code-architecture-health/README.md) | Unresolved code ownership/trust-boundary investigation; concrete CQ Change packets remain separate |
 | [Story creation and writer's workbench](open/story-creation-and-writers-workbench/README.md) | **Promoted to permanent wiki on integration branch:** Storyteller/Library/Play target now lives in `docs/product/` and `docs/technical/`. WR01/WRD02–WRD04 are archived Done; this research dossier is temporarily retained for source traceability pending owner review, then becomes a retirement candidate |
