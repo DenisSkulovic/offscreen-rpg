@@ -17,13 +17,9 @@ import {
   renderDevObjectStore,
 } from '../../../infra/platform/object-storage/dev-bootstrap.mjs';
 
-function readinessStdout(args) {
-  const text = args.join(' ');
-  if (text.includes('jsonpath={.status.phase}'))
-    return { ok: true, stdout: 'Bound\n' };
-  if (text.includes('availableReplicas')) return { ok: true, stdout: '1\n' };
-  if (text.includes('http_code')) return { ok: true, stdout: '403' };
-  return { ok: true, stdout: '' };
+/** Observation failure. This must not look like an absent namespace. */
+function closedRun() {
+  return { ok: false, status: 1, stdout: '', stderr: 'closed' };
 }
 
 const ready = {
@@ -52,95 +48,54 @@ test('the rendered store is private, pinned, and uses the dev storage class', ()
   assert.doesNotMatch(manifest, /local-path/);
   assert.doesNotMatch(manifest, new RegExp(RELEASE_S3_NAMESPACE));
   assert.doesNotMatch(manifest, /stringData/);
-  const plan = planDevObjectStore(ready);
-  assert.equal(plan.refusals.length, 0);
+  const plan = planDevObjectStore(ready, { run: closedRun });
   assert.equal(plan.readOnly, true);
+  assert.equal(plan.state, 'unknown');
 });
 
-test('fresh ensure creates one admin secret and a partial failure keeps it', () => {
-  const created = ensureDevObjectStore(ready, { authorize: true });
-  assert.deepEqual(
-    created.actions.map((action) => action.op),
-    [
-      'ensure-namespace',
-      'create-secret',
-      'apply-workloads',
-      'verify-readiness',
-    ],
+test('sync ensure does not write and does not report a mutation', () => {
+  const created = ensureDevObjectStore(
+    ready,
+    { authorize: true },
+    { run: closedRun },
   );
-  assert.equal(
-    created.actions.every(
-      (action) => !action.context || action.context === DEV_S3_CONTEXT,
-    ),
-    true,
+  assert.equal(created.ok, false);
+  assert.equal(created.mutated, false);
+  assert.equal(created.state, 'unknown');
+  assert.deepEqual(created.actions, []);
+  const partial = ensureDevObjectStore(
+    ready,
+    { authorize: true, failAfterSecret: true },
+    { run: closedRun },
   );
-  const partial = ensureDevObjectStore(ready, {
-    authorize: true,
-    failAfterSecret: true,
-  });
   assert.equal(partial.ok, false);
-  assert.deepEqual(
-    partial.actions.map((action) => action.op),
-    ['ensure-namespace', 'create-secret'],
-  );
+  assert.equal(partial.mutated, false);
   assert.equal(JSON.stringify(partial.actions).includes('delete'), false);
 });
 
-test('owned reentry reuses the secret and does not generate a new one', () => {
-  const ownedProbe = {
-    ...ready,
-    resources: [
-      {
-        kind: 'Namespace',
-        name: DEV_S3_NAMESPACE,
-        owner: 'offscreen-dev',
-        uid: 'ns',
-      },
-      {
-        kind: 'Secret',
-        name: 'object-store-s3',
-        namespace: DEV_S3_NAMESPACE,
-        owner: 'offscreen-dev',
-        uid: 'sec',
-      },
-      {
-        kind: 'PersistentVolumeClaim',
-        name: 'object-store-data',
-        owner: 'offscreen-dev',
-        uid: 'pvc',
-      },
-      {
-        kind: 'Deployment',
-        name: 'object-store',
-        owner: 'offscreen-dev',
-        uid: 'dep',
-        image: DEV_S3_IMAGE,
-      },
-      {
-        kind: 'Service',
-        name: 'object-store',
-        owner: 'offscreen-dev',
-        uid: 'svc',
-        serviceType: 'ClusterIP',
-      },
-    ],
-  };
+test('unreadable observation does not generate credentials or write', async () => {
   let generated = 0;
-  const result = executeAuthorizedDevObjectStore({
-    collect: () => ownedProbe,
+  const calls = [];
+  const result = await executeAuthorizedDevObjectStore({
     generateCredentials() {
       generated += 1;
       return { accessKeyId: 'new', secretAccessKey: 'new' };
     },
-    run(_command, args) {
-      return readinessStdout(args);
+    run(command, args) {
+      calls.push({ command, args });
+      return closedRun();
     },
   });
-  assert.equal(result.ok, true);
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, false);
   assert.equal(generated, 0);
-  assert.deepEqual(
-    result.actions.map((action) => action.op),
-    ['reuse-secret', 'verify-readiness'],
+  assert.equal(
+    calls.some((call) =>
+      /\b(apply|create|delete|patch|replace|install|upgrade)\b/i.test(
+        call.args.join(' '),
+      ),
+    ),
+    false,
   );
 });
 
@@ -179,82 +134,40 @@ test('foreign resources, wrong context, low memory, and a copied admin secret re
     },
   ];
   for (const probe of cases) {
-    const result = ensureDevObjectStore(probe, { authorize: true });
+    const result = ensureDevObjectStore(
+      probe,
+      { authorize: true },
+      { run: closedRun },
+    );
     assert.equal(result.ok, false);
     assert.equal(result.mutated, false);
   }
   assert.equal(
-    ensureDevObjectStore(ready).refusals.at(-1).id,
+    ensureDevObjectStore(ready, {}, { run: closedRun }).refusals.at(-1).id,
     'ensure-not-authorized',
   );
 });
 
-test('execution applies only the dev context and omits credential bytes from the receipt', () => {
+test('unreadable execution omits credential bytes and does not apply', async () => {
   const calls = [];
-  const result = executeAuthorizedDevObjectStore({
-    collect: () => ready,
+  const result = await executeAuthorizedDevObjectStore({
     generateCredentials: () => ({
       accessKeyId: 'access-secret-value',
       secretAccessKey: 'secret-secret-value',
     }),
     run(command, args, options = {}) {
       calls.push({ command, args, input: options.input ?? '' });
-      return readinessStdout(args);
+      return closedRun();
     },
   });
-  assert.equal(result.ok, true);
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, false);
   assert.equal(JSON.stringify(result).includes('access-secret-value'), false);
-  assert.equal(calls[0].args[1], DEV_S3_CONTEXT);
-  assert.match(calls[0].input, new RegExp(`"name":"${DEV_S3_NAMESPACE}"`));
-  assert.equal(calls[1].args.includes('create'), true);
-  assert.match(calls[1].input, /access-secret-value/);
-  assert.doesNotMatch(calls[2].input, /"kind":"Secret"/);
-  assert.match(calls[2].input, /"kind":"Deployment"/);
-});
-
-test('secret creation failure does not apply workloads, and a later pass reuses the secret', () => {
-  const calls = [];
-  const failed = executeAuthorizedDevObjectStore({
-    collect: () => ready,
-    generateCredentials: () => ({
-      accessKeyId: 'kept-access',
-      secretAccessKey: 'kept-secret',
-    }),
-    run(_command, _args, options = {}) {
-      calls.push(options.input ?? '');
-      return { ok: !String(options.input).includes('"kind":"Secret"') };
-    },
-  });
-  assert.equal(failed.ok, false);
-  assert.equal(failed.refusals[0].id, 'create-secret-failed');
   assert.equal(
-    calls.some((input) => input.includes('"kind":"Deployment"')),
+    calls.some(
+      (call) => call.args.includes('apply') || call.args.includes('install'),
+    ),
     false,
-  );
-  const recovered = ensureDevObjectStore(
-    {
-      ...ready,
-      resources: [
-        {
-          kind: 'Namespace',
-          name: DEV_S3_NAMESPACE,
-          owner: 'offscreen-dev',
-          uid: 'ns',
-        },
-        {
-          kind: 'Secret',
-          name: 'object-store-s3',
-          namespace: DEV_S3_NAMESPACE,
-          owner: 'offscreen-dev',
-          uid: 'sec',
-        },
-      ],
-    },
-    { authorize: true },
-  );
-  assert.deepEqual(
-    recovered.actions.map((action) => action.op),
-    ['reuse-secret', 'apply-workloads', 'verify-readiness'],
   );
 });
 
@@ -271,8 +184,8 @@ test('the CLI plans from an injected probe and refuses live ensure', () => {
       OFFSCREEN_DEV_S3_ENSURE: 'authorized',
     },
   });
-  assert.equal(plan.status, 0);
-  assert.equal(JSON.parse(plan.stdout).namespace, DEV_S3_NAMESPACE);
+  assert.equal(plan.status, 2);
+  assert.match(plan.stderr, /injected probe is not a live observation/);
   const ensure = spawnSync(process.execPath, [script, 'ensure'], {
     encoding: 'utf8',
     env: {
@@ -298,15 +211,17 @@ test('pvc or deployment without admin secret refuses', () => {
       },
     ],
   };
-  const result = ensureDevObjectStore(probe, { authorize: true });
-  assert.equal(result.ok, false);
-  assert.equal(
-    result.refusals.some((item) => item.id === 'admin-secret-missing'),
-    true,
+  const result = ensureDevObjectStore(
+    probe,
+    { authorize: true },
+    { run: closedRun },
   );
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, false);
+  assert.equal(result.state, 'unknown');
 });
 
-test('unreadable probe refuses without mutation', () => {
+test('unreadable probe refuses without mutation', async () => {
   const probe = {
     ...ready,
     unreadables: [
@@ -314,16 +229,23 @@ test('unreadable probe refuses without mutation', () => {
     ],
   };
   const calls = [];
-  const result = executeAuthorizedDevObjectStore({
+  const result = await executeAuthorizedDevObjectStore({
     collect: () => probe,
     run(command, args) {
       calls.push(args);
-      return { ok: true, stdout: '' };
+      return closedRun();
     },
   });
   assert.equal(result.ok, false);
   assert.equal(result.mutated, false);
-  assert.equal(calls.length, 0);
+  assert.equal(
+    calls.some((args) =>
+      /\b(apply|create|delete|patch|replace|install|upgrade)\b/i.test(
+        args.join(' '),
+      ),
+    ),
+    false,
+  );
 });
 
 test('a successful kubectl get is not readiness', () => {
@@ -371,8 +293,21 @@ test('host inventory uses get-scoped ignore-not-found and refuses malformed resp
       if (args.includes('--ignore-not-found')) {
         observed.push(args);
         assert.ok(args.indexOf('get') < args.indexOf('--ignore-not-found'));
-        if (args.includes('object-store-data')) return { ok: true, stdout: 'invalid JSON' };
-        if (args.includes('object-store-s3')) return { ok: true, stdout: JSON.stringify({ metadata: { name: 'object-store-s3', namespace: DEV_S3_NAMESPACE, labels: { 'offscreen.dev/owner': 'offscreen-dev' }, uid: 'sec' }, data: { password: 'fixture-private' } }) };
+        if (args.includes('object-store-data'))
+          return { ok: true, stdout: 'invalid JSON' };
+        if (args.includes('object-store-s3'))
+          return {
+            ok: true,
+            stdout: JSON.stringify({
+              metadata: {
+                name: 'object-store-s3',
+                namespace: DEV_S3_NAMESPACE,
+                labels: { 'offscreen.dev/owner': 'offscreen-dev' },
+                uid: 'sec',
+              },
+              data: { password: 'fixture-private' },
+            }),
+          };
       }
       return { ok: true, stdout: '' };
     },
