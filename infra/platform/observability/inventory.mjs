@@ -198,21 +198,10 @@ function readNamespaceObservation(identity, run, deadline, now) {
     ],
     { timeoutMs: remainingMs(deadline, now) },
   );
-  if (result.missing) {
-    throwUnreadable('namespace-missing');
-  }
-  if (result.timedOut) {
-    throwUnreadable('timeout');
-  }
-  if (result.stderr && result.stderr.trim().length > 0) {
-    throwUnreadable('namespace-stderr');
-  }
+  refuseRead(result, 'namespace');
   const trimmed = (result.stdout ?? '').trim();
   if (trimmed.length === 0) {
     return { absent: true };
-  }
-  if (!result.ok) {
-    throwUnreadable('namespace');
   }
   try {
     const object = JSON.parse(trimmed);
@@ -292,10 +281,20 @@ function listNamespacedObjects(identity, resource, run, deadline, now) {
  * @param {number} deadline
  * @param {() => number} now
  */
-function listPersistentVolumes(run, deadline, now) {
+function listPersistentVolumes(identity, run, deadline, now) {
   const result = run(
     'kubectl',
-    ['--request-timeout=10s', 'get', 'pv', '-o', 'json'],
+    [
+      '--kubeconfig',
+      identity.snapshotPath,
+      '--context',
+      identity.contextName,
+      '--request-timeout=10s',
+      'get',
+      'pv',
+      '-o',
+      'json',
+    ],
     { timeoutMs: remainingMs(deadline, now) },
   );
   refuseRead(result, 'pv');
@@ -513,7 +512,7 @@ export function collectInventory(identity, artifacts, deps = {}) {
     }
   }
 
-  const persistentVolumes = listPersistentVolumes(run, deadline, now);
+  const persistentVolumes = listPersistentVolumes(identity, run, deadline, now);
   /** @type {{ kind: string, name: string, namespace: string, uid?: string }[]} */
   const legacy = readLegacyInNamespace(
     identity,
