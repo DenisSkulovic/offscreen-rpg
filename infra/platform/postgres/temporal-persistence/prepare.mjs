@@ -429,3 +429,53 @@ export function prepareFreshTemporalPersistence(
   // Return only identity; the Temporal namespace owner projects the Secret.
   return { namespace: profile.namespaces.postgres, secretName: SECRET, secretVersion };
 }
+
+
+/** Read-only admission of an already provisioned Temporal persistence pair.
+ * No adoption, authentication, repair or credential projection.
+ */
+export function verifyExistingTemporalPersistence(profileId, { run = runPlatformCommand } = {}) {
+  try {
+    const profile = readPlatformProfile(profileId);
+    assertPlatformTarget(profileId, { run });
+    const access = createAccess(profile, run);
+    const declarations = readResources(profile);
+    const secret = access.requireObject('secret', SECRET);
+    if (!secret.metadata?.uid || !secret.metadata?.resourceVersion ||
+        secret.metadata?.deletionTimestamp ||
+        secret.type !== 'kubernetes.io/basic-auth' ||
+        secret.metadata?.labels?.['cnpg.io/reload'] !== 'true' ||
+        !Object.entries(declarations[0].metadata.labels).every(
+          ([key, value]) => secret.metadata?.labels?.[key] === value,
+        )) return { ok: false, reason: 'temporal-credential-identity' };
+    for (const declaration of declarations) {
+      const role = declaration.kind === 'DatabaseRole';
+      const type = role ? ROLE_RESOURCE : DATABASE_RESOURCE;
+      const expected = { ...declaration, spec: {
+        ...declaration.spec, ...(role ? { login: true } : { allowConnections: true }),
+      } };
+      const actual = access.requireObject(type, expected.metadata.name);
+      if (!actual.metadata?.uid || actual.metadata?.deletionTimestamp ||
+          !Number.isInteger(actual.metadata?.generation) ||
+          !sameDeclaration(type, expected, actual) ||
+          actual.status?.applied !== true ||
+          actual.status?.observedGeneration !== actual.metadata.generation ||
+          (role && actual.status?.secretResourceVersion !== secret.metadata.resourceVersion)) {
+        return { ok: false, reason: 'temporal-declaration-identity' };
+      }
+    }
+    for (const database of DATABASES) verifyDatabase(access, database, true);
+    if (access.sql(`SELECT EXISTS (
+      SELECT FROM pg_roles WHERE rolname = 'temporal' AND rolcanlogin
+      AND NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls OR rolinherit)
+      AND NOT EXISTS (SELECT FROM pg_auth_members WHERE member = pg_roles.oid OR roleid = pg_roles.oid)
+    ) AND NOT EXISTS (
+      SELECT FROM pg_database WHERE NOT datistemplate AND datallowconn
+      AND datname NOT IN ('temporal', 'temporal_visibility')
+      AND has_database_privilege('temporal', oid, 'CONNECT')
+    )`) !== 't') return { ok: false, reason: 'temporal-role-isolation' };
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: 'temporal-persistence-unverified' };
+  }
+}
