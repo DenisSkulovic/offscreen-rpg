@@ -1,3 +1,16 @@
+# Source receipt
+
+Cursor source implementation is on `change/rabbitmq-native-source`. Record the tested SHA in the commit that adds this note. Commands actually run, all from that worktree:
+
+- `node --test infra/platform/rabbitmq/tests/*.test.mjs infra/environments/platform-plan.test.mjs infra/environments/infra-cli.test.mjs infra/verification/provisioning.test.mjs` — 104 pass, 0 fail, at T04 commit `f7bdba1a`.
+- `node --test infra/verification/smoke/rabbitmq/proof.test.mjs` — 21 pass, 0 fail.
+- `python3 -m unittest discover -s infra/verification/smoke/rabbitmq -p 'test_*.py'` — 10 OK.
+- `node --test infra/verification/verify.test.mjs infra/verification/diagnostic.test.mjs` — 22 pass, reported by T06.
+- `helm lint` both chart profiles — OK, reported by T06.
+- `scripts/repo-tools/check-lab-manifests.test.mjs` — FAIL, reported as a pre-existing temporal chart discovery miss. Not reclassified as a RabbitMQ pass.
+
+Live rows below are NOT RUN. No cluster writes were made.
+
 # Acceptance matrix
 Source and cheap fixture proof (Cursor): T01–T06 exact canonical negative matrix, actual Helm render both profiles, real local lock/subprocess and host receipt interruption fixtures, wire parser unittest; no cluster. Record command/results and exact SHA. Heavy proof (ChatGPT + owner): broad diagnostic source suite, guarded live batch only after explicit permission and actual tested source receipt. 
 1. Verify current branch SHA, canonical dev/release target guards, complete read-only inventory, vendor hashes and pinned platform image identities. Preserve volume/context and unrelated service snapshots. Stop unknown or occupied dev; no reset.

@@ -23,7 +23,7 @@ Agent reads this catalog and current operator entry, verifies HEAD, checkout, ho
 | PL-02 | object storage alone | object-storage installers/readiness | endpoint ready; disposable authenticated PUT/GET optional | source; live NOT-RUN |
 | PL-03 | Temporal alone | native Helm installer/readiness; existing CNPG prerequisite | both dedicated stores prepared, server SERVING; no application SQL schema dependency | dev component live-observed; release/cold cluster NOT-RUN |
 | PL-04 | Redis alone in either env | redis chart supports dev and release | PING/SET/GET/TTL on disposable key; no app or other service | dev/release diagnostic observation supported; authenticated acceptance NOT-RUN |
-| PL-05 | RabbitMQ alone in either env | rabbitmq release installer | publish/consume disposable queue; no app | dev target-only, release live NOT-RUN |
+| PL-05 | RabbitMQ alone in either env | `infra/platform/rabbitmq/install.mjs` plan/ensure/status; optional `--rabbitmq` provisioning | structural census + authorized AMQP protocol fixture; no app consumer | individual source (`rabbitmq`, `rabbitmq-render`, `rabbitmq-proof` suites); live install, fresh release runtime, migration, fault proof **NOT-RUN** |
 | PL-06 | Observability alone | observability release installer | synthetic OTLP trace received, no app | dev target-only, release live NOT-RUN |
 | PL-07 | Gateway selection | gateway release installer | loopback route fixture passes; no app inferred | release live NOT-RUN; dev gateway only if selected use case |
 | PL-08 | arbitrary supported combination; none/core/all | platform-plan fixed core today | exact selected dependency plan; omission never removes existing service | target-only |
@@ -73,7 +73,11 @@ pnpm infra:verify --suite source --json
 - `node --test tools/dev-environments/test/*.test.mjs` (inspect actual test prerequisites; do not invoke standalone trial CLIs).
 - `node --test infra/workloads/tests/*.test.mjs` (Helm required for render tests).
 - `node --test infra/environments/release/test/*.test.mjs`.
-- Service-specific probes under smoke/{postgres,object-storage,redis,rabbitmq,observability,gateway} (legacy Temporal smoke retired; replacement not implemented); use linked current runbooks and explicit scope.
+- `node --test infra/platform/rabbitmq/tests/install.test.mjs infra/platform/rabbitmq/tests/inventory.test.mjs infra/platform/rabbitmq/tests/readiness.test.mjs infra/platform/rabbitmq/tests/lifecycle.test.mjs` (`rabbitmq` source group).
+- `node --test infra/platform/rabbitmq/tests/render.test.mjs` (`rabbitmq-render`; Helm required).
+- `node --test infra/verification/smoke/rabbitmq/proof.test.mjs` (`rabbitmq-proof`; host trace fixture, not live cluster proof).
+- `python3 -m unittest discover -s infra/verification/smoke/rabbitmq -p 'test_*.py'` (AMQP wire unittest; diagnostic suite does not schedule this; run directly for PL-05 wire negatives; live smoke **NOT-RUN**).
+- Service-specific live probes under smoke/{postgres,object-storage,redis,observability,gateway}; RabbitMQ live proof via `proof.mjs` only when explicitly authorized; use linked runbooks.
 - Dev SQL/S3/Temporal trials under dev-environments/; these may provision fixed slots, so never run blindly on an occupied workstation. Release acceptance under release-acceptance/; fault/chaos scenarios have independent authorization and oracles.
 
 Measure cold/warm wall time and source-edit latency; report actual seconds, not arbitrary SLA. First smoke is one owned full slot cold/start/status/edit/failure/recovery/stop/resume; then selective profiles and multi-replica cases only when implemented. Do not require four full stacks on a limited workstation. Stop polishing when ordinary supported flows are proven; record failures as bounded corrective Changes.

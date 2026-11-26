@@ -36,7 +36,11 @@ const TAP_FAIL = `# tests 2
 
 function suiteKeyFromFiles(files) {
   const sample = files[0] ?? '';
-  if (files.some((file) => file.includes('infra/platform/redis/tests/render.test.mjs'))) {
+  if (
+    files.some((file) =>
+      file.includes('infra/platform/redis/tests/render.test.mjs'),
+    )
+  ) {
     return 'redis-render';
   }
   if (
@@ -52,7 +56,9 @@ function suiteKeyFromFiles(files) {
   if (sample.includes('tools/dev-environments/test')) return 'dev-environments';
   if (sample.includes('infra/workloads/tests')) return 'workloads';
   if (sample.includes('infra/environments/release/test')) return 'release';
-  if (sample.includes('infra/verification/dev-environments/lifecycle-programme')) {
+  if (
+    sample.includes('infra/verification/dev-environments/lifecycle-programme')
+  ) {
     return 'infra-dev-lifecycle';
   }
   if (
@@ -61,7 +67,8 @@ function suiteKeyFromFiles(files) {
   ) {
     return 'infra-dev-recovery';
   }
-  if (sample.includes('selective-profile-programme')) return 'infra-dev-selective';
+  if (sample.includes('selective-profile-programme'))
+    return 'infra-dev-selective';
   return 'unknown';
 }
 
@@ -136,7 +143,7 @@ test('runSourceVerification passes when all suites pass', () => {
     })(),
   });
   assert.equal(report.exitCode, 0);
-  assert.equal(report.suites.length, 8);
+  assert.equal(report.suites.length, 11);
   assert.ok(report.suites.every((suite) => suite.status === 'PASS'));
   assert.ok(
     report.suites.every((suite) =>
@@ -191,11 +198,22 @@ test('runSourceVerification blocks workloads without helm but runs other suites'
   assert.equal(report.exitCode, 1);
   const workloads = report.suites.find((suite) => suite.id === 'workloads');
   assert.equal(workloads?.status, 'BLOCKED');
-  const redisRender = report.suites.find((suite) => suite.id === 'redis-render');
+  const redisRender = report.suites.find(
+    (suite) => suite.id === 'redis-render',
+  );
   assert.equal(redisRender?.status, 'BLOCKED');
+  const rabbitmqRender = report.suites.find(
+    (suite) => suite.id === 'rabbitmq-render',
+  );
+  assert.equal(rabbitmqRender?.status, 'BLOCKED');
   assert.ok(
     report.suites
-      .filter((suite) => suite.id !== 'workloads' && suite.id !== 'redis-render')
+      .filter(
+        (suite) =>
+          suite.id !== 'workloads' &&
+          suite.id !== 'redis-render' &&
+          suite.id !== 'rabbitmq-render',
+      )
       .every((suite) => suite.status === 'PASS'),
   );
   assert.ok(
@@ -203,7 +221,7 @@ test('runSourceVerification blocks workloads without helm but runs other suites'
       ({ args }) => !args.includes('docker') && !args.includes('tilt'),
     ),
   );
-  assert.equal(calls.length, 6);
+  assert.equal(calls.length, 8);
 });
 
 test('expandTestGlob returns sorted filenames without shell expansion', () => {
@@ -290,17 +308,24 @@ test('MON fixture evidence covers MON-01..09 with report and export modules for 
   const monIds = CATALOG_SCENARIO_IDS.filter((id) => id.startsWith('MON-'));
   assert.equal(monIds.length, 9);
   for (const id of monIds) {
-    assert.ok(MON_FIXTURE_EVIDENCE[id], `missing MON_FIXTURE_EVIDENCE for ${id}`);
+    assert.ok(
+      MON_FIXTURE_EVIDENCE[id],
+      `missing MON_FIXTURE_EVIDENCE for ${id}`,
+    );
     assert.ok(MON_FIXTURE_EVIDENCE[id].diagnosticChecks.length > 0);
   }
   const mon08 = MON_FIXTURE_EVIDENCE['MON-08'];
   assert.ok(mon08.modules.some((path) => path.endsWith('test_report.py')));
   assert.ok(mon08.modules.some((path) => path.endsWith('test_export.py')));
   assert.ok(
-    DIAGNOSTIC_CHECK_CAPABILITY_LINKS['source:monitoring-python'].includes('MON-08'),
+    DIAGNOSTIC_CHECK_CAPABILITY_LINKS['source:monitoring-python'].includes(
+      'MON-08',
+    ),
   );
   assert.deepEqual(
-    DIAGNOSTIC_CHECK_CAPABILITY_LINKS['source:infra/monitoring/tests/operation-event.test.mjs'],
+    DIAGNOSTIC_CHECK_CAPABILITY_LINKS[
+      'source:infra/monitoring/tests/operation-event.test.mjs'
+    ],
     ['MON-07'],
   );
 });
