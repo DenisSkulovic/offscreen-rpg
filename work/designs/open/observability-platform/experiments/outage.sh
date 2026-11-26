@@ -51,7 +51,7 @@ k get endpointslices -l kubernetes.io/service-name=obs-tempo -o json >"$out/temp
 python3 - "$out/tempo-endpoints-down.json" <<'PY'
 import json,sys
 d=json.load(open(sys.argv[1]))
-assert not any(e.get("conditions",{}).get("ready",True) for s in d["items"] for e in s.get("endpoints",[])), "Tempo still has ready endpoints"
+assert not any(e.get("conditions",{}).get("ready",True) for s in d["items"] for e in (s.get("endpoints") or [])), "Tempo still has ready endpoints"
 PY
 # Submit all three signals while Tempo is unavailable. Only healthy paths must succeed.
 bash "$here/signal-probe.sh" "$src" "" tempo-outage | tee "$out/during.log"
