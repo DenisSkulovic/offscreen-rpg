@@ -63,3 +63,86 @@ Cold proof order: host check, explicit dependency install if needed, direct node
 ## Remaining before implementation
 
 Host tool/pin owners, cluster entrypoints and common verification gap inspected. Remaining: exact host check version predicates and official installation recipe verification, focused test anchors, and owner acceptance of the deliberately conservative setup policy. Check current main drift and reconcile canonical runbook/technical contract before commissioning a bounded Change. No implementation or live provisioning performed by this design commit.
+
+
+## R3: Agent-operated bootstrap and hosted portability (2026-11-26)
+
+Status: proposed design amendment, owner requested the review; not implementation commission. Integration main a81e275821496e478ba55ae3dce5e72cf63d5dfd; inspected in-flight implementation 093161ae04c13f0a5416e4f5dbf1fd75ac031511. R3 supersedes R1/R2 operator-interface proposals where inconsistent; retain historical evidence. Next review: after current cold acceptance, owner review of abstraction admission and source gaps. The prior narrow bootstrap committee waiver does not imply hosted architecture acceptance.
+
+### R3.1 Selected objective and non-goals
+
+Optimize for a fresh coding agent executing a deterministic documented procedure, not human typing effort or minimum command count. Local clusters are deployment targets, not the product architecture. Eventual hosted deployment is a mandatory design constraint; no AWS/GCP/Azure provisioning, provider SDK, Terraform module, generalized hosted admission, or production-readiness claim in this increment. No assumption that managed services are interchangeable. No changes to the active acceptance branch during its proof.
+
+### R3.2 Abstraction admission
+
+Encapsulate approximately 3–5 cohesive, stable operations with one reason to change. An abstraction is justified by elimination of repeated decisions or invariants, not fewer characters. Require explicit variable inputs; existing domain owner retains mutations, custody and readiness; bounded failure remains attributable; no new independent state machine. Reject wrappers that infer target, choose credentials, grant authorization, select destructive recovery, perform migration, silently install optional features, or translate unknown state into success. Do not impose a numeric command-count requirement.
+
+| Node | Encapsulate | Expose / leave separate |
+| --- | --- | --- |
+| Workstation observation | OS detection, CLI presence, version policy, engine/resource checks | Supported OS, purpose, resource limits; no cloud runner dependence on Docker Desktop/Tilt |
+| Workstation preparation | OS-specific stable package recipe, verified tool acquisition where selected, postcheck | Privilege escalation, Docker Desktop, existing toolchain replacement; no universal cross-OS installer |
+| Workspace dependencies | Lockfile install, dependency resolution, toolchain consistency | Explicit install; no surprise dependency installation through lifecycle wrappers |
+| Cluster creation | Provider-specific create, baseline identity, startup wait, postcondition | Provider/account/location, sizing, creation authority, deletion; hosted target can be supplied without creation |
+| Target admission | Explicit target, identity/ownership, readiness, required API/storage capabilities | Provider-specific trust roots and credentials; no implicit current context, no weakened local guards |
+| Service ensure (per service) | Artifact pin, render, guarded install/reuse, structural readiness | Service/provider selection, capacity, security policy, migration/recovery |
+| Service batch | Fixed catalog order, preflight, dispatch, stop and skipped-phase receipt | Dependency/authority boundaries, selected set; no dynamic DAG or additional persistence |
+| Service binding | Endpoint, credential reference, protocol settings, validation | Tenant authority, TLS policy, service implementation capability differences |
+| Workload deployment | Image reference, bindings, rendering, rollout observation | Local Tilt sync and build/load, cloud registry/promotion, release and paid-call authorization |
+| Proof | Select target and cases, bounded probe, assert, structured evidence | Source vs runtime, destructive/disruptive authorization, retained uncertain fixtures |
+
+### R3.3 Local operational specimen (existing commands, not new aliases)
+
+Canonical owner docs/runbooks/fresh-clone-bootstrap.md, discoverable from root README and agent entrypoints. One normative procedure per purpose, no need to read implementation for a successful normal path. Starting with an already prepared supported host, use:
+1. bash infra/host/check.sh; if blocked, follow the exact reported OS recipe, then repeat. setup.sh --install-system-packages is separately privileged. No automatic sudo or tool replacement.
+2. pnpm install --frozen-lockfile.
+3. node infra/environments/infra-cli.mjs up --env dev --services none --json.
+4. After explicit owner maintenance authorization and quiescence, OFFSCREEN_POSTGRES_MAINTENANCE=authorized node infra/environments/infra-cli.mjs up --env dev --services postgres --json. Never export the grant for subsequent operations or self-authorize.
+5. node infra/environments/infra-cli.mjs up --env dev --services core --json.
+6. Optional explicitly selected services only; e.g. --services redis,rabbitmq for dev, subject to existing service gates. No all alias in canonical recipe.
+7. node infra/environments/infra-cli.mjs status --env dev --services core --json; require exact selection, present target and every selected state installed, not merely exit zero. Verify explicitly selected extras likewise. This assertion is a candidate for a small reusable read-only selected-status check in existing CLI, not a new orchestrator.
+8. Follow the owned dev-slot configuration and admission contract; pnpm dev, pnpm dev:status, pnpm dev:stop as appropriate. Do not copy secrets, launch foreign slots or authorize paid calls.
+Release is a separately selected local purpose, not required for ordinary development. Equivalent explicit release sequence, core includes gateway; release RabbitMQ and legacy observability excluded from this acceptance. Do not invent aliases for cluster:up/platform:up; existing infra:up already combines cluster ensure and service selection. Keep separate foundation operation for proof or explicit foundation-only task. A later combined ordinary core call is permissible only when the same explicit authority and prerequisite checks are preserved. No need to make routine installation rerun full acceptance or diagnostic suites.
+
+Failure contract: read-only plan is service-selection preview, not live plan; status can return ok while services are absent/unreadable; inspect exact states. On nonzero ensure or unknown mutation, stop, preserve evidence, report target/phase/reason/known mutation/skipped steps. Do not retry or reset automatically. Re-observation is permitted read-only. Owner decides recovery. Structured allowlisted reason codes preferred over arbitrary stdout/stderr; avoid credential bytes, environment dumps, raw kubeconfig and sensitive child output. Unknown is not absent. No rollback promise.
+
+### R3.4 Deployment dimensions and target boundaries
+
+Separate deployment purpose (development/test/staging/production), infrastructure target (local Kind or supplied hosted Kubernetes), and service implementation (self-managed, managed or external). Existing dev/release are local profiles, not cloud stages. Conceptual target specimen (not schema or API commitment):
+- purpose: development; target: local-kind, profile dev; explicit context kind-offscreen-dev; local engine identity; local storage class standard.
+- purpose: staging; target: supplied-hosted-kubernetes; explicit cluster/account/project/subscription and region identity, credential source and trust binding; storage/network capabilities declared by hosted target; independently selected service implementations and workload images.
+The second specimen MUST currently refuse as unsupported. Never accept arbitrary kube context by relaxing existing loopback or Docker identity guards. Hosted adapter needs its own threat model, API authorization, credential handling (including exec plugins where independently justified), immutable target identity, tenancy, mutation and lock/custody policy; a context string is not sufficient evidence. Local flock is not distributed coordination. Local host capacity checks are not hosted cluster scheduling admission.
+
+Prefer portable workload manifests and consumption contracts, with provider-specific overlays only for actual differences. Separate build from distribution: local Kind image import/Tilt live sync are not cloud runtime requirements. Cloud image registry, immutable artifact promotion, pull authorization and workload identity belong to future deployment design. Storage class, volume access, reclaim, backups, encryption and failure domains are explicit target/service policies; local-path and Docker mount identity proofs must never become hosted storage requirements. DNS names and namespaces are binding/target configuration, not hardcoded application semantics. Gateway TLS/DNS/load balancer and network policy vary by deployment. Do not infer production durability, HA, scaling, tenancy, secret rotation, backup/restore, migration, disaster recovery, SLOs or costs from successful Kind installation.
+
+Service replacement examples are hypotheses only: CNPG vs managed PostgreSQL; SeaweedFS vs AWS S3; Redis vs managed Redis-compatible service; self-hosted vs hosted Temporal; RabbitMQ operator vs managed broker; Traefik vs alternative Gateway implementation; OTLP collector/backends vs hosted observability. Each requires a specific protocol, auth, TLS, error/retry, durability, transaction and operational compatibility audit appropriate to its workload; no universal least-common-denominator service interface. No GCP/Azure object-storage equivalence claim. Bindings expose required capabilities and references, never provisioning internals or raw secret values. Provider-specific admin tasks (database creation, ACLs, bucket grants, queue policy, Temporal namespace) are not generic application connection setup.
+
+### R3.5 Source gap map (inspected change baseline)
+
+| Finding | Source anchor | Disposition |
+| --- | --- | --- |
+| Existing useful batch abstraction | infra/environments/platform-plan.mjs: parsePlatformServiceSelection, corePhases, runEnsurePreflight, runPlatformPlan | Retain fixed ordering and dispatch, stop on failure; do not create second orchestrator |
+| Coupled cluster and platform lifecycle | infra/environments/infra-cli.mjs: runInfraUp | Keep local facade; future supplied target path must not call Kind inventory/create. Separate internal admission from provider create when a real caller requires it |
+| Local profile coupling | infra/platform/common/profile.mjs: readPlatformProfile imports readKindProfile, hardcodes namespaces/storage/owner | Explicit seam; document now; separate target and purpose before adding hosted provider, not speculative generic provider registry now |
+| Local trust/custody | infra/platform/common/commands.mjs: assertPlatformTarget, ensureReleaseOwnershipBaseline; local installer locks | Preserve all checks. Hosted trust and distributed coordination separately designed; no generic bypass |
+| Host tooling | infra/host/check.sh, setup.sh | Bash-first appropriate locally; missing tools block; privileged package opt-in; no Node-before-host dependency; do not require workstation tools from cloud deployment |
+| Status success ambiguous | infra/environments/infra-cli.mjs: runInfraStatus | Existing ok:true denotes observation completion, not readiness; retain compatibility; consider explicit strict read-only assertion instead of changing exit semantics silently |
+| Receipt heterogeneity | infra/environments/platform-plan.mjs: runPlatformPlan | RabbitMQ typed result already retains mutation/state; other phases generic detail; audit safe normalized envelope before implementation, do not falsely assert no mutation; secret redaction review required |
+| Existing portable binding specimen | infra/platform/object-storage/binding.mjs: validateObjectStorageBinding | Endpoint/region/bucket/path-style/secret reference or default-chain already separated; verify client integration and hosted semantics later, not proof of cloud support |
+| Workload startup | package.json dev aliases; docs/runbooks/dev-worktree-stacks.md | Preserve ownership, Tilt, resource admission. No cloud dependency on dev registry; inspect release render/deployment separately |
+| Verification | infra/verification/verify.mjs SOURCE_SUITE_DEFINITIONS and diagnostic import | Reuse existing proof owner; explicit selected-service non-disruptive proof entrypoint may be justified after exact catalog audit; no legacy observability dependency in bootstrap |
+
+Full per-service cloud audit remains unperformed. Existing local-only constraints are intentional, not defects just because hosted support is future work. Source paths for object-storage README were not found; actual binding module inspected instead.
+
+### R3.6 Verification and selection gates
+
+Integration-critical for ergonomics increment: cold local acceptance on exact SHA; focused no-write/foreign/partial/unreadable negative tests; deterministic runbook from fresh worktree without inherited .env; supported host check; explicit maintenance grant; exact selected readiness assertion; owned app startup/park, no paid calls; no legacy observability. Record exact proof tier and outcomes. Current owner proof at 093161ae: 36/36 CLI tests, both fresh cluster foundations and both PostgreSQL installations succeeded; automatic ACL verification and remaining cold platform installation pending. Prior warm readiness 10/10 is historical, not this cold result.
+
+Agent usability experiment: fresh Claude Code context, only repository and instruction to install local dev using canonical docs; authorized disposable target and scoped mutations, no source edits or improvised recovery. Record commands, decisions requiring external knowledge, human interventions, unknown-state handling, target/selection, results and cleanup. Targets: zero undocumented decisions, zero wrong-context/unauthorized operations, zero invented recovery commands, zero source inspection required on successful normal path. Do not count expected privilege/maintenance approvals as failures; count unexpected interventions. Separate negative scenario: simulated missing dependency and partial/unknown state must stop safely. No live experiment commissioned by this amendment.
+
+Hosted readiness future gate: choose one actual provider and target before writing adapter; audit source dependencies by capability, then prove supplied-cluster admission, render portability, service bindings and scoped deployment on a separately authorized isolated target; provider costs, permissions and cleanup explicit. No hosted proof performed, no production certification. No universal multi-cloud installer. Prefer actual provider-native provisioning tools over reimplementing them; provider choice remains open.
+
+### R3.7 Proposed sequencing after cold acceptance
+
+A. Reconcile current runbook and actual commands/authority; make one discoverable agent procedure, separate routine installation from acceptance. B. Identify recurring multi-command checks with stable semantics (selected readiness assertion, non-disruptive proof receipt); only implement those with clear owner and tests. C. Run fresh-agent experiment, measure actual ambiguity before adding any further wrapper. D. When hosted work is selected, design target admission and binding migration from actual provider requirements before implementation; no local safety weakening. No new wrappers merely for shorter commands, no general-purpose orchestration framework, no parallel cloud implementation now.
+
+Open decisions: whether selected-status assertion belongs in existing status mode or verification CLI (audit callers first); whether reusable non-disruptive proof selection already exists; exact cloud target and provider-specific architecture deferred; owner review after current cold proof. This is a design amendment, not a defense verdict, accepted permanent contract or implementation packet.
