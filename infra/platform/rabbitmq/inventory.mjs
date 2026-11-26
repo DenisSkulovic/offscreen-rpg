@@ -521,7 +521,6 @@ export function observeRabbitmqInventory(target, deps = {}) {
   const identityReads = {};
   let presentCount = 0;
   let absentCount = 0;
-  let prerequisiteAbsentCount = 0;
 
   for (const identity of expectedVendorIdentities()) {
     const key = `${identity.kind}/${identity.namespace ?? '-'}/${identity.name}`;
@@ -535,7 +534,6 @@ export function observeRabbitmqInventory(target, deps = {}) {
       };
     }
     if (read.state === 'absent_by_prerequisite') {
-      prerequisiteAbsentCount += 1;
       absentCount += 1;
     } else if (read.state === 'absent') {
       absentCount += 1;
@@ -617,14 +615,14 @@ export function observeRabbitmqInventory(target, deps = {}) {
     }
   } else {
     targetBroker = { state: 'absent_by_prerequisite' };
-    absentCount += 1;
   }
+  if (targetBroker.state === 'present') presentCount += 1;
+  else absentCount += 1;
 
   const totalExpected =
     expectedVendorIdentities().length + designNamespaces.length + 1;
-  const effectiveAbsent = absentCount + prerequisiteAbsentCount;
 
-  if (presentCount === 0 && effectiveAbsent >= totalExpected) {
+  if (presentCount === 0 && absentCount === totalExpected) {
     return {
       state: 'absent',
       reason: 'fresh-absent',
