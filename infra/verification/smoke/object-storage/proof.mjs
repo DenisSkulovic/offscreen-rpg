@@ -1,6 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import process from 'node:process';
+import { runPlatformCommand } from '../../../platform/common/commands.mjs';
+import { planObjectStorage } from '../../../platform/object-storage/providers/seaweedfs/install.mjs';
 
 const VALID_PROFILES = new Set(['dev', 'release']);
 export const PROOF_NAMESPACE_PATTERN = /^offscreen-s3-proof-[0-9a-f]{32}$/;
@@ -92,13 +94,19 @@ export function createProofNamespace() {
 
 /**
  * @param {string[]} args
- * @param {{ plan?: (profile: string) => void | Promise<void>, ensure?: (ctx: { profile: string, namespace: string }) => void | Promise<void>, cleanup?: (namespace: string) => void | Promise<void>, createNamespace?: () => string }} [deps]
- * @returns {Promise<{ exitCode: number, stderr: string, wrote: boolean }>}
+ * @param {{
+ *   plan?: (profile: string) => void | Promise<void>,
+ *   platformRun?: import('../../../platform/common/commands.mjs').runPlatformCommand,
+ *   ensure?: (ctx: { profile: string, namespace: string }) => void | Promise<void>,
+ *   cleanup?: (namespace: string) => void | Promise<void>,
+ *   createNamespace?: () => string,
+ * }} [deps]
+ * @returns {Promise<{ exitCode: number, stderr: string, stdout: string, wrote: boolean }>}
  */
 export async function runObjectStorageProof(args, deps = {}) {
   const parsed = parseArgv(args);
   if (!parsed.ok) {
-    return { exitCode: 2, stderr: parsed.stderr, wrote: false };
+    return { exitCode: 2, stderr: parsed.stderr, stdout: '', wrote: false };
   }
 
   if (parsed.live && !parsed.confirmDisposable) {
@@ -106,20 +114,33 @@ export async function runObjectStorageProof(args, deps = {}) {
       exitCode: 2,
       stderr:
         'refusing object-storage proof mutation without --confirm-disposable\n',
+      stdout: '',
       wrote: false,
     };
   }
 
   if (parsed.plan) {
-    if (typeof deps.plan !== 'function') {
+    if (typeof deps.plan === 'function') {
+      await deps.plan(parsed.profile);
+      return { exitCode: 0, stderr: '', stdout: '', wrote: false };
+    }
+    if (typeof deps.platformRun !== 'function') {
       return {
         exitCode: 2,
         stderr: 'object-storage proof plan is not wired\n',
+        stdout: '',
         wrote: false,
       };
     }
-    await deps.plan(parsed.profile);
-    return { exitCode: 0, stderr: '', wrote: false };
+    const planResult = planObjectStorage(parsed.profile, {
+      run: deps.platformRun,
+    });
+    return {
+      exitCode: 0,
+      stderr: '',
+      stdout: `${JSON.stringify(planResult)}\n`,
+      wrote: false,
+    };
   }
 
   const namespace =
@@ -132,6 +153,7 @@ export async function runObjectStorageProof(args, deps = {}) {
       exitCode: 2,
       stderr:
         'object-storage proof live ensure is owner-operated and not wired in this entrypoint\n',
+      stdout: '',
       wrote: false,
     };
   }
@@ -139,14 +161,14 @@ export async function runObjectStorageProof(args, deps = {}) {
   try {
     await deps.ensure({ profile: parsed.profile, namespace });
   } catch {
-    return { exitCode: 1, stderr: '', wrote: true };
+    return { exitCode: 1, stderr: '', stdout: '', wrote: true };
   }
 
   if (parsed.cleanup && typeof deps.cleanup === 'function') {
     await deps.cleanup(namespace);
   }
 
-  return { exitCode: 0, stderr: '', wrote: true };
+  return { exitCode: 0, stderr: '', stdout: '', wrote: true };
 }
 
 const isMain =
@@ -154,7 +176,12 @@ const isMain =
   fileURLToPath(import.meta.url) === process.argv[1];
 
 if (isMain) {
-  const result = await runObjectStorageProof(process.argv.slice(2));
+  const result = await runObjectStorageProof(process.argv.slice(2), {
+    platformRun: runPlatformCommand,
+  });
+  if (result.stdout) {
+    process.stdout.write(result.stdout);
+  }
   if (result.stderr) {
     process.stderr.write(result.stderr);
   }

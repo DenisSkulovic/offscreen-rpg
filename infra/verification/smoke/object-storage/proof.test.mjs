@@ -151,3 +151,40 @@ test('spawned proof.mjs with --profile release --live exits 2 with empty stdout'
   assert.equal(result.status, 2);
   assert.equal(result.stdout, '');
 });
+
+const MUTATION_ARG_PATTERN =
+  /\b(apply|create|delete|patch|replace|install|upgrade)\b/i;
+
+test('--profile dev --plan with platformRun: native plan JSON, no mutation verbs', async () => {
+  /** @type {string[][]} */
+  const recorded = [];
+  const ensure = [];
+  const result = await runObjectStorageProof(
+    ['--profile', 'dev', '--plan'],
+    {
+      plan: undefined,
+      platformRun: (command, ...args) => {
+        recorded.push([command, ...args]);
+        return { ok: false, status: 1, stdout: '', stderr: 'closed' };
+      },
+      ensure: async (ctx) => {
+        ensure.push(ctx);
+      },
+    },
+  );
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.wrote, false);
+  assert.equal(ensure.length, 0);
+  const planPayload = JSON.parse(result.stdout.trim());
+  assert.equal(planPayload.mode, 'plan');
+  assert.deepEqual(planPayload.actions, []);
+  assert.ok(recorded.length > 0, 'native plan did not ask the runner');
+  for (const invocation of recorded) {
+    const argText = invocation.slice(1).join(' ');
+    assert.doesNotMatch(
+      argText,
+      MUTATION_ARG_PATTERN,
+      `unexpected mutation verb in ${JSON.stringify(invocation)}`,
+    );
+  }
+});
