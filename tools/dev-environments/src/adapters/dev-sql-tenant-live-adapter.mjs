@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { DEV_CNPG_CLUSTER, DEV_CNPG_CONTEXT, DEV_CNPG_NAMESPACE, DEV_CNPG_OWNER } from '../../../../infra/platform/postgres/config.mjs';
+import { verifyExistingTemporalPersistence } from '../../../../infra/platform/postgres/temporal-persistence/prepare.mjs';
 import { quoteSqlIdent } from './dev-sql-tenant-reconciler.mjs';
 
 const ALLOWED_SQL = /^((REVOKE CONNECT, TEMPORARY ON DATABASE "[a-z_][a-z0-9_]*" FROM PUBLIC)|(GRANT CONNECT, TEMPORARY ON DATABASE "dev" TO "dev")|(GRANT CONNECT ON DATABASE "[a-z_][a-z0-9_]*" TO "[a-z_][a-z0-9_]*", "[a-z_][a-z0-9_]*"))$/;
@@ -84,6 +85,17 @@ export function createLiveDevSqlAdapter({ exec = run } = {}) {
         changedContext: later !== ambientContext,
         ambientContext,
       };
+    },
+    verifyTemporalPersistence() {
+      return verifyExistingTemporalPersistence('dev', {
+        run: (command, args, options = {}) => {
+          try {
+            return { ok: true, stdout: exec(command, args, options.input) };
+          } catch {
+            return { ok: false, stdout: '', stderr: 'Temporal persistence observation failed' };
+          }
+        },
+      });
     },
     readCatalog() {
       const sql = `SELECT datname, pg_get_userbyid(datdba), datallowconn, COALESCE(array_to_string(datacl, ','), '<default-public>') FROM pg_database WHERE datname <> 'template0' OR true ORDER BY datname`;
