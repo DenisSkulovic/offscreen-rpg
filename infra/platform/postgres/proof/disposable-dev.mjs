@@ -9,9 +9,15 @@ import { createBaselineCustody } from '../bootstrap/custody.mjs';
 import { loadOperatorArtifact } from '../bootstrap/operator.mjs';
 import { readKindProfile, renderKindConfig } from '../../../clusters/kind/manager/config.mjs';
 
-const expectedContext = 'kind-offscreen-dev';
-const expectedCluster = 'offscreen-dev';
-const ns = 'offscreen-dev-postgres';
+const profile = process.argv[2] === '--authorize-release' ? 'release' : 'dev';
+const release = profile === 'release';
+const expectedCluster = release ? 'offscreen-release' : 'offscreen-dev';
+const expectedContext = 'kind-' + expectedCluster;
+const ns = release ? 'lab-postgres' : 'offscreen-dev-postgres';
+const baseline = release ? 'offscreen-release-system' : 'offscreen-dev-system';
+const ownerLabel = release ? 'offscreen.rpg/lab' : 'offscreen.dev/owner';
+const ownerValue = release ? 'disposable' : 'offscreen-dev';
+const pgName = release ? 'lab-pg' : 'dev-pg';
 const resume = process.argv.length === 4 && process.argv[2] === '--authorize-negative';
 const root = resume ? resolve(process.argv[3]) : mkdtempSync(join(tmpdir(), 'offscreen-pg-proof-'));
 if (resume && (!/^offscreen-pg-proof-[a-zA-Z0-9]+$/.test(basename(root)) ||
@@ -45,9 +51,9 @@ function read(resource, resourceName, namespace) {
   return JSON.parse(requireOk(k(['get', resource, resourceName, ...(namespace?['-n',namespace]:[]), '-o','json']), 'proof read failed'));
 }
 function assertOwned() {
-  const object = read('namespace','offscreen-dev-system');
+  const object = read('namespace',baseline);
   if (object.metadata?.annotations?.['offscreen.proof/run'] !== marker ||
-      object.metadata?.labels?.['offscreen.dev/owner'] !== 'offscreen-dev' ||
+      object.metadata?.labels?.[ownerLabel] !== ownerValue ||
       object.metadata?.uid !== ownerUid) throw new Error('Disposable target identity changed');
 }
 let ownerUid;
@@ -84,24 +90,25 @@ function runWorker(maintenance) {
       body.contexts[0].name = expectedContext;
       body.contexts[0].context.cluster = expectedContext;
       body.clusters[0].name = expectedContext;
+      if (release) body.clusters[0].cluster.server = 'https://127.0.0.1:6443';
       body['current-context'] = expectedContext;
       return {...result,stdout:JSON.stringify(body)};
     }
     return result;
   };
-  return ensureBaseline('dev',{authorized:true,maintenance,custody:{...custody,run}});
+  return ensureBaseline(profile,{authorized:true,maintenance,custody:{...custody,run}});
 }
 function inventoryUids() {
   return Object.fromEntries([...artifact.inventory.map(e=>[e.id,read(e.resource,e.name,e.namespace).metadata.uid]),
     ['namespace',read('namespace',ns).metadata.uid],
-    ['cluster',read('cluster.postgresql.cnpg.io','dev-pg',ns).metadata.uid]]);
+    ['cluster',read('cluster.postgresql.cnpg.io',pgName,ns).metadata.uid]]);
 }
 function record(label, data) {
   writeFileSync(join(root,label+'.json'),JSON.stringify(data,null,2)+'\n',{mode:0o600});
   console.log(label,JSON.stringify(data));
 }
 try {
-  if (!resume && (process.argv.length !== 3 || process.argv[2] !== '--authorize-disposable')) throw new Error('Explicit disposable proof authorization required');
+  if (!resume && (process.argv.length !== 3 || !['--authorize-disposable','--authorize-release'].includes(process.argv[2]))) throw new Error('Explicit disposable proof authorization required');
   if (process.env.DOCKER_HOST || process.env.DOCKER_CONTEXT || process.env.DOCKER_TLS_VERIFY) throw new Error('Docker endpoint overrides refused');
   const dockerContext = requireOk(command('docker',['context','show']),'Docker context unavailable').trim();
   const endpoint = JSON.parse(requireOk(command('docker',['context','inspect',dockerContext,'--format','{{json .Endpoints.docker.Host}}']),'Docker endpoint unavailable'));
@@ -144,12 +151,12 @@ try {
     const expectedUids = JSON.parse(readFileSync(join(root,'uids.json'),'utf8'));
     if (JSON.stringify(inventoryUids()) !== JSON.stringify(expectedUids))
       throw new Error('Previously proven inventory changed');
-    const owned = read('namespace','offscreen-dev-system');
+    const owned = read('namespace',baseline);
     ownerUid = owned.metadata.uid;
     marker = owned.metadata.annotations?.['offscreen.proof/run'];
     if (!/^[0-9a-f]{32}$/.test(marker ?? '')) throw new Error('Missing proof marker');
   } else {
-  const owner = {apiVersion:'v1',kind:'Namespace',metadata:{name:'offscreen-dev-system',labels:{'offscreen.dev/owner':'offscreen-dev'},annotations:{'offscreen.proof/run':marker}}};
+  const owner = {apiVersion:'v1',kind:'Namespace',metadata:{name:baseline,labels:{[ownerLabel]:ownerValue},annotations:{'offscreen.proof/run':marker}}};
   ownerUid = JSON.parse(requireOk(k(['create','-f','-','-o','json'],{input:JSON.stringify(owner)}),'Proof ownership creation failed')).metadata.uid;
   }
   assertOwned();
@@ -185,7 +192,12 @@ try {
     if (absent.trim()) throw new Error('Ordinary ensure repaired the missing role');
     record('negative-result',{ok:true,cluster:name,incompatibleRefused:true,partialRefused:true,workerPersistentWrites:writes.length});
   } else {
-  const storage = read('storageclass','standard');
+  if (release) {
+    assertOwned();
+    requireOk(k(['create','-f', new URL('../../../clusters/kind/common/local-path-storage.yaml',import.meta.url).pathname],{timeoutMs:60000}),'Release storage setup failed');
+    requireOk(k(['-n','local-path-storage','rollout','status','deployment/local-path-provisioner','--timeout=180s'],{timeoutMs:190000}),'Release storage not ready');
+  }
+  const storage = read('storageclass',release ? 'local-path' : 'standard');
   if (!storage.provisioner) throw new Error('Kind standard StorageClass unavailable');
   const first = runWorker(true);
   record('fresh',first);
@@ -197,8 +209,22 @@ try {
   if (!second.ok || second.mutated || second.confirmedMutations.length || writes.length!==count ||
       second.instances!==first.instances || JSON.stringify(inventoryUids())!==JSON.stringify(before))
     throw new Error('Repeat acceptance failed');
+  if (release) {
+    // Explicit topology mutation belongs to the disposable proof, never ensure.
+    const cluster = read('cluster.postgresql.cnpg.io',pgName,ns);
+    assertOwned();
+    const patch = [{op:'test',path:'/metadata/uid',value:cluster.metadata.uid},
+      {op:'test',path:'/metadata/resourceVersion',value:cluster.metadata.resourceVersion},
+      {op:'replace',path:'/spec/instances',value:2}];
+    requireOk(k(['-n',ns,'patch','cluster.postgresql.cnpg.io',pgName,'--type=json','-p',JSON.stringify(patch)]),'Disposable scale-up failed');
+    const scaled = runWorker(false);
+    record('scaled-repeat',scaled);
+    if (!scaled.ok || scaled.instances!==2 || scaled.mutated || writes.length!==count ||
+        JSON.stringify(inventoryUids())!==JSON.stringify(before))
+      throw new Error('Release scaled reuse acceptance failed');
+  }
   record('uids',before);
-  record('result',{ok:true,profile:'dev',freshAndRepeat:true,persistentWrites:writes.length,cluster:name});
+  record('result',{ok:true,profile,freshAndRepeat:true,scaledReuse:release,persistentWrites:writes.length,cluster:name});
   }
 } catch(error) {
   console.error(error.message);
