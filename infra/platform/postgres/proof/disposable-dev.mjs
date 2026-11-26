@@ -194,8 +194,25 @@ try {
   } else {
   if (release) {
     assertOwned();
-    requireOk(k(['create','-f', new URL('../../../clusters/kind/common/local-path-storage.yaml',import.meta.url).pathname],{timeoutMs:60000}),'Release storage setup failed');
-    requireOk(k(['-n','local-path-storage','rollout','status','deployment/local-path-provisioner','--timeout=180s'],{timeoutMs:190000}),'Release storage not ready');
+    // Kind already supplies the local-path provisioner. Only the release
+    // StorageClass alias may be absent; never replay the provisioner inventory.
+    requireOk(k(['-n','local-path-storage','rollout','status','deployment/local-path-provisioner','--timeout=180s'],{timeoutMs:190000}),'Kind storage provisioner not ready');
+    const standard = read('storageclass','standard');
+    if (standard.provisioner !== 'rancher.io/local-path' ||
+        standard.volumeBindingMode !== 'WaitForFirstConsumer')
+      throw new Error('Unexpected Kind storage provisioner');
+    const existing = requireOk(k(['get','storageclass','local-path','--ignore-not-found','-o','json']),'Release StorageClass observation failed');
+    if (!existing.trim()) {
+      const storage = {apiVersion:'storage.k8s.io/v1',kind:'StorageClass',
+        metadata:{name:'local-path'},provisioner:'rancher.io/local-path',
+        volumeBindingMode:'WaitForFirstConsumer',reclaimPolicy:'Delete'};
+      assertOwned();
+      requireOk(k(['create','-f','-'],{input:JSON.stringify(storage)}),'Release StorageClass creation failed');
+    }
+    const local = read('storageclass','local-path');
+    if (local.provisioner !== 'rancher.io/local-path' ||
+        local.volumeBindingMode !== 'WaitForFirstConsumer' || local.reclaimPolicy !== 'Delete')
+      throw new Error('Incompatible release StorageClass');
   }
   const storage = read('storageclass',release ? 'local-path' : 'standard');
   if (!storage.provisioner) throw new Error('Kind standard StorageClass unavailable');
