@@ -15,6 +15,7 @@ import {
   observeRedisReady,
   observeTargetReady,
 } from './readiness.mjs';
+import { runRedisSmokeProof } from './smoke-proof.mjs';
 
 /** @typedef {'dev' | 'release'} RedisProfileId */
 
@@ -478,10 +479,24 @@ async function runLockedRedisInstall(profileId, target, installMode, deps = {}) 
           return refuse(ready.detail ?? 'post-install-not-ready', ready.state);
         }
 
+        if (installMode.mode === 'smoke') {
+          const proof = await runRedisSmokeProof(target, profileId, {
+            run: inventoryRun ?? runPlatformCommand,
+            runWrite: trackWrite,
+            remainingMs,
+            observeInventory: deps.observeInventory,
+          });
+          if (!proof.ok) {
+            return refuse(proof.detail ?? 'smoke-proof-failed', proof.state ?? 'refused');
+          }
+        }
+
         return installReceipt(
           true,
           true,
-          ready.detail ?? 'installed-ready',
+          installMode.mode === 'smoke'
+            ? 'smoke-proof-complete'
+            : (ready.detail ?? 'installed-ready'),
           'installed',
         );
       } finally {

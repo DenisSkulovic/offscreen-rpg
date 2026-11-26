@@ -19,6 +19,12 @@ import {
   runRedisInstallLifecycle,
   smokeRedisInstall,
 } from '../../../platform/redis/install.mjs';
+import {
+  RESTART_MARKER_KEY,
+  TTL_KEY,
+  refuseFlushallUnlessProofNamespace,
+} from '../../../platform/redis/smoke-proof.mjs';
+import { buildHappyProofRunner } from '../../../platform/redis/tests/smoke-proof.test.mjs';
 
 const releaseProfile = readPlatformProfile('release');
 const releaseTarget = redisTargetFromProfile('release');
@@ -174,11 +180,29 @@ function createSmokeHarness(namespace, target, scenario = {}) {
 
 /** @param {string} stateRoot @param {Record<string, unknown>} scenario */
 function buildSmokeDeps(stateRoot, scenario) {
-  const { run, commands } = createSmokeHarness(
-    scenario.namespace ?? EXPECTED_SMOKE_NAMESPACE,
-    scenario.inventoryTarget ?? releaseTarget,
+  const namespace = scenario.namespace ?? EXPECTED_SMOKE_NAMESPACE;
+  const inventoryTarget = scenario.inventoryTarget ?? releaseTarget;
+  const { run: installRun, commands } = createSmokeHarness(
+    namespace,
+    inventoryTarget,
     scenario.harness ?? {},
   );
+  const proofTarget = { ...inventoryTarget, namespace };
+  const proof = buildHappyProofRunner(proofTarget);
+
+  const run = (command, args) => {
+    const proofAttempt = proof.run(command, args);
+    const stderr = proofAttempt.stderr ?? '';
+    if (
+      !stderr.startsWith('unexpected kubectl') &&
+      !stderr.startsWith('unexpected command') &&
+      !stderr.startsWith('unexpected redis-cli')
+    ) {
+      return proofAttempt;
+    }
+    return installRun(command, args);
+  };
+
   let inventoryReads = 0;
   const observeInventoryStub = (target, deps = {}) => {
     inventoryReads += 1;
@@ -186,12 +210,15 @@ function buildSmokeDeps(stateRoot, scenario) {
     if (phase) {
       return phase;
     }
+    if (target.namespace === namespace) {
+      return proof.inventory;
+    }
     return observeInventory(target, { run: deps.run ?? run });
   };
 
-  const spawn = (command, args) => {
+  const spawn = (command, args, options) => {
     commands.push([command, args]);
-    if (command === 'kubectl' && args.includes('create')) {
+    if (command === 'kubectl' && args.includes('namespace') && args.includes('create')) {
       return scenario.namespaceCreateResult ?? ok();
     }
     if (command === 'kubectl' && args.includes('label')) {
@@ -209,6 +236,14 @@ function buildSmokeDeps(stateRoot, scenario) {
     }
     if (command === 'helm' && (args[0] === 'lint' || args[0] === 'template')) {
       return ok('');
+    }
+  if (
+      command === 'kubectl' &&
+      (args.includes('scale') ||
+        (args.includes('create') && args.includes('-f')) ||
+        (args.includes('delete') && args.includes('--raw')))
+    ) {
+      return proof.runWrite(command, args, options);
     }
     return fail(1, `unexpected mutation ${command}`);
   };
@@ -316,12 +351,26 @@ test('authorized smoke uses generated namespace on helm install', async () => {
     assert.ok(!helmArgs.includes(CANONICAL_NAMESPACE));
     assert.ok(!helmArgs.includes('offscreen-dev-redis'));
 
-    const creates = mutatingKubectl(commands).filter(([, args]) =>
-      args.includes('create'),
+    const namespaceCreates = mutatingKubectl(commands).filter(
+      ([, args]) => args.includes('create') && args.includes('namespace'),
     );
-    assert.equal(creates.length, 1);
-    assert.equal(creates[0][1].includes(EXPECTED_SMOKE_NAMESPACE), true);
-    assert.equal(creates[0][1].includes(CANONICAL_NAMESPACE), false);
+    assert.equal(namespaceCreates.length, 1);
+    assert.equal(
+      namespaceCreates[0][1].includes(EXPECTED_SMOKE_NAMESPACE),
+      true,
+    );
+    assert.equal(namespaceCreates[0][1].includes(CANONICAL_NAMESPACE), false);
+
+    assert.ok(
+      commands.some(
+        ([, args]) => args.includes('scale') && args.includes('--replicas=0'),
+      ),
+    );
+    assert.ok(
+      commands.some(
+        ([, args]) => args.includes('delete') && args.includes('--raw'),
+      ),
+    );
   } finally {
     if (priorDisposable === undefined) {
       delete process.env.OFFSCREEN_REDIS_SMOKE_DISPOSABLE;
@@ -333,6 +382,47 @@ test('authorized smoke uses generated namespace on helm install', async () => {
     } else {
       process.env.OFFSCREEN_REDIS_ENSURE = priorEnsure;
     }
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('FLUSHALL refused for lab-a and offscreen-dev-redis namespaces', () => {
+  for (const namespace of ['lab-a', 'offscreen-dev-redis']) {
+    const refusal = refuseFlushallUnlessProofNamespace(namespace);
+    assert.equal(refusal.ok, false);
+    assert.equal(refusal.reason, 'flushall-canonical-refused');
+  }
+});
+
+test('canonical ensure never dispatches smoke proof mutations', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'redis-smoke-ensure-proof-'));
+  process.env.OFFSCREEN_REDIS_ENSURE = 'authorized';
+  const { run, commands } = createSmokeHarness(
+    DEV_CANONICAL_NAMESPACE,
+    devTarget,
+    {
+      namespacePresent: true,
+      deployment: true,
+    },
+  );
+  const spawn = (command, args) => {
+    commands.push([command, args]);
+    return fail(1, 'unexpected');
+  };
+  try {
+    const receipt = await ensureRedisInstall('dev', DEV_CONTEXT, {
+      stateRoot,
+      run,
+      spawn,
+    });
+    assert.equal(receipt.ok, false);
+    const allArgs = commands.flatMap(([, args]) => args).join(' ');
+    assert.doesNotMatch(allArgs, /FLUSHALL/);
+    assert.doesNotMatch(allArgs, new RegExp(TTL_KEY));
+    assert.doesNotMatch(allArgs, new RegExp(RESTART_MARKER_KEY));
+    assert.doesNotMatch(allArgs, /--replicas=0/);
+  } finally {
+    delete process.env.OFFSCREEN_REDIS_ENSURE;
     rmSync(stateRoot, { recursive: true, force: true });
   }
 });
