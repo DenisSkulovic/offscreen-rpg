@@ -369,9 +369,11 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 [INF57](archive/2026-11/platform-operations/2026-11-25--inf57-postgres-infrastructure-readability/CHANGE.md) — Done (source). Topology/bootstrap ownership split, cycle removed, truthful plan/status readiness text; focused 78/78 + related 71/71 PASS; live K8s NOT-RUN.
 
 ## Redis infrastructure source wave
+
+- [REDIS-NATIVE](open/2026-11-26--redis-native-baseline/CHANGE.md) — R9 architecture accepted; implementation packet draft, readiness UNVERIFIED; no dispatch or live permission. INF60 suspended.
 - [INF58 Redis chart configuration and rollout identity](archive/2026-11/platform-operations/2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Done (source); 13/13 render tests; live NOT-RUN.
 - [INF59 Redis installer safety and readiness](archive/2026-11/platform-operations/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Done (source); observe/reconcile CAS + readiness; focused 79/79; live NOT-RUN.
-- [INF60 Named Redis pools and operator inspection](open/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Ready after INF58+INF59 source; not auto-started; source only.
+- [INF60 Named Redis pools and operator inspection](open/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Suspended; redesign against native lifecycle after acceptance.
 
 ## Temporal infrastructure source wave
 - [INF61 Helm chart decomposition](archive/2026-11/platform-operations/2026-11-25--inf61-temporal-chart-ownership/CHANGE.md) — Done (source); ownership partials; render 6/6; live NOT-RUN.

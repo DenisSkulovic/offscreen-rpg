@@ -1,5 +1,7 @@
 # Open Changes | current and near-term
 
+[REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): defended structural renewal, draft implementation packet, not Cursor-ready pending planner audit. INF60 suspended. No queue change.
+
 ## Database platform redesign
 
 [Ten prepared Change packets](../README.md#database-platform-redesign) · [Dependency DAG and ownership](../../undertakings/storyteller-workshop/DB-PARALLEL.md). DB01–DB09 are Done source-only and archived. One remaining Change is owner-commissioned for source implementation: DB10 after both lanes. All new Changes branch from and join main. No further planner promotion for dependency-gated successors. Check predecessor source receipts and active ownership before dispatch. DB10 live SQL proof requires explicit disposable permission. No global queue change.
