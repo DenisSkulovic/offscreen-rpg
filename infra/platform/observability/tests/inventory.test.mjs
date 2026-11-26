@@ -70,6 +70,9 @@ test('collectInventory records explicit namespace absence', () => {
         };
       }
       if (command === 'kubectl' && args.includes('pv')) {
+        assert.deepEqual(args.slice(0, 4), [
+          '--kubeconfig', identity.snapshotPath, '--context', identity.contextName,
+        ]);
         return okJson({ items: [] });
       }
       return {
@@ -253,4 +256,18 @@ test('pending blocks absence even when namespace is missing', () => {
   );
   assert.equal(classified.reasonCode, 'pending');
   assert.notEqual(classified.state, 'absent');
+});
+
+test('failed namespace read with empty streams never proves absence', () => {
+  assert.throws(
+    () => collectInventory(fakeIdentity(), loadArtifacts('dev', { verifyArchive: false }), {
+      run: () => ({
+        ok: false, status: 1, stdout: '', stderr: '',
+        timedOut: false, missing: false,
+      }),
+      now: () => 0,
+      deadline: 60_000,
+    }),
+    /unreadable: namespace/,
+  );
 });
