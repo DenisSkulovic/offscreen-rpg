@@ -1,6 +1,10 @@
-# Redis platform renewal | workshop 01
+# Redis platform renewal | workshop 02
 
 2026-11-26. Integration baseline main b6d128061fd0eb4d30296589d9393a277b09477a. Status: proposed, investigation active; no defense, acceptance or implementation authorization. Next review: next owner workshop checkpoint (2026-11-26), after read-only inventory and lifecycle comparison. Posture: independent target with evolutionary reconciliation; retain working native resources where warranted. Scope: local Kind Redis infrastructure, lifecycle, configuration, physical pool boundaries and verification. Exclude application cache implementation, hosted topology, business correctness and paid execution.
+
+## Current decision
+
+[R2 lifecycle ownership](LIFECYCLE.md) supersedes the R1 open Helm-versus-create choice: native Helm for fresh pools, conditional on version-matched proof; legacy baseline is not adopted. R1 below remains the requirements and historical evidence register. Next: owner read-only inventory, then isolated lifecycle proof with separate authorization.
 
 ## Target hypothesis R1
 
