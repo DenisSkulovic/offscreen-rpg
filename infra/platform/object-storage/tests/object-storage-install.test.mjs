@@ -9,7 +9,6 @@ import { RELEASE_BASELINE_NAMESPACE } from '../../common/commands.mjs';
 import {
   renderPlatformDocuments,
   renderPlatformYaml,
-  resolvePlatformChartPath,
   resolvePlatformProfilePath,
 } from '../../common/render.mjs';
 import { DEV_S3_PVC, DEV_S3_SECRET } from '../dev-bootstrap.mjs';
@@ -28,15 +27,13 @@ import {
 
 const DEPLOYMENT_NAME = 'object-store';
 function loadNativeProfileValuesYaml(profileId) {
-  const chartPath = resolvePlatformChartPath('object-storage');
-  const base = parse(readFileSync(join(chartPath, 'values.yaml'), 'utf8'));
   const overlay = parse(
     readFileSync(
       resolvePlatformProfilePath('object-storage', profileId),
       'utf8',
     ),
   );
-  return stringify({ ...base, ...overlay });
+  return stringify(overlay);
 }
 
 const RELEASE_VALUES_YAML = loadNativeProfileValuesYaml('release');
@@ -226,9 +223,7 @@ function buildReleaseChainState(options = {}) {
       endpoints: [
         {
           addresses: ['10.42.0.55'],
-          ready: true,
-          serving: true,
-          terminating: false,
+          conditions: { ready: true, serving: true, terminating: false },
           targetRef: {
             kind: 'Pod',
             name: 'object-store-pod',
