@@ -9,22 +9,17 @@
 
 ## Topology
 
-A Next server request creates a **new QueryClient for that request**. It is never process-global. The server prefetches critical reads through request-bound Nest calls, validates them, and passes only the intended private projection through `HydrationBoundary`. The browser holds one memory-only QueryClient for the authenticated session. Its `queryFn` uses the same key and result schema through same-origin `/api`. Cookies, server origins and Node-only code do not cross into a client import.
-
-Private Server Components load and compose. Interactive story and list components read the hydrated query cache. The HTML must contain meaningful scene text before hydration, without a second mount fetch that owns the same story. Blindly passing fresh server `initialData` into an already mounted query entry is forbidden, because it need not replace older cache data.
+[Architecture](architecture.md) owns the rendering topology and cache mechanics: [desired data and rendering topology](architecture.md#1-desired-data-and-rendering-topology) (per-request server QueryClient, `HydrationBoundary` of the intended private projection only, one memory-only browser QueryClient, no `initialData` over a mounted entry) and [provider and SSR hydration](architecture.md#provider-and-ssr-hydration). This page adds only the boundary those mechanics serve: the server renders and prefetches from request-bound Nest calls, the browser reads the same key and schema through same-origin `/api`, and no cookie, server origin or Node-only code crosses into a client import.
 
 ## Ownership
 
-1. Nest owns truth. TanStack Query caches authorized projections. It does not own mechanics, billing or invented in-progress results.
-2. Query owns remote data. Do not also store that story in `useState`, context, Zustand or a parallel snapshot store.
-3. React Hook Form owns unsaved edits. A background refresh must not reset dirty values.
-4. User intent is distinct from request transport. Mutation status is not the durable operation ledger.
-5. Local UI (tabs, expanded panels, menus) stays local and resets at its declared entity or offer boundary.
-6. The URL owns selection. Query keys include viewer and resource identity. Navigating from story A to story B must never show A as B while B is loading.
+Who holds what is owned by [Data ownership invariants](architecture.md#data-ownership-invariants): Nest owns truth, Query owns remote data, React Hook Form owns unsaved edits, user intent is distinct from request transport, local UI stays local, and the URL owns selection. Key shape, `gcTime`, retry limits and the no-persistence rule are in [Required query keys and cache policies](architecture.md#required-query-keys-and-cache-policies). Update ordering (`viewVersion`, then `resolution.version`; `dataUpdatedAt` is freshness, not authority; no optimistic committed outcomes) is in [Snapshot and update policy](architecture.md#snapshot-and-update-policy).
 
-Every private key begins with `['viewer', viewerId, ...]`. Session cookies, tokens, unredacted text and mutable object identity do not go in a key. The browser cache is memory-only (`gcTime` five minutes). There is no service worker, IndexedDB or persisted query client for private payloads. GET retry is at most one bounded retry on genuine network or 502/503/504. Never retry 400, 401, 403, 404, 409, 429 or a malformed contract. Mutation retry is zero.
+The consequences that bind this page's commands are:
 
-One validated story snapshot is canonical for Play. Updates reconcile monotonically by `viewVersion`, then `resolution.version` when it applies. `dataUpdatedAt` is cache freshness, not domain authority. There are no optimistic committed outcomes.
+- A hydrated server snapshot and a diverging client store are two owners and are forbidden.
+- Navigating from story A to story B never shows A as B while B loads.
+- Mutation status is transport, not the durable operation ledger.
 
 ## Commands and hints
 
