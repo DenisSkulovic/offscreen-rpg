@@ -399,6 +399,8 @@ def run_probe(
     assert mode in ("normal", "tempo-outage", "privacy")
     assert not (replay and mode != "normal")
 
+    out.mkdir(mode=0o700, parents=True, exist_ok=True)
+
     if http_call is None:
 
         def http_call(base, path, params=None, data=None, *, timeout_s: float):
