@@ -3,12 +3,12 @@
 **State:** Done (2026-11-18). No provider call was run.  
 **Kind:** `documentation`.  
 **Owner/approval:** Offscreen RPG owner; **no automatic selection or consent to spend**.  
-**Parent initiative:** [Product reality reconciliation](../../../../../designs/open/product-reality-reconciliation/README.md).  
+**Parent initiative:** [Product reality reconciliation](../../../../../../research/product-reality/README.md).  
 **Inspected baseline:** clean `main@ec8c652c5b0a`, 2026-11-18 lean snapshot; re-inspect actual HEAD before execution.
 
 ## Cursor first-screen brief
 
-> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../designs/open/product-reality-reconciliation/CLAIM-REGISTER.md).  
+> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../../research/product-reality/CLAIM-REGISTER-2026-11-18.md).  
 > **Authority:** `docs/product/storyteller/behavior-and-quality.md#narrative-initiative; docs/product/storyteller/memory-and-continuity.md; docs/technical/storyteller/request-context-and-cost.md#prompts-and-experiments`.  
 > **Trap:** The canonical page must not suggest Cognee failure proves RPG recall impossible, or one paid successful call proves 30-day memory quality, or that adding vectors fixes source truth. It must also not deny that bounded lexical exploration exists.  
 > **Scope:** Add small measurable claim/evidence boundary to three owners: continuity quality not proved by stored files; optional memory rounds not live default; model calls include repair/retrieval and discards; cheap recent call does not imply monthly viability. Link to noncanonical experiment design. No new spend policy or provider knobs.
@@ -51,7 +51,7 @@ Add small measurable claim/evidence boundary to three owners: continuity quality
 
 ## Handoff and next action
 
-- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../designs/open/product-reality-reconciliation/README.md) narrowly.
+- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../../research/product-reality/README.md) narrowly.
 - Maintain `work/changes/README.md` as the **single selection owner**. Do not select the next packet when this one finishes.
 - For docs-only work, **source code must remain unchanged**. For PVAL06 implementation, edit only the named helper/test paths and update policy routes, no product/game code.
 - After editing, run `pnpm wiki:health`, `pnpm wiki:content-health`, `pnpm repo:docs-health`, the relevant `pnpm wiki:change-guard` plan/close commands; run targeted self-tests for an implementation packet, only if available. Mark not-run accurately.

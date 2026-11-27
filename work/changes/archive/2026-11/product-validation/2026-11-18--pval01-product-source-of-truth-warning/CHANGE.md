@@ -3,12 +3,12 @@
 **State:** Done (2026-11-18).  
 **Kind:** `documentation`.  
 **Owner/approval:** Offscreen RPG owner; **no automatic selection or consent to spend**.  
-**Parent initiative:** [Product reality reconciliation](../../../../../designs/open/product-reality-reconciliation/README.md).  
+**Parent initiative:** [Product reality reconciliation](../../../../../../research/product-reality/README.md).  
 **Inspected baseline:** clean `main@ec8c652c5b0a`, 2026-11-18 lean snapshot; re-inspect actual HEAD before execution.
 
 ## Cursor first-screen brief
 
-> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../designs/open/product-reality-reconciliation/CLAIM-REGISTER.md).  
+> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../../research/product-reality/CLAIM-REGISTER-2026-11-18.md).  
 > **Authority:** `docs/README.md#documentation; docs/product/README.md#product`.  
 > **Trap:** Fresh agent sees “selected shared play” and assumes it is deliverable or implemented. The revised hub must explicitly refuse that inference. Conversely, it must NOT downgrade no-double-spend, no-model-dice or consent to optional dreams.  
 > **Scope:** Edit only the two hubs: add the compact two-axis distinction, direct readers to STATUS and product-reality claim context, and preserve existing question navigation. No new product mechanic, no changes to status tiers.
@@ -51,7 +51,7 @@ Edit only the two hubs: add the compact two-axis distinction, direct readers to 
 
 ## Handoff and next action
 
-- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../designs/open/product-reality-reconciliation/README.md) narrowly.
+- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../../research/product-reality/README.md) narrowly.
 - Maintain `work/changes/README.md` as the **single selection owner**. Do not select the next packet when this one finishes.
 - For docs-only work, **source code must remain unchanged**. For PVAL06 implementation, edit only the named helper/test paths and update policy routes, no product/game code.
 - After editing, run `pnpm wiki:health`, `pnpm wiki:content-health`, `pnpm repo:docs-health`, the relevant `pnpm wiki:change-guard` plan/close commands; run targeted self-tests for an implementation packet, only if available. Mark not-run accurately.

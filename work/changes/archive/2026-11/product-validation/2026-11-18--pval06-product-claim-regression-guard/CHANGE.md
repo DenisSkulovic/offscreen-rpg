@@ -3,12 +3,12 @@
 **State:** Done (2026-11-18). The claim-impact table is optional. No provider call was run.  
 **Kind:** `implementation`.  
 **Owner/approval:** Offscreen RPG owner; **no automatic selection or consent to spend**.  
-**Parent initiative:** [Product reality reconciliation](../../../../../designs/open/product-reality-reconciliation/README.md).  
+**Parent initiative:** [Product reality reconciliation](../../../../../../research/product-reality/README.md).  
 **Inspected baseline:** clean `main@ec8c652c5b0a`, 2026-11-18 lean snapshot; re-inspect actual HEAD before execution.
 
 ## Cursor first-screen brief
 
-> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../designs/open/product-reality-reconciliation/CLAIM-REGISTER.md).  
+> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../../research/product-reality/CLAIM-REGISTER-2026-11-18.md).  
 > **Authority:** `scripts/repo-tools/wiki-core/content-health.mjs; scripts/repo-tools/wiki-core/change-guard.mjs; docs/product/README.md`.  
 > **Trap:** Positive test: one promoted cross-system map claim without an evidence route is flagged. Negatives: illustrative goblin, parked shared-play, source-observed solo mechanics and existing selected Book UX are not false errors. Rejected Cognee research is never auto-accepted.  
 > **Scope:** After the chosen claim metadata contract stabilizes, add optional structured claim-impact declarations to existing affected-Change workflow, targeted static check and negative tests. Do NOT scan every adjective/MUST, require each sentence to register, or create a new always-on AI validator. Product docs and existing tools remain source of truth.
@@ -51,7 +51,7 @@ After the chosen claim metadata contract stabilizes, add optional structured cla
 
 ## Handoff and next action
 
-- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../designs/open/product-reality-reconciliation/README.md) narrowly.
+- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../../research/product-reality/README.md) narrowly.
 - Maintain `work/changes/README.md` as the **single selection owner**. Do not select the next packet when this one finishes.
 - For docs-only work, **source code must remain unchanged**. For PVAL06 implementation, edit only the named helper/test paths and update policy routes, no product/game code.
 - After editing, run `pnpm wiki:health`, `pnpm wiki:content-health`, `pnpm repo:docs-health`, the relevant `pnpm wiki:change-guard` plan/close commands; run targeted self-tests for an implementation packet, only if available. Mark not-run accurately.

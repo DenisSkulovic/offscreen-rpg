@@ -1,6 +1,6 @@
 # REAL | Make one fictional life genuinely playable
 
-**Status:** designed investigation and proposed scoped Changes, **not** a second product authority. Reviewed at 2026-11-18 `main@3d673471dca6418c0dc6380199e913e00ae9ffb6`. This initiative is downstream of [Audit II](../product-reality-reconciliation/AUDIT-II-2026-11-18.md) and the already ratified solo-first decision (PVAL02). Reinspect HEAD when executing.
+**Status:** designed investigation and proposed scoped Changes, **not** a second product authority. Reviewed at 2026-11-18 `main@3d673471dca6418c0dc6380199e913e00ae9ffb6`. This initiative is downstream of [Audit II](https://github.com/DenisSkulovic/offscreen-rpg/blob/c51119c505fcb3dddd87119a734594277840ee17/work/designs/open/product-reality-reconciliation/AUDIT-II-2026-11-18.md) and the already ratified solo-first decision (PVAL02). Reinspect HEAD when executing.
 
 ## End-state to prove
 
@@ -35,3 +35,6 @@ REAL01 can proceed independently from REAL02. REAL02's integration-test claim mu
 ## Non-goals
 
 No generic map, full D&D class/bio kernel, autonomous choice engine, multi-agent NPC civilization, Cognee adoption, mandatory embeddings, rich UI redesign, real-time model polling, hidden paid retry, or rewrite of the entire 31-page product corpus. This is a focused proof program. Dated outcomes belong under evidence and the status owner, not in this speculative design directory.
+
+
+Historical parent PVAL dossier retired 2026-11-27; [durable product research](../../../../research/product-reality/README.md) retains its two audits, semantic-middle and cost questions. REAL remains independently reviewed; older source maps, Harbor fixture and dispatch order are not imposed on successor architecture by that retirement. Existing canonical owners remain unchanged.

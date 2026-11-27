@@ -3,12 +3,12 @@
 **State:** Done (2026-11-18).  
 **Kind:** `documentation`.  
 **Owner/approval:** Offscreen RPG owner; **no automatic selection or consent to spend**.  
-**Parent initiative:** [Product reality reconciliation](../../../../../designs/open/product-reality-reconciliation/README.md).  
+**Parent initiative:** [Product reality reconciliation](../../../../../../research/product-reality/README.md).  
 **Inspected baseline:** clean `main@ec8c652c5b0a`, 2026-11-18 lean snapshot; re-inspect actual HEAD before execution.
 
 ## Cursor first-screen brief
 
-> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../designs/open/product-reality-reconciliation/CLAIM-REGISTER.md).  
+> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../../research/product-reality/CLAIM-REGISTER-2026-11-18.md).  
 > **Authority:** `docs/product/gameplay/continuity.md#space-movement-and-maps; docs/product/gameplay/worlds-and-characters.md#flexible-settings-and-protagonists; docs/product/gameplay/time-and-autonomy.md#bounded-plans-for-absence`.  
 > **Trap:** A reader asks “Do all worlds have coordinates or six D&D abilities?” The answer must be no. A reader asks “Can the model silently teleport a known character?” The answer must still be no.  
 > **Scope:** Edit exact headings to state canonical minimum, unsupported mechanisms, proposed experiment and a failure/quality gate. Route speculation to existing `work/designs/open/spatial-play/`, `gameplay-domain-coverage/`, `time-and-autonomy/`. Preserve all negative rules about authority and no silently inferred time. Do not make a cube graph selected, do not select a new travel formula.
@@ -51,7 +51,7 @@ Edit exact headings to state canonical minimum, unsupported mechanisms, proposed
 
 ## Handoff and next action
 
-- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../designs/open/product-reality-reconciliation/README.md) narrowly.
+- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../../research/product-reality/README.md) narrowly.
 - Maintain `work/changes/README.md` as the **single selection owner**. Do not select the next packet when this one finishes.
 - For docs-only work, **source code must remain unchanged**. For PVAL06 implementation, edit only the named helper/test paths and update policy routes, no product/game code.
 - After editing, run `pnpm wiki:health`, `pnpm wiki:content-health`, `pnpm repo:docs-health`, the relevant `pnpm wiki:change-guard` plan/close commands; run targeted self-tests for an implementation packet, only if available. Mark not-run accurately.

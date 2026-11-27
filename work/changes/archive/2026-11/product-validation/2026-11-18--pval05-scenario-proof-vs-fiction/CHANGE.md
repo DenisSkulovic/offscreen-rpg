@@ -3,12 +3,12 @@
 **State:** Done (2026-11-18).  
 **Kind:** `documentation`.  
 **Owner/approval:** Offscreen RPG owner; **no automatic selection or consent to spend**.  
-**Parent initiative:** [Product reality reconciliation](../../../../../designs/open/product-reality-reconciliation/README.md).  
+**Parent initiative:** [Product reality reconciliation](../../../../../../research/product-reality/README.md).  
 **Inspected baseline:** clean `main@ec8c652c5b0a`, 2026-11-18 lean snapshot; re-inspect actual HEAD before execution.
 
 ## Cursor first-screen brief
 
-> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../designs/open/product-reality-reconciliation/CLAIM-REGISTER.md).  
+> **Route:** [Product documentation](../../../../../../docs/product/README.md), [current STATUS](../../../../../../STATUS.md), [claim register](../../../../../../research/product-reality/CLAIM-REGISTER-2026-11-18.md).  
 > **Authority:** `docs/product/gameplay/acceptance-scenarios.md; docs/product/gameplay/long-life-benchmark-playthroughs.md`.  
 > **Trap:** A reviewer must not infer an implemented map because Vvardenfell has travel, an implemented co-op conflict resolver because of apple rescue, or a universal biological ruleset because the microbe scene is vivid.  
 > **Scope:** Add compact per-scenario "stage, required capabilities, missing dependencies, discriminating failure, estimated provider-work shape" markers. Separate solo V0 tests, conceptual stress tests and beyond-V0 feature combinations. Preserve original story content and inbound anchors. No new adventure content required.
@@ -51,7 +51,7 @@ Add compact per-scenario "stage, required capabilities, missing dependencies, di
 
 ## Handoff and next action
 
-- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../designs/open/product-reality-reconciliation/README.md) narrowly.
+- On explicit selection, inspect current `git status`, `git rev-parse HEAD`, affected canonical headings and existing Change dependencies; read the [design audit](../../../../../../research/product-reality/README.md) narrowly.
 - Maintain `work/changes/README.md` as the **single selection owner**. Do not select the next packet when this one finishes.
 - For docs-only work, **source code must remain unchanged**. For PVAL06 implementation, edit only the named helper/test paths and update policy routes, no product/game code.
 - After editing, run `pnpm wiki:health`, `pnpm wiki:content-health`, `pnpm repo:docs-health`, the relevant `pnpm wiki:change-guard` plan/close commands; run targeted self-tests for an implementation packet, only if available. Mark not-run accurately.
