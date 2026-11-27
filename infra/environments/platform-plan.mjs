@@ -29,6 +29,7 @@ import {
   normalizePlatformResult,
   parseEnsureReceipt,
 } from '../platform/observability/receipt.mjs';
+import { OBSERVABILITY_OBSERVATION_SUPERVISOR_MS } from '../platform/observability/identity.mjs';
 
 const environmentsRoot = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = resolve(environmentsRoot, '../..');
@@ -737,9 +738,32 @@ function observabilityEnsureSpawnExempt(argv) {
   return argv[4] === readPlatformProfile(profileId).contextName;
 }
 
+function observabilityPlanSpawnBounded(argv) {
+  if (argv.length !== 5) {
+    return false;
+  }
+  if (argv[0] !== process.execPath) {
+    return false;
+  }
+  if (resolve(argv[1]) !== resolve(OBSERVABILITY_INSTALL)) {
+    return false;
+  }
+  if (argv[2] !== 'plan') {
+    return false;
+  }
+  const profileId = argv[3];
+  if (profileId !== 'dev' && profileId !== 'release') {
+    return false;
+  }
+  return argv[4] === readPlatformProfile(profileId).contextName;
+}
+
 export function platformRunnerSpawnTimeout(phaseId, argv) {
   if (phaseId === 'observability' && observabilityEnsureSpawnExempt(argv)) {
     return undefined;
+  }
+  if (phaseId === 'observability' && observabilityPlanSpawnBounded(argv)) {
+    return OBSERVABILITY_OBSERVATION_SUPERVISOR_MS;
   }
   if ((phaseId === 'redis' || phaseId === 'rabbitmq') && argv[2] === 'ensure') {
     return undefined;

@@ -16,6 +16,7 @@ import test from 'node:test';
 import { readKindProfile } from '../../../clusters/kind/manager/config.mjs';
 import { DEV_CLUSTER_OWNER } from '../../../clusters/kind/manager/dev-bootstrap.mjs';
 import { readPlatformProfile } from '../../common/profile.mjs';
+import { runPlatformCommand } from '../../common/commands.mjs';
 import {
   classifyInventory,
   observeObservability,
@@ -26,12 +27,29 @@ import {
 import { loadArtifacts } from '../artifacts.mjs';
 import {
   buildCompleteDevSnapshot,
+  buildPredecessorDevSnapshot,
+  buildUpgradedDevSnapshot,
   cloneSnapshot,
   expectHeadlessSpec,
 } from './snapshot-fixtures.mjs';
+import { loadObservabilityVariants } from '../artifacts.mjs';
 
 const locksRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'locks');
 const LOCK_PATH = join(locksRoot, 'images.tsv');
+
+function helmRun(command, args, options) {
+  if (command !== 'helm') {
+    return {
+      ok: false,
+      status: 1,
+      stdout: '',
+      stderr: 'unexpected command',
+      timedOut: false,
+      missing: false,
+    };
+  }
+  return runPlatformCommand(command, args, options);
+}
 
 const devKindProfile = readKindProfile('dev');
 const CA_MATERIAL = Buffer.from('dev-cluster-ca-material');
@@ -715,11 +733,62 @@ test('classifyInventory complete dev snapshot is ready with headless services', 
   );
 });
 
-test('classifyInventory pending complete shape is ready but pending blocks admission', () => {
-  const artifacts = loadArtifacts('dev', { verifyArchive: false });
-  const snapshot = { ...buildCompleteDevSnapshot(artifacts), pending: true };
+test('classifyInventory dev predecessor lane is upgrade-required', () => {
+  const { desired, predecessor } = loadObservabilityVariants('dev', {
+    run: helmRun,
+    verifyArchive: false,
+  });
+  assert.ok(predecessor);
+  const snapshot = buildPredecessorDevSnapshot(desired, predecessor);
+  const classified = classifyInventory(snapshot, desired, {
+    predecessorArtifacts: predecessor,
+  });
+  assert.equal(classified.state, 'not-ready');
+  assert.equal(classified.reasonCode, 'upgrade-required');
+});
+
+test('classifyInventory dev upgraded collector rev2 is ready', () => {
+  const { desired, predecessor } = loadObservabilityVariants('dev', {
+    run: helmRun,
+    verifyArchive: false,
+  });
+  assert.ok(predecessor);
+  const snapshot = buildUpgradedDevSnapshot(desired, predecessor);
+  const classified = classifyInventory(snapshot, desired, {
+    predecessorArtifacts: predecessor,
+  });
+  assert.equal(classified.state, 'ready');
+  assert.equal(classified.reasonCode, 'ready');
+});
+
+test('classifyInventory release desired rev1 is ready', () => {
+  const artifacts = loadArtifacts('release', { verifyArchive: false });
+  const snapshot = buildCompleteDevSnapshot(artifacts);
   const classified = classifyInventory(snapshot, artifacts);
   assert.equal(classified.state, 'ready');
+});
+
+test('classifyInventory missing pendingValid refuses ready', () => {
+  const artifacts = loadArtifacts('dev', { verifyArchive: false });
+  const snapshot = {
+    ...buildCompleteDevSnapshot(artifacts),
+    pending: false,
+    pendingValid: false,
+  };
+  const classified = classifyInventory(snapshot, artifacts);
+  assert.equal(classified.state, 'not-ready');
+  assert.equal(classified.reasonCode, 'pending');
+});
+
+test('classifyInventory pending complete shape is not-ready with pending reason', () => {
+  const artifacts = loadArtifacts('dev', { verifyArchive: false });
+  const snapshot = {
+    ...buildCompleteDevSnapshot(artifacts),
+    pending: true,
+    pendingValid: true,
+  };
+  const classified = classifyInventory(snapshot, artifacts);
+  assert.equal(classified.state, 'not-ready');
   assert.equal(classified.reasonCode, 'pending');
   assert.equal(classified.pending, true);
   assert.notEqual(classified.state, 'absent');

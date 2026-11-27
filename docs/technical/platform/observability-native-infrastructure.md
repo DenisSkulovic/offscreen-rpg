@@ -72,6 +72,9 @@ Plan/status never create mutation lock or pending files; private snapshot allowe
 
 ## Structural inventory and readiness
 
+**Realization (OBS-D04 source, not certification):** offline source on `implementation/observability-developer` realizes the ordered dev Collector base+overlay desired lane, base-only predecessor, exact Helm list/history/manifest projection, `upgrade-required` predecessor classification, owned ensure-prefix/final-shape adapters, F08 observation/ensure worker aliases, and typed public plan/status/diagnostic/provisioning recognition. Live A/V gates remain NOT RUN. F08 numerical schedule remains an unratified candidate pending independent acceptance.
+
+
 Read-only inventory: target identity and namespace UID/owner; Helm releases (exact expected names/status deployed/chart versions/manifest identity), expected named objects by kind/name/namespace including generated claim names, owner labels/Helm annotations where applicable, workload observedGeneration, ready replicas, Pod image identity and PVC Bound/class/size, ClusterIP service selectors and ports. Enumerate target namespace resources and Helm storage records with bounded API reads; unknown workload or release ownership, unreadable/forbidden/malformed/timeouts, terminating resources, stale generations, partial bundle or foreign namespace refuse. Ignore Kubernetes-generated Event, default SA, projected root CA, owned ReplicaSets/Pods/EndpointSlices only under explicit owner/reference checks. Legacy identities below must be absent before fresh release admission; any observed legacy, partial or unreadable legacy state refuse, never delete or relabel shared lab-a. Dev must not query release context. Status reports absent/ready/partial/foreign/unreadable/legacy/refused with bounded reasons; readiness not query or full drift guarantee.
 
 ### Legacy refusal
