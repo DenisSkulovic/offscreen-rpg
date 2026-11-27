@@ -1,16 +1,14 @@
 # Gameplay and Storyteller concepts
 
-This is the vocabulary for product descriptions, feature plans and technical contracts. It distinguishes what the player experiences, what the Storyteller does, and what the software stores. The tables are selected vocabulary, and these definitions do not require a new table or class for every term. The conversation example is illustrative, not a live-run receipt. Internal storage labels appear only under [Execution and storage concepts](#execution-and-storage-concepts). See [progress](../../../STATUS.md) for implemented coverage and [execution language](../../../research/authored-scenarios/execution-language.md) for runtime notation.
+This is the shared vocabulary for product descriptions, feature plans and technical contracts. It separates what the player experiences, what the Storyteller does, and what the software stores. The definitions are selected meaning and do not require a new table or class for every term. See [execution language](../../../research/authored-scenarios/execution-language.md) for runtime notation and [progress](../../../STATUS.md) for implemented coverage.
 
 ## The answer to “what does the Storyteller do?”
 
-The **Storyteller** is selected as a persistent-knowledge writer, not an immortal chat session and not Game Authority. This section states the investigative target the product selects. It does not describe a general agent that is running today; [progress](../../../STATUS.md) records what is realized. For an opening or continuation the selected design gives it a small pinned orientation, after which it may inspect the rooted Library, search and compare exact pinned sources, consult versioned writing skills, keep a durable task **Workdesk**, use tools, revise drafts, and delegate bounded research/editorial questions to optional independent assistant contexts. It decides how much of that work is useful for the mission; the product does not require a theatrical fixed number of model rounds or agents. Everything it proposes passes authority admission before it can become authoritative.
+The **Storyteller** is a persistent-knowledge writer, not an immortal chat session and not Game Authority. The selected investigative target gives it, for an opening or continuation, a small pinned orientation. From there it may inspect the rooted Library, search and compare exact pinned sources, consult versioned writing skills, keep a durable task **Workdesk**, use tools, revise drafts, and delegate bounded research or editorial questions to optional independent assistant contexts. It decides how much of that work the mission needs; the product requires no fixed number of model rounds or agents, and one simple scene may need almost none. This is the target the product selects, not a general agent that runs today; [progress](../../../STATUS.md) records what is realized.
 
-A **Storyteller mission** would end by proposing a scene, choices/intentions and any source changes that should accompany it. Game Authority validates what may become authoritative and publishes one coherent outcome; the Storyteller never owns a mechanical result. Several model rounds, tool calls and draft revisions may therefore belong to one mission; one simple scene may need almost none.
+A **Storyteller mission** ends by proposing a scene, choices/intentions and any source changes that should accompany it. Everything it proposes passes authority admission: Game Authority validates what may become authoritative and publishes one coherent outcome, and the Storyteller never owns a mechanical result.
 
-A published scene is more than prose. It is a historical boundary tied to the exact admitted Library, fictional state, clock, effective creative/rule pins, choices and active fictional commitments at that point. That boundary is reviewable and forkable without replaying the writer.
-
-“Mission,” “turn,” “scene,” “passage” and “model round” are deliberately not synonyms. Internal reasoning is not player-visible history and hidden chain-of-thought is not a persistence requirement.
+A published scene is more than prose. It is a historical boundary tied to the exact admitted Library, fictional state, clock, effective creative/rule pins, choices and active fictional commitments at that point, reviewable and forkable without replaying the writer. “Mission,” “turn,” “scene,” “passage” and “model round” are deliberately not synonyms. Internal reasoning is not player-visible history, and hidden chain-of-thought is not a persistence requirement.
 
 ## Player and world concepts
 
@@ -40,11 +38,16 @@ The Storyteller is a product identity; the selected design realizes it through p
 | Report | An account of an already committed result | Does not create current choices or take control of ongoing activity |
 | Accepted activity plan | The player's finite sequence of future activity intentions under explicit bounds | Cannot choose responses at decision points or override fresh situation authority |
 
-Scene is useful descriptive context, not a synonym for every screen update. A new passage can describe the same scene. One scene can contain several events and decisions, or no dramatic event at all. Ordinary dialogue can warrant a turn without pretending a new incident happened.
+The terms above group around four distinctions:
+
+- **Scene** is descriptive context, not a synonym for every screen update. A new passage can describe the same scene, and one scene can hold several turns, events and decisions, or no dramatic event at all. Ordinary dialogue can warrant a turn without pretending a new incident happened.
+- **Decision** is the moment of choice. Deliberation holds the fiction; the accepted action owns the elapsed time that follows.
+- **Activity** is a commitment extended over eligible game time. Immediate dialogue choices and single attempts are actions, even when they share mechanical policies with activities.
+- **Authority** decides what becomes true. Narration, reports and Storyteller proposals present or suggest; only committed actions, events and work change the situation.
 
 ## Execution and storage concepts
 
-The terms below are the technical vocabulary behind the player concepts. Internal storage labels such as `result.scene` and `story_passage` are storage names only, not extra product objects.
+The terms below are the technical vocabulary behind the player concepts. Internal storage labels are names for stored records, not extra product objects; the dated note after the table covers the current ones.
 
 | Term | Responsibility |
 | --- | --- |
@@ -59,9 +62,7 @@ The terms below are the technical vocabulary behind the player concepts. Interna
 | Canonical document | A versioned authoritative document for its declared role; a summary's role remains derived, while a published source preserves original prose |
 | Story fork | A new first-class story copied from one exact committed position; lineage records provenance, while later mutable state is independent and neither branch is automatically canonical |
 
-A file is not automatically a scene, turn, event or unit of time. One turn may consult many documents. A scene can be represented by several source passages. A memory segment can split a long conversation without ending it or making the player wait. Summary creation never gates progress merely because a segment reached its size threshold; missing required evidence has a separate recovery rule.
-
-Do not assume one model call equals one turn, one passage, one scene, or one file.
+A file is not automatically a scene, turn, event or unit of time. One turn may consult many documents, and a scene can be represented by several source passages. A memory segment can split a long conversation without ending it or making the player wait. Summary creation never gates progress merely because a segment reached its size threshold; missing required evidence has a separate recovery rule. Do not assume one model call equals one turn, one passage, one scene, or one file.
 
 **Dated legacy realization example (storage labels and current path; pending TD05 successor).** The current source names `result.scene` and `story_passage` are storage names. They do not add a scene lifecycle or a second turn engine. One current path can publish both the present passage and a later arrival from the same result; that path does not make the model call into two turns. This describes the realization at the page's last reconciliation, not selected product meaning, and it is retained verbatim in scope until the technical owner receives it. [Status](../../../STATUS.md) records what those names currently cover.
 
