@@ -18,7 +18,7 @@ Existing classifications below are historical starting points, not fresh disposi
 
 | Item | Status |
 | --- | --- |
-| [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R9 bounded E1 candidate: grouped Agent Core, generic synthetic missions, Vercel recommended; P0/P1 passed, targeted evidence and review pending; no implementation commissioned |
+| [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R10 E1 freeze candidate: grouped Agent Core, synthetic missions, Vercel selected by designer; patched P0/P1 and replay passed, self-defense complete, independent verdict and owner ratification pending; no implementation commissioned |
 | [repository-agent-workbench/](open/repository-agent-workbench/README.md) | **Mixed historical/remaining study:** HAR01–03/HAR06–08 are Done, HAR09 Cancelled, HAR10 Done, and HAR05 Done. No Cognee/semantic vendor adopted; this is not a current executable Change |
 
 Selected presentation language, prompt tools, the world-capability kernel and the document-store gates live under `docs/`. The generic parked Engine, Experience, Storyteller and expired-handoff studies were removed from HEAD on 2026-11-16. Recover a body with `git show 69ac3c5682007d647dac2eae24eb43f6afe14930:work/designs/parked/<path>`. That history is not a contract. The content-unit ledger is the [DOC04 disposition](../changes/archive/2026-11/documentation/2026-11-16--doc04-shadow-knowledge-retirement/DISPOSITION.md).

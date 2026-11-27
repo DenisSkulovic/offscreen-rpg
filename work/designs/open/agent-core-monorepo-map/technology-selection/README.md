@@ -1,4 +1,4 @@
-# Technology selection | R8 | 2026-11-27
+# Technology selection | R10 | 2026-11-27
 
 Open research, not a selected dependency or implementation authorization. Original integration baseline 6dbd4c43; current main checked at 1bf121b488b798f57d1f9f0d738d0f6ba0ce4f11; prior design HEAD 24f79f4fce235bae4723cee1e4436ba197a01f65. Current Worker and Workflows pin Temporal 1.24.0. Owner requests serious candidate-specific investigation before selection and independent defense.
 
@@ -16,7 +16,11 @@ Open research, not a selected dependency or implementation authorization. Origin
 - [Custom controller baseline](custom-controller.md)
 - [Version and evidence register](VERSION-EVIDENCE.md)
 
-## R8 standing
+## R10 standing
+
+Designer selects Vercel for isolated E1 review: AI SDK 7.0.183, Temporal integration 2.0.0, Temporal family 1.24.0, Zod 4.6.7. [Patched rerun, dependency and replay receipt](experiments/p0-p1/README.md#r10-patched-vercel-and-replay-receipt-2026-11-27) closes targeted design evidence. Independent review and owner ratification pending; final pnpm resolution and lifecycle qualification required before main integration. All production gates remain closed. No fallback runtime selection without new material evidence.
+
+## R8 standing (historical)
 [Owner-operated P0/P1 evidence](experiments/p0-p1/README.md#owner-operated-result-receipt-2026-11-27): all three candidates passed. Vercel recommended for E1, owner selection pending. Target only E1-critical additional evidence; P2–P5 remain future research unless necessary. No adopted technology.
 
 ## R6 standing (historical)
