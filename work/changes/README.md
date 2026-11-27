@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+[Agent Core E1](open/agent-core-monorepo-map/README.md) — eight current-sprint proposed Changes; independent packet readiness and named commission pending. Grouped workspace compatibility, synthetic-only runtime, joint qualification on `implementation/agent-core-monorepo-map`.
+
 **Change scale:** one preferred measurable outcome, normally 1–5 tasks and 5–10 minutes of active Cursor work. Seven actual tasks, including nested subcards, is a strong default, not an automatic rejection. Document and byte counts are signals. [Planning artifact quality](../../.agents/references/planning-artifact-quality.md) and [finding severity](../../AGENTS.md#finding-severity-and-blocking) govern admission and review. No amendment diaries, contradictory current contracts or unbounded Cursor preload.
 
 [OBSERVABILITY-DEVELOPER](archive/2026-11/observability/2026-11-27--observability-developer/CHANGE.md) — superseded after submission failure, no execution; [recovery roadmap](../designs/open/observability-developer/IMPLEMENTATION-PLAN.md). [OBSERVABILITY-NATIVE](archive/2026-11/observability/2026-11-26--observability-native/CHANGE.md) superseded; outstanding proof transferred. Current batch: [observability-developer](open/observability-developer/README.md) on `implementation/observability-developer`. Independent review and joint certification remain outstanding. None joins main on its own.

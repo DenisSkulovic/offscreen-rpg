@@ -1,0 +1,5 @@
+# AC04 | assigned proof boundary
+
+**Standing:** NOT RUN. Construction source postcondition is the assigned gate unless a specific inexpensive command is listed. All source writes remain isolated from production. Source gate: exact functions and tests written, checked for interface consistency and no I/O. AC08 `pnpm --filter @offscreen/agent-core build` then `pnpm --filter @offscreen/agent-core test` executes offline tests. Test denied identity, missing/extra fields, wrong version, duplicate/foreign requested names, oversized input/instructions, step count 0/4/fraction, registry/definition inconsistency, synchronous 3rd reservation denied, fault precedence and no success with empty/truncated output. No live tests or build forced at incomplete construction join.
+
+Actual commands, exit codes, source SHA, failed/unrun cases and durable owner belong in the closure receipt. Joint proof remains mandatory; no blanket waiver. No real providers, protected data, release/default cluster, migrations, destructive operations or unassigned heavy checks.

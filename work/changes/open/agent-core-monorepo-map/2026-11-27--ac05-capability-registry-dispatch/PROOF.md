@@ -1,0 +1,5 @@
+# AC05 | assigned proof boundary
+
+**Standing:** NOT RUN. Construction source postcondition is the assigned gate unless a specific inexpensive command is listed. All source writes remain isolated from production. Source-only join. AC08 offline `test/registry.test.mjs` verifies duplicate registry and selection failure, prototype-like names/unknown input, and length/schema refusal using pure helpers. Live scenarios prove unknown/invalid tool request emits no unauthorized Activity, three concurrent valid calls dispatch at most two; tool failure cannot complete after final model text; cancellation propagates. Fixture Activity independently checks identity/args. AC06 is assigned SDK invalid-call evidence; no duplicated live tests during construction.
+
+Actual commands, exit codes, source SHA, failed/unrun cases and durable owner belong in the closure receipt. Joint proof remains mandatory; no blanket waiver. No real providers, protected data, release/default cluster, migrations, destructive operations or unassigned heavy checks.

@@ -1,0 +1,5 @@
+# AC01 | assigned proof boundary
+
+**Standing:** NOT RUN. Construction source postcondition is the assigned gate unless a specific inexpensive command is listed. All source writes remain isolated from production. At AC01 join run `node --test infra/images/common/workspace-graph.test.mjs infra/images/development/sync-plan.test.mjs` from repo root. Grouped fixture: apps/api runtime-dep grouped leaf, apps/web dev-dep grouped leaf, other two app manifests empty; assert runtime/build difference, exact grouped closure and rebuild paths, correct workload, no README placeholder inclusion. Duplicate flat/grouped name throws. Existing flat regressions pass. No cluster/Docker. AC08 compares exact real app closures to pre-E1 baseline and runs release guards; all unrun until observed.
+
+Actual commands, exit codes, source SHA, failed/unrun cases and durable owner belong in the closure receipt. Joint proof remains mandatory; no blanket waiver. No real providers, protected data, release/default cluster, migrations, destructive operations or unassigned heavy checks.

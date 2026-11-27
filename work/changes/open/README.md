@@ -1,5 +1,9 @@
 # Open Changes | current sprint / execution horizon
 
+## Agent Core E1 | current sprint (2026-11-27)
+
+[Eight proposed Changes](agent-core-monorepo-map/README.md) implement the accepted E1 foundation. Independent packet readiness and explicit named commission pending; the group owns dependency scheduling and joint qualification.
+
 ## Developer observability | current sprint (2026-11-27)
 
 The eleven owner-released offline Changes are the [observability-developer group](observability-developer/README.md). That index owns the dependency graph and execution status. Independent readiness and changed-authority review remain outstanding. No real cluster or paid operations, constituent main merge, or live certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
