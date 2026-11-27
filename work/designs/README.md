@@ -19,7 +19,6 @@ Existing classifications below are historical starting points, not fresh disposi
 | Item | Status |
 | --- | --- |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
-| [player-data-lifecycle/](open/player-data-lifecycle/README.md) | **Proposed, not selected.** Unratified access, export, and deletion matrix. No jurisdiction, retention period, export API, or raw-prompt grant |
 | [content-provenance-and-rights/](open/content-provenance-and-rights/README.md) | **Proposed, not selected.** Inventory of SRD attribution and the Vvardenfell sample. No license, takedown policy, or hosting promise |
 | [character-lifecourse/](open/character-lifecourse/README.md) | **Proposed, not selected.** Unratified growth, injury, loss, aging, and form questions. No universal damage track or selected death rule |
 | [shared-play/](open/shared-play/) | **Proposed, not selected.** Group rules are not accepted. The consent and resolution matrix keeps invitation, control, deadlines, funding, and leave unratified |

@@ -8,7 +8,7 @@ Historical research, not product authority or a selected implementation. [Origin
 - [Character lifecourse](../../work/designs/open/character-lifecourse/README.md): typed conditions versus durable continuity, form applicability, growth/loss/ending; absent ability is not zero or unlimited capability.
 - [Spatial play](../../work/designs/backlog/spatial-play/README.md): minimal interrupted-journey representation, abstract/nonmetric connection, no universal linear travel interpolation or coordinate requirement.
 - [Shared play](../../work/designs/open/shared-play/README.md): conflicting intentions, group pause, funding and consent remain unsettled. Player count grants no authority.
-- [Data lifecycle](../../work/designs/open/player-data-lifecycle/README.md): distinct from fiction limits; no export API, jurisdiction or raw-prompt permission follows.
+- [Data lifecycle](../../work/designs/backlog/player-data-lifecycle/README.md): distinct from fiction limits; no export API, jurisdiction or raw-prompt permission follows.
 
 ## Social relationships
 

@@ -16,7 +16,7 @@ Retention and access stay on this page and remain unratified where this page alr
 
 The figures in [Retention classes](#6-retention-classes-with-explicit-trade-offs) stay candidates.
 
-**Negative:** Candidate retention figures stay unratified. A proposed 90-day or 180-day raw-artifact figure does not become a binding retention period. An analyst read does not grant forbidden prompts. Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read. A player request matrix for these classes is unratified in [Player data lifecycle](../../../work/designs/open/player-data-lifecycle/README.md#rights-matrix). Candidate durations on this page stay unratified.
+**Negative:** Candidate retention figures stay unratified. A proposed 90-day or 180-day raw-artifact figure does not become a binding retention period. An analyst read does not grant forbidden prompts. Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read. A player request matrix for these classes is unratified in [Player data lifecycle](../../../work/designs/backlog/player-data-lifecycle/README.md#rights-matrix). Candidate durations on this page stay unratified.
 
 ## 1. Four replay modes (do not call them all “replay”)
 
