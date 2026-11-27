@@ -18,6 +18,8 @@ Existing classifications below are historical starting points, not fresh disposi
 
 | Item | Status |
 | --- | --- |
+| [Product documentation renewal](open/product-documentation-renewal/README.md) | E1 design candidate prepared for independent committee: intended product, legacy POC separation, page dispositions and semantic acceptance. Change planning follows review and owner acceptance. |
+| [Technical documentation renewal](open/technical-documentation-renewal/README.md) | E1 design candidate prepared for independent committee: technical owners, engineering foundations, prototype boundaries, source routes and protected transfers. Change planning follows review and owner acceptance. |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R10 E1 independently DEFENDED; accepted planning scope promoted to [technical owner](../../docs/technical/platform/agent-core.md) and [package map](../../packages/README.md). All eight Changes READY and owner-commissioned; [execution group](../changes/open/agent-core-monorepo-map/README.md). Joint acceptance NOT RUN; live and final main integration held |
 | [repository-agent-workbench/](open/repository-agent-workbench/README.md) | **Mixed historical/remaining study:** HAR01–03/HAR06–08 are Done, HAR09 Cancelled, HAR10 Done, and HAR05 Done. No Cognee/semantic vendor adopted; this is not a current executable Change |
 

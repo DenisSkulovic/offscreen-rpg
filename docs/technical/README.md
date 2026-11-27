@@ -1,5 +1,7 @@
 # Technical contracts
 
+**Read as contracts, not implementation certification.** The [current maturity baseline](../../STATUS.md#2026-11-27--capability-maturity-baseline) distinguishes established local infrastructure, Agent Core foundation work, legacy exploratory product implementations and absent capabilities. A selected contract or completed construction Change does not establish a qualified capability. Preserve exact safety guarantees and scoped evidence while reassessing legacy implementation retention.
+
 ## Storyteller evolution | authoritative implementation contracts
 
 | Engineering question | Owner |

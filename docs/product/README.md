@@ -4,6 +4,8 @@ What players and staff must be able to rely on. Technical guarantees are [techni
 
 A selected experience target is a product preference, not a demonstration that the experience is playable, coherent, or affordable. [STATUS](../../STATUS.md) records what has been shown. The dated historical [product-reality claim register](../../research/product-reality/CLAIM-REGISTER-2026-11-18.md) records which ambitions lacked that evidence at the November 18 baseline; recheck current STATUS and owners. It adds no rule. Shared play named on a selected page is not delivered and not implemented. Consent, authoritative dice, and no duplicate effects stay binding.
 
+**Current maturity:** this is intended product behavior, not a catalogue of delivered features. Legacy gameplay, Storyteller and player/staff interfaces are exploratory POCs unless the exact capability has affirmative evidence in the [maturity baseline](../../STATUS.md#2026-11-27--capability-maturity-baseline). Selected player rights, authority, consent and safety constraints remain binding even for a POC.
+
 ## The player loop, before the infrastructure
 
 ```mermaid
