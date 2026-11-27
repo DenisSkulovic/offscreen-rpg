@@ -4,7 +4,7 @@
 
 The **game** explores what happens when a fictional world keeps coherent state, consequences, time and history beyond a single conversation. The **engineering system** explores how humans, ChatGPT, Cursor and other coding agents can design, implement, test and maintain that world without losing decisions, handing off unresolved architecture or mistaking generated text for working software.
 
-> **Project status:** An evolving local engineering portfolio and experimental game platform, **not a publicly hosted or production-ready RPG**. Product/technical documentation describes selected targets; [STATUS.md](STATUS.md) separates implemented source, tested behavior, incomplete integrations and unproven capabilities.
+> **Project status:** An evolving local engineering portfolio and experimental game platform, **not a publicly hosted or production-ready RPG**. Read maturity on three separate axes: what is *selected* (product and technical documentation), what *exists* (an engineering foundation, an exploratory proof-of-concept, or nothing) and what has been *proved* (source inspected, focused test, integrated or live). [STATUS.md](STATUS.md) records the current maturity baseline and the dated evidence behind it. Selection never implies existence, and existence never implies proof.
 
 ## Local setup
 
@@ -88,9 +88,15 @@ flowchart LR
     Gate --> Player
 ```
 
-The current codebase includes a Next.js frontend, API and worker services, TypeScript application packages, PostgreSQL and supporting infrastructure/lab tooling. The [architecture atlas](docs/architecture/README.md) distinguishes **current source**, **selected targets** and **gaps**, including crash/replay and persistence boundaries. [Product](docs/product/README.md) and [technical contracts](docs/technical/README.md) provide the governing details.
+What the repository actually contains is best read in three layers, none of which is a finished game:
 
-**Reality check:** The repository contains implementation and focused tests for parts of persistent story creation, decisions, mechanical outcomes, time and publication. A coherent, generally reliable long-running campaign, arbitrary world mechanics, mature shared play and production hosting are **not established by those components**. See [STATUS.md](STATUS.md) and the dated [evidence](evidence/README.md), rather than inferring completeness from a diagram.
+- **Local engineering foundation.** Native local infrastructure, developer-environment and delivery tooling (PostgreSQL, Temporal, object storage and optional native Redis, RabbitMQ and observability), with component-specific qualification. This is the most established layer; see [technical platform contracts](docs/technical/README.md) and [platform verification](docs/technical/platform/verification-programmes.md).
+- **Agent Core foundation.** A selected, independently reviewed contract (`docs/technical/platform/agent-core.md`) for a reusable mission-execution package. Treat it as selected design plus isolated SDK experiments. Do not assume a consumer, a route or an activation from this README; its own page owns what is landed on a given branch.
+- **Legacy exploratory proof-of-concept application.** A Next.js player frontend and staff console, a NestJS API, a Game Authority process, a Temporal worker and domain packages under [packages/](packages/README.md) (rules in `packages/game`, Story Engine, Storyteller, documents, persistence, identity and spending). These show what was tried. They contain narrow, evidenced mechanisms (for example transactional commit and publication fences) worth retaining, but they are not a general game engine or an accepted product. The former monolithic Application package no longer exists; use the package map, not an old path.
+
+The [architecture atlas](docs/architecture/README.md) distinguishes **current source**, **selected targets** and **gaps**, including crash/replay and persistence boundaries. [Product](docs/product/README.md) and [technical contracts](docs/technical/README.md) provide the governing details.
+
+**Reality check:** The legacy application has implementation and focused tests for parts of persistent story creation, decisions, mechanical outcomes, time and publication; a narrow mechanism with its own evidence keeps that standing even though its consumer is exploratory. A coherent, generally reliable long-running campaign, arbitrary world mechanics, mature shared play and production hosting are **not established by those components**. See [STATUS.md](STATUS.md) and the dated [evidence](evidence/README.md), rather than inferring completeness from a diagram.
 
 ## Browse by role
 

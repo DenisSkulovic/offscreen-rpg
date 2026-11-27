@@ -1,5 +1,13 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -134,6 +142,82 @@ test('tiltDevSyncConfig exposes sync and rebuild maps without warm release', () 
     config.rebuild_paths_by_image.api.includes('packages/story-engine'),
   );
   assert.ok(config.rebuild_paths_by_image.api.includes('pnpm-lock.yaml'));
+});
+
+test('grouped leaf source, manifest and tsconfig rebuild only dependents', () => {
+  const root = mkdtempSync(join(tmpdir(), 'ac01-sync-'));
+  const write = (relative, manifest) => {
+    const dir = join(root, relative);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, 'package.json'), JSON.stringify(manifest));
+  };
+  write('apps/api', {
+    name: '@offscreen/api',
+    dependencies: { '@offscreen/grouped-runtime': 'workspace:*' },
+  });
+  write('apps/web', {
+    name: '@offscreen/web',
+    devDependencies: { '@offscreen/grouped-build': 'workspace:*' },
+  });
+  write('apps/game-authority', { name: '@offscreen/game-authority' });
+  write('apps/worker', { name: '@offscreen/worker' });
+  write('packages/ai/grouped-runtime', { name: '@offscreen/grouped-runtime' });
+  write('packages/domain/grouped-build', { name: '@offscreen/grouped-build' });
+  mkdirSync(join(root, 'packages/ai/inference'), { recursive: true });
+  writeFileSync(join(root, 'packages/ai/inference/README.md'), '# placeholder\n');
+  write('packages/foundation/unused', { name: '@offscreen/unused' });
+
+  const source = resolveDevSync(
+    'packages/ai/grouped-runtime/src/index.ts',
+    root,
+  );
+  assert.equal(source.mode, 'rebuild');
+  assert.deepEqual(source.images, ['api']);
+  assert.deepEqual(source.workloads, ['game-api']);
+
+  const manifest = resolveDevSync(
+    'packages/ai/grouped-runtime/package.json',
+    root,
+  );
+  assert.equal(manifest.mode, 'rebuild');
+  assert.deepEqual(manifest.images, ['api']);
+  assert.equal(
+    isUnsafeDevSyncPath('packages/ai/grouped-runtime/package.json', root),
+    true,
+  );
+
+  const tsconfig = resolveDevSync(
+    'packages/domain/grouped-build/tsconfig.json',
+    root,
+  );
+  assert.equal(tsconfig.mode, 'rebuild');
+  assert.deepEqual(tsconfig.images, ['web']);
+
+  const placeholder = resolveDevSync('packages/ai/inference/README.md', root);
+  assert.equal(placeholder.mode, 'none');
+  assert.deepEqual(placeholder.workloads, []);
+
+  const nested = resolveDevSync(
+    'packages/ai/inference/src/index.ts',
+    root,
+  );
+  assert.equal(nested.mode, 'none');
+  assert.deepEqual(nested.images, []);
+
+  const app = resolveDevSync('apps/api/src/main.ts', root);
+  assert.equal(app.mode, 'sync');
+  assert.deepEqual(app.images, ['api']);
+
+  const unused = resolveDevSync('packages/foundation/unused/src/index.ts', root);
+  assert.equal(unused.mode, 'rebuild');
+  assert.deepEqual(unused.images, []);
+  assert.deepEqual(unused.workloads, []);
+
+  assert.equal(
+    isUnsafeDevSyncPath('packages/commerce/removed/package.json', root),
+    true,
+  );
+  rmSync(root, { recursive: true, force: true });
 });
 
 test('rebuild paths include migration directory when present', () => {

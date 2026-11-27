@@ -2,7 +2,7 @@
 
 **Storyteller evolution fork model:** every new published scene is a fork point by construction. A child references that scene's exact Library and fictional-state roots, preserves settled outcomes and unresolved fictional commitments, then acquires fresh operational identities. Historical review never replays the provider or imports later parent knowledge.
 
-**Reader question:** after the story reaches scene 2, how can I return to scene 1 without inheriting its future? **Baseline:** 584b594. Canonical [scene-rooted canon](../technical/storyteller/canonical-documents-and-packages.md), [data checkpoint](../technical/platform/data-and-persistence.md#scene-checkpoint-v1), [context selection](../technical/storyteller/context-selection-and-recall.md).
+**Reader question:** after the story reaches scene 2, how can I return to scene 1 without inheriting its future? **Baseline:** 584b594; source routes below point to the present tree, since `packages/application` was deleted. Canonical [scene-rooted canon](../technical/storyteller/canonical-documents-and-packages.md), [data checkpoint](../technical/platform/data-and-persistence.md#scene-checkpoint-v1), [context selection](../technical/storyteller/context-selection-and-recall.md).
 
 ## Timeline is not one mutable notebook
 
@@ -17,6 +17,8 @@ flowchart LR
 This example matches the existing **local historical-fork regression theme**, not a promised game scenario or a full kind test. The two timelines may share immutable **ancestor content**, but the child branch receives its own campaign identity and future state. A fork from scene 1 should not copy the parent's scene-2 condition, inventory change or knowledge.
 
 ## Current implementation: exact checkpoint beats live-head copy
+
+**Authority statement for this section.** A fork reads the *recorded* checkpoint of the requested scene, not a snapshot of the story's current head; a current-head copy is never substituted for a missing or mismatched historical object.
 
 ```mermaid
 flowchart TD
@@ -34,7 +36,7 @@ flowchart TD
     Legacy -->|no| Unsupported
 ```
 
-**CURRENT SOURCE:** packages/application/src/stories/forks.ts uses forkFromSceneCheckpoint for the requested historical selector and a restricted forkLiveRevisionOne fallback without selector. readSceneCheckpointReference verifies immutable checkpoint and its canon root; the fork remaps identities and writes a child manifest. **Limit:** selected checkpoints with active holds/work, nontrivial pending offers or unsupported continuity remaps are deliberately rejected. “Fork from any scene, including active work” is a longer-term product ambition, **not yet implemented**. A quiescent checkpoint fork in distributed mode is now public Nest → private Game Authority `PUT /internal/v1/stories/:sourceId/forks/:forkId` → the same application `stories.fork` once; compose/local mode still calls that function in-process. Private GA start is archived with BOOT03. Cross-Pod child continuation and cold kind remain unproved.
+**CURRENT SOURCE:** packages/story-engine/src/stories/forks.ts uses forkFromSceneCheckpoint for the requested historical selector and a restricted forkLiveRevisionOne fallback without selector. readSceneCheckpointReference verifies immutable checkpoint and its canon root; the fork remaps identities and writes a child manifest. **Limit:** selected checkpoints with active holds/work, nontrivial pending offers or unsupported continuity remaps are deliberately rejected. “Fork from any scene, including active work” is a longer-term product ambition, **not yet implemented**. A quiescent checkpoint fork in distributed mode is now public Nest → private Game Authority `PUT /internal/v1/stories/:sourceId/forks/:forkId` → the same Story Engine `stories.fork` once; compose/local mode still calls that function in-process. Private GA start is archived with BOOT03. Cross-Pod child continuation and cold kind remain unproved.
 
 ## Knowledge retrieval must use the branch, not a global newest index
 
@@ -59,7 +61,7 @@ sequenceDiagram
     Child->>Child: Generate narrative proposal, no canonical write
 ```
 
-**SELECTED TARGET / partially implemented source:** packages/application/src/storyteller/context-capture.ts already has a bounded capture with storyId, revision and root hash; canonical-knowledge.ts loads the supplied root and checks campaignId/revision; packages/storyteller/src/tasks/memory-exploration.ts defines bounded ask_memory/read_memory shapes. A fully remote, branch-pinned tool/evidence resolver for the separated Storyteller executor remains a gap. The index is a retrieval aid; even a cached “hit” must be validated against the active branch and actor permission.
+**SELECTED TARGET / partially implemented source:** packages/story-engine/src/storyteller/context-capture.ts already has a bounded capture with storyId, revision and root hash; packages/story-engine/src/storyteller/canonical-knowledge.ts loads the supplied root and checks campaignId/revision; packages/storyteller/src/tasks/memory-exploration.ts (with packages/story-engine/src/storyteller/memory-exploration.ts) defines bounded ask_memory/read_memory shapes. A fully remote, branch-pinned tool/evidence resolver for the separated Storyteller executor remains a gap. The index is a retrieval aid; even a cached “hit” must be validated against the active branch and actor permission.
 
 ## Source and effect authority are different
 
@@ -80,4 +82,4 @@ A Storyteller memory result may say “the king is alive in this branch” **onl
 
 A meaningful end-to-end fixture should create scenes C1 and C2, fork the parent at C1, continue on child, and assert all of the following in SQL and S3: the child has new story/campaign identity and source pin, C1 state and passage appear consistently, parent C2 root remains unchanged, **the child context excludes parent C2**, and the child obtains its own independent next checkpoint. Kill/restart the actual worker before child continuation to rule out hidden in-memory assumptions. Also prove that a missing C1 object, wrong owner, mismatched root and an active-work unsupported checkpoint fail closed.
 
-**Existing test tier:** packages/application/test/historical-fork.test.mjs and scene-checkpoint tests provide local confidence. See [DATA06 investigation](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/data/2026-11-19--data06-fork-scoped-memory-context-minimum/SOURCE-MAP.md) and [TURN03 proof](../../work/changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/PROOF.md) for the missing distributed proof. **No cross-Pod fork claim follows from these diagrams.**
+**Existing test tier:** `tools/api-integration/legacy-engine-tests/historical-fork.test.mjs`, its `historical-fork-v2` sibling and `packages/story-engine/src/stories/scene-checkpoint-v2.test.ts` provide local confidence for the exact historical frontier, an independent child and no parent-future contamination; these are tests of a narrow case, not the arbitrary active-scene fork. See [DATA06 investigation](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/data/2026-11-19--data06-fork-scoped-memory-context-minimum/SOURCE-MAP.md) and the cancelled [TURN03](../../work/changes/archive/2026-11/distributed/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) (cancelled 2026-11-27, no PASS) for the distributed proof that was never run. **No cross-Pod fork claim follows from these diagrams.**

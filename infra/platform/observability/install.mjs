@@ -7,11 +7,16 @@ import process from 'node:process';
 import { performance } from 'node:perf_hooks';
 
 import { readPlatformProfile } from '../common/profile.mjs';
-import { helmValuesArgv, loadArtifacts } from './artifacts.mjs';
+import {
+  helmValuesArgv,
+  loadArtifacts,
+  loadObservabilityVariants,
+} from './artifacts.mjs';
 import { acquireCustody, readPending, runMutation } from './custody.mjs';
 import {
   captureIdentity,
   INVENTORY_BUDGET_MS,
+  OBSERVABILITY_ENSURE_WORKER_MS,
   recheckIdentity,
   runObservabilityReadCommand,
 } from './identity.mjs';
@@ -19,14 +24,12 @@ import { collectInventory, GRAFANA_ADMIN_SECRET } from './inventory.mjs';
 import {
   classifyInventory,
   observeObservability,
-  verifyWorkloadImageIdentity,
+  verifyOwnedEnsurePrefix,
+  verifyOwnedFinalShape,
 } from './readiness.mjs';
-import {
-  OBSERVABILITY_MUTATION_PHASES,
-  isValidPhasePrefix,
-} from './receipt.mjs';
+import { OBSERVABILITY_MUTATION_PHASES } from './receipt.mjs';
 
-export const WORKER_BUDGET_MS = 1_500_000;
+export const WORKER_BUDGET_MS = OBSERVABILITY_ENSURE_WORKER_MS;
 export const FINAL_OBSERVATION_RESERVE_MS = INVENTORY_BUDGET_MS;
 export const HELM_WAIT_TIMEOUT = '180s';
 
@@ -120,123 +123,30 @@ async function withPrivateManifest(manifestText, runner) {
 
 /**
  * @param {object} snapshot
- * @param {ReturnType<typeof loadArtifacts>} artifacts
+ * @param {ReturnType<typeof loadArtifacts>} desired
  * @param {string[]} completedPhases
- * @param {ReturnType<typeof readPlatformProfile>} profile
+ * @param {{
+ *   identity: ReturnType<typeof captureIdentity>,
+ *   custody: { assertOwnPending: () => object },
+ *   profile?: ReturnType<typeof readPlatformProfile>,
+ * }} params
  */
 export function verifyCompletedPhasePrefix(
   snapshot,
-  artifacts,
+  desired,
   completedPhases,
-  profile,
+  params,
 ) {
-  if (!isValidPhasePrefix(completedPhases)) {
-    return { ok: false, detail: 'invalid-phase-prefix' };
-  }
-  const expected = artifacts.expectedInventory;
-  if (!expected?.direct) {
-    return { ok: false, detail: 'missing-expected-inventory' };
-  }
-
-  const completedReleasePhases = completedPhases.filter((phase) =>
-    phase.startsWith('obs-'),
-  );
-
-  if (completedPhases.includes('namespace')) {
-    if (snapshot.namespace?.absent) {
-      return { ok: false, detail: 'namespace-absent' };
-    }
-    const labels = snapshot.namespace?.object?.metadata?.labels ?? {};
-    if (labels[profile.ownerLabel] !== profile.ownerValue) {
-      return { ok: false, detail: 'namespace-owner-label' };
-    }
-  } else if (Object.keys(snapshot.objects ?? {}).length > 0) {
-    return { ok: false, detail: 'unexpected-objects-before-namespace' };
-  }
-
-  if (completedPhases.includes('secret')) {
-    const secret = snapshot.objects?.[`Secret/${GRAFANA_ADMIN_SECRET}`];
-    if (!secret) {
-      return { ok: false, detail: 'missing-grafana-secret' };
-    }
-    const keys = secret.dataKeys ?? [];
-    if (!keys.includes('admin-user') || !keys.includes('admin-password')) {
-      return { ok: false, detail: 'grafana-secret-keys' };
-    }
-  } else {
-    if (snapshot.objects?.[`Secret/${GRAFANA_ADMIN_SECRET}`]) {
-      return { ok: false, detail: 'unexpected-grafana-secret' };
-    }
-  }
-
-  const allowedReleaseNames = new Set(completedReleasePhases);
-  for (const row of expected.direct) {
-    const releaseName = row[4];
-    if (!allowedReleaseNames.has(releaseName)) {
-      const key = `${row[1]}/${row[3]}`;
-      if (key === `Secret/${GRAFANA_ADMIN_SECRET}`) {
-        continue;
-      }
-      if (snapshot.objects?.[key]) {
-        return { ok: false, detail: `unexpected-${row[3]}` };
-      }
-    }
-  }
-
-  for (const row of expected.direct) {
-    const releaseName = row[4];
-    if (!allowedReleaseNames.has(releaseName)) {
-      continue;
-    }
-    const key = `${row[1]}/${row[3]}`;
-    if (!snapshot.objects?.[key]) {
-      return { ok: false, detail: `missing-${row[3]}` };
-    }
-  }
-
-  for (const row of expected.generatedClaims ?? []) {
-    const releaseName = row[4];
-    if (!allowedReleaseNames.has(releaseName)) {
-      const key = `${row[1]}/${row[3]}`;
-      if (snapshot.objects?.[key]) {
-        return { ok: false, detail: `unexpected-claim-${row[3]}` };
-      }
-      continue;
-    }
-    const key = `${row[1]}/${row[3]}`;
-    if (!snapshot.objects?.[key]) {
-      return { ok: false, detail: `missing-claim-${row[3]}` };
-    }
-  }
-
-  for (const release of artifacts.releases) {
-    const secretName = `sh.helm.release.v1.${release.name}.v1`;
-    const key = `Secret/${secretName}`;
-    if (allowedReleaseNames.has(release.name)) {
-      if (!snapshot.objects?.[key]) {
-        return { ok: false, detail: `missing-helm-${release.name}` };
-      }
-      const role = release.role;
-      const kind =
-        role === 'loki' || role === 'tempo' ? 'StatefulSet' : 'Deployment';
-      const workloadName = `obs-${role === 'collector' ? 'collector' : role}`;
-      const workload = snapshot.objects?.[`${kind}/${workloadName}`];
-      if (!workload) {
-        return { ok: false, detail: `missing-workload-${workloadName}` };
-      }
-      const imageCheck = verifyWorkloadImageIdentity(
-        workload,
-        release.expectedImage,
-      );
-      if (!imageCheck.ok) {
-        return { ok: false, detail: `${workloadName}-${imageCheck.reason}` };
-      }
-    } else if (snapshot.objects?.[key]) {
-      return { ok: false, detail: `unexpected-helm-${release.name}` };
-    }
-  }
-
-  return { ok: true };
+  const ownedSnapshot = {
+    ...snapshot,
+    pending: true,
+    pendingValid: snapshot.pendingValid !== false,
+  };
+  return verifyOwnedEnsurePrefix(ownedSnapshot, desired, {
+    identity: params.identity,
+    custody: params.custody,
+    completedPhases,
+  });
 }
 
 /**
@@ -321,21 +231,23 @@ export async function runObservabilityPlan(profileId, contextName, deps = {}) {
       pending: false,
     });
   }
-  const artifacts = loadArtifacts(profileId, {
+  const { desired, predecessor } = loadObservabilityVariants(profileId, {
     run: deps.run,
     verifyArchive: deps.verifyArchive !== false,
   });
   const observation = observeObservability(profileId, {
     run: deps.run,
-    verifyArchive: false,
-    artifacts,
+    artifacts: desired,
+    predecessorArtifacts: predecessor,
     readPending: deps.readPending,
     stateRoot: deps.stateRoot,
     now: deps.now,
     deadline: deps.deadline,
+    verifyArchive: deps.verifyArchive,
   });
+  const classified = observation;
   return {
-    ...structuralObservationReceipt(profileId, contextName, observation),
+    ...structuralObservationReceipt(profileId, contextName, classified),
     operation: 'plan',
   };
 }
@@ -517,12 +429,15 @@ export async function runObservabilityEnsure(
     });
   }
 
+  /** @type {ReturnType<typeof loadObservabilityVariants>['predecessor']} */
+  let predecessorArtifacts = null;
   let artifacts;
   try {
-    artifacts = loadArtifacts(profileId, {
-      run,
+    const variants = loadObservabilityVariants(profileId, {
       verifyArchive: deps.verifyArchive !== false,
     });
+    artifacts = variants.desired;
+    predecessorArtifacts = variants.predecessor;
   } catch {
     return fail('refused', 'artifact-invalid', 'none', false);
   }
@@ -564,7 +479,9 @@ export async function runObservabilityEnsure(
 
     const snapshot = collect(identity);
 
-    const admission = classifyInventory({ ...snapshot, profileId }, artifacts);
+    const admission = classifyInventory({ ...snapshot, profileId }, artifacts, {
+      predecessorArtifacts,
+    });
 
     if (
       snapshot.pending === true &&
@@ -572,6 +489,10 @@ export async function runObservabilityEnsure(
         deps.foreignPendingAtAdmission === true)
     ) {
       return fail('not-ready', 'pending', 'none', true);
+    }
+
+    if (admission.reasonCode === 'upgrade-required') {
+      return fail('not-ready', 'upgrade-required', 'none', false);
     }
 
     if (admission.state === 'ready' && admission.pending !== true) {
@@ -609,14 +530,25 @@ export async function runObservabilityEnsure(
         throw new Error('identity-changed');
       }
 
-      const prefixCheck = verifyCompletedPhasePrefix(
-        collect(identity),
-        artifacts,
-        completedPhases,
-        profile,
-      );
-      if (!prefixCheck.ok) {
-        throw new Error(`phase-prefix-${prefixCheck.detail ?? 'failed'}`);
+      const pendingNow =
+        deps.readPending?.(contextName) ??
+        readPending(contextName, { stateRoot: deps.stateRoot });
+      if (pendingNow.pending) {
+        if (!pendingBegun) {
+          throw new Error('foreign-pending');
+        }
+        try {
+          custody.assertOwnPending();
+        } catch {
+          throw new Error('foreign-pending');
+        }
+      }
+
+      if (
+        phaseId !== 'namespace' &&
+        identity.tuple.targetNamespaceUid == null
+      ) {
+        throw new Error('identity-changed');
       }
 
       if (custody.cancelled || custody.mode !== 'exclusive') {
@@ -638,6 +570,16 @@ export async function runObservabilityEnsure(
         });
       }
       custody.assertOwnPending();
+
+      const prefixCheck = verifyCompletedPhasePrefix(
+        collect(identity),
+        artifacts,
+        completedPhases,
+        { identity, custody, profile },
+      );
+      if (!prefixCheck.ok) {
+        throw new Error(`phase-prefix-${prefixCheck.detail ?? 'failed'}`);
+      }
 
       const timeoutMs = PHASE_TIMEOUT_MS[phaseId];
       const phaseStart = now();
@@ -691,7 +633,7 @@ export async function runObservabilityEnsure(
           after,
           artifacts,
           completedPhases,
-          profile,
+          { identity: bound, custody, profile },
         );
         if (!verify.ok) {
           throw new Error(`phase-verify-${verify.detail ?? 'failed'}`);
@@ -717,7 +659,7 @@ export async function runObservabilityEnsure(
         after,
         artifacts,
         completedPhases,
-        profile,
+        { identity, custody, profile },
       );
       if (!verify.ok) {
         throw new Error(`phase-verify-${verify.detail ?? 'failed'}`);
@@ -730,6 +672,9 @@ export async function runObservabilityEnsure(
 
     const phaseFailureReason = (error) => {
       const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('foreign-pending')) {
+        return 'pending';
+      }
       if (message.includes('identity-changed')) {
         return 'identity-changed';
       }
@@ -828,42 +773,44 @@ export async function runObservabilityEnsure(
           run,
           identity,
           artifacts,
+          predecessorArtifacts,
           now,
           deadline: now() + FINAL_OBSERVATION_RESERVE_MS,
           readPending:
             deps.readPending ??
             ((ctx) => readPending(ctx, { stateRoot: deps.stateRoot })),
-          verifyArchive: false,
         });
 
-    const structuralClass =
-      finalObservation.snapshot != null
-        ? classifyInventory(
-            { ...finalObservation.snapshot, pending: false, profileId },
-            artifacts,
-          )
-        : finalObservation;
+    if (deps.foreignPendingAtFinalize === true) {
+      return fail('not-ready', 'pending', 'confirmed', true);
+    }
 
-    const shapeReady = structuralClass.state === 'ready';
-    const ownPendingFinalize =
-      shapeReady &&
-      finalObservation.pending === true &&
-      deps.foreignPendingAtFinalize !== true;
+    let shapeReady = false;
+    if (finalObservation.snapshot != null) {
+      const finalizeSnapshot = {
+        ...finalObservation.snapshot,
+        pending: true,
+        pendingValid: true,
+      };
+      const ownedShape = verifyOwnedFinalShape(finalizeSnapshot, artifacts, {
+        identity,
+        custody,
+        predecessorArtifacts,
+        expectedOperation: 'ensure',
+        expectedRevision: 1,
+      });
+      shapeReady = ownedShape.ok;
+    } else {
+      shapeReady = finalObservation.state === 'ready';
+    }
 
-    if (
-      !shapeReady ||
-      (!ownPendingFinalize && finalObservation.pending === true)
-    ) {
+    if (!shapeReady) {
       return fail(
         finalObservation.state ?? 'not-ready',
         finalObservation.reasonCode ?? 'not-ready',
         'confirmed',
         true,
       );
-    }
-
-    if (deps.foreignPendingAtFinalize === true) {
-      return fail('not-ready', 'pending', 'confirmed', true);
     }
 
     if (completedPhases.length !== OBSERVABILITY_MUTATION_PHASES.length) {

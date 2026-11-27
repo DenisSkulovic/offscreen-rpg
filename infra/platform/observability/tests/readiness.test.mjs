@@ -16,6 +16,7 @@ import test from 'node:test';
 import { readKindProfile } from '../../../clusters/kind/manager/config.mjs';
 import { DEV_CLUSTER_OWNER } from '../../../clusters/kind/manager/dev-bootstrap.mjs';
 import { readPlatformProfile } from '../../common/profile.mjs';
+import { runPlatformCommand } from '../../common/commands.mjs';
 import {
   classifyInventory,
   observeObservability,
@@ -26,12 +27,29 @@ import {
 import { loadArtifacts } from '../artifacts.mjs';
 import {
   buildCompleteDevSnapshot,
+  buildPredecessorDevSnapshot,
+  buildUpgradedDevSnapshot,
   cloneSnapshot,
   expectHeadlessSpec,
 } from './snapshot-fixtures.mjs';
+import { loadObservabilityVariants } from '../artifacts.mjs';
 
 const locksRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'locks');
 const LOCK_PATH = join(locksRoot, 'images.tsv');
+
+function helmRun(command, args, options) {
+  if (command !== 'helm') {
+    return {
+      ok: false,
+      status: 1,
+      stdout: '',
+      stderr: 'unexpected command',
+      timedOut: false,
+      missing: false,
+    };
+  }
+  return runPlatformCommand(command, args, options);
+}
 
 const devKindProfile = readKindProfile('dev');
 const CA_MATERIAL = Buffer.from('dev-cluster-ca-material');
@@ -715,11 +733,62 @@ test('classifyInventory complete dev snapshot is ready with headless services', 
   );
 });
 
-test('classifyInventory pending complete shape is ready but pending blocks admission', () => {
-  const artifacts = loadArtifacts('dev', { verifyArchive: false });
-  const snapshot = { ...buildCompleteDevSnapshot(artifacts), pending: true };
+test('classifyInventory dev predecessor lane is upgrade-required', () => {
+  const { desired, predecessor } = loadObservabilityVariants('dev', {
+    run: helmRun,
+    verifyArchive: false,
+  });
+  assert.ok(predecessor);
+  const snapshot = buildPredecessorDevSnapshot(desired, predecessor);
+  const classified = classifyInventory(snapshot, desired, {
+    predecessorArtifacts: predecessor,
+  });
+  assert.equal(classified.state, 'not-ready');
+  assert.equal(classified.reasonCode, 'upgrade-required');
+});
+
+test('classifyInventory dev upgraded collector rev2 is ready', () => {
+  const { desired, predecessor } = loadObservabilityVariants('dev', {
+    run: helmRun,
+    verifyArchive: false,
+  });
+  assert.ok(predecessor);
+  const snapshot = buildUpgradedDevSnapshot(desired, predecessor);
+  const classified = classifyInventory(snapshot, desired, {
+    predecessorArtifacts: predecessor,
+  });
+  assert.equal(classified.state, 'ready');
+  assert.equal(classified.reasonCode, 'ready');
+});
+
+test('classifyInventory release desired rev1 is ready', () => {
+  const artifacts = loadArtifacts('release', { verifyArchive: false });
+  const snapshot = buildCompleteDevSnapshot(artifacts);
   const classified = classifyInventory(snapshot, artifacts);
   assert.equal(classified.state, 'ready');
+});
+
+test('classifyInventory missing pendingValid refuses ready', () => {
+  const artifacts = loadArtifacts('dev', { verifyArchive: false });
+  const snapshot = {
+    ...buildCompleteDevSnapshot(artifacts),
+    pending: false,
+    pendingValid: false,
+  };
+  const classified = classifyInventory(snapshot, artifacts);
+  assert.equal(classified.state, 'not-ready');
+  assert.equal(classified.reasonCode, 'pending');
+});
+
+test('classifyInventory pending complete shape is not-ready with pending reason', () => {
+  const artifacts = loadArtifacts('dev', { verifyArchive: false });
+  const snapshot = {
+    ...buildCompleteDevSnapshot(artifacts),
+    pending: true,
+    pendingValid: true,
+  };
+  const classified = classifyInventory(snapshot, artifacts);
+  assert.equal(classified.state, 'not-ready');
   assert.equal(classified.reasonCode, 'pending');
   assert.equal(classified.pending, true);
   assert.notEqual(classified.state, 'absent');
@@ -763,7 +832,9 @@ test('classifyInventory legacy orphan replica set refuses', () => {
 test('classifyInventory wrong runtime image refuses', () => {
   const artifacts = loadArtifacts('dev', { verifyArchive: false });
   const snapshot = cloneSnapshot(buildCompleteDevSnapshot(artifacts));
-  snapshot.objects['Pod/obs-collector-0'].status.containerStatuses[0].imageID =
+  Object.values(snapshot.objects).find(
+    (object) => object.kind === 'Pod' && object.metadata?.name?.startsWith('obs-collector-'),
+  ).status.containerStatuses[0].imageID =
     'docker.io/example@sha256:1111111111111111111111111111111111111111111111111111111111111111';
   const classified = classifyInventory(snapshot, artifacts);
   assert.equal(classified.state, 'not-ready');
@@ -791,7 +862,9 @@ test('classifyInventory stale deployment generation refuses', () => {
 test('classifyInventory foreign child controller uid refuses', () => {
   const artifacts = loadArtifacts('dev', { verifyArchive: false });
   const snapshot = cloneSnapshot(buildCompleteDevSnapshot(artifacts));
-  snapshot.objects['Pod/obs-prometheus-0'].metadata.ownerReferences[0].uid =
+  Object.values(snapshot.objects).find(
+    (object) => object.kind === 'Pod' && object.metadata?.name?.startsWith('obs-prometheus-'),
+  ).metadata.ownerReferences[0].uid =
     'foreign-rs-uid';
   const classified = classifyInventory(snapshot, artifacts);
   assert.equal(classified.state, 'foreign');
@@ -1095,4 +1168,42 @@ test('observeObservability standalone cleanup failure forces unreadable', () => 
   });
   assert.equal(result.state, 'unreadable');
   assert.match(result.detail, /cleanup-failed/);
+});
+
+test('upgraded dev admits only the retained collector revision 1 secret', () => {
+  const { desired, predecessor } = loadObservabilityVariants('dev', {
+    run: helmRun,
+    verifyArchive: false,
+  });
+  const snapshot = buildUpgradedDevSnapshot(desired, predecessor);
+  assert.equal(
+    snapshot.objects['Secret/sh.helm.release.v1.obs-collector.v1'].metadata.labels.status,
+    'superseded',
+  );
+  assert.equal(classifyInventory(snapshot, desired, { predecessorArtifacts: predecessor }).reasonCode, 'ready');
+
+  const unexpected = cloneSnapshot(snapshot);
+  unexpected.objects['Secret/sh.helm.release.v1.obs-collector.v3'] = {
+    kind: 'Secret',
+    metadata: {
+      name: 'sh.helm.release.v1.obs-collector.v3',
+      namespace: snapshot.namespace.object.metadata.name,
+      uid: 'uid-unexpected',
+      labels: { owner: 'helm', name: 'obs-collector', status: 'superseded', version: '3' },
+    },
+    type: 'helm.sh/release.v1',
+    dataKeys: ['release'],
+  };
+  const extra = classifyInventory(unexpected, desired, { predecessorArtifacts: predecessor });
+  assert.equal(extra.reasonCode, 'not-ready');
+  assert.match(extra.detail, /helm-storage-extra/);
+
+  const foreign = cloneSnapshot(snapshot);
+  foreign.objects['Secret/sh.helm.release.v1.other.v1'] = structuredClone(
+    snapshot.objects['Secret/sh.helm.release.v1.obs-collector.v1'],
+  );
+  foreign.objects['Secret/sh.helm.release.v1.other.v1'].metadata.name = 'sh.helm.release.v1.other.v1';
+  const unrelated = classifyInventory(foreign, desired, { predecessorArtifacts: predecessor });
+  assert.equal(unrelated.reasonCode, 'not-ready');
+  assert.match(unrelated.detail, /helm-storage-extra/);
 });

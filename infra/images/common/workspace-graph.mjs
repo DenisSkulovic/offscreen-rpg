@@ -1,5 +1,5 @@
 // Workspace manifest scan, closure traversal, and path-based image selection.
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 export const RUNTIME_IMAGES = Object.freeze([
@@ -17,6 +17,17 @@ export const IMAGE_APP = Object.freeze({
 });
 
 const WORKSPACE_ROOTS = ['apps', 'packages', 'tools'];
+const PACKAGE_FAMILIES = [
+  'domain',
+  'ai',
+  'commerce',
+  'platform',
+  'foundation',
+];
+const SCAN_PARENTS = [
+  ...WORKSPACE_ROOTS,
+  ...PACKAGE_FAMILIES.map((family) => `packages/${family}`),
+];
 
 const RUNTIME_FIELDS = ['dependencies', 'optionalDependencies'];
 const BUILD_EXTRA_FIELDS = ['devDependencies', 'peerDependencies'];
@@ -81,10 +92,16 @@ function workspaceDependencyNames(manifest, mode) {
 }
 
 function loadWorkspaceIndex(root) {
+  for (const family of PACKAGE_FAMILIES) {
+    const relative = `packages/${family}`;
+    if (existsSync(path.join(root, relative, 'package.json'))) {
+      throw new Error(`workspace manifest on family directory ${relative}`);
+    }
+  }
   const byName = new Map();
   const byDir = new Map();
-  for (const top of WORKSPACE_ROOTS) {
-    const parent = path.join(root, top);
+  for (const parentRel of SCAN_PARENTS) {
+    const parent = path.join(root, parentRel);
     let entries = [];
     try {
       entries = readdirSync(parent);
@@ -106,7 +123,7 @@ function loadWorkspaceIndex(root) {
       if (typeof manifest.name !== 'string' || manifest.name.length === 0) {
         continue;
       }
-      const relative = `${top}/${entry}`;
+      const relative = normalizeRelative(`${parentRel}/${entry}`);
       const record = { name: manifest.name, relative, manifest };
       if (byName.has(manifest.name)) {
         throw new Error(
@@ -118,6 +135,33 @@ function loadWorkspaceIndex(root) {
     }
   }
   return { byName, byDir };
+}
+
+/**
+ * Indexed leaf that owns file, or null. Longest boundary-aware prefix wins.
+ * @param {string} root
+ * @param {string} file
+ * @returns {string | null}
+ */
+export function workspaceDirectoryForPath(root, file) {
+  const normalized = String(file)
+    .replaceAll('\\', '/')
+    .replace(/^\.\/+/, '')
+    .replace(/\/+$/, '');
+  if (
+    normalized.length === 0 ||
+    normalized.startsWith('/') ||
+    normalized.split('/').includes('..')
+  ) {
+    return null;
+  }
+  const { byDir } = loadWorkspaceIndex(root);
+  let best = null;
+  for (const dir of byDir.keys()) {
+    if (normalized !== dir && !normalized.startsWith(`${dir}/`)) continue;
+    if (!best || dir.length > best.length) best = dir;
+  }
+  return best;
 }
 
 /**
