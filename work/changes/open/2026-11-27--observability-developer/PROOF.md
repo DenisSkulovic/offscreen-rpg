@@ -84,6 +84,147 @@ Owner evidence route: first recover captured stdout of the previously accepted i
 
 No source or live tests run by this consolidation. Independent ratification of candidate deadlines, exact caller/subprocess feasibility, D4 pinned query execution evidence, pinned developer metric label evidence and isolated target availability remain open. All tasks held. No acceptance predicates retired.
 
+## D3/D4 | owner-operated isolated pinned evidence batch (not executed)
+
+Prior R3.2 stdout was not recovered in tracked files or accessible prior terminal context. The recorded successful private evidence directory was /tmp/offscreen-obs-data-plane.ruUJDGpb; if exact full row stdout is available, return only the application rows and TARGET_INFO line. The old experiment did not exercise D4 full-domain queries, so a new isolated run remains required for that evidence.
+
+Run the following from the current main worktree with no implementation changes, only after owner explicitly approves this local Docker-only experiment and verifies local Docker context/daemon, available memory and preexisting pinned images. No Kubernetes requests, host mounts, published ports, image pulls, external network or application stores. This reuses the accepted experiment bytes, injecting a bounded query receipt into a private temporary copy, not editing tracked design scripts. Stop on any failed prerequisite, query, label or cleanup. No broad Docker removal. Existing script cleans only the containers it creates; label-based postcheck detects retained experiment containers (do not automatically remove them). Do not run on an unverified remote daemon.
+
+```bash
+(
+set -euo pipefail
+umask 077
+test "${OFFSCREEN_OBSERVABILITY_EVIDENCE:-}" = authorized
+test -z "${DOCKER_HOST:-}${DOCKER_CONTEXT:-}${DOCKER_TLS:-}${DOCKER_TLS_VERIFY:-}${DOCKER_CERT_PATH:-}"
+test -z "$(git status --porcelain)"
+CTX=$(docker context show)
+HOST=$(docker context inspect "$CTX" --format '{{.Endpoints.docker.Host}}')
+case "$HOST" in unix://*) ;; *) echo "REFUSE nonlocal Docker endpoint"; exit 2;; esac
+docker info --format '{{.Name}} {{.MemTotal}}'
+W=$(mktemp -d /tmp/offscreen-obs-evidence.XXXXXXXX)
+export W
+echo "PRIVATE EVIDENCE: $W"
+D=work/designs/open/observability-developer/experiments
+BASE=06306ace3717841f36ad0952cf7664afbd6fcd4a
+for f in build-developer-values.py data-plane.py run-data-plane.sh; do
+  git show "$BASE:$D/$f" > "$W/$f"
+done
+test "$(git hash-object "$W/build-developer-values.py")" = 9a9a6a724891caba1146a82dc6434f3f9460e0eb
+test "$(git hash-object "$W/data-plane.py")" = d003d533c1a8e170730a25fb4fb3a9a9ded75266
+test "$(git hash-object "$W/run-data-plane.sh")" = b834b169052d3121f267d774807b6358964071d1
+python3 "$W/build-developer-values.py" infra/platform/observability/specimens/collector.yaml "$W/overlay.yaml"
+node --input-type=module <<'JS'
+import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {writeFileSync} from 'node:fs';
+import {parse,parseAllDocuments} from 'yaml';
+import {loadArtifacts} from './infra/platform/observability/artifacts.mjs';
+const b=loadArtifacts('dev');
+const c=b.releases.find(x=>x.role==='collector');
+const prom=b.releases.find(x=>x.role==='prometheus');
+assert(c && prom);
+const cfgs=prom.documents.filter(x=>x.kind==='ConfigMap' && typeof x.data?.['prometheus.yml']==='string');
+assert.equal(cfgs.length,1);
+const config=parse(cfgs[0].data['prometheus.yml']);
+assert.deepEqual(config.otlp?.promote_resource_attributes,['deployment.environment.name','service.namespace','service.name']);
+assert.equal(config.otlp?.keep_identifying_resource_attributes??false,false);
+assert.equal(config.otlp?.promote_scope_metadata??false,false);
+assert.equal(config.otlp?.translation_strategy??'UnderscoreEscapingWithSuffixes','UnderscoreEscapingWithSuffixes');
+assert.equal(config.otlp?.convert_histograms_to_nhcb??false,false);
+assert.equal(config.otlp?.promote_all_resource_attributes??false,false);
+assert.equal((config.remote_read??[]).length,0);
+assert.equal((config.remote_write??[]).length,0);
+const rr=spawnSync('helm',['template',c.name,c.chartPath,'--namespace',b.profile.namespaces.observability,'-f',c.valuesPath,'-f',process.env.W+'/overlay.yaml',...c.helmValueArgs],{encoding:'utf8',timeout:60000,maxBuffer:8*1024*1024});
+assert.equal(rr.status,0);
+const docs=parseAllDocuments(rr.stdout).map(x=>{assert.equal(x.errors.length,0);return x.toJSON()});
+const cm=docs.filter(x=>x?.kind==='ConfigMap'&&x.metadata.name==='obs-collector');
+assert.equal(cm.length,1);
+assert.equal(typeof cm[0].data.relay,'string');
+writeFileSync(process.env.W+'/relay.yaml',cm[0].data.relay,{mode:0o600});
+console.log('PINNED RENDER AND OTLP CONFIG CHECK PASS');
+JS
+# The following modifies only the private copy, after verifying the original blob.
+python3 - "$W/run-data-plane.sh" <<'PY'
+from pathlib import Path
+import sys
+p=Path(sys.argv[1]);s=p.read_text()
+marker='print("PROMETHEUS SERIES CHECK PASS")'
+assert s.count(marker)==1
+injection=r'''
+from datetime import datetime,timezone,timedelta
+from decimal import Decimal
+from urllib.parse import urlencode
+import time
+job="offscreen/offscreen-developer-proof"
+base={"job":job,"deployment_environment_name":"development","service_namespace":"offscreen","service_name":"offscreen-developer-proof","offscreen_candidate":"probe"}
+expected={}
+def add(name,value,**extra):
+    expected[tuple(sorted(dict(base,__name__=name,**extra).items()))]=Decimal(str(value))
+add("offscreen_agent_runs_total",17)
+add("offscreen_agent_active_ratio",3)
+add("offscreen_agent_duration_seconds_sum","0.2")
+add("offscreen_agent_duration_seconds_count",1)
+for le,v in zip(("0.01","0.1","1","10","60","+Inf"),(0,0,1,1,1,1)):
+    add("offscreen_agent_duration_seconds_bucket",v,le=le)
+assert len(rows)==len(expected)
+assert {tuple(sorted(r["metric"].items())):Decimal(r["value"][1]) for r in rows}==expected
+meta=query('target_info{job="'+job+'"}')
+assert len(meta)==1 and meta[0]["metric"]=={"__name__":"target_info","job":job,"deployment_environment_name":"development"} and Decimal(meta[0]["value"][1])==1
+windows=((-9223372036854,-3000000000001),(-3000000000000,2999999999999),(3000000000000,9223372036854))
+seen={};results=[];count=0
+epoch=datetime(1970,1,1,tzinfo=timezone.utc)
+for lo,hi in windows:
+    params={"query":'{job="'+job+'"}['+str(hi-lo+1)+'ms]',"time":(epoch+timedelta(milliseconds=hi)).isoformat(timespec="milliseconds"),"timeout":"5s"}
+    start=time.monotonic()
+    with urllib.request.urlopen("http://127.0.0.1:9090/api/v1/query?"+urlencode(params),timeout=5) as response:
+        raw=response.read(1048577)
+    elapsed=time.monotonic()-start
+    assert len(raw)<=1048576 and elapsed<=5
+    body=json.loads(raw,parse_float=Decimal)
+    assert body["status"]=="success" and body["data"]["resultType"]=="matrix" and not body.get("warnings") and not body.get("infos")
+    window_series=set()
+    for row in body["data"]["result"]:
+        key=tuple(sorted(row["metric"].items()))
+        assert key not in window_series and row["metric"]["job"]==job and "histograms" not in row
+        window_series.add(key)
+        previous=None
+        for t,v in row["values"]:
+            ms=Decimal(t)*1000
+            assert ms==ms.to_integral_value() and lo<=ms<=hi and (previous is None or ms>previous)
+            previous=ms
+            count+=1
+            if row["metric"]["__name__"]!="target_info":
+                assert key in expected and Decimal(v)==expected[key]
+                seen[key]=max(seen.get(key,ms),ms)
+        assert previous is not None
+    assert count<=16384
+    results.append({"lo":lo,"hi":hi,"elapsedMs":round(elapsed*1000),"bytes":len(raw),"series":len(window_series)})
+assert set(seen)==set(expected) and len(set(seen.values()))==1
+print("D3_D4_RECEIPT",json.dumps({"application":[{"metric":dict(k),"value":str(expected[k]),"rawTimestampMs":int(seen[k])} for k in sorted(seen)],"targetInfo":meta[0],"windows":results,"sampleCount":count},sort_keys=True))
+'''
+s=s.replace(marker,injection+'\n'+marker)
+# Tag all created containers so cleanup can be independently checked without touching other containers.
+needle='COMMON=(--pull=never --cap-drop ALL --security-opt no-new-privileges)'
+assert s.count(needle)==1
+s=s.replace(needle,'COMMON=(--label "offscreen.evidence=${EVIDENCE_ID:?}" --pull=never --cap-drop ALL --security-opt no-new-privileges)')
+p.write_text(s)
+PY
+export EVIDENCE_ID="$(basename "$W")"
+test -z "$(docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID")"
+rc=0
+timeout --signal=TERM --kill-after=30s 300s bash "$W/run-data-plane.sh" "$W/relay.yaml" > "$W/full-private.log" 2>&1 || rc=$?
+echo "EXPERIMENT_EXIT=$rc"
+test -z "$(docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID")" || { echo "FAIL retained owned experiment containers; preserve evidence, report IDs"; docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID"; exit 1; }
+test "$rc" = 0
+test "$(grep -c '^D3_D4_RECEIPT ' "$W/full-private.log")" = 1
+grep '^D3_D4_RECEIPT ' "$W/full-private.log"
+echo "OWNED CONTAINERS ABSENT"
+git rev-parse HEAD
+)
+```
+
+Set the authorization variable only for this named experiment (not proof/upgrade/disruption flags). Return the receipt line, render check, exit status, cleanup result and SHA only. On failure return exit status and sanitized error lines from the private log, not full Collector debug output. The batch validates exact labels and three queries on newly retained synthetic data; it does not demonstrate production retained-store scale or future-boundary sample ingestion, and does not replace two live developer runs. No test was executed by the planner in preparing this command.
+
 ## Owner execution route (after implementation and separately authorized)
 From dedicated implementation worktree root, clean tracked tree, exact tested SHA, current source guard; capture git rev-parse HEAD and git status --porcelain; no other platform writer/connection. Owner confirms target by independent Kind/Docker/cluster UID evidence, normal profile and available isolated target(s); no cluster creation or deletion implied.
 Existing dev predecessor: pnpm infra:status --env dev --services observability --json; require upgrade-required and pending false. OFFSCREEN_OBSERVABILITY_UPGRADE=authorized pnpm obs:upgrade; require exactly one Collector revision transition, preserved identities and no pending. Repeat same command require mutation none and no selected UID/RV change. pnpm obs:connect --queries in owner foreground; verify fixed loopback ports, Grafana authenticated health, Ctrl+C and no owned listeners; do not leave running during upgrade/proof. Then run sequentially, stop at any failure:
