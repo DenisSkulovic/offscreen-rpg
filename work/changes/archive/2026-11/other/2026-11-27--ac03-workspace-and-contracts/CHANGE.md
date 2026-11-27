@@ -1,6 +1,6 @@
 # AC03 | Agent Core workspace, dependency pins and pure contracts
 
-**State:** READY; owner-commissioned
+**State:** Done — source gate passed; AC08 joint acceptance not passed
 
 **Kind:** implementation
 
@@ -35,6 +35,6 @@ Owner-commissioned: linked Change worktree from latest verified `implementation/
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/technical/platform/agent-core.md#concrete-mission-contract | technical | unchanged selected contract; source realizes assigned portion | pending implementation receipt | NOT RUN | assigned in PROOF | named durable owner at closure |
-| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain changes authorized | pending diff inspection | no production exposure | no product change |
-| packages/README.md / affected README | related | reconcile actual source and proof standing only | pending implementation receipt | NOT RUN | no unsupported claims | closure receipt |
+| docs/technical/platform/agent-core.md#concrete-mission-contract | technical | unchanged selected shapes; source adds types and missionWorkflowId only | lockfile-only PASS on change branch before join; build NOT RUN | source-inspected plus lock inspection | no Worker/client/model imports in root export | status sentence in technical owner and package README |
+| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain files in the diff | source-inspected | no production dependency added | no product change |
+| packages/README.md / affected README | related | map sentence records AC03 source exists and proof is NOT RUN | package and five placeholder READMEs written | source-inspected | placeholders have no manifests | group register updated at archive |
