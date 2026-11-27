@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-[Agent Core E1](open/agent-core-monorepo-map/README.md) — eight current-sprint Changes; final independent READY (all eight) and owner-commissioned for construction/assigned offline proof. Live qualification and final main integration remain held. Grouped workspace compatibility, synthetic-only runtime, joint qualification on `implementation/agent-core-monorepo-map`.
+[Agent Core E1](open/agent-core-monorepo-map/README.md) — AC01 source Done and archived on the design branch; AC02–AC08 remain current-sprint. Live qualification and final main integration remain held. Joint qualification stays on `implementation/agent-core-monorepo-map`.
 
 **Change scale:** one preferred measurable outcome, normally 1–5 tasks and 5–10 minutes of active Cursor work. Seven actual tasks, including nested subcards, is a strong default, not an automatic rejection. Document and byte counts are signals. [Planning artifact quality](../../.agents/references/planning-artifact-quality.md) and [finding severity](../../AGENTS.md#finding-severity-and-blocking) govern admission and review. No amendment diaries, contradictory current contracts or unbounded Cursor preload.
 

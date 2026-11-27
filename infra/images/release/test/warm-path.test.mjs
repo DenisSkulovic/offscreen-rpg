@@ -87,6 +87,30 @@ test('workspace manifest edits require rebuilding every image', () => {
     requiresFullImageRebuild(['packages/story-engine/src/index.ts']),
     false,
   );
+  assert.equal(
+    requiresFullImageRebuild(['packages/ai/agent-core/package.json']),
+    true,
+  );
+  assert.equal(
+    requiresFullImageRebuild(['apps/api/package.json']),
+    true,
+  );
+  assert.equal(
+    requiresFullImageRebuild(['packages/ai/agent-core/src/index.ts']),
+    false,
+  );
+  assert.equal(
+    requiresFullImageRebuild(['packages/ai/inference/README.md']),
+    false,
+  );
+  assert.equal(
+    requiresFullImageRebuild(['packages/ai/agent-core/nested/extra/package.json']),
+    false,
+  );
+  assert.equal(
+    requiresFullImageRebuild(['packages/unknown/leaf/package.json']),
+    false,
+  );
 });
 
 test('lockfile selects every runtime image', () => {
