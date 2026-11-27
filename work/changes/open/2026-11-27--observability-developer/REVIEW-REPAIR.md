@@ -38,3 +38,6 @@ Repair16: exact baseline/current Git tree blob comparison, tracked existing test
 Repair17: persist external supervisor migration, shared constant ownership, diagnostic pending exit/receipt correction, archive verification and exact regression cases. T03/T05 task linkage updated. No tests or live; diagnostic-engine termination and outer process closure still require verification.
 
 Repair18: close selected external process containment semantics, correct plan-only runner recognition, narrow T11 generic runner cancellation/close extension, new focused test ownership and aggregate integration. Actual Linux tests/independent approval pending; no live.
+
+
+Recovery19: consolidated PROOF.md into one selected deadline candidate, preserving previous schedules at 6b6d909c8c91464c027a530d6837479d78002923. Recomputed all seven gate sums and ensure phase total; removed obsolete active alternatives, retained cleanup/fault predicates, D1–D4 and owner route. Inspected current identity/inventory/proof-host deadline anchors; no source edits or proof execution. This is document reconciliation, not closure of F08, independent ratification or readiness. All dispatch held.
