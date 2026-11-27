@@ -7,7 +7,7 @@
 | Gate | Result | Reason / next owner |
 |---|---|---|
 | G0 | FAIL | Verified remote main and current AGENTS/CHATGPT/packet readiness rules; R5 authority known, prior commission suspended. Independent candidate deadline review and actual local branch/worktree collision check outstanding; owner/ChatGPT. |
-| G1 | UNVERIFIED | Relevant runtime roots inspected and prior baseline tree census retained; current full tracked grep outside roots unavailable via connector; exact Grafana rendered Service targetPort not yet measured. Owner local census/render, planner interprets. |
+| G1 | UNVERIFIED | Operational census reconciled remotely by exact baseline-to-current tree delta (Recovery29 SOURCE-MAP); no operational source drift or new owner. Exact Grafana rendered Service targetPort still not measured here; earlier evidence corroborates named targetPort. Owner local census/render, planner interprets. |
 | G2 | FAIL | Deadline schedule selected and arithmetic checked, but actual pinned D3/D4 query behavior, subprocess boundedness and A9 chain feasibility not verified. T11 fixed Tempo-only closure, disruption record shape and bounded sync/async contract selected in recovery26; actual Linux tests, source reconciliation and independent ratification pending. No executor design discretion. |
 | G3 | FAIL | All twelve cards screened individually below; three concrete contradictions corrected in this batch. Full cold simulation cannot establish safe implementation for flagged tasks; do not declare twelve PASS. |
 | G4 | FAIL | First dispatch prohibited by explicit review hold, no verified local worktree. Candidate first dispatch T01 only after accepted whole packet and explicit commission; parent reads CHANGE/TASKS and exact T01 anchors, runs branch guard, never runs owner proof. |
@@ -40,7 +40,7 @@ Human owner commissions the exact reviewed candidate and supplies local worktree
 
 ## Remaining planner-owned work (not another generic rewrite)
 
-1. Complete owner-local tracked census and actual Helm-rendered Grafana Service mapping. Combined workstation evidence batch in PROOF.md needs owner execution and receipt, not a guessed fixture; census/render run first, D3/D4 isolated Docker portion explicit opt-in.
+1. Operational census reconciled in Recovery29; complete actual Helm-rendered Grafana Service mapping and local worktree checks. Combined workstation evidence batch in PROOF.md needs owner execution and receipt, not a guessed fixture; census/render run first, D3/D4 isolated Docker portion explicit opt-in.
 2. Reconcile recovery26 selected restoration/runner/deadline contracts against all affected consumers and independent review; review recovery27 ten bounded subcards individually (not milestone summaries).
 3. Confirm isolated A6/A8/A9 availability, exact targets/identity and permission boundaries. No destructive authorization assumed.
 4. Re-audit all G0–G7 and each individual child after changes; submit exact candidate to independent committee, no commission before verdict.
