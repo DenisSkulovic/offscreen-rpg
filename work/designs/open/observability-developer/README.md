@@ -4,8 +4,8 @@ Owner: human owner + ChatGPT planner. Open investigation, 2026-11-27. Baseline m
 
 [Proposed Change](../../../changes/open/2026-11-27--observability-developer/CHANGE.md). Existing OBSERVABILITY-NATIVE remains open, with incomplete acceptance; no concurrent edits to its owned source. Existing canonical authority: [native infrastructure](../../../../docs/technical/platform/observability-native-infrastructure.md). This dossier does not supersede it until defended and promoted.
 
-## R4 formal review entry
-[TARGET.md](TARGET.md) and [LIFECYCLE.md](LIFECYCLE.md) are normative for the frozen candidate; [source map](SOURCE-MAP.md), [acceptance matrix](ACCEPTANCE.md), [designer self-defense](SELF-DEFENSE.md), and [experimental evidence](DESIGN-R2.md) support them. R4 designer verdict DEFENDED for bounded development scope; independent committee pending. All prior candidate sections below are historical, superseded where inconsistent. No implementation commission or live mutation authority.
+## R5 review entry
+[TARGET.md](TARGET.md), [LIFECYCLE.md](LIFECYCLE.md), [proof contract](R5-PROOF-CONTRACT.md), [certification](R5-CERTIFICATION.md), [geography](R5-GEOGRAPHY.md) are normative. [Acceptance](ACCEPTANCE.md), [source map](SOURCE-MAP.md), [self-defense](SELF-DEFENSE.md), [pass 01](committee/pass-01.md). R5 addresses OD-01–04; tracked census remains owner evidence gate before formal resubmission. Earlier sections historical.
 
 ## Target and posture
 Evolutionary, not clean-slate. One shared five-release development stack; preserve pinned charts/images, three retained claims, Grafana credentials, explicit service selection, bounded observation and mutation custody. Make real application-shaped operational telemetry available to WSL experiments and subsequently in-cluster development workers. Telemetry is optional, bounded, and never part of business transaction correctness. No new cluster for ordinary development acceptance.
