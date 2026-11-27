@@ -18,7 +18,7 @@ Existing classifications below are historical starting points, not fresh disposi
 
 | Item | Status |
 | --- | --- |
-| [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
+| [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R7 proposed E1 scope; R6 three P0/P1 specimens authored, not run; next owner review and experiment evidence; no framework or implementation commissioned |
 | [repository-agent-workbench/](open/repository-agent-workbench/README.md) | **Mixed historical/remaining study:** HAR01–03/HAR06–08 are Done, HAR09 Cancelled, HAR10 Done, and HAR05 Done. No Cognee/semantic vendor adopted; this is not a current executable Change |
 
 Selected presentation language, prompt tools, the world-capability kernel and the document-store gates live under `docs/`. The generic parked Engine, Experience, Storyteller and expired-handoff studies were removed from HEAD on 2026-11-16. Recover a body with `git show 69ac3c5682007d647dac2eae24eb43f6afe14930:work/designs/parked/<path>`. That history is not a contract. The content-unit ledger is the [DOC04 disposition](../changes/archive/2026-11/documentation/2026-11-16--doc04-shadow-knowledge-retirement/DISPOSITION.md).
