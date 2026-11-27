@@ -2,21 +2,21 @@
 
 ## Developer observability | current sprint (2026-11-27)
 
-Owner intends all eleven bounded Changes to be completed in today's execution horizon, subject to actual readiness, dependencies, safety and acceptance. All belong in open. No implication of parallel dispatch, commission, live authorization or proof waiver. [Design and dependency map](../../designs/open/observability-developer/IMPLEMENTATION-PLAN.md) owns sequencing. The original monolithic Change is superseded.
+All eleven Changes are owner-released for isolated offline source implementation. Integration reference `integration/observability-developer`; D01 first, D02–D11 dependency-gated. Independent readiness/changed-authority review outstanding; no real cluster or paid operations, main merge, Done or live certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 | Change | Current readiness |
 | --- | --- |
-| [OBS-D01 native artifact normalization](2026-11-27--obs-d01-native-artifacts/CHANGE.md) | Proposed; defended narrow integration exception pending owner acceptance and independent packet readiness |
-| [OBS-D02 target identity](2026-11-27--obs-d02-target-identity/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
-| [OBS-D03 operation custody](2026-11-27--obs-d03-operation-custody/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
-| [OBS-D04 collector topology](2026-11-27--obs-d04-collector-topology/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
-| [OBS-D05 foreground connection](2026-11-27--obs-d05-foreground-connection/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
-| [OBS-D06 collector upgrade](2026-11-27--obs-d06-collector-upgrade/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
-| [OBS-D07 synthetic proof](2026-11-27--obs-d07-synthetic-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
-| [OBS-D08 developer signal proof](2026-11-27--obs-d08-developer-signal-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
-| [OBS-D09 health resource proof](2026-11-27--obs-d09-health-resource-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
-| [OBS-D10 recovery proof](2026-11-27--obs-d10-recovery-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
-| [OBS-D11 partial install proof](2026-11-27--obs-d11-partial-install-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D01 native artifact normalization](2026-11-27--obs-d01-native-artifacts/CHANGE.md) | OWNER-RELEASED — offline source only (start after local census/baseline) |
+| [OBS-D02 target identity](2026-11-27--obs-d02-target-identity/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
+| [OBS-D03 operation custody](2026-11-27--obs-d03-operation-custody/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
+| [OBS-D04 collector topology](2026-11-27--obs-d04-collector-topology/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
+| [OBS-D05 foreground connection](2026-11-27--obs-d05-foreground-connection/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
+| [OBS-D06 collector upgrade](2026-11-27--obs-d06-collector-upgrade/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
+| [OBS-D07 synthetic proof](2026-11-27--obs-d07-synthetic-proof/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
+| [OBS-D08 developer signal proof](2026-11-27--obs-d08-developer-signal-proof/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
+| [OBS-D09 health resource proof](2026-11-27--obs-d09-health-resource-proof/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
+| [OBS-D10 recovery proof](2026-11-27--obs-d10-recovery-proof/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
+| [OBS-D11 partial install proof](2026-11-27--obs-d11-partial-install-proof/CHANGE.md) | OWNER-RELEASED — offline source only (after predecessor receipt) |
 
 
 [RABBITMQ-NATIVE](2026-11-26--rabbitmq-native/CHANGE.md): owner-accepted R10, source-only commission; live acceptance and join held.

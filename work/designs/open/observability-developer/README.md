@@ -1,6 +1,6 @@
 # Developer observability
 
-**State:** R5 architecture accepted and promoted; implementation recovery active. Owner: ChatGPT planner; human integration custodian. Next review: one consolidated independent submission of the corrected joint source route, F08, D4/D4.1 and A9 candidate, plus separate packet verdicts for all eleven; owner acceptance and one conditional bundle commission after verdicts. [Independent pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/114cc39cf4e1477ac34e24d4a26684ad9f91b8c3/work/designs/open/observability-developer/committee/pass-03.md) defends D01 only; broader staged activation requires revision. No implementation or live operation commissioned. The old monolithic packet is superseded and archived; [All eleven D01–D11 Changes](IMPLEMENTATION-PLAN.md#proposed-successor-map) are open in today's owner-selected sprint. D01 is first in dependency order, not the only current work. No commission or live permission follows from placement.
+**State:** R5 architecture accepted and promoted; all eleven Changes OWNER-RELEASED for offline candidate source implementation, dependency-gated. Independent readiness/changed-authority defense outstanding, no PASS asserted. Human custodian; ChatGPT planner. [Joint release boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification). No live permission, main merge or Done. All original A/V obligations retained.
 
 ## Objective
 
@@ -15,7 +15,7 @@ Make the optional native observability stack useful for local development: maint
 | [ACCEPTANCE](ACCEPTANCE.md) | Complete native/developer gate ownership and binding certification rule |
 | [IMPLEMENTATION-PLAN](IMPLEMENTATION-PLAN.md) | Bounded successor outcomes, dependencies and recovery |
 | [Canonical technical contract](../../../../docs/technical/platform/observability-native-infrastructure.md) | Permanent selected authority |
-| [D01 artifact normalization](../../../changes/open/2026-11-27--obs-d01-native-artifacts/CHANGE.md) | First proposed bounded packet, not yet independently reviewed |
+| [D01 artifact normalization](../../../changes/open/2026-11-27--obs-d01-native-artifacts/CHANGE.md) | First owner-released offline packet; remaining review at acceptance |
 
 ## Historical and transition material
 

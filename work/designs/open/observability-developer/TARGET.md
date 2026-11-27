@@ -1,6 +1,6 @@
 # Developer observability target
 
-Accepted R5 design, not commissioned implementation. The [canonical technical contract](../../../../docs/technical/platform/observability-native-infrastructure.md) owns all selected behavior. This design dossier retains the architectural rationale and acceptance boundary, not a second normative copy.
+Accepted R5 design; the owner released frozen amendments for isolated offline source implementation only. Independent defense and ratification remain outstanding before live use or main integration. The [canonical technical contract](../../../../docs/technical/platform/observability-native-infrastructure.md) owns all selected behavior. This design dossier retains the architectural rationale and acceptance boundary, not a second normative copy.
 
 ## Problem and alternatives
 
@@ -37,4 +37,4 @@ The [canonical technical owner](../../../../docs/technical/platform/observabilit
 
 Prior read-only feasibility observation (/tmp/offscreen-obs-batch.aF0Wnxi8): five rev1 deployed, storage metadata and old Collector checksum/owned Pod chain observed, three claims, six host ports vacant, no pending, Linux Python 3.12.3/util-linux 2.39.3/prctl support and approximately 10 GiB available. Historical evidence only; no current resource or upgrade claim.
 
-D01 parity-only artifact migration needs no new topology decision and can be prepared now. Commission remains gated by independent readiness, worktree collision check and applicable certification authority. No downstream unresolved mechanism is assigned to its executor.
+D01 parity-only artifact migration needs no new topology decision and can be prepared now. Owner release permits offline implementation after local ownership checks; certification remains gated. No downstream unresolved mechanism is assigned to its executor.
