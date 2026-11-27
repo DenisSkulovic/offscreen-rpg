@@ -104,7 +104,7 @@ test('collectInventory throws unreadable on pagination overflow', () => {
   const artifacts = loadArtifacts('dev', { verifyArchive: false });
   const huge = Array.from({ length: 100 }, (_, index) => ({
     kind: 'ConfigMap',
-    metadata: { name: `cm-${index}`, uid: `uid-${index}` },
+    metadata: { name: `cm-${index}`, uid: `uid-${index}`, namespace: identity.namespace },
   }));
   const { run } = {
     run(command, args) {
@@ -298,9 +298,12 @@ test('collectInventory follows encoded continuation and retains both pages', () 
           calls.push(url.searchParams.get('continue'));
           const second = calls.length === 2;
           return okJson({
-            items: [{ kind: 'ConfigMap', metadata: { name: second ? 'b' : 'a', namespace: identity.namespace } }],
+            items: [{ metadata: { name: second ? 'b' : 'a', namespace: identity.namespace } }],
             metadata: { continue: second ? '' : token },
           });
+        }
+        if (url.pathname.endsWith('/secrets')) {
+          return okJson({ items: [{ metadata: { name: 'obs-grafana-admin', namespace: identity.namespace }, type: 'Opaque', data: { 'admin-user': 'YQ==', 'admin-password': 'Yg==' } }], metadata: {} });
         }
         return okJson({ items: [], metadata: {} });
       }
@@ -312,4 +315,7 @@ test('collectInventory follows encoded continuation and retains both pages', () 
   assert.deepEqual(calls, [null, token]);
   assert.ok(snapshot.objects['ConfigMap/a']);
   assert.ok(snapshot.objects['ConfigMap/b']);
+  assert.deepEqual(snapshot.objects['Secret/obs-grafana-admin'].dataKeys, ['admin-password', 'admin-user']);
+  assert.equal(snapshot.objects['Secret/obs-grafana-admin'].apiVersion, 'v1');
+  assert.equal(snapshot.objects['Secret/obs-grafana-admin'].data, undefined);
 });
