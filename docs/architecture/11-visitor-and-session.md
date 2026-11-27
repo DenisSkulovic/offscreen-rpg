@@ -58,6 +58,8 @@ sequenceDiagram
   end
 ```
 
+**Sign-in proves a provider identity and nothing else.** A GitHub OAuth success never grants access to a story, a staff page or provider spending ([identities and access](../technical/platform/identities-and-access.md#authorization-is-separate-from-the-session)). Two further distinctions matter when reading source: the *actor* of a request is the user the session resolves to, and the selected rule is that every command and snapshot read checks story membership and character control. Membership does not exist yet; the current realization checks the story owner (`story.ownerId`), and shared membership and invitations are selected, not implemented. A terminal bearer is a different, narrower credential accepted only by the story controller.
+
 **Authentication** means “which user is this?” **Authorization** means “can this user read or change this *specific* story?” The private Next layout gates the shell; Nest controllers and business operations still check ownership for individual data. The `requireViewer()` function itself explicitly says it is **not endpoint authorization**.
 
 **Why a cookie passes from Next to Nest:** Next performs request-bound server reads, so its server forwards the incoming visitor cookie to Nest's session validation. It should not invent ownership from a client cache. For detailed cache/SSR behavior, go to [browser and trust](07-client-and-trust.md).
@@ -80,4 +82,4 @@ sequenceDiagram
 4. `apps/web/src/server/viewer.ts` gates private server-rendered pages.
 5. `apps/api/src/modules/auth/identity.ts` resolves the actual authenticated user.
 
-**Status:** Browser OAuth in the full disposable Kubernetes release is still not a completed TURN03 acceptance gate in the inspected evidence. This page documents implemented source and its intended failure behavior, not a live sign-in certification.
+**Status:** Browser OAuth in the full disposable Kubernetes release has no acceptance evidence (its planned TURN03 gate was cancelled on 2026-11-27). This page documents implemented source and its intended failure behavior, not a live sign-in certification.

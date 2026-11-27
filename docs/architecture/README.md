@@ -2,7 +2,9 @@
 
 **Storyteller evolution reading rule:** this atlas explains the target selected in product/technical owners. Where an older diagram still shows preview/Start, flat manifests, quiescent-only forks or a universal character/D&D shape, follow the linked permanent owner instead. The target flow is **Play/Story Prompt → writer mission over rooted Library → Game Authority → coherent published scene → review/fork from that exact boundary**.
 
-**For humans first.** This is the visually navigable front door to the architecture, not an alternative source of truth. Product behavior remains under [product](../product/README.md), technical contracts under [technical](../technical/README.md), concrete capabilities under [STATUS](../../STATUS.md), and future implementation work under [Changes](../../work/changes/README.md). The diagrams describe connections, not authority to add mechanics or deploy services.
+**For humans first.** This is the visually navigable front door to the architecture, not an alternative source of truth. Product behavior remains under [product](../product/README.md), technical contracts under [technical](../technical/README.md), concrete capabilities under [STATUS](../../STATUS.md), and future implementation work under [Changes](../../work/changes/README.md). The diagrams describe connections, not authority to add mechanics or deploy services. A diagram or a cited historical decision never becomes binding architecture by being drawn here: when a picture and a technical owner disagree, the owner controls.
+
+**Scope of the atlas.** It maps the legacy exploratory application as inspected, plus the selected targets that application is being measured against. It does not draw the [Agent Core foundation](../technical/platform/agent-core.md) (a separate selected contract with its own qualification boundary) or the native infrastructure platform; use their owners.
 
 **Two reading layers and dates:** The human-first [Start Here tour](00-human-tour.md) and journeys 11–14 were source-inspected at `e2c0e751` (2026-11-23). Deeper chapters 01–10 originated at snapshot `584b594` (2026-11-19) and can contain historical observations; their specific dates and CURRENT/TARGET labels control. Where an old chapter contradicts the newer inspected route map, follow the newer source-grounded journey and actual code. Neither source inspection is a live release test. **Diagrams are intentionally labeled:**
 - **CURRENT SOURCE:** a path or constraint present in inspected code; not necessarily exercised end-to-end or deployed on Kubernetes.
@@ -56,6 +58,8 @@ flowchart TB
 
 Do not infer CURRENT from a SELECTED design or PROOF from passing a fake fixture. This distinction is why some arrows on later diagrams are dashed or tagged target.
 
+**One decision shapes the whole atlas, and its two parts differ in kind.** [D-0001](../decisions/D-0001--modular-engine.md) holds a standing safety rule (no model-owned dice, clock, inventory or cross-actor authority) and a dated working choice (a modular monolith until a measured need justifies separate services). Chapters 1 and 6 draw the second as a historical selection with a revisit rule; they do not make it permanent law. The Kubernetes laboratory is an educational target under the [topology owner](../technical/platform/topology.md#distributed-learning-target), not the engine decision.
+
 ## Choose the question you want answered
 
 | Human question | Illustrated chapter | Canonical owner |
@@ -71,7 +75,7 @@ Do not infer CURRENT from a SELECTED design or PROOF from passing a fake fixture
 | Can we play a campaign while randomly killing Pods without any LLM calls? | [9. Chaos Lab and zero-token play](09-chaos-and-zero-token-play.md) | [K8S10](../../work/changes/open/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md), [lab protocol](../technical/lab/experiment-protocol.md) |
 | Where do our diagrams expose unanswered design questions? | [8. Assumptions and gaps](08-gaps-and-decisions.md) | [POC source audit](../../work/designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) |
 
-**Jump into the actual source:** [Web](../../apps/web/README.md), [API](../../apps/api/README.md), [Game Authority](../../apps/game-authority/README.md), [Worker](../../apps/worker/README.md), [Story Engine](../../packages/story-engine/README.md), [Storyteller](../../packages/storyteller/README.md), [workflows](../../packages/workflows/README.md), [DB](../../packages/db/README.md). Old references to `packages/application` describe historical compatibility, not the present top-level package tree. The diagrams use short actor names, not invented packages. The source links explain who *currently* implements a concept. The diagrams use shorter readable actor names, not invented package names.
+**Jump into the actual source:** [Web](../../apps/web/README.md), [API](../../apps/api/README.md), [Game Authority](../../apps/game-authority/README.md), [Worker](../../apps/worker/README.md), [Story Engine](../../packages/story-engine/README.md), [Storyteller](../../packages/storyteller/README.md), [workflows](../../packages/workflows/README.md), [DB](../../packages/db/README.md). The source links explain who *currently* implements a concept; the diagrams use short actor names, not invented packages. There is no `packages/application` directory: any reference to it in an older chapter or evidence note is a historical path, so follow the [package map](../../packages/README.md) and the linked package READMEs for the current owner.
 
 ## Diagrams as maintained architecture
 

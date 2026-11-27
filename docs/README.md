@@ -4,7 +4,9 @@
 
 **How documentation enters the development lifecycle:** [How we work](../WORKFLOW.md) explains ratifying product and technical contracts *before* Cursor implementation, how authoritative documentation Changes work, and how verification/realized-state reconciliation returns here. This page remains the product/technical knowledge router.
 
-**New to the game itself and its code?** Begin with the [five-minute human architecture tour](architecture/00-human-tour.md), followed by [visitor/login](architecture/11-visitor-and-session.md), [story creation/Storyteller setup](architecture/12-creating-a-story.md), [Play/scene/fork](architecture/13-playing-and-forking.md), and [Admin](architecture/14-admin-tour.md). These are dated, source-grounded explainers, not a second product specification or evidence that the multi-Pod turn passed.
+**New to the game itself and its code?** Begin with the [five-minute human architecture tour](architecture/00-human-tour.md), followed by [visitor/login](architecture/11-visitor-and-session.md), [story creation/Storyteller setup](architecture/12-creating-a-story.md), [Play/scene/fork](architecture/13-playing-and-forking.md), and [Admin](architecture/14-admin-tour.md). These are dated, source-grounded explainers of the legacy exploratory application, not a second product specification, a statement of the selected target, or evidence that the multi-Pod turn passed. The [Agent Core foundation](technical/platform/agent-core.md) is a separate selected contract and not part of those tours.
+
+**What exists, as opposed to what is selected?** Start with the [current maturity baseline](../STATUS.md#2026-11-27--capability-maturity-baseline). It separates the local engineering foundation, the Agent Core foundation, the legacy exploratory application (including narrow evidenced mechanisms that keep their own standing) and absent capabilities.
 
 **New to parallel Cursor development?** Begin with the [illustrated developer environments guide](architecture/10-developer-environments.md), then [the technical owner](technical/platform/developer-environments.md) or [safe operating commands](runbooks/dev-worktree-stacks.md). It distinguishes the proven two-slot foundation from the selected resource-on-demand future.
 
@@ -54,6 +56,8 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | --- | --- |
 | How and why is this software developed with AI coding agents? | [Engineering System Tour](../ENGINEERING.md) · [Agent harness](../.agents/HARNESS.md) · [Change standard](../.agents/references/change-work-unit-standard.md) |
 | What is the game, in one place? | [Vision](product/foundations/vision.md) |
+| What exists today, and how mature is each area? | [STATUS maturity baseline](../STATUS.md#2026-11-27--capability-maturity-baseline). Maturity and proof are separate from selection |
+| What is the Agent Core foundation, and what is still unqualified? | [Agent Core](technical/platform/agent-core.md). Selected E1 contract and limitations, not a consumer or an activation |
 | What is selected for the first Living Book POC, and what is not yet built? | [POC product behavior](product/experience/living-book-poc.md) · [POC client boundary](technical/client/living-book-poc.md) · [status](../STATUS.md). No POC code is implied by these specs |
 | What is the selected visual-system architecture and queued UI/DIR work? | [Product requirements](product/experience/design-system-and-expression.md) · [Semantic design system](technical/client/semantic-design-foundation.md) · [Conditional scene production](technical/client/scene-direction-production.md) · [Phase 3 queue](../work/designs/open/player-experience-refoundation/phase-3/README.md) |
 | Where is the broader proposed player-experience redesign, design research and visual-system work? | [Experience refoundation design program](../work/designs/open/player-experience-refoundation/README.md) · [process and gates](../work/designs/open/player-experience-refoundation/DESIGN-PROCESS.md). Not ratified; no implementation authorization |
@@ -72,7 +76,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | Where do hydration, cache and commands live? | [State and server boundary](technical/client/state-and-server-boundary.md) |
 | How do I run a Chamber test without paying a model? | [Chamber fixtures](technical/lab/chamber-and-fixtures.md) · [local development](runbooks/local-development.md) |
 | How do I operate the portfolio locally? | [Runbooks](runbooks/README.md) |
-| Which source package owns a behavior? | [API routes](../apps/api/README.md#find-the-request-route) · [Story Engine operations](../packages/story-engine/README.md) · [Game mechanics](../packages/game/README.md#find-the-owning-rule). A product proposal is not a source owner |
+| Which source package owns a behavior? | [Package map](../packages/README.md) · [API routes](../apps/api/README.md#find-the-request-route) · [Story Engine operations](../packages/story-engine/README.md) · [Game mechanics](../packages/game/README.md#find-the-owning-rule). A product proposal is not a source owner |
 | Is a selected product target already feasible? | [STATUS](../STATUS.md) · [product-reality claims](../research/product-reality/CLAIM-REGISTER-2026-11-18.md). Selection is not proof. The claim register adds no rule |
 | What has been demonstrated, and which Change may be implemented? | [STATUS](../STATUS.md) · [strategy](../ROADMAP.md) · [work selection](../work/QUEUE.md) · [Change catalog](../work/changes/README.md) · [Tasks](../work/tasks/README.md) |
 

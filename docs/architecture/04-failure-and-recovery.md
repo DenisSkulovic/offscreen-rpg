@@ -1,6 +1,8 @@
 # 4. Failure, replay and resilience atlas
 
-**Reader question:** if we kill something at the worst possible moment, what must happen next? **Baseline:** 584b594. The diagrams show **selected resilience contracts** and known current primitives, not an executed cross-Pod fault campaign. Canonical [engine concurrency/recovery](../technical/engine/concurrency-and-recovery.md), [execution and delivery](../technical/platform/execution-and-delivery.md), [uncertain work](../runbooks/uncertain-work-recovery.md).
+**Reader question:** if we kill something at the worst possible moment, what must happen next? **Baseline:** 584b594, with the adoption statement below updated to the present source. The diagrams show **selected resilience contracts** and known current primitives, not an executed cross-Pod fault campaign.
+
+**The four rules every diagram here applies.** (1) Failure domains differ: an uncommitted failure may retry with the same identity, a committed one must return the existing result. (2) A possibly sent billable provider call is never resent automatically; a new attempt is a new budget decision. (3) A late or stale result is held or refused, never merged over a newer scene, and a missing historical object fails the read instead of being replaced by the current head. (4) The RabbitMQ projection is optional and never gates a scene. Canonical [engine concurrency/recovery](../technical/engine/concurrency-and-recovery.md), [execution and delivery](../technical/platform/execution-and-delivery.md), [uncertain work](../runbooks/uncertain-work-recovery.md).
 
 ## Start with the right failure domain
 
@@ -46,7 +48,7 @@ sequenceDiagram
     GA-->>T: Published
 ```
 
-For Crash B and D, application idempotency and root fences are mandatory. S3 writes are **not** undone by a distributed rollback; unreferenced objects can be retained/garbage-collected under a separate retention policy. A scene must never reference content that failed to stage. STORY03's actual GA adopt operation is currently a **gap**, not a proven successful Crash B recovery.
+For Crash B and D, application idempotency and root fences are mandatory. S3 writes are **not** undone by a distributed rollback; unreferenced objects can be retained/garbage-collected under a separate retention policy. A scene must never reference content that failed to stage. At the 584b594 baseline the Game Authority adopt operation was a **gap**; source now has `adoptSavedStorytellerGeneration` and a Game Authority publish route that adopts the saved attempt ([chapter 3](03-data-and-transactions.md#a-critical-unimplemented-bridge-custody-is-not-generation-success)). Local scripted runs exercise Crash B and D shapes; a successful Crash B recovery across Pods is still **not proved**.
 
 ## External provider: safe retry is a question, not a default
 

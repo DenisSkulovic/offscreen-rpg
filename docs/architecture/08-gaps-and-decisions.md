@@ -9,6 +9,8 @@
 
 ## The POC gates, ordered by dependency rather than fashion
 
+**Dated planning order (2026-11-19), reconciled 2026-11-27.** The diagram is the dependency order proposed at the 584b594 audit. Since then BOOT03, STORY02 and STORY03 are archived for their local scripted scope (the [execution owner](../technical/platform/execution-and-delivery.md#storyteller-workflow-identity) states what landed); the TURN02 and K8S11 release gates are not demonstrated, TURN03 (the cold-cluster scene and fork proof) was **cancelled by the owner on 2026-11-27** pending the monorepo and agent-runtime redesign, so it is a retired gate that earned no PASS, and TURN04 (a real model turn) is not authorized by anything here. A gate that was cancelled, such as DIST04, is not a passed gate.
+
 ```mermaid
 flowchart TD
     Bootstrap[BOOT03: pinned Storyteller-kind opening through GA] --> Start[Committed scene 1 checkpoint]
@@ -27,6 +29,8 @@ flowchart TD
 **All arrows here are prerequisites/selected planning gates, not evidence of completion.** The actual queue selects implementation and maintains statuses. Existing pieces may be partially landed and should be reconciled instead of reimplemented.
 
 ## A gap is an architectural finding when it distinguishes competing outcomes
+
+The table is the **2026-11-19 ledger**: the Inspected-signal column is what the audit saw then. The rows tagged P0 for Nest-local start/fork, the combined Activity and the saved-attempt adoption describe the baseline; present source has moved on them (see the notes in [chapter 1](01-system-and-ownership.md) and [chapter 3](03-data-and-transactions.md)), and what is still open is the proof column, chiefly cross-Pod and cold-cluster acceptance.
 
 | Priority | Inspected signal | Missing proof or contract | Owner |
 | --- | --- | --- | --- |
@@ -55,7 +59,7 @@ flowchart TD
     Dedup -->|no| Start[Start once with selected workflow type]
 ```
 
-The canonical [Storyteller workflow identity](../technical/platform/execution-and-delivery.md#storyteller-workflow-identity) selects one stable workflow id of **storyteller/{generationId}**, and old workflow histories remain registered. A previous planner-only STORY03 handoff mistakenly suggested **storyteller-distributed/{generationId}**. That would permit two different workflow identities for one generation across a mixed routing/recovery window. **Decision for this audit:** follow the canonical identity and freeze versioned workflow type at **notice admission**, with distinct legacy/new outbox selectors. The current dispatcher uses notice.id as a workflow-id fallback during explicit recovery; the new selected distributed selector must be audited so the *same generation* never acquires a fresh workflow identity when a recovery notice is created. This is a real implementation requirement for STORY03, not proof it is already fixed.
+**Status: resolved in the canonical owner, kept here as a dated finding.** The canonical [Storyteller workflow identity](../technical/platform/execution-and-delivery.md#storyteller-workflow-identity) selects one stable workflow id of **storyteller/{generationId}**, and old workflow histories remain registered. A previous planner-only STORY03 handoff suggested **storyteller-distributed/{generationId}**, which would have allowed two workflow identities for one generation across a mixed routing or recovery window. The audit decision was to follow the canonical identity and freeze the versioned workflow type at **notice admission**, with distinct legacy and distributed outbox selectors. Source now matches: both Storyteller topics in `apps/worker/src/outbox/dispatch.ts` map to `storytellerWorkflowId` (`storyteller/${id}`), the distributed topic starts `storytellerDistributedV1`, and the execution owner records the one remaining exception: an explicit recovery notice on the legacy profiled topic uses its own notice id. That exception is a legacy-recovery fact to keep in view, not evidence that a distributed recovery can mint a fresh identity; the owner page carries the unproved recovery cases.
 
 ## Proof tiers are gates, not interchangeable adjectives
 
@@ -70,7 +74,7 @@ stateDiagram-v2
     LiveModelTrial --> [*]
 ```
 
-This is an **evidence ladder** for the POC claim, not a Change workflow or a requirement that every unit test runs all steps. A source-inspected diagram cannot be called KindIntegrated. A successful scripted Storyteller proves flow/custody/publication but not narrative competence. One successful live trial does not prove production scaling, quality, exact-once provider charging or indefinite persistence.
+This is an **evidence ladder** for the POC claim; a cancelled or NOT-RUN gate counts as no rung, not a Change workflow or a requirement that every unit test runs all steps. A source-inspected diagram cannot be called KindIntegrated. A successful scripted Storyteller proves flow/custody/publication but not narrative competence. One successful live trial does not prove production scaling, quality, exact-once provider charging or indefinite persistence.
 
 ## Diagram maintenance and proof
 
