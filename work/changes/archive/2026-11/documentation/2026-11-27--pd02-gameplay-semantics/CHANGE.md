@@ -46,3 +46,28 @@ Transfer facts preserved in place (TD04/TD05 receive; PD07 removes later): rules
 Semantic negatives: T01 offer never authorizes later actions (actions-and-commitments Stable meanings, Opportunity versus permission); galaxy needs no humanoid sheet (worlds-and-characters Flexible settings and protagonists); shared play not delivered (Shared play). T02 narrative never transfers ownership (rules Authority split, Product rights); unknown rules held, not improvised (Rule libraries and adapters, Executable library shape); preview not mandatory (Resumption); fixtures prove only listed fixtures (Implemented entry and honest limits). T03 latency is zero fictional time (time-and-autonomy opening, Clock, consequences and narration); faster playback keeps dice and due events (Pace); twenty seconds is a temporary adapter (Existing narrative rehearsal adapter). T04 missing context is not deletion (Knowledge and perspective); prepared future is not history (What happened, what is true, what might happen); recap cannot restore a sold spear (Six kinds of record); map view does not relocate (Space, movement and maps).
 
 Deferred findings: Low, rules.md/time-and-autonomy.md still link technical successors that exist today but whose receiving text has not landed; destination group register (custodian) / PD07 transfer verification.
+
+## Reconstruction pass (R2)
+
+Why: the first pass (`b5556feba`) mostly inserted scoping sentences; an independent audit named sections still unrewritten. Page commit `8bf2297e8` (same five-page write set; worlds-and-characters left unchanged because its text was already clear and scoped).
+
+Algorithm instructions now executed:
+- T01: actions-and-commitments "Prepared local life" rewritten into prepared / player-without-inference / possible-results, with the duplicate framing sentences removed.
+- T02: rules "Implemented entry and honest limits" regrouped into one dated realization note (exists / proves / stays outside); "Executable library shape" split into a requirement and a scoped realization (library, recipes, tiers) with the duplicated licensing and whole-rulebook sentences merged.
+- T03: time-and-autonomy "Pause and resume" and "First playable scope" rewritten around permission to advance and player control (who may pause, four separate controls; required, timed fallback, not required).
+- T04: continuity scene-frame.v1 and "Context and cost" split into requirement versus scoped candidate/realization (ask_memory/read_memory stay in place for TD05).
+- Softened unsupported claims: "No model owns dice or effects" now rests on the Negative (model prose cannot settle dice or effects); "unknown rule is held or narrowed" now says a required rule or adapter that is unavailable holds or narrows the task (Rule libraries and adapters).
+
+Survival check: every frozen transfer fact, number, identifier, anchor and link is present in place; removed text was a pure duplicate with a named surviving copy. Checks: `git diff --check` PASS; `check_docs.py` identical to baseline (96 problems); `docs-health.mjs` no new violation beyond the missing ledger below. Source/runtime NOT RUN. Link health is not semantic proof.
+
+Semantic answers: offer never authorizes later actions (actions Stable meanings, Prepared local life); galaxy needs no humanoid sheet (worlds Flexible settings); narrative never transfers ownership (rules Authority split); unknown or unavailable rules are not improvised (Rule libraries and adapters); fixtures prove only listed fixtures (Implemented entry); latency is zero fictional time and 20 s is a temporary adapter (time opening, Existing narrative rehearsal adapter); missing context is not deletion and a recap cannot restore a sold spear (continuity Knowledge and perspective, Six kinds of record).
+
+Deferred Low: transfer text still duplicated in product pages until TD04/TD05 land (PD07).
+
+## Reconciliation ledger
+
+| Obligation | Outcome |
+| --- | --- |
+| Five product pages reconstructed | PASS (source docs diff) |
+| Transfer facts kept in place for TD04/TD05 | PASS |
+| Joint semantic acceptance | NOT RUN (PD07/TD10 and Design) |
