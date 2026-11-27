@@ -16,7 +16,7 @@ import {
   refuseProofInvocation,
   runProofOperationSession,
 } from './proof-host.mjs';
-import { deleteProofResourcesWithUid, runSignalsProof } from './signals.mjs';
+import { runSignalsProof } from './signals.mjs';
 import { runOutageProof, runPersistenceProof } from './disruptions.mjs';
 import {
   queryGrafanaDatasourceHealth,
@@ -53,6 +53,15 @@ async function defaultDatasourceHealth(session) {
  * @param {object} [sessionDeps]
  */
 async function runLiveProof(parsed, sessionDeps = {}) {
+  if (!gateImplemented(parsed.gate)) {
+    return {
+      ok: false,
+      phase: 'not-implemented',
+      reasonCode: 'gate-not-implemented',
+      completed: false,
+      cleanup: false,
+    };
+  }
   const { dir, receiptPath } = createEvidenceDirectory(REPO_ROOT);
   const io = defaultReceiptIo(dir);
   io.ensureDir(dir);
@@ -96,9 +105,6 @@ async function runLiveProof(parsed, sessionDeps = {}) {
       sessionDeps.runPartialInstall ??
       ((session) =>
         runPartialInstallProof(session, sessionDeps.partialInstallDeps)),
-    deleteProofResources:
-      sessionDeps.deleteProofResources ??
-      ((resources) => deleteProofResourcesWithUid(parsed.context, resources)),
   });
 }
 

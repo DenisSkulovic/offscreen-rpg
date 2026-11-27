@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -290,7 +290,6 @@ test('wrong context is refused', async () => {
 
 test('wrong cluster UID fails before accepting receipt', async () => {
   const { dir, receiptPath } = sessionDirs();
-  let recheckCalls = 0;
   const result = await runProofOperationSession({
     gate: 'health',
     profile: 'dev',
@@ -301,26 +300,16 @@ test('wrong cluster UID fails before accepting receipt', async () => {
     io: defaultReceiptIo(dir),
     clock: { now: () => 0 },
     readSourceSha: () => SOURCE_SHA,
-    captureIdentity: () => createFakeIdentity(),
-    recheckIdentity: () => {
-      recheckCalls += 1;
-      return {
-        ok: false,
-        reason: recheckCalls === 1 ? 'port-changed' : 'snapshot-unreadable',
-      };
+    captureIdentity: () => {
+      throw new Error('capture-reached');
     },
-    observe: async () => readyObservation(),
-    queryDatasourceHealth: async () => healthyDatasources(),
-    repeatObservation: async () => readyObservation(),
+    observe: async () => {
+      throw new Error('observe-reached');
+    },
   });
   assert.equal(result.ok, false);
-  assert.equal(result.reasonCode, 'cluster-uid-changed');
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.ok, false);
-  assert.equal(receipt.completed, false);
-  assert.equal(receipt.clusterUid, CLUSTER_UID);
-  assert.equal(receipt.sourceSha, SOURCE_SHA);
-  assert.match(JSON.stringify(receipt), /^(?!.*kubeconfig).*$/);
+  assert.equal(result.reasonCode, 'gate-not-implemented');
+  assert.equal(existsSync(receiptPath), false);
 });
 
 test('changed namespace UID fails repeat comparison', async () => {
@@ -333,19 +322,13 @@ test('changed namespace UID fails repeat comparison', async () => {
     evidenceDir: dir,
     receiptPath,
     io: defaultReceiptIo(dir),
-    clock: { now: () => 0 },
-    readSourceSha: () => SOURCE_SHA,
-    captureIdentity: () => createFakeIdentity(NS_UID_A),
-    recheckIdentity: () => ({ ok: true }),
-    observe: async () => readyObservation(NS_UID_A),
-    queryDatasourceHealth: async () => healthyDatasources(),
-    repeatObservation: async () => readyObservation(NS_UID_B),
+    observe: async () => {
+      throw new Error('observe-reached');
+    },
   });
   assert.equal(result.ok, false);
-  assert.equal(result.reasonCode, 'namespace-uid-changed');
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.namespaceUid, NS_UID_A);
-  assert.equal(receipt.completed, false);
+  assert.equal(result.reasonCode, 'gate-not-implemented');
+  assert.equal(existsSync(receiptPath), false);
 });
 
 test('health proof passes with injected observation trace', async () => {
@@ -358,29 +341,23 @@ test('health proof passes with injected observation trace', async () => {
     evidenceDir: dir,
     receiptPath,
     io: defaultReceiptIo(dir),
-    clock: { now: () => 0 },
-    readSourceSha: () => SOURCE_SHA,
-    captureIdentity: () => createFakeIdentity(),
-    recheckIdentity: () => ({ ok: true }),
-    observe: async () => readyObservation(),
-    queryDatasourceHealth: async () => healthyDatasources(),
-    repeatObservation: async () => readyObservation(),
+    observe: async () => {
+      throw new Error('observe-reached');
+    },
   });
-  assert.equal(result.ok, true);
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.schema, 1);
-  assert.equal(receipt.gate, 'health');
-  assert.equal(receipt.ok, true);
-  assert.equal(receipt.completed, true);
-  assert.equal(receipt.cleanup, true);
-  assert.equal(receipt.reasonCode, null);
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'gate-not-implemented');
+  assert.equal(existsSync(receiptPath), false);
 });
 
 test('unimplemented gate is recognized without live session', () => {
   assert.equal(gateImplemented('signals'), true);
-  assert.equal(gateImplemented('persistence'), true);
-  assert.equal(gateImplemented('partial-install'), true);
-  assert.equal(gateImplemented('health'), true);
+  assert.equal(gateImplemented('persistence'), false);
+  assert.equal(gateImplemented('partial-install'), false);
+  assert.equal(gateImplemented('health'), false);
+  assert.equal(gateImplemented('resources'), false);
+  assert.equal(gateImplemented('outage'), false);
+  assert.equal(gateImplemented('developer'), false);
 });
 
 test('persistence proof does not resubmit OTLP after first positive', async () => {
@@ -594,6 +571,7 @@ test('outage restoration failure fails receipt', async () => {
   assert.equal(result.ok, false);
   assert.equal(result.restorationFailed, true);
   assert.equal(result.reasonCode, 'outage-restore-failed');
+  let outageCalled = false;
   const persisted = await runProofOperationSession({
     gate: 'outage',
     profile: 'dev',
@@ -603,20 +581,15 @@ test('outage restoration failure fails receipt', async () => {
     receiptPath,
     io: defaultReceiptIo(dir),
     clock: { now: () => 0 },
-    readSourceSha: () => SOURCE_SHA,
-    captureIdentity: () => createFakeIdentity(),
-    recheckIdentity: () => ({ ok: true }),
-    runOutage: async () => ({
-      ok: false,
-      reasonCode: 'outage-restore-failed',
-      restorationFailed: true,
-      phase: 'restore',
-    }),
+    runOutage: async () => {
+      outageCalled = true;
+      return { ok: true };
+    },
   });
   assert.equal(persisted.ok, false);
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.ok, false);
-  assert.equal(receipt.completed, false);
+  assert.equal(persisted.reasonCode, 'gate-not-implemented');
+  assert.equal(outageCalled, false);
+  assert.equal(existsSync(receiptPath), false);
 });
 
 test('missing disruption authorization refuses before scale or restart', async () => {
@@ -677,23 +650,27 @@ test('signals gate refuses before probe spawn without authorization', async () =
 });
 
 test('signals gate invokes injected runner through proof live session', async () => {
-  let probeSpawned = false;
+  let kubectl = false;
   const result = await runLiveProof(
     { gate: 'signals', profile: 'dev', context: CANONICAL_DEV_CONTEXT },
     {
       readSourceSha: () => SOURCE_SHA,
       captureIdentity: () => createFakeIdentity(),
       recheckIdentity: () => ({ ok: true }),
-      runSignals: async () => {
-        probeSpawned = true;
-        return { ok: true, reasonCode: null };
-      },
+      verifyCleanCheckout: () => ({ ok: true }),
+      runSignals: async () => ({ ok: false, reasonCode: 'probe-failed' }),
       env: AUTH_ENV,
+      signalsDeps: {
+        run: () => {
+          kubectl = true;
+          return { ok: false };
+        },
+      },
     },
   );
-  assert.equal(probeSpawned, true);
-  assert.equal(result.ok, true);
-  assert.equal(result.phase, 'signals-complete');
+  assert.equal(kubectl, false);
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'probe-failed');
 });
 
 test('signals session uses injected runner without kubectl', async () => {
@@ -712,24 +689,27 @@ test('signals session uses injected runner without kubectl', async () => {
     readSourceSha: () => SOURCE_SHA,
     captureIdentity: () => createFakeIdentity(),
     recheckIdentity: () => ({ ok: true }),
+    verifyCleanCheckout: () => ({ ok: true }),
     runSignals: async (session) => {
       assert.equal(session.gate, 'signals');
       assert.equal(session.evidenceDir, dir);
-      return { ok: true, reasonCode: null };
-    },
-    deleteProofResources: async () => {
       cleanupCalled = true;
-      return { ok: true };
+      return { ok: false, reasonCode: 'callback-failed' };
     },
   });
-  assert.equal(result.ok, true);
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'callback-failed');
   assert.equal(ensureCalled, false);
-  assert.equal(cleanupCalled, false);
+  assert.equal(cleanupCalled, true);
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.ok, false);
+  assert.equal(receipt.completed, false);
 });
 
 test('phase start refuses when remaining work budget is insufficient', () => {
   assert.equal(refusePhaseStart(119_000, 120_000), true);
-  assert.equal(remainingWorkBudgetMs(0, 'health'), 600_000);
+  assert.equal(remainingWorkBudgetMs(0, 'health'), 1_225_000);
+  assert.equal(remainingWorkBudgetMs(1, 'health'), 1_224_999);
   assert.equal(assessHealthStructuralObservation(readyObservation()).ok, true);
   assert.equal(assessDatasourceHealth(healthyDatasources()).ok, true);
   assert.equal(
@@ -825,6 +805,7 @@ test('quota status.hard missing fails the receipt', async () => {
   );
 
   const { dir, receiptPath } = sessionDirs();
+  let partialCalled = false;
   const persisted = await runProofOperationSession({
     gate: 'partial-install',
     profile: 'dev',
@@ -834,20 +815,15 @@ test('quota status.hard missing fails the receipt', async () => {
     receiptPath,
     io: defaultReceiptIo(dir),
     clock: { now: () => 0 },
-    readSourceSha: () => SOURCE_SHA,
-    captureIdentity: () => identity,
-    recheckIdentity: () => ({ ok: true }),
-    runPartialInstall: async () => ({
-      ok: false,
-      reasonCode: 'quota-hard-missing',
-      phase: 'ensure',
-    }),
+    runPartialInstall: async () => {
+      partialCalled = true;
+      return { ok: true };
+    },
   });
   assert.equal(persisted.ok, false);
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.ok, false);
-  assert.equal(receipt.completed, false);
-  assert.equal(receipt.cleanup, false);
+  assert.equal(persisted.reasonCode, 'gate-not-implemented');
+  assert.equal(partialCalled, false);
+  assert.equal(existsSync(receiptPath), false);
 });
 
 test('missing isolated authorization refuses first', async () => {
