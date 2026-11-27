@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -16,6 +16,7 @@ import {
 import {
   ALLOWED_DB_EXPORT_SUBPATHS,
   buildModuleGraph,
+  scanModuleGraph,
   collectRequireSpecifiers,
   DB_PACKAGE,
   isApplicationImportBanScope,
@@ -1091,4 +1092,126 @@ test('SQL-free closure reports a path without revisiting nodes', () => {
   assert.ok(hit);
   assert.match(hit.message, /@offscreen\/workflows → @offscreen\/outbox/);
   assert.equal(report.result, 'fail');
+});
+
+function writeRepoFile(root, relative, text) {
+  const absolute = path.join(root, relative);
+  mkdirSync(path.dirname(absolute), { recursive: true });
+  writeFileSync(absolute, text);
+}
+
+function gitFixture(root, args) {
+  const result = spawnSync('git', args, {
+    cwd: root,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      GIT_AUTHOR_NAME: 'Fixture',
+      GIT_AUTHOR_EMAIL: 'fixture@example.com',
+      GIT_COMMITTER_NAME: 'Fixture',
+      GIT_COMMITTER_EMAIL: 'fixture@example.com',
+    },
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+}
+
+test('grouped scan diagnoses an undeclared import, then a declared edge', () => {
+  const root = mkdtempSync(path.join(tmpdir(), 'ac02-graph-'));
+  try {
+    writeRepoFile(
+      root,
+      'pnpm-workspace.yaml',
+      'packages:\n  - "packages/*"\n  - "packages/platform/*"\n',
+    );
+    writeRepoFile(
+      root,
+      'packages/fixture/package.json',
+      JSON.stringify({
+        name: '@offscreen/fixture',
+        exports: { '.': './src/index.ts' },
+      }),
+    );
+    writeRepoFile(root, 'packages/fixture/src/index.ts', 'export const flat = 1;\n');
+    writeRepoFile(
+      root,
+      'packages/platform/nested/package.json',
+      JSON.stringify({
+        name: '@offscreen/nested',
+        exports: { '.': './src/index.ts' },
+      }),
+    );
+    writeRepoFile(
+      root,
+      'packages/platform/nested/src/index.ts',
+      "import { flat } from '@offscreen/fixture';\nexport const nested = flat;\n",
+    );
+    writeRepoFile(root, 'packages/readme-only/README.md', '# placeholder\n');
+    gitFixture(root, ['init']);
+    gitFixture(root, ['add', '.']);
+    gitFixture(root, ['commit', '-m', 'fixture']);
+
+    const undeclared = scanModuleGraph(root);
+    const error = undeclared.errors.find(
+      (item) => item.code === 'undeclared-production-import',
+    );
+    assert.ok(error);
+    assert.equal(error.file, 'packages/platform/nested/src/index.ts');
+    assert.equal(error.specifier, '@offscreen/fixture');
+    const pending = undeclared.sourceEdges.find(
+      (item) => item.fromPackage === '@offscreen/nested',
+    );
+    assert.equal(pending.toPackage, '@offscreen/fixture');
+    assert.equal(
+      undeclared.declaredEdges.some(
+        (item) =>
+          item.from === '@offscreen/nested' && item.to === '@offscreen/fixture',
+      ),
+      false,
+    );
+    assert.ok(
+      !undeclared.packages.some((item) => item.directory === 'packages/readme-only'),
+    );
+
+    writeRepoFile(
+      root,
+      'packages/platform/nested/package.json',
+      JSON.stringify({
+        name: '@offscreen/nested',
+        exports: { '.': './src/index.ts' },
+        dependencies: { '@offscreen/fixture': 'workspace:*' },
+      }),
+    );
+    const declared = scanModuleGraph(root);
+    assert.equal(
+      declared.errors.some((item) => item.code === 'undeclared-production-import'),
+      false,
+    );
+    const edge = declared.sourceEdges.find(
+      (item) => item.fromPackage === '@offscreen/nested',
+    );
+    assert.equal(edge.toPackage, '@offscreen/fixture');
+    assert.equal(edge.resolved, true);
+    assert.equal(
+      declared.declaredEdges.some(
+        (item) =>
+          item.from === '@offscreen/nested' && item.to === '@offscreen/fixture',
+      ),
+      true,
+    );
+
+    writeRepoFile(
+      root,
+      'packages/alias/package.json',
+      JSON.stringify({ name: '@offscreen/fixture' }),
+    );
+    const duplicate = scanModuleGraph(root);
+    assert.equal(duplicate.availability, 'unavailable');
+    assert.equal(duplicate.errors[0].code, 'manifest-unreadable');
+    assert.match(
+      duplicate.errors[0].message,
+      /duplicate package name @offscreen\/fixture/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

@@ -165,20 +165,20 @@ export function scanModuleGraph(root) {
       error instanceof Error ? error.message : String(error),
     );
   }
-  const listed = listWorkspaceSources(root);
-  if (!listed.ok) {
-    return unavailableReport(
-      baseline.sha,
-      'source-list-unavailable',
-      listed.message,
-    );
-  }
   const loaded = loadPackages(root);
   if (!loaded.ok) {
     return unavailableReport(
       baseline.sha,
       'manifest-unreadable',
       loaded.message,
+    );
+  }
+  const listed = listWorkspaceSources(root, loaded.packages);
+  if (!listed.ok) {
+    return unavailableReport(
+      baseline.sha,
+      'source-list-unavailable',
+      listed.message,
     );
   }
   return buildModuleGraph({
@@ -1396,8 +1396,9 @@ function readBaselineSha(root) {
 
 /**
  * @param {string} root
+ * @param {PackageRecord[]} packages
  */
-function listWorkspaceSources(root) {
+function listWorkspaceSources(root, packages) {
   let output;
   try {
     output = execFileSync(
@@ -1416,7 +1417,7 @@ function listWorkspaceSources(root) {
   const sources = [];
   for (const relative of output.split('\0').filter(Boolean)) {
     const file = normalize(relative);
-    if (!isWorkspaceSource(file)) continue;
+    if (!isWorkspaceSource(file, packages)) continue;
     const absolute = path.join(root, file);
     sources.push({ path: file, text: readFileSync(absolute, 'utf8') });
   }
@@ -1424,9 +1425,12 @@ function listWorkspaceSources(root) {
 }
 
 /**
+ * Source belongs to a loaded manifest directory. There is no recursive walk
+ * beyond those records.
  * @param {string} file
+ * @param {PackageRecord[]} packages
  */
-function isWorkspaceSource(file) {
+function isWorkspaceSource(file, packages) {
   if (file.split('/').some((part) => part === 'dist' || part === 'generated')) {
     return false;
   }
@@ -1437,7 +1441,7 @@ function isWorkspaceSource(file) {
     return true;
   }
   if (!/\.(?:ts|tsx)$/u.test(file) || file.endsWith('.d.ts')) return false;
-  return /^(?:apps|packages|tools)\/[^/]+\/src\//u.test(file);
+  return packages.some((item) => file.startsWith(`${item.directory}/src/`));
 }
 
 /**
@@ -1464,7 +1468,10 @@ function loadPackages(root) {
     const parent = pattern.slice(0, -2);
     const absolute = path.join(root, parent);
     if (!existsSync(absolute)) continue;
-    for (const entry of readdirSync(absolute, { withFileTypes: true })) {
+    const entries = readdirSync(absolute, { withFileTypes: true }).sort((left, right) =>
+      left.name.localeCompare(right.name),
+    );
+    for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const directory = normalize(path.join(parent, entry.name));
       const manifestPath = path.join(root, directory, 'package.json');
@@ -1475,6 +1482,22 @@ function loadPackages(root) {
           return {
             ok: false,
             message: `${directory}/package.json has no package name.`,
+            packages: [],
+          };
+        }
+        const sameDirectory = packages.find((item) => item.directory === directory);
+        if (sameDirectory) {
+          return {
+            ok: false,
+            message: `duplicate package directory ${directory}.`,
+            packages: [],
+          };
+        }
+        const sameName = packages.find((item) => item.name === manifest.name);
+        if (sameName) {
+          return {
+            ok: false,
+            message: `duplicate package name ${manifest.name} in ${sameName.directory} and ${directory}.`,
             packages: [],
           };
         }
