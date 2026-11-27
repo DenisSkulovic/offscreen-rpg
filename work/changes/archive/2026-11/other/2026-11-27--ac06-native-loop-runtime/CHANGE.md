@@ -1,6 +1,6 @@
 # AC06 | Native Vercel loop and Workflow-safe execution composition
 
-**State:** READY (dependency-gated); owner-commissioned
+**State:** Done — source gate passed; AC08 joint acceptance not passed
 
 **Kind:** implementation
 
@@ -35,6 +35,6 @@ Owner-commissioned: linked Change worktree from latest verified `implementation/
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/technical/platform/agent-core.md#deterministic-fixture-and-result-rules | technical | unchanged selected contract; source realizes assigned portion | pending implementation receipt | NOT RUN | assigned in PROOF | named durable owner at closure |
-| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain changes authorized | pending diff inspection | no production exposure | no product change |
-| packages/README.md / affected README | related | reconcile actual source and proof standing only | pending implementation receipt | NOT RUN | no unsupported claims | closure receipt |
+| docs/technical/platform/agent-core.md#deterministic-fixture-and-result-rules | technical | unchanged selected contract; source adds one native generateText loop and executeMission | source-inspected; package build NOT RUN | source-inspected | invalid tool, tool error, partial length text, pending calls, and cancel remain AC08 | package README records the loop and unrun qualification |
+| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain files in the diff | source-inspected | no production exposure | no product change |
+| packages/README.md / affected README | related | package README records executeMission, Activity options, and NOT RUN native proof | README updated with this source | source-inspected | no success claim for build, replay, or qualify | group register updated at archive |
