@@ -1,4 +1,7 @@
-# OBS-D01 tasks
+# OBS-D01 tasks — owner-released offline source only
+
+**Dispatch authority:** [CHANGE](CHANGE.md) and [joint offline release](../../../designs/open/observability-developer/ACCEPTANCE.md) govern. Owner-released implementation, not independent READY or live permission. Verify predecessor receipt and branch/worktree, then execute the serial tasks. Do not wait for another approval; stop only for concrete contradiction, ownership conflict or required cheap proof failure. No real cluster or Docker commands. No main merge or Done.
+
 
 Parent: run [before snapshot](PROOF.md#render-parity) before edits; serial cards on dedicated worktree, no live operations. Verify T01/T02 together before commit; children do not commit. Exact scope in [SOURCE-MAP](SOURCE-MAP.md). Receipt: task/base, changed paths, commands/results, negative evidence, contradiction or none. No broader source discovery or new behavior.
 
