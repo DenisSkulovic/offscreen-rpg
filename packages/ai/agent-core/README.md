@@ -6,7 +6,7 @@
 
 The public root export is serializable `AgentDefinitionV1`, `MissionV1`, and `MissionOutcomeV1` plus `missionWorkflowId`, which returns `agent-core-e1-${missionId}`. There is no Worker, client, or model import in that closure. The `./workflow` export path is declared; `src/workflow.ts` is not part of this Change and arrives with the native loop.
 
-`pnpm --filter @offscreen/agent-core build` and `typecheck` compile `src`. `test` runs `node --test test/*.test.mjs` and must stay offline. `qualify` is explicit (`node test/qualification.mjs`) and is never invoked by `test`. Fixtures, runtime, and live qualification are absent until successor Changes. Build, typecheck, ordinary tests, frozen install, and joint proof are **NOT RUN** here; AC08 owns them. AC-M04 remains open until that qualification.
+`pnpm --filter @offscreen/agent-core build` and `typecheck` compile `src`. `test` runs `node --test test/*.test.mjs` and must stay offline. `qualify` is explicit (`node test/qualification.mjs`) and is never invoked by `test`. Test fixtures live under `test/fixtures/` and are not a public export. They provide two immutable definitions, a conversation-driven `e1-synthetic` model, and a guarded synthetic tool Activity. The model plugin download hook rejects every request with `download-disabled`. There is no real provider, network, file, or credential access. Build, typecheck, frozen install, and joint proof are **NOT RUN** here. Focused `node --test test/fixtures.test.mjs` passed on the AC07 branch. AC08 still owns native qualification, including the ungranted-tool case. AC-M03 and AC-M04 remain open until that qualification.
 
 ## Limits still in force
 
