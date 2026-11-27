@@ -6,12 +6,12 @@ Repository `DenisSkulovic/offscreen-rpg`. Accepted E1 [Design](../../../designs/
 
 | ID | Outcome | Prerequisite / coordination | Standing |
 | --- | --- | --- | --- |
-| [PD01](2026-11-27--pd01-product-foundations/CHANGE.md) | Foundations (2 pages) | None | READY; owner-authorized for named dispatch |
-| [PD02](2026-11-27--pd02-gameplay-semantics/CHANGE.md) | Gameplay semantics (5 pages) | Transfers to TD04; local work independent | READY; owner-authorized for named dispatch |
-| [PD03](2026-11-27--pd03-acceptance-narratives/CHANGE.md) | Acceptance narratives (2 pages) | None | READY; owner-authorized for named dispatch |
-| [PD04](2026-11-27--pd04-player-experience/CHANGE.md) | Player experience (9 pages) | Transfer map with TD06 | READY; owner-authorized for named dispatch |
-| [PD05](2026-11-27--pd05-storyteller-product/CHANGE.md) | Storyteller product (3 pages) | Transfer map with TD05 | READY; owner-authorized for named dispatch |
-| [PD06](2026-11-27--pd06-staff-product/CHANGE.md) | Staff product (9 pages) | Transfer map with TD07 | READY; owner-authorized for named dispatch |
+| [PD01](../../archive/2026-11/documentation/2026-11-27--pd01-product-foundations/CHANGE.md) | Foundations (2 pages) | None | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [PD02](../../archive/2026-11/documentation/2026-11-27--pd02-gameplay-semantics/CHANGE.md) | Gameplay semantics (5 pages) | Transfers to TD04; local work independent | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [PD03](../../archive/2026-11/documentation/2026-11-27--pd03-acceptance-narratives/CHANGE.md) | Acceptance narratives (2 pages) | None | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [PD04](../../archive/2026-11/documentation/2026-11-27--pd04-player-experience/CHANGE.md) | Player experience (9 pages) | Transfer map with TD06 | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [PD05](../../archive/2026-11/documentation/2026-11-27--pd05-storyteller-product/CHANGE.md) | Storyteller product (3 pages) | Transfer map with TD05 | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [PD06](../../archive/2026-11/documentation/2026-11-27--pd06-staff-product/CHANGE.md) | Staff product (9 pages) | Transfer map with TD07 | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
 | [PD07](2026-11-27--pd07-product-integration/CHANGE.md) | Product integration (index and handoffs) | PD01–PD06; technical successor routes on main before removal | READY (dependency-gated); owner-authorized for named dispatch |
 
 ## Coordination and joint acceptance
