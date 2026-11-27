@@ -17,7 +17,6 @@ Existing classifications below are historical starting points, not fresh disposi
 | Item | Status |
 | --- | --- |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
-| [playability-reality/](open/playability-reality/README.md) | **Proposed 2026-11-18:** REAL01 first-solo acceptance, REAL02 semantic-canon integration fixtures, REAL03 value/cost protocol, REAL04 V0 and rights honesty. Three prepared Changes, none selected; no paid evaluations |
 | [documentation-editorial-audit/](open/documentation-editorial-audit/README.md) | **Proposed 2026-11-18:** source-grounded 70-page content-quality triage and 20 first-class DOC05–DOC24 editorial Change handoffs, all Proposed/unselected; no executable code Change selected |
 | [repository-housekeeping/](open/repository-housekeeping/README.md) | **2026-11-17 audit:** prevention track HK02/HK06/HK07/HK08 is Done. HK05 and HK04 are Done. HK01 is Ready replacement-first; HK03 is Ready for preserve-red test extraction |
 | [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 3 visual-system program:** product/technical semantic roles prepared; [Phase 3](open/player-experience-refoundation/phase-3/README.md) maps 11 bounded UI/DIR Changes, all unselected. Full final art direction, V2 rich text and generation remain gated |
@@ -35,6 +34,6 @@ Existing classifications below are historical starting points, not fresh disposi
 
 Selected presentation language, prompt tools, the world-capability kernel and the document-store gates live under `docs/`. The generic parked Engine, Experience, Storyteller and expired-handoff studies were removed from HEAD on 2026-11-16. Recover a body with `git show 69ac3c5682007d647dac2eae24eb43f6afe14930:work/designs/parked/<path>`. That history is not a contract. The content-unit ledger is the [DOC04 disposition](../changes/archive/2026-11/documentation/2026-11-16--doc04-shadow-knowledge-retirement/DISPOSITION.md).
 
-**Next triage after the Storyteller wiki branch merges:** retire/promote source-grounded historical programs with inbound wiki citations, starting with `playability-reality`, `legacy-initiatives-index`, `repository-agent-workbench`, `documentation-editorial-audit`, and older completed support programs. Writer's Workbench product/technical promotion verified from WR01/WRD02–04; dossier archived with research retained and successor references.
+**Next triage after the Storyteller wiki branch merges:** retire/promote source-grounded historical programs with inbound wiki citations, starting with `legacy-initiatives-index`, `repository-agent-workbench`, `documentation-editorial-audit`, and older completed support programs. Writer's Workbench product/technical promotion verified from WR01/WRD02–04; dossier archived with research retained and successor references.
 
 - [Developer observability](open/observability-developer/README.md) — R5 defended, accepted, canon promoted; historical evidence for successor implementation, no active investigation.

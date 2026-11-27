@@ -1,6 +1,6 @@
 # REAL04 | Align the first-solo product promise, creation routes and public-demo content provenance
 
-**State:** Done (2026-11-18). **Kind:** documentation. **Owner:** product owner; publication rights require a separate legal decision. **Parent:** [REAL product target](../../../../../designs/open/playability-reality/PRODUCT-CORE.md). **Baseline:** `main@404d3c35ef16effc540a1842bac8595b41fa0928`. The selected wording is the packet's recommendation: the freeform route stays, without a reliability pledge, and a public harbor demo stays a later rights review.
+**State:** Done (2026-11-18). **Kind:** documentation. **Owner:** product owner; publication rights require a separate legal decision. **Parent:** [REAL product target](https://github.com/DenisSkulovic/offscreen-rpg/blob/7788693bb5617ffa6bf25e8408ed5f552f157a69/work/designs/open/playability-reality/PRODUCT-CORE.md). **Baseline:** `main@404d3c35ef16effc540a1842bac8595b41fa0928`. The selected wording is the packet's recommendation: the freeform route stays, without a reliability pledge, and a public harbor demo stays a later rights review.
 
 ## Outcome
 

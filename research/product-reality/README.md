@@ -12,7 +12,7 @@ Historical research, not product authority. Two November 18 audits led to comple
 
 - [46-claim register](CLAIM-REGISTER-2026-11-18.md), dated unratified treatments.
 - [Economics study](ECONOMICS-2026-11-18.md), historical data and experiment methodology.
-- [Agent Core](../../work/designs/open/agent-core-monorepo-map/README.md), [gameplay domain coverage](../../work/designs/open/gameplay-domain-coverage/README.md), [Playability reality](../../work/designs/open/playability-reality/README.md), successor investigations only.
+- [Agent Core](../../work/designs/open/agent-core-monorepo-map/README.md), [gameplay domain coverage](../../work/designs/open/gameplay-domain-coverage/README.md), successor investigations only; [Playability experiments](PLAYABILITY-EXPERIMENTS-2026-11-18.md) preserves the retired REAL programme's unique probes and evaluation methodology.
 
 ## Immutable original materials
 
@@ -28,3 +28,6 @@ Historical research, not product authority. Two November 18 audits led to comple
 - [README.md](https://github.com/DenisSkulovic/offscreen-rpg/blob/c51119c505fcb3dddd87119a734594277840ee17/work/designs/open/product-reality-reconciliation/README.md)
 
 Historical dispatch is retired by owner approval; no new fixture selection, implementation, paid work or proof. PVAL receipts and REAL lifecycle remain independent. Historical Harbor and other scenario assumptions do not bind successor architecture merely by preservation.
+
+
+REAL03 human-play and closed-browser return experiments remain NOT RUN; REAL02 historical negative and proof limits are preserved in the linked study.

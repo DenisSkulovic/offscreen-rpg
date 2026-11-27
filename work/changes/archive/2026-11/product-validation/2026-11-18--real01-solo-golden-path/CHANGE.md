@@ -1,6 +1,6 @@
 # REAL01 | Replace the false solo golden path with an honest harbor acceptance oracle
 
-**State:** Done (2026-11-18). **Kind:** documentation. **Owner:** product owner. **Designed:** 2026-11-18. **Source observed:** `main@347eeac0878904ef7c31e37b5327517f2860e8a5`. **Parent:** [REAL program](../../../../../designs/open/playability-reality/README.md), [product target](../../../../../designs/open/playability-reality/PRODUCT-CORE.md).
+**State:** Done (2026-11-18). **Kind:** documentation. **Owner:** product owner. **Designed:** 2026-11-18. **Source observed:** `main@347eeac0878904ef7c31e37b5327517f2860e8a5`. **Parent:** [REAL program](https://github.com/DenisSkulovic/offscreen-rpg/blob/7788693bb5617ffa6bf25e8408ed5f552f157a69/work/designs/open/playability-reality/README.md), [product target](https://github.com/DenisSkulovic/offscreen-rpg/blob/7788693bb5617ffa6bf25e8408ed5f552f157a69/work/designs/open/playability-reality/PRODUCT-CORE.md).
 
 ## Cursor first-screen brief
 

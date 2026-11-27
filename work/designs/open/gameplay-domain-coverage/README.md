@@ -155,3 +155,6 @@ The historical convergence experiments GM03 and GM07 have narrow Done receipts i
 ## Retained product-coherence questions
 
 [November product audits](../../../../research/product-reality/README.md) compare world-neutral forms versus narrow authored rules, meaningful player agency versus bounded choices, accepted unattended progression versus autonomy, and spatial representation versus actual movement authority. Compare the smallest supported representation against a discriminating failure case; avoid making all worlds share one ontology or first-solo proof depend on group mechanics. Preserve accepted consent and state/time authority. No historical candidate map, humanoid fixture or experimental threshold is ratified here.
+
+
+[Retained playability experiments](../../../../research/product-reality/PLAYABILITY-EXPERIMENTS-2026-11-18.md) ask whether bounded choices provide meaningful agency and accepted offscreen work adds value rather than a waiting tax. Record missing reasonable intentions, actual consequences, return quality and attributable cost; compare alternatives before adding free-intent or autonomy mechanisms. No historical duration, rubric or fixture is selected as a universal rule.

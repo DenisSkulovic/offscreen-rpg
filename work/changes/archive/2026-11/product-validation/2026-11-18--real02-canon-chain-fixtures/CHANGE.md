@@ -1,6 +1,6 @@
 # REAL02 | Prove or classify the gift-to-canon-to-recall chain with existing machinery
 
-**State:** Done (2026-11-18). The whole publication-and-restart chain is not claimed. Staging, transfer settlement, and the knowledge loader were tested. Database publication, admission restart, and the budget path were not run. **Kind:** implementation (tests/evidence only; no runtime feature launch). **Owner:** application/Storyteller correctness. **Source observed:** `main@c1d1aab9f9e9b711252a955c4f3d11c7377a7d06`. **Parent:** [REAL technical chain](../../../../../designs/open/playability-reality/TECHNICAL-CHAIN.md), [forensic fixture](../../../../../designs/open/playability-reality/REAL02-SOURCE-MAP.md).
+**State:** Done (2026-11-18). The whole publication-and-restart chain is not claimed. Staging, transfer settlement, and the knowledge loader were tested. Database publication, admission restart, and the budget path were not run. **Kind:** implementation (tests/evidence only; no runtime feature launch). **Owner:** application/Storyteller correctness. **Source observed:** `main@c1d1aab9f9e9b711252a955c4f3d11c7377a7d06`. **Parent:** [REAL technical chain](https://github.com/DenisSkulovic/offscreen-rpg/blob/7788693bb5617ffa6bf25e8408ed5f552f157a69/work/designs/open/playability-reality/TECHNICAL-CHAIN.md), [forensic fixture](https://github.com/DenisSkulovic/offscreen-rpg/blob/7788693bb5617ffa6bf25e8408ed5f552f157a69/work/designs/open/playability-reality/REAL02-SOURCE-MAP.md).
 
 ## Cursor first-screen brief
 
