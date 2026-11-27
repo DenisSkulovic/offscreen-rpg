@@ -10,6 +10,12 @@ const observabilityRoot = dirname(fileURLToPath(import.meta.url));
 const valuesRoot = join(observabilityRoot, 'values');
 const locksRoot = join(observabilityRoot, 'locks');
 const vendorRoot = join(observabilityRoot, 'vendor');
+const DEV_COLLECTOR_OVERLAY = join(
+  valuesRoot,
+  'profiles',
+  'dev',
+  'collector.yaml',
+);
 
 const HELM_TIMEOUT_MS = 60_000;
 
@@ -494,11 +500,271 @@ export function helmValuesArgv(release) {
     .concat(release.helmValueArgs);
 }
 
+/** @typedef {'desired' | 'predecessor'} ObservabilityArtifactVariant */
+
+/**
+ * @param {ObservabilityProfileId} profileId
+ * @param {ObservabilityArtifactVariant | undefined} variant
+ */
+function assertArtifactVariantAllowed(profileId, variant) {
+  const selected = variant ?? 'desired';
+  if (selected !== 'desired' && selected !== 'predecessor') {
+    throwArtifactInvalid('unknown artifact variant');
+  }
+  if (profileId === 'release' && selected === 'predecessor') {
+    throwArtifactInvalid('release predecessor refused');
+  }
+  return selected;
+}
+
+/**
+ * @param {ObservabilityProfileId} profileId
+ * @param {ObservabilityArtifactVariant} variant
+ * @param {string} role
+ * @param {string} valuesFile
+ */
+function resolveValuesPaths(profileId, variant, role, valuesFile) {
+  if (role !== 'collector') {
+    return [join(valuesRoot, valuesFile)];
+  }
+  const base = join(valuesRoot, 'collector.yaml');
+  if (profileId === 'release' || variant === 'predecessor') {
+    return [base];
+  }
+  return [base, DEV_COLLECTOR_OVERLAY];
+}
+
+/**
+ * @param {readonly string[]} valuesPaths
+ */
+function readAndValidateValues(valuesPaths) {
+  for (const valuesPath of valuesPaths) {
+    let valuesText;
+    try {
+      valuesText = readFileSync(valuesPath, 'utf8');
+    } catch {
+      throwArtifactInvalid('missing values yaml');
+    }
+    try {
+      parseYaml(valuesText);
+    } catch {
+      throwArtifactInvalid('malformed values yaml');
+    }
+  }
+}
+
+/**
+ * @param {ObservabilityProfileId} profileId
+ * @param {ObservabilityArtifactVariant} variant
+ * @param {{ verifyArchive: boolean, pins: ReturnType<typeof loadPins>, imageLocks: Record<string, string> }} context
+ * @param {ReturnType<typeof readPlatformProfile>} profile
+ */
+function buildValidatedReleasePlans(profileId, variant, context, profile) {
+  /** @type {{ release: (typeof OBSERVABILITY_RELEASE_ORDER)[number], pin: { name: string, version: string, sha256: string, appVersion: string }, chartPath: string, valuesPaths: string[], helmValueArgs: string[], expectedImage: { containerName: string, renderedReference: string, canonicalReference: string } }[]} */
+  const releasePlans = [];
+
+  for (const release of OBSERVABILITY_RELEASE_ORDER) {
+    const pin = context.pins[release.role];
+    if (
+      typeof pin?.name !== 'string' ||
+      pin.name.length === 0 ||
+      typeof pin.version !== 'string' ||
+      pin.version.length === 0 ||
+      typeof pin.appVersion !== 'string' ||
+      pin.appVersion.length === 0 ||
+      typeof pin.sha256 !== 'string' ||
+      pin.sha256.length === 0
+    ) {
+      throwArtifactInvalid(`missing pin for ${release.role}`);
+    }
+    const archiveName = `${pin.name}-${pin.version}.tgz`;
+    const chartPath = join(vendorRoot, archiveName);
+    if (context.verifyArchive) {
+      const actualHex = fileSha256Hex(chartPath);
+      if (actualHex.toLowerCase() !== pin.sha256.toLowerCase()) {
+        throwArtifactInvalid(`archive sha256 mismatch for ${archiveName}`);
+      }
+    }
+    const valuesPaths = resolveValuesPaths(
+      profileId,
+      variant,
+      release.role,
+      release.valuesFile,
+    );
+    readAndValidateValues(valuesPaths);
+    const canonicalReference = context.imageLocks[release.role];
+    if (!canonicalReference) {
+      throwArtifactInvalid('missing image lock role');
+    }
+    const expectedImage = buildExpectedImage(
+      release.role,
+      context.pins,
+      canonicalReference,
+    );
+    const helmValueArgs = [
+      ...storageSubstitutionArgs(release.role, profile.storageClass),
+      ...expectedImage.imageArgs,
+    ];
+    releasePlans.push({
+      release,
+      pin,
+      chartPath,
+      valuesPaths,
+      helmValueArgs,
+      expectedImage: {
+        containerName: expectedImage.containerName,
+        renderedReference: expectedImage.renderedReference,
+        canonicalReference: expectedImage.canonicalReference,
+      },
+    });
+  }
+  return releasePlans;
+}
+
+/**
+ * @param {ReturnType<typeof buildValidatedReleasePlans>[number]} plan
+ * @param {PlatformRun} run
+ * @param {string} namespace
+ */
+function renderValidatedPlan(plan, run, namespace) {
+  const helmArgs = [
+    'template',
+    plan.release.name,
+    plan.chartPath,
+    '--namespace',
+    namespace,
+    ...helmValuesArgv(plan),
+  ];
+  const rendered = run('helm', helmArgs, { timeoutMs: HELM_TIMEOUT_MS });
+  if (!rendered.ok || rendered.timedOut || rendered.missing) {
+    throwArtifactInvalid(`helm render failed for ${plan.release.name}`);
+  }
+  const releaseDocs = parseHelmDocuments(rendered.stdout);
+  rejectForbiddenDocuments(releaseDocs, namespace);
+  assertPrimaryWorkloadImage(
+    releaseDocs,
+    plan.release.role,
+    plan.expectedImage,
+  );
+  const { direct, generated } = collectReleaseInventoryRows(
+    releaseDocs,
+    plan.release.role,
+    plan.release.name,
+    namespace,
+  );
+  return {
+    name: plan.release.name,
+    role: plan.release.role,
+    chartPath: plan.chartPath,
+    chartName: plan.pin.name,
+    chartVersion: plan.pin.version,
+    appVersion: plan.pin.appVersion,
+    sha256: plan.pin.sha256,
+    valuesPaths: plan.valuesPaths,
+    helmValueArgs: plan.helmValueArgs,
+    expectedImage: plan.expectedImage,
+    documents: releaseDocs,
+    inventory: { direct, generated },
+  };
+}
+
+/**
+ * @param {ObservabilityProfileId} profileId
+ * @param {ReturnType<typeof renderValidatedPlan>[]} renderedReleases
+ * @param {ReturnType<typeof readPlatformProfile>} profile
+ * @param {Record<string, unknown>} expected
+ * @param {Record<string, string>} imageLocks
+ */
+function finalizeArtifactBundle(
+  profileId,
+  renderedReleases,
+  profile,
+  expected,
+  imageLocks,
+) {
+  /** @type {Record<string, unknown>[]} */
+  const documents = [];
+  /** @type {[string, string, string, string, string][]} */
+  const allDirect = [];
+  /** @type {[string, string, string, string, string][]} */
+  const allGenerated = [];
+  for (const row of renderedReleases) {
+    documents.push(...row.documents);
+    allDirect.push(...row.inventory.direct);
+    allGenerated.push(...row.inventory.generated);
+  }
+  assertInventoryMatch(profileId, expected, allDirect, allGenerated);
+
+  return {
+    profile,
+    releases: renderedReleases.map((row) => {
+      const { inventory, ...rest } = row;
+      void inventory;
+      return rest;
+    }),
+    documents,
+    expectedInventory: expected,
+    imageLocks,
+  };
+}
+
+/**
+ * @param {ObservabilityProfileId} profileId
+ * @param {{ run?: PlatformRun, verifyArchive?: boolean, imageLocks?: Record<string, string>, pins?: ReturnType<typeof loadPins>, variant?: ObservabilityArtifactVariant }} [deps]
+ */
+export function loadArtifacts(profileId, deps = {}) {
+  if (profileId !== 'dev' && profileId !== 'release') {
+    throw new Error(`unsupported platform profile: ${profileId}`);
+  }
+  const run = deps.run ?? defaultHelmRun;
+  const verifyArchive = deps.verifyArchive !== false;
+  const variant = assertArtifactVariantAllowed(profileId, deps.variant);
+  const profile = readPlatformProfile(profileId);
+  const namespace = profile.namespaces.observability;
+  if (typeof namespace !== 'string' || namespace.length === 0) {
+    throwArtifactInvalid('observability namespace missing from profile');
+  }
+
+  const pins = deps.pins ?? loadPins();
+  const canonicalImageLocks = parseImageLock(
+    readFileSync(join(locksRoot, 'images.tsv'), 'utf8'),
+  );
+  const imageLocks = deps.imageLocks ?? canonicalImageLocks;
+  if (deps.imageLocks) {
+    validateImageLockRecord(imageLocks);
+  }
+  const expectedInventory = JSON.parse(
+    readFileSync(join(observabilityRoot, 'expected-inventory.json'), 'utf8'),
+  );
+  const expected = expectedInventory[profileId];
+  if (!expected?.direct || !expected?.generatedClaims) {
+    throwArtifactInvalid('missing expected inventory profile');
+  }
+
+  const context = { verifyArchive, pins, imageLocks };
+  const releasePlans = buildValidatedReleasePlans(
+    profileId,
+    variant,
+    context,
+    profile,
+  );
+  const renderedReleases = releasePlans.map((plan) =>
+    renderValidatedPlan(plan, run, namespace),
+  );
+  return finalizeArtifactBundle(
+    profileId,
+    renderedReleases,
+    profile,
+    expected,
+    imageLocks,
+  );
+}
+
 /**
  * @param {ObservabilityProfileId} profileId
  * @param {{ run?: PlatformRun, verifyArchive?: boolean, imageLocks?: Record<string, string>, pins?: ReturnType<typeof loadPins> }} [deps]
  */
-export function loadArtifacts(profileId, deps = {}) {
+export function loadObservabilityVariants(profileId, deps = {}) {
   if (profileId !== 'dev' && profileId !== 'release') {
     throw new Error(`unsupported platform profile: ${profileId}`);
   }
@@ -526,139 +792,54 @@ export function loadArtifacts(profileId, deps = {}) {
     throwArtifactInvalid('missing expected inventory profile');
   }
 
-  /** @type {{ release: (typeof OBSERVABILITY_RELEASE_ORDER)[number], pin: { name: string, version: string, sha256: string, appVersion: string }, chartPath: string, valuesPaths: string[], helmValueArgs: string[], expectedImage: { containerName: string, renderedReference: string, canonicalReference: string } }[]} */
-  const releasePlans = [];
-
-  for (const release of OBSERVABILITY_RELEASE_ORDER) {
-    const pin = pins[release.role];
-    if (
-      typeof pin?.name !== 'string' ||
-      pin.name.length === 0 ||
-      typeof pin.version !== 'string' ||
-      pin.version.length === 0 ||
-      typeof pin.appVersion !== 'string' ||
-      pin.appVersion.length === 0 ||
-      typeof pin.sha256 !== 'string' ||
-      pin.sha256.length === 0
-    ) {
-      throwArtifactInvalid(`missing pin for ${release.role}`);
-    }
-    const archiveName = `${pin.name}-${pin.version}.tgz`;
-    const chartPath = join(vendorRoot, archiveName);
-    if (verifyArchive) {
-      const actualHex = fileSha256Hex(chartPath);
-      if (actualHex.toLowerCase() !== pin.sha256.toLowerCase()) {
-        throwArtifactInvalid(`archive sha256 mismatch for ${archiveName}`);
-      }
-    }
-    const valuesPaths = [join(valuesRoot, release.valuesFile)];
-    let valuesText;
-    try {
-      valuesText = readFileSync(valuesPaths[0], 'utf8');
-    } catch {
-      throwArtifactInvalid('missing values yaml');
-    }
-    try {
-      parseYaml(valuesText);
-    } catch {
-      throwArtifactInvalid('malformed values yaml');
-    }
-    const canonicalReference = imageLocks[release.role];
-    if (!canonicalReference) {
-      throwArtifactInvalid('missing image lock role');
-    }
-    const expectedImage = buildExpectedImage(
-      release.role,
-      pins,
-      canonicalReference,
-    );
-    const helmValueArgs = [
-      ...storageSubstitutionArgs(release.role, profile.storageClass),
-      ...expectedImage.imageArgs,
-    ];
-    releasePlans.push({
-      release,
-      pin,
-      chartPath,
-      valuesPaths,
-      helmValueArgs,
-      expectedImage: {
-        containerName: expectedImage.containerName,
-        renderedReference: expectedImage.renderedReference,
-        canonicalReference: expectedImage.canonicalReference,
-      },
-    });
-  }
-
-  /** @type {ReturnType<typeof loadArtifacts>['releases']} */
-  const releases = [];
-  /** @type {Record<string, unknown>[]} */
-  const documents = [];
-
-  for (const plan of releasePlans) {
-    const helmArgs = [
-      'template',
-      plan.release.name,
-      plan.chartPath,
-      '--namespace',
-      namespace,
-      ...helmValuesArgv(plan),
-    ];
-    const rendered = run('helm', helmArgs, { timeoutMs: HELM_TIMEOUT_MS });
-    if (!rendered.ok || rendered.timedOut || rendered.missing) {
-      throwArtifactInvalid(`helm render failed for ${plan.release.name}`);
-    }
-    const releaseDocs = parseHelmDocuments(rendered.stdout);
-    rejectForbiddenDocuments(releaseDocs, namespace);
-    assertPrimaryWorkloadImage(
-      releaseDocs,
-      plan.release.role,
-      plan.expectedImage,
-    );
-    const { direct, generated } = collectReleaseInventoryRows(
-      releaseDocs,
-      plan.release.role,
-      plan.release.name,
-      namespace,
-    );
-    releases.push({
-      name: plan.release.name,
-      role: plan.release.role,
-      chartPath: plan.chartPath,
-      chartName: plan.pin.name,
-      chartVersion: plan.pin.version,
-      appVersion: plan.pin.appVersion,
-      sha256: plan.pin.sha256,
-      valuesPaths: plan.valuesPaths,
-      helmValueArgs: plan.helmValueArgs,
-      expectedImage: plan.expectedImage,
-      documents: releaseDocs,
-      inventory: { direct, generated },
-    });
-    documents.push(...releaseDocs);
-  }
-
-  /** @type {[string, string, string, string, string][]} */
-  const allDirect = [];
-  /** @type {[string, string, string, string, string][]} */
-  const allGenerated = [];
-  for (const row of releases) {
-    allDirect.push(...row.inventory.direct);
-    allGenerated.push(...row.inventory.generated);
-  }
-  assertInventoryMatch(profileId, expected, allDirect, allGenerated);
-
-  return {
+  const context = { verifyArchive, pins, imageLocks };
+  const desiredPlans = buildValidatedReleasePlans(
+    profileId,
+    'desired',
+    context,
     profile,
-    releases: releases.map((row) => {
-      const { inventory, ...rest } = row;
-      void inventory;
-      return rest;
-    }),
-    documents,
-    expectedInventory: expected,
+  );
+  const desiredRendered = desiredPlans.map((plan) =>
+    renderValidatedPlan(plan, run, namespace),
+  );
+  const desired = finalizeArtifactBundle(
+    profileId,
+    desiredRendered,
+    profile,
+    expected,
     imageLocks,
+  );
+
+  if (profileId === 'release') {
+    return { desired, predecessor: null };
+  }
+
+  const collectorPlan = desiredPlans.find(
+    (plan) => plan.release.role === 'collector',
+  );
+  if (!collectorPlan) {
+    throwArtifactInvalid('missing collector release plan');
+  }
+  const baseCollectorPlan = {
+    ...collectorPlan,
+    valuesPaths: [join(valuesRoot, 'collector.yaml')],
   };
+  const baseCollectorRendered = renderValidatedPlan(
+    baseCollectorPlan,
+    run,
+    namespace,
+  );
+  const predecessorRendered = desiredRendered.map((row) =>
+    row.role === 'collector' ? baseCollectorRendered : row,
+  );
+  const predecessor = finalizeArtifactBundle(
+    profileId,
+    predecessorRendered,
+    profile,
+    expected,
+    imageLocks,
+  );
+  return { desired, predecessor };
 }
 
 /**

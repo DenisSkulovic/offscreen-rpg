@@ -18,9 +18,25 @@
 
 Do not silently substitute `fable`, a full dated model id, or an inherited parent model for the rows above. If the selected alias is unavailable in the running Claude Code build, stop and report the limitation. Do not guess a replacement.
 
+## Next-run implementation experiment (2026-11-27)
+
+Use a fresh Sonnet terminal session for a named implementation batch. The main session owns sequencing, shared factual preflight if useful, diff acceptance, and Git/closure; follow [named multi-Change dispatch](../.agents/references/bounded-parent-orchestration.md#named-multi-change-dispatch). Use the existing native `implementer` for one bounded substantive T-ID, `utility-worker` for nontrivial deterministic chores and `evidence-runner` for assigned factual checks. Do trivial commands/edits directly. Do not use `general-purpose`, `Explore`, teams or a second supervisor as the routine implementation route; choose an exception only for a concrete task whose needs the named agents cannot meet and explain it before dispatch. Do not silently substitute a different model, or delegate the whole Change packet to a worker. If a named agent is unavailable, report it and use permitted bounded direct work or stop the affected assignment.
+
+For this experiment, use the following session-local launch from the repository root (Claude Code v2.1.217 or later; confirm the installed version and loaded agent roster). The three-slot limit is a ceiling, not a dispatch target. Start with one representative task for a repeated pattern, use one or two workers for a small batch, and expand to three only for useful independent tasks. No nesting. Avoid queuing more workers behind the cap or spawning replacements for routine receipts.
+
+```bash
+CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS=3 \
+CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=1 \
+claude --model sonnet
+```
+
+These documented environment variables constrain ordinary Agent-tool spawning, not total session tokens, spending, resumed workers or other sessions. Do not enable agent teams or bypass permission controls for this experiment. Do not change global settings, add hooks or use arbitrary token/time cutoffs to skip required proof. If the batch uses existing worktrees created before this policy revision, read the updated policy in the primary checkout, apply its execution guidance to the existing authorized branches, and do not merge or copy policy files into those branches merely to refresh instructions.
+
+For this opt-in comparison, capture `/usage` before and after the assignment and include the actual model/agent types, number of launches and repair passes, accepted outcomes, elapsed time and unavailable measurements in the ordinary final receipt or chat. Do not create a metrics file or another review gate. Compare similar accepted work and distinguish five-hour/weekly allowance from API-equivalent estimates. One smaller follow-up is not a controlled A/B benchmark. Revisit the experiment after observing actual quality and usage; the cap does not establish savings.
+
 ## What this client does not enforce
 
-Claude Code's subagent `model` field selects an alias when the product honors it. This repository does not install a hook that rejects other models, and it does not observe billing. A frontmatter alias is policy, not proof that a session was billed at that alias. Parent model selection remains a manual session choice. Start a coordinator session on Sonnet.
+Claude Code's subagent `model` field selects an alias when the product honors it. This repository does not install a hook that rejects other models, and it does not observe billing. A frontmatter alias is policy, not proof that a session was billed at that alias. Parent model selection remains a manual session choice. Start a coordinator session on Sonnet; an owner may explicitly select Opus for exceptional advanced reasoning. The temporary session-local spawn limits above do not enforce a token budget.
 
 Official subagent notes warn that a parent in an automatic or bypass permission mode can override a subagent's `permissionMode`. Tool allowlists are the control this repository actually sets. No agent here uses `bypassPermissions`.
 

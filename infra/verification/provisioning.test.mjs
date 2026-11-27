@@ -72,7 +72,7 @@ test('lost rabbitmq provisioning output is possible mutation not pass', () => {
   assert.equal(result.reason, 'possible-mutation');
 });
 
-test('dev observability provisioning uses 1800s ensure and 360s observation', async () => {
+test('dev observability provisioning uses shared ensure and observation caps', async () => {
   /** @type {number | undefined} */
   let ensureTimeout;
   /** @type {number | undefined} */

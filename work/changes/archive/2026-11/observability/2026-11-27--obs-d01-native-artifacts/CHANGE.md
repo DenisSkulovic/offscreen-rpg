@@ -1,0 +1,35 @@
+# OBS-D01 | Normalize native observability artifacts
+
+**State:** Done (accepted source scope; comprehensive A/V qualification NOT RUN). Source already joined on implementation/observability-developer. Original receipt `900c5a46b79bcf96ba581e0b4be02ccf6b053164`; no new live operation.
+
+## Outcome
+
+Five native Helm releases use maintained values/, locks/ and root expected-inventory.json; render and install share ordered values argv. Both profiles render exactly the same parsed documents, inventory and image pins as before. No old runtime path or descriptor alias remains.
+
+Authority: [accepted artifact ownership](../../../../../../docs/technical/platform/observability-native-infrastructure.md#artifact-ownership), [design](../../../../../designs/archive/observability-developer/README.md). Extracts T01 from [archived OBSERVABILITY-DEVELOPER](../2026-11-27--observability-developer/CHANGE.md). D04 later owns overlay/predecessor variants. No new values, chart/image updates, network pulls, cluster reads/writes, application instrumentation or unrelated refactor. Preserve original checks, chart order, storage arguments and install-only semantics.
+
+## Execution and proof
+
+[TASKS](TASKS.md): two serial assignments; [SOURCE-MAP](SOURCE-MAP.md): exact move/caller map; [PROOF](PROOF.md): before/after parsed parity, focused normal and negative tests, cleanup. Parent captures baseline before edits, dispatches T01 then T02, runs combined proof and reviews exact diff. Estimated active implementation 8–12 minutes excluding Helm test time, subject to independent review. No new join child.
+
+## Closure
+Retain all offline parity and regression predicates in PROOF, including exact full installer argv parity across five roles × two profiles, normalized only moved values paths. Before edits verify local full tracked operational census and worktree ownership; no unlisted nonmechanical caller or collision. The tested source is already joined to `implementation/observability-developer`. The defended D01 main exception is not exercised. Pending joint certification does not block that source join. No main merge or live claim. Joint certification stays on the Design. This packet archives on the implementation branch once its own source gate has passed.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | unchanged because local observability does not alter player behavior, authorization, persistence or paid model policy | docs/product/README.md | no SDK enrollment or gameplay changes |
+| Technical | changed: docs/technical/platform/observability-native-infrastructure.md#artifact-ownership; record eight normalized maintained paths, shared ordered argv; selected behavior unchanged | infra/README.md, infra/platform/observability/vendor/README.md | [PROOF](PROOF.md), selected authority only; no invented live PASS |
+| Code | changed: infra/platform/observability/artifacts.mjs, install.mjs and eight moves; exact source-map consumers; negative: parsed render or any unnormalized installer token differs | [SOURCE-MAP](SOURCE-MAP.md) | [TASKS](TASKS.md), [PROOF](PROOF.md) |
+| Related | changed: infra/README.md, infra/platform/observability/vendor/README.md; reconcile only affected operational instructions and realization status at accepted closure | work/changes/open/README.md, STATUS.md | no premature operational advertisement; parent records actual changed/unchanged dispositions |
+
+## First dispatch — owner-released
+
+Batch index: [observability group](../../../../../designs/archive/observability-developer/implementation-record/README.md). Prerequisite: none. OBS-D01 is already merged into `implementation/observability-developer`. Do not start it again from the retired integration ref. Design-level A1–A12/V01–V12 acceptance remains pending. Do not join main. Do not start another Change.
+
+## Reconciliation ledger
+
+- Source receipt: `900c5a46b79bcf96ba581e0b4be02ccf6b053164`. Both-profile parsed render and installer argv parity PASS; focused tests PASS (recorded source receipt); live NOT RUN.
+- Owner accepted bounded local foundation on 2026-11-27; original A/V qualification, findings and restrictions retained in the Design acceptance record and permanent native observability contract. No new test result, review PASS or live permission asserted.
+- Closure: archive after existing source join; no reimplementation. Immutable original packet at `3d7a52f5854793bd60fe505035c1bf63c5942f98:work/changes/open/observability-developer/2026-11-27--obs-d01-native-artifacts/CHANGE.md`.

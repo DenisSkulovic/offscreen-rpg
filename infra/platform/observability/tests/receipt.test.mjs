@@ -52,6 +52,7 @@ test('platform status zero with malformed receipt is not success', () => {
   assert.equal(parsed.ok, false);
   assert.equal(parsed.mutation, 'possible');
   assert.equal(parsed.reasonCode, 'invalid-receipt');
+  assert.equal(parsed.pending, true);
 });
 
 test('nonzero valid no-mutation refusal stays none', () => {
@@ -114,6 +115,80 @@ test('lost stdout is possible mutation', () => {
   });
   assert.equal(parsed.mutation, 'possible');
   assert.equal(parsed.ok, false);
+  assert.equal(parsed.pending, true);
+});
+
+test('predecessor refusal parses as coherent no-mutation failure', () => {
+  const stdout = `${JSON.stringify({
+    schema: 1,
+    operation: 'ensure',
+    profile: 'dev',
+    ok: false,
+    state: 'not-ready',
+    reasonCode: 'upgrade-required',
+    mutation: 'none',
+    completedPhases: [],
+    pending: false,
+  })}\n`;
+  const parsed = parseEnsureReceipt({
+    ok: true,
+    exitCode: 1,
+    stdout,
+    signal: null,
+    timedOut: false,
+  });
+  assert.equal(parsed.ok, false);
+  assert.equal(parsed.reasonCode, 'upgrade-required');
+  assert.equal(parsed.mutation, 'none');
+  assert.equal(parsed.pending, false);
+});
+
+test('upgrade ensure receipts are never parsed as ensure success', () => {
+  const stdout = `${JSON.stringify({
+    schema: 1,
+    operation: 'upgrade',
+    ok: true,
+    state: 'ready',
+    reasonCode: 'ready',
+    mutation: 'confirmed',
+    completedPhases: [],
+    pending: false,
+  })}\n`;
+  const parsed = parseEnsureReceipt({
+    ok: true,
+    exitCode: 0,
+    stdout,
+    signal: null,
+    timedOut: false,
+  });
+  assert.equal(parsed.ok, false);
+  assert.equal(parsed.reasonCode, 'invalid-receipt');
+  assert.equal(parsed.pending, true);
+});
+
+test('status observation fails upgrade-required and pending distinctly', () => {
+  for (const [reasonCode, expectedReason] of [
+    ['upgrade-required', 'upgrade-required'],
+    ['pending', 'pending'],
+  ]) {
+    const stdout = `${JSON.stringify({
+      schema: 1,
+      operation: 'status',
+      profile: 'dev',
+      ok: true,
+      state: 'not-ready',
+      reasonCode,
+      mutation: 'none',
+      completedPhases: [],
+      pending: true,
+    })}\n`;
+    const receipt = evaluateObservationReceipt(
+      { code: 0, signal: null, stdout, stderr: '' },
+      { expectedProfile: 'dev' },
+    );
+    assert.equal(receipt.status, 'FAIL');
+    assert.equal(receipt.reason, expectedReason);
+  }
 });
 
 test('duplicate or non-prefix phases are rejected', () => {
@@ -154,6 +229,8 @@ test('diagnostic stdout after timeout is not success', () => {
     ok: true,
     state: 'ready',
     reasonCode: 'ready',
+    mutation: 'none',
+    completedPhases: [],
     pending: false,
   })}\n`;
   const normalized = normalizeDiagnosticResult({

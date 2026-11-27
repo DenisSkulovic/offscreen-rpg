@@ -11,7 +11,7 @@ The canonical task card is client-neutral. The coordinator applies the selected 
 
 ## Source of truth
 
-Use the selected Change, accepted canonical headings, exact source and contract sections, and the current baseline. No duplicate summary, no legacy FEATURE or PLAN authority, and no pasted investigation. Root instructions always apply. Avoid a redundant preload when they are already loaded. The coordinator owns one Change. A worker owns one bounded T-ID. Heavy acceptance belongs to the acceptance lead and the owner unless a named proof is specifically delegated.
+Use the selected Change, accepted canonical headings, exact source and contract sections, and the current baseline. No duplicate summary, no legacy FEATURE or PLAN authority, and no pasted investigation. Root instructions always apply. Avoid a redundant preload when they are already loaded. Each Change has one accountable coordinator; a named batch session may hold distinct coordinator responsibilities for several Changes under the shared [batch-dispatch rule](../../references/bounded-parent-orchestration.md#named-multi-change-dispatch). A worker owns one bounded T-ID. Do not turn a multi-Change launch into one full autonomous subagent per Change by default. Heavy acceptance belongs to the acceptance lead and the owner unless a named proof is specifically delegated.
 
 ## Deliver this bounded packet
 

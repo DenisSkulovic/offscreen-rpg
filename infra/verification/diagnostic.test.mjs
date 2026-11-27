@@ -241,7 +241,7 @@ test('observability timeout cannot pass via receipt stdout', () => {
   assert.equal(mapped.status, 'FAIL');
 });
 
-test('buildDiagnosticChecks schedules observability supervisor at 360s', async () => {
+test('buildDiagnosticChecks schedules observability supervisor at shared cap', async () => {
   const checks = buildDiagnosticChecks({
     repoRoot: '/fixture',
     definitions: [],

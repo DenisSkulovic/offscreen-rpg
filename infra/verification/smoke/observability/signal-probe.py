@@ -202,15 +202,24 @@ def logs_check(trace: str, child: str, marker: str, payload: dict) -> bool:
     return False
 
 
-def metrics_check(run: str, payload: dict) -> bool:
-    return any(
-        float(entry["value"][1]) == 7 and entry["metric"].get("probe_run") == run
-        for entry in payload.get("data", {}).get("result", [])
-    )
+def metrics_check(payload: dict, run: str, now: int) -> bool:
+    data = payload.get("data", {})
+    if data.get("resultType") != "matrix":
+        return False
+    expected = now / 1e9
+    for entry in data.get("result", []):
+        if entry.get("metric", {}).get("probe_run") != run:
+            continue
+        for sample in entry.get("values", []):
+            if float(sample[0]) == expected and float(sample[1]) == 7:
+                return True
+    return False
 
 
 def query_timeout_s(remaining_s: float) -> float:
-    return min(HTTP_MAX_S, max(0.1, remaining_s))
+    if remaining_s <= 0:
+        return 0
+    return min(HTTP_MAX_S, remaining_s)
 
 
 def observe_positive_queries(
@@ -237,13 +246,15 @@ def observe_positive_queries(
                     timeout_s=query_timeout_s(remaining),
                 )
                 (out / f"{name}.query.json").write_text(json.dumps(payload, indent=2))
-                if check(payload, **ctx):
+                if check(payload=payload, **ctx):
                     print(f"PASS {name}", flush=True)
                     pending.remove(name)
             except (OSError, ValueError, RuntimeError, urllib.error.URLError) as error:
                 (out / f"{name}.error.txt").write_text(str(error))
         if pending:
-            sleep(0)
+            pause = min(2, max(0, deadline - monotonic()))
+            if pause > 0:
+                sleep(pause)
     return pending
 
 
@@ -575,10 +586,11 @@ def run_probe(
                 {
                     "query": 'offscreen_probe_events_total{probe_run="'
                     + control_runs["metrics"]
-                    + '"}'
+                    + '"}[5s]',
+                    "time": str(now / 1e9 + 1),
                 },
                 metrics_check,
-                {"run": control_runs["metrics"]},
+                {"run": control_runs["metrics"], "now": now},
             ),
         }
         pending = observe_positive_queries(
@@ -741,11 +753,11 @@ def run_probe(
             prom,
             "/api/v1/query",
             {
-                "query": 'offscreen_probe_events_total{probe_run="' + run + '"}',
-                **({"time": str(now / 1e9 + 2)} if replay else {}),
+                "query": 'offscreen_probe_events_total{probe_run="' + run + '"}[5s]',
+                "time": str(now / 1e9 + 1),
             },
             metrics_check,
-            {"run": run},
+            {"run": run, "now": now},
         ),
     }
     pending = {"log", "metric"} if mode == "tempo-outage" else set(checks)
@@ -764,7 +776,7 @@ def run_probe(
                     timeout_s=query_timeout_s(remaining),
                 )
                 (out / f"{name}.query.json").write_text(json.dumps(payload, indent=2))
-                if check(payload, **ctx):
+                if check(payload=payload, **ctx):
                     print("PASS", name, flush=True)
                     pending.remove(name)
             except (OSError, ValueError, RuntimeError, urllib.error.URLError) as error:

@@ -65,7 +65,9 @@ class SignalProbeNegativeTests(unittest.TestCase):
     def test_invalid_allowed_key_payload_is_not_positive(self) -> None:
         run = "a" * 16
         trace, payloads = probe.build_invalid_allowed_key_submission(run)
-        self.assertFalse(probe.metrics_check(run, {"data": {"result": []}}))
+        self.assertFalse(
+            probe.metrics_check({"data": {"resultType": "matrix", "result": []}}, run, 1)
+        )
         env_attrs = payloads["traces"]["resourceSpans"][0]["resource"]["attributes"]
         env = next(
             attribute

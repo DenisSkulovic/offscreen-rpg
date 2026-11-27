@@ -4,7 +4,11 @@ import test from 'node:test';
 
 import { readKindProfile } from '../../../clusters/kind/manager/config.mjs';
 import { readPlatformProfile } from '../../common/profile.mjs';
-import { helmValuesArgv, loadArtifacts } from '../artifacts.mjs';
+import {
+  helmValuesArgv,
+  loadArtifacts,
+  loadObservabilityVariants,
+} from '../artifacts.mjs';
 import { GRAFANA_ADMIN_SECRET } from '../inventory.mjs';
 import {
   assertPhaseBudget,
@@ -16,11 +20,16 @@ import {
   verifyCompletedPhasePrefix,
   WORKER_BUDGET_MS,
 } from '../install.mjs';
-import { buildCompleteDevSnapshot } from './snapshot-fixtures.mjs';
+import {
+  buildCompleteDevSnapshot,
+  buildPredecessorDevSnapshot,
+} from './snapshot-fixtures.mjs';
 
 const devKind = readKindProfile('dev');
 const devProfile = readPlatformProfile('dev');
-const artifacts = loadArtifacts('dev', { verifyArchive: false });
+const { desired: artifacts } = loadObservabilityVariants('dev', {
+  verifyArchive: false,
+});
 
 /**
  * @param {object} base
@@ -149,15 +158,11 @@ function makeEnsureDeps(options = {}) {
   const outputs = options.outputs ?? [];
   const pendingWrites = [];
   let clock = 0;
-  const complete = snapshotForPhases([
-    'namespace',
-    'secret',
-    'obs-prometheus',
-    'obs-loki',
-    'obs-tempo',
-    'obs-collector',
-    'obs-grafana',
-  ]);
+  const complete = {
+    ...buildCompleteDevSnapshot(artifacts),
+    pending: false,
+    pendingValid: true,
+  };
   const stages = [
     absentSnapshot(),
     snapshotForPhases(['namespace']),
@@ -532,7 +537,9 @@ test('helm install argv preserves helmValueArgs parity with render', () => {
   ];
   for (const [profileId, bundle, contextName, namespace] of bundles) {
     for (const release of bundle.releases) {
-      assert.equal(release.valuesPaths.length, 1, profileId);
+      const expectedValues =
+        profileId === 'dev' && release.role === 'collector' ? 2 : 1;
+      assert.equal(release.valuesPaths.length, expectedValues, profileId);
       assert.equal(release.valuesPath, undefined);
       const slice = helmValuesArgv(release);
       const argv = helmInstallArgv(
@@ -632,6 +639,44 @@ test('stale identity is refused before writes proceed', async () => {
   }
 });
 
+test('predecessor shape refuses ensure without writes', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const { desired, predecessor } = loadObservabilityVariants('dev', {
+      verifyArchive: false,
+    });
+    assert.ok(predecessor);
+    const deps = makeEnsureDeps();
+    const predecessorSnapshot = buildPredecessorDevSnapshot(
+      desired,
+      predecessor,
+    );
+    deps.collectInventorySnapshot = () => ({
+      ...predecessorSnapshot,
+      pending: false,
+      pendingValid: true,
+    });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.reasonCode, 'upgrade-required');
+    assert.equal(receipt.mutation, 'none');
+    assert.equal(receipt.pending, false);
+    assert.deepEqual(receipt.completedPhases, []);
+    assert.equal(deps.calls.length, 0);
+  } finally {
+    if (prior === undefined) {
+      delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    } else {
+      process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+    }
+  }
+});
+
 test('foreign pending refuses at admission', async () => {
   const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
   process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
@@ -715,18 +760,25 @@ test('foreign pending refuses during finalization even when shape is ready', asy
 
 test('phase-prefix acceptance allows partial snapshot only', () => {
   const partial = snapshotForPhases(['namespace', 'secret', 'obs-prometheus']);
+  const identity = {
+    tuple: { targetNamespaceUid: partial.namespace.uid },
+  };
+  const custody = {
+    assertOwnPending: () => ({ operation: 'ensure' }),
+  };
+  const adapter = { identity, custody, profile: devProfile };
   const pass = verifyCompletedPhasePrefix(
     partial,
     artifacts,
     ['namespace', 'secret', 'obs-prometheus'],
-    devProfile,
+    adapter,
   );
   assert.equal(pass.ok, true);
   const fail = verifyCompletedPhasePrefix(
     partial,
     artifacts,
     ['namespace', 'secret', 'obs-prometheus', 'obs-loki'],
-    devProfile,
+    adapter,
   );
   assert.equal(fail.ok, false);
 });
