@@ -1,11 +1,14 @@
 # Agent Core E1 | current sprint implementation group
 
+**Terminal execution record (2026-11-27):** all constituent source work integrated and archived; bounded foundation accepted by the owner. The [acceptance record](../OWNER-ACCEPTANCE.md) (see dossier) controls the revised boundary. Earlier planning/dispatch and unrun qualification statements below are historical, not active instructions.
+
+
 | Field | Value |
 | --- | --- |
 | Repository | DenisSkulovic/offscreen-rpg |
 | Reviewed exact design | `5ea13cc6ac6ade8c3909acbecd54a039ceeb17fe`, original independent DEFENDED verdict preserved with acceptance patch |
 | Inspected source baseline | `1cf22fe0f512b5dd92b5cedaa2d35a3fe27cee7c` on main; no source edits in planning |
-| Permanent authority | [Agent Core technical contract](../../../../docs/technical/platform/agent-core.md), [package map](../../../../packages/README.md) |
+| Permanent authority | [Agent Core technical contract](../../../../../docs/technical/platform/agent-core.md), [package map](../../../../../packages/README.md) |
 | Design implementation branch | `implementation/agent-core-monorepo-map`; owner authorized creation from the verified main release commit carrying this receipt, direct descendant of reviewed `96f0a26904a6a6e1fb07dfac0ccad618ea634ab2`; actual base SHA is the custodian’s resulting commit, not the reviewed parent |
 | Standing | AC01–AC08 construction is archived on `implementation/agent-core-monorepo-map`. Offline source gates passed. Native live qualification has not passed. Final main integration is not authorized. |
 
@@ -15,14 +18,14 @@ AC01–AC08 are archived on this branch. The register below is the execution rec
 
 | Change | Outcome | Source prerequisites | Tasks | State |
 | --- | --- | --- | ---: | --- |
-| [AC01](../../archive/2026-11/other/2026-11-27--ac01-grouped-image-workspaces/CHANGE.md) | Grouped workspace image and sync compatibility | None | 2 | Done on the design branch; joint proof remains AC08 |
-| [AC02](../../archive/2026-11/other/2026-11-27--ac02-grouped-repository-checks/CHANGE.md) | Grouped source and repository knowledge checks | None | 3 | Done; archived on this Change; joint proof remains AC08 |
-| [AC03](../../archive/2026-11/other/2026-11-27--ac03-workspace-and-contracts/CHANGE.md) | Agent Core workspace, dependency pins and pure contracts | None | 3 | Done on design branch; source gate passed; AC08 joint proof not passed |
-| [AC04](../../archive/2026-11/other/2026-11-27--ac04-mission-policy-context/CHANGE.md) | Deterministic mission admission, context and execution limits | AC03 | 2 | Done on design branch; source gate passed; AC08 joint proof not passed |
-| [AC05](../../archive/2026-11/other/2026-11-27--ac05-capability-registry-dispatch/CHANGE.md) | Explicit capability registry and guarded tool wrappers | AC03, AC04 | 2 | Done on design branch; source gate passed; AC08 joint proof not passed |
-| [AC06](../../archive/2026-11/other/2026-11-27--ac06-native-loop-runtime/CHANGE.md) | Native Vercel loop and Workflow-safe execution composition | AC03, AC04, AC05 | 2 | Done on design branch; source gate passed; AC08 joint proof not passed |
-| [AC07](../../archive/2026-11/other/2026-11-27--ac07-synthetic-fixtures/CHANGE.md) | Stateless synthetic model, definition and tool fixtures | AC03 | 3 | Done on design branch; focused fixture tests passed; AC08 joint proof not passed |
-| [AC08](../../archive/2026-11/other/2026-11-27--ac08-integration-qualification/CHANGE.md) | Maintained runtime qualification and E1 joint acceptance | AC01, AC02, AC03, AC04, AC05, AC06, AC07 | 5 | Source gate passed; live joint acceptance NOT RUN |
+| [AC01](../../../../changes/archive/2026-11/other/2026-11-27--ac01-grouped-image-workspaces/CHANGE.md) | Grouped workspace image and sync compatibility | None | 2 | Done on the design branch; joint proof remains AC08 |
+| [AC02](../../../../changes/archive/2026-11/other/2026-11-27--ac02-grouped-repository-checks/CHANGE.md) | Grouped source and repository knowledge checks | None | 3 | Done; archived on this Change; joint proof remains AC08 |
+| [AC03](../../../../changes/archive/2026-11/other/2026-11-27--ac03-workspace-and-contracts/CHANGE.md) | Agent Core workspace, dependency pins and pure contracts | None | 3 | Done on design branch; source gate passed; AC08 joint proof not passed |
+| [AC04](../../../../changes/archive/2026-11/other/2026-11-27--ac04-mission-policy-context/CHANGE.md) | Deterministic mission admission, context and execution limits | AC03 | 2 | Done on design branch; source gate passed; AC08 joint proof not passed |
+| [AC05](../../../../changes/archive/2026-11/other/2026-11-27--ac05-capability-registry-dispatch/CHANGE.md) | Explicit capability registry and guarded tool wrappers | AC03, AC04 | 2 | Done on design branch; source gate passed; AC08 joint proof not passed |
+| [AC06](../../../../changes/archive/2026-11/other/2026-11-27--ac06-native-loop-runtime/CHANGE.md) | Native Vercel loop and Workflow-safe execution composition | AC03, AC04, AC05 | 2 | Done on design branch; source gate passed; AC08 joint proof not passed |
+| [AC07](../../../../changes/archive/2026-11/other/2026-11-27--ac07-synthetic-fixtures/CHANGE.md) | Stateless synthetic model, definition and tool fixtures | AC03 | 3 | Done on design branch; focused fixture tests passed; AC08 joint proof not passed |
+| [AC08](../../../../changes/archive/2026-11/other/2026-11-27--ac08-integration-qualification/CHANGE.md) | Maintained runtime qualification and E1 joint acceptance | AC01, AC02, AC03, AC04, AC05, AC06, AC07 | 5 | Source gate passed; live joint acceptance NOT RUN |
 
 ## Readiness disposition
 
@@ -41,7 +44,7 @@ AC03 pure contracts and `missionWorkflowId`, AC04 `admitMission/assembleContext/
 
 ## Proof and closure
 
-AC08 [joint proof](../../archive/2026-11/other/2026-11-27--ac08-integration-qualification/PROOF.md#joint-acceptance-matrix) retains all mandatory E1 acceptance. It has not passed. Archive each completed Change in same commission after own assigned gate, before reporting source integration; join only design branch, under current lifecycle and target lock. A source-only join is not qualification. Update group register under target lock; if last packet archived, transfer joint proof and provenance to durable owner/Design as required and retire group index. Owner-operated live qualification explicitly authorized separately, only isolated dev Temporal. Main merge requires exact final joint matrix pass, durable evidence/limitations reconciled, owner permission, no unresolved Critical/High scope defect. After a native qualification failure, acceptance lead retains the failed receipt and routes ordinary source defects through a narrowly scoped explicitly commissioned repair Change on the design implementation branch; rerun affected proof on corrected SHA, with material contradictions returned to planner. No new review for mere wording. No successor auto-commission. Retire design with original immutable verdict/evidence and links once obligations fulfilled/transferred.
+AC08 [joint proof](../../../../changes/archive/2026-11/other/2026-11-27--ac08-integration-qualification/PROOF.md#joint-acceptance-matrix) retains all mandatory E1 acceptance. It has not passed. Archive each completed Change in same commission after own assigned gate, before reporting source integration; join only design branch, under current lifecycle and target lock. A source-only join is not qualification. Update group register under target lock; if last packet archived, transfer joint proof and provenance to durable owner/Design as required and retire group index. Owner-operated live qualification explicitly authorized separately, only isolated dev Temporal. Main merge requires exact final joint matrix pass, durable evidence/limitations reconciled, owner permission, no unresolved Critical/High scope defect. After a native qualification failure, acceptance lead retains the failed receipt and routes ordinary source defects through a narrowly scoped explicitly commissioned repair Change on the design implementation branch; rerun affected proof on corrected SHA, with material contradictions returned to planner. No new review for mere wording. No successor auto-commission. Retire design with original immutable verdict/evidence and links once obligations fulfilled/transferred.
 
 ## Planner self-check / submission limits
 

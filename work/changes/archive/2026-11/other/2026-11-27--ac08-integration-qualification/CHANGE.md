@@ -4,7 +4,7 @@
 
 **Kind:** implementation
 
-**Target:** `implementation/agent-core-monorepo-map`. **Source baseline:** `1cf22fe0f512b5dd92b5cedaa2d35a3fe27cee7c` (main). Reviewed R10 `5ea13cc6ac6ade8c3909acbecd54a039ceeb17fe`. Final readiness confirmed at `96f0a26904a6a6e1fb07dfac0ccad618ea634ab2`; [review and owner commission](../../../../open/agent-core-monorepo-map/READINESS.md#targeted-independent-re-review--2026-11-27). Recheck actual latest target, plan guard and unrelated worktrees before dispatch. No paid/live/destructive permission. [Group schedule](../../../../open/agent-core-monorepo-map/README.md).
+**Target:** `implementation/agent-core-monorepo-map`. **Source baseline:** `1cf22fe0f512b5dd92b5cedaa2d35a3fe27cee7c` (main). Reviewed R10 `5ea13cc6ac6ade8c3909acbecd54a039ceeb17fe`. Final readiness confirmed at `96f0a26904a6a6e1fb07dfac0ccad618ea634ab2`; [review and owner commission](../../../../../designs/archive/agent-core-monorepo-map/implementation-record/READINESS.md#targeted-independent-re-review--2026-11-27). Recheck actual latest target, plan guard and unrelated worktrees before dispatch. No paid/live/destructive permission. [Group schedule](../../../../../designs/archive/agent-core-monorepo-map/implementation-record/README.md).
 
 ## Outcome and authority
 
@@ -14,7 +14,7 @@ One explicit maintained provider-free harness proves the complete E1 contract, e
 
 ## Implementation first-screen brief
 
-5 tasks; Upper-end integration Change: 10–15 min+ source harness; substantial owner-operated live and affected proof excluded. Five bounded tasks; no separate Change for no-diff live proof.. Prerequisites: **AC01, AC02, AC03, AC04, AC05, AC06, AC07**. Parent reads this front door and [TASKS](TASKS.md), then first eligible card and its named anchors only. The [group readiness disposition](../../../../open/agent-core-monorepo-map/README.md#readiness-disposition) records the full-batch commission; dispatch only after this Change’s prerequisites hold. No additional owner approval or review required for unchanged scope. Verify predecessor archive/join receipts and exact source postconditions on the recorded implementation branch. Source postcondition and assigned focused checks; AC08 owns full joint proof. [PROOF](PROOF.md) owns assigned checks. No auto-next; one coordinator and worktree per Change.
+5 tasks; Upper-end integration Change: 10–15 min+ source harness; substantial owner-operated live and affected proof excluded. Five bounded tasks; no separate Change for no-diff live proof.. Prerequisites: **AC01, AC02, AC03, AC04, AC05, AC06, AC07**. Parent reads this front door and [TASKS](TASKS.md), then first eligible card and its named anchors only. The [group readiness disposition](../../../../../designs/archive/agent-core-monorepo-map/implementation-record/README.md#readiness-disposition) records the full-batch commission; dispatch only after this Change’s prerequisites hold. No additional owner approval or review required for unchanged scope. Verify predecessor archive/join receipts and exact source postconditions on the recorded implementation branch. Source postcondition and assigned focused checks; AC08 owns full joint proof. [PROOF](PROOF.md) owns assigned checks. No auto-next; one coordinator and worktree per Change.
 
 ## Planned specification and implementation delta | planned-impact.v1
 
@@ -25,7 +25,7 @@ Write ownership is the named T-ID files; no sibling file writes except parent-ow
 | Product | unchanged because no player-facing behavior or authority changes | Existing product and Storyteller owners remain | No production consumers or effects |
 | Technical | unchanged selected contract; implement [technical owner](../../../../../../docs/technical/platform/agent-core.md#residual-e1-proof-not-yet-run-for-maintained-source) and reconcile only observed status/limitations | [Package map](../../../../../../packages/README.md); named durable owners in TASKS | AC08 source gate, AC08 joint proof |
 | Code | changed: `packages/ai/agent-core/tsconfig.test.json`, `packages/ai/agent-core/test/mission.workflow.ts`, `packages/ai/agent-core/test/qualification.mjs`, `packages/ai/agent-core/test/qualification-scenarios.mjs`, `packages/ai/agent-core/test/qualification-recovery.mjs`, `packages/ai/agent-core/test/qualification.test.mjs`; exact postcondition above | [Source map](SOURCE-MAP.md) | [Assigned proof](PROOF.md) and diagnostic negatives |
-| Related | changed: own package/tooling README or status where assigned, otherwise unchanged because no public consumer; reconcile temporary packet/catalog at closure | [Group](../../../../open/agent-core-monorepo-map/README.md), technical owner | actual source status and durable findings |
+| Related | changed: own package/tooling README or status where assigned, otherwise unchanged because no public consumer; reconcile temporary packet/catalog at closure | [Group](../../../../../designs/archive/agent-core-monorepo-map/implementation-record/README.md), technical owner | actual source status and durable findings |
 
 ## Handoff and closure
 

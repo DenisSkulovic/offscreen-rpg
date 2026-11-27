@@ -2,13 +2,9 @@
 
 **Documentation renewal E1:** [product](product-documentation-renewal/README.md) and [technical](technical-documentation-renewal/README.md) — both owner-accepted; all sixteen packets PD01–PD07 and TD01–TD08/TD10 READY at `606de3a0a4856eb36ce275bd4bc109ea46d480c0` and owner-authorized for named dispatch; PD07/TD10 dependency-gated, TD09 protected no-op. See group registers for release, findings and dispatch. Joint semantic acceptance NOT RUN; no queue or branch change.
 
-## Agent Core E1 | current sprint (2026-11-27)
 
-[Eight Changes](agent-core-monorepo-map/README.md) are archived on `implementation/agent-core-monorepo-map`. Their offline source gates passed. Native live qualification has not passed, and the group index still holds that joint obligation.
 
-## Developer observability | current sprint (2026-11-27)
 
-The owner-released offline Changes are the [observability-developer group](observability-developer/README.md). That index owns the dependency graph and execution status. Independent readiness and changed-authority review remain outstanding. No real cluster or paid operations, constituent main merge, or live certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 
 [RABBITMQ-NATIVE](2026-11-26--rabbitmq-native/CHANGE.md): owner-accepted R10, source-only commission; live acceptance and join held.

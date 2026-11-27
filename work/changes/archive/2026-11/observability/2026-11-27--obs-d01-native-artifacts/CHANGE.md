@@ -1,12 +1,12 @@
 # OBS-D01 | Normalize native observability artifacts
 
-**State:** OWNER-RELEASED — OFFLINE SOURCE ONLY; independent readiness verdict not yet PASS. **Kind:** PATCH, behavior-preserving source migration. **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `implementation/observability-developer`. The OBS-D01 source branch is already merged there. Do not recreate `integration/observability-developer`. The planner owns the packet.
+**State:** Done (accepted source scope; comprehensive A/V qualification NOT RUN). Source already joined on implementation/observability-developer. Original receipt `900c5a46b79bcf96ba581e0b4be02ccf6b053164`; no new live operation.
 
 ## Outcome
 
 Five native Helm releases use maintained values/, locks/ and root expected-inventory.json; render and install share ordered values argv. Both profiles render exactly the same parsed documents, inventory and image pins as before. No old runtime path or descriptor alias remains.
 
-Authority: [accepted artifact ownership](../../../../../docs/technical/platform/observability-native-infrastructure.md#artifact-ownership), [design](../../../../designs/open/observability-developer/README.md). Extracts T01 from [archived OBSERVABILITY-DEVELOPER](../../../archive/2026-11/observability/2026-11-27--observability-developer/CHANGE.md). D04 later owns overlay/predecessor variants. No new values, chart/image updates, network pulls, cluster reads/writes, application instrumentation or unrelated refactor. Preserve original checks, chart order, storage arguments and install-only semantics.
+Authority: [accepted artifact ownership](../../../../../../docs/technical/platform/observability-native-infrastructure.md#artifact-ownership), [design](../../../../../designs/archive/observability-developer/README.md). Extracts T01 from [archived OBSERVABILITY-DEVELOPER](../2026-11-27--observability-developer/CHANGE.md). D04 later owns overlay/predecessor variants. No new values, chart/image updates, network pulls, cluster reads/writes, application instrumentation or unrelated refactor. Preserve original checks, chart order, storage arguments and install-only semantics.
 
 ## Execution and proof
 
@@ -26,4 +26,10 @@ Retain all offline parity and regression predicates in PROOF, including exact fu
 
 ## First dispatch — owner-released
 
-Batch index: [observability group](../README.md). Prerequisite: none. OBS-D01 is already merged into `implementation/observability-developer`. Do not start it again from the retired integration ref. Design-level A1–A12/V01–V12 acceptance remains pending. Do not join main. Do not start another Change.
+Batch index: [observability group](../../../../../designs/archive/observability-developer/implementation-record/README.md). Prerequisite: none. OBS-D01 is already merged into `implementation/observability-developer`. Do not start it again from the retired integration ref. Design-level A1–A12/V01–V12 acceptance remains pending. Do not join main. Do not start another Change.
+
+## Reconciliation ledger
+
+- Source receipt: `900c5a46b79bcf96ba581e0b4be02ccf6b053164`. Both-profile parsed render and installer argv parity PASS; focused tests PASS (recorded source receipt); live NOT RUN.
+- Owner accepted bounded local foundation on 2026-11-27; original A/V qualification, findings and restrictions retained in the Design acceptance record and permanent native observability contract. No new test result, review PASS or live permission asserted.
+- Closure: archive after existing source join; no reimplementation. Immutable original packet at `3d7a52f5854793bd60fe505035c1bf63c5942f98:work/changes/open/observability-developer/2026-11-27--obs-d01-native-artifacts/CHANGE.md`.

@@ -1,11 +1,11 @@
 # OBS-D02 | Frozen target identity
 
-**State:** OWNER-RELEASED — OFFLINE SOURCE ONLY (dependency-gated); independent readiness verdict not yet PASS. **Kind:** CONTRACT (source implementation). **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `implementation/observability-developer`. The OBS-D02 source branch is already merged there. Do not recreate `integration/observability-developer`. The planner owns the packet.
+**State:** Done (accepted source scope; comprehensive A/V qualification NOT RUN). Source already joined on implementation/observability-developer. Original receipt `d988d340bcc17c0d6dea73611171482c6779679c`; no new live operation.
 
 ## Outcome
 Every admitted observability operation binds to the verified local Kind target and actual created namespace UID; mismatch or uncertain read cannot authorize the next write.
 
-Authority: [accepted R5 contract](../../../../../docs/technical/platform/observability-native-infrastructure.md), [design](../../../../designs/open/observability-developer/README.md), [programme acceptance](../../../../designs/open/observability-developer/ACCEPTANCE.md). [Pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/114cc39cf4e1477ac34e24d4a26684ad9f91b8c3/work/designs/open/observability-developer/committee/pass-03.md) defended D01 only; all other staged boundaries remain unratified. Dependencies: D01 exact descriptor/path receipt; D03 consumes frozen tuple. Existing public callers must remain safe until D04 migration. Existing joint certification binds until affected revised boundary is defended and accepted. Owner's explicit release authorizes offline implementation only; no live operation, deployment, spend or main merge.
+Authority: [accepted R5 contract](../../../../../../docs/technical/platform/observability-native-infrastructure.md), [design](../../../../../designs/archive/observability-developer/README.md), [programme acceptance](../../../../../designs/archive/observability-developer/ACCEPTANCE.md). [Pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/114cc39cf4e1477ac34e24d4a26684ad9f91b8c3/work/designs/open/observability-developer/committee/pass-03.md) defended D01 only; all other staged boundaries remain unratified. Dependencies: D01 exact descriptor/path receipt; D03 consumes frozen tuple. Existing public callers must remain safe until D04 migration. Existing joint certification binds until affected revised boundary is defended and accepted. Owner's explicit release authorizes offline implementation only; no live operation, deployment, spend or main merge.
 
 ## Scope and exclusions
 Own P/identity.mjs, scoped read defaults in P/artifacts.mjs and P/install.mjs, corresponding identity/install/readiness/diagnostic-worker fixtures and V/tests/proof.test.mjs identity fields. Common target guard read-only; no global command redesign, new policy, release mutation or upgrade.
@@ -29,4 +29,10 @@ Owner directed immediate release of this frozen candidate for reversible offline
 
 ## First dispatch — owner-released
 
-Batch index: [observability group](../README.md). Prerequisite: OBS-D01 is already on `implementation/observability-developer`. OBS-D02 is already merged there too. Do not start it again from the retired integration ref. Design-level A1–A12/V01–V12 acceptance remains pending. Do not join main. Do not start another Change.
+Batch index: [observability group](../../../../../designs/archive/observability-developer/implementation-record/README.md). Prerequisite: OBS-D01 is already on `implementation/observability-developer`. OBS-D02 is already merged there too. Do not start it again from the retired integration ref. Design-level A1–A12/V01–V12 acceptance remains pending. Do not join main. Do not start another Change.
+
+## Reconciliation ledger
+
+- Source receipt: `d988d340bcc17c0d6dea73611171482c6779679c`. Focused 120/120 PASS (recorded source receipt); live NOT RUN.
+- Owner accepted bounded local foundation on 2026-11-27; original A/V qualification, findings and restrictions retained in the Design acceptance record and permanent native observability contract. No new test result, review PASS or live permission asserted.
+- Closure: archive after existing source join; no reimplementation. Immutable original packet at `3d7a52f5854793bd60fe505035c1bf63c5942f98:work/changes/open/observability-developer/2026-11-27--obs-d02-target-identity/CHANGE.md`.

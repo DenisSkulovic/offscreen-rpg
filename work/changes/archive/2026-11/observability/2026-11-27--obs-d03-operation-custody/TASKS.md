@@ -1,6 +1,6 @@
 # OBS-D03 tasks — owner-released offline source only
 
-**Dispatch authority:** [CHANGE](CHANGE.md) and [joint offline release](../../../../designs/open/observability-developer/ACCEPTANCE.md) govern. Owner-released implementation, not independent READY or live permission. Verify predecessor receipt and branch/worktree, then execute the serial tasks. Do not wait for another approval; stop only for concrete contradiction, ownership conflict or required cheap proof failure. No real cluster or Docker commands. No main merge or Done.
+**Dispatch authority:** [CHANGE](CHANGE.md) and [joint offline release](../../../../../designs/archive/observability-developer/ACCEPTANCE.md) govern. Owner-released implementation, not independent READY or live permission. Verify predecessor receipt and branch/worktree, then execute the serial tasks. Do not wait for another approval; stop only for concrete contradiction, ownership conflict or required cheap proof failure. No real cluster or Docker commands. No main merge or Done.
 
 
 All paths rooted at repository root; P=infra/platform/observability/, V=infra/verification/smoke/observability/. Parent supplies only named card, exact EXECUTION subsection and source anchors, not archived dossier. Each serial predecessor must pass its focused checks; no interim public activation, waived assertions or unsafe fallback. All commands local/offline. Child receipt: ID/base, exact changed paths, commands/results, normal/negative result, contradiction or none; parent owns commit and close.

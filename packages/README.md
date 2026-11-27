@@ -1,6 +1,6 @@
 # Monorepo package organization
 
-**Standing:** selected E1 organizational convention, not implementation evidence. R10 candidate `5ea13cc6ac6ade8c3909acbecd54a039ceeb17fe` was independently DEFENDED. [Agent Core technical contract and outstanding proof](../docs/technical/platform/agent-core.md). No existing package relocation, split, rename, production consumer or activation is authorized by this map.
+**Standing:** Owner-accepted E1 engineering foundation, source `15869a5c2456469ec3b53168d62ab041e0d4afe0`. [Agent Core technical contract](../docs/technical/platform/agent-core.md) and [bounded acceptance](../work/designs/archive/agent-core-monorepo-map/OWNER-ACCEPTANCE.md). Existing flat identities and app closures preserved. No production consumer, relocation, additional workspace activation or comprehensive native qualification implied.
 
 ## Organization and E1 migration boundary
 
@@ -15,7 +15,7 @@ The inventory below is the 23 flat workspaces observed at the reviewed baseline,
 | Family | Existing flat packages |
 | --- | --- |
 | domain | admin, admin-interface, content-packages, game, game-authority-protocol, story-engine, story-interface, story-persistence, storyteller |
-| ai | none yet; Agent Core new |
+| ai | Agent Core (initial foundation) |
 | commerce | usage-policy |
 | platform | identity-interface, identity-persistence, lab-interface, lab-support, outbox, runtime-logging, workflows |
 | foundation | cache, cache-port, config, db, documents, object-storage |
@@ -54,4 +54,4 @@ Only the E1 activation is selected. Candidate names and splits are hypotheses, n
 
 Mixed flat/grouped discovery must work in pnpm/Turbo, image closure, dev sync and repository source/knowledge checks. See [repo tooling findings](../scripts/repo-tools/README.md); proof remains NOT RUN until maintained E1 qualification. Existing fixed database and domain paths are intentionally preserved. Future package moves require source-grounded compatibility and ownership audit. No speculative split, global rename or second active workspace for an existing identity. Preserve [existing execution](../docs/technical/platform/execution-and-delivery.md), [canonical documents](../docs/technical/storyteller/canonical-documents-and-packages.md), and [spending](../docs/technical/platform/spending-and-entitlements.md) authority.
 
-**E1-IR-M01 (Medium; focused classifier proof observed, joint qualification NOT RUN):** `requiresFullImageRebuild` now treats a flat leaf manifest and `packages/(domain|ai|commerce|platform|foundation)/<leaf>/package.json` as a full-image rebuild, including a deleted path, and rejects grouped source, a README-only placeholder, an unrelated deeper manifest and an unknown family. AC01 focused tests cover that classifier together with grouped image closure and dev sync. Real application closure comparison and source-based release guards remain with AC08. No grouped production package is activated by this record.
+**E1-IR-M01 (Medium; focused classifier proof observed, joint qualification NOT RUN):** `requiresFullImageRebuild` now treats a flat leaf manifest and `packages/(domain|ai|commerce|platform|foundation)/<leaf>/package.json` as a full-image rebuild, including a deleted path, and rejects grouped source, a README-only placeholder, an unrelated deeper manifest and an unknown family. AC01 focused tests cover that classifier together with grouped image closure and dev sync. The actual four-app runtime/build workspace closure comparison is recorded at bounded integration; further release/native qualification retains its original proof boundary. No grouped production package is activated by this record.

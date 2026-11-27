@@ -22,4 +22,4 @@ Repository `DenisSkulovic/offscreen-rpg`, source baseline `1cf22fe0f512b5dd92b5c
 - `packages/README.md`
 - `scripts/repo-tools/README.md`
 
-All app/legacy package source, migrations, deployments and production registrations remain unchanged. No source extraction or legacy reorganization in E1. Parent owns only its own packet closure and serialized target updates; no broad rename. [Group schedule](../../../../open/agent-core-monorepo-map/README.md) governs cross-Change locks.
+All app/legacy package source, migrations, deployments and production registrations remain unchanged. No source extraction or legacy reorganization in E1. Parent owns only its own packet closure and serialized target updates; no broad rename. [Group schedule](../../../../../designs/archive/agent-core-monorepo-map/implementation-record/README.md) governs cross-Change locks.
