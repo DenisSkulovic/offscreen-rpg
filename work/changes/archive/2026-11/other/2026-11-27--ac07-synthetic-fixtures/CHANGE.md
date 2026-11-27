@@ -1,6 +1,6 @@
 # AC07 | Stateless synthetic model, definition and tool fixtures
 
-**State:** READY (dependency-gated); owner-commissioned
+**State:** Done — source gate passed; AC08 joint acceptance not passed
 
 **Kind:** implementation
 
@@ -35,6 +35,6 @@ Owner-commissioned: linked Change worktree from latest verified `implementation/
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/technical/platform/agent-core.md#deterministic-fixture-and-result-rules | technical | unchanged selected contract; source realizes assigned portion | pending implementation receipt | NOT RUN | assigned in PROOF | named durable owner at closure |
-| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain changes authorized | pending diff inspection | no production exposure | no product change |
-| packages/README.md / affected README | related | reconcile actual source and proof standing only | pending implementation receipt | NOT RUN | no unsupported claims | closure receipt |
+| docs/technical/platform/agent-core.md#deterministic-fixture-and-result-rules | technical | unchanged selected contract; source adds conversation-driven fixtures | AC07 branch before join; `node --test test/fixtures.test.mjs` 9/9 PASS | source-inspected plus focused test | wrong result, empty grant, foreign tool, and workflow mismatch rejected | AC-M03 and E1-IR-M02 status sentences updated; native proof still AC08 |
+| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain files in the diff | source-inspected | no production export of fixtures | no product change |
+| packages/README.md / affected README | related | package README records fixture limits, rejecting download, and NOT RUN joint proof | package README and technical status sentences | focused test PASS; build/typecheck/qualify NOT RUN | download hook rejects; no provider client | group register updated at archive |
