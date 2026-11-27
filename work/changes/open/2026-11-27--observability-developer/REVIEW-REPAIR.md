@@ -28,3 +28,5 @@ Repair 11 (a9402d66e7fb29ee80d57ba428598e4dd765d385): reject unnecessary concurr
 Repair 12 (3f0517c88533046b8118fd4976fb991067c7fb02): selected universal bounded outer Helm cap candidate, exact inherited-lock read-only intent adapter, wrapper subprocess/FD/phase/receipt constraints and developer missing evidence route. A9 cap requires ratification; exact read-only argv census and pinned metric label/timestamp evidence still open. No source execution or commission.
 
 Repair13: freeze exact template/list/history/manifest/install argv arrays and read-only pre-pending snapshot binding; correct tentative metric labels for explicitly configured resource promotion. Actual rendered config/label fixture and pinned timestamp horizon still open, no tests/live.
+
+Repair14: consolidated latest candidate deadline selection, owner decision bundle D1–D3 and exact unresolved timestamp evidence D4; corrected cross-task normal/privacy Pod scheduling, create bounds, internal diagnostic binding and Grafana Secret UID inputs. Explicit G0–G7 non-pass disposition, no commission.
