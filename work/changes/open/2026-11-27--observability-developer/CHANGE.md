@@ -8,7 +8,7 @@
 **Parallel execution:** single successor implementation owner after ratification; OBSERVABILITY-NATIVE is superseded by owner decision; all remaining A1–A12 obligations transfer to this sole successor. Historical evidence preserved; no separate predecessor certification. Human owner integration custodian. No global queue change.
 
 ## Cursor first-screen brief
-Execute T01 only, then return receipt. Read TASKS.md and READINESS.md. Existing authority is native observability infrastructure, synthetic-only admission and install-only lifecycle. Proposed outcome is developer-accessible application-shaped telemetry without destructive reinstall. Do not reinterpret this proposal as permission to remove privacy filters, upgrade live Helm releases or enroll producers. R5 design addresses committee findings, baseline census and re-defense complete; planner must finish implementation mapping, tests and packet after committee approval and owner ratification.
+Execute T01 only, then return receipt. Read TASKS.md and READINESS.md. Existing authority is native observability infrastructure, synthetic-only admission and install-only lifecycle. Proposed outcome is developer-accessible application-shaped telemetry without destructive reinstall. Do not reinterpret this proposal as permission to remove privacy filters, upgrade live Helm releases or enroll producers. R5 defended and promoted. T01 has bounded readiness; T02–T12 require planner review before dispatch.
 
 ## Outcome and motivation
 Enable safe application-shaped traces/logs/metrics from WSL into the existing dev platform, query them in Grafana/backends, and disconnect cleanly. P0/P1 currently exports no telemetry by its own contract; do not change that dossier or block base runs on full observability certification. Preserve the existing five services, three PVCs and Grafana credentials. Retain synthetic diagnostics and explicitly track the older acceptance debt rather than asserting it passed.
@@ -17,7 +17,7 @@ Enable safe application-shaped traces/logs/metrics from WSL into the existing de
 - Product: no player-facing change.
 - Technical: [native observability](../../../../docs/technical/platform/observability-native-infrastructure.md), existing [OBSERVABILITY-NATIVE](../../archive/2026-11/observability/2026-11-26--observability-native/CHANGE.md). Selected R5 canonical; implementation pending.
 - Evidence: see design dossier for actual observed health, installation, image identity, transport failure, admitted OTLP and broken query/harness paths.
-- R4 selects producer vocabulary, topology, session API, revision identity and failure semantics. Actual implementation/live acceptance NOT RUN; actual POC instrumentation excluded.
+- R5 selects producer vocabulary, topology, session API, revision identity and failure semantics. Actual implementation/live acceptance NOT RUN; actual POC instrumentation excluded.
 
 ## Candidate scope
 - Owner-required retirement of executable specimens terminology: values/, locks/, root expected-inventory.json, unchanged vendor/; no behavioral delta in naming slice.
@@ -33,9 +33,9 @@ Enable safe application-shaped traces/logs/metrics from WSL into the existing de
 | Plane | Candidate authority and change/no-op | Related owners | Evidence/decision |
 | --- | --- | --- | --- |
 | Product | unchanged because developer tooling only | Agent Core POCs | no player contract change |
-| Technical | native observability infrastructure: dev admission, access, occupied transition and proof; exact headings after defense | local developer platform/runbook | owner ratification pending |
+| Technical | native observability infrastructure: dev admission, access, occupied transition and proof; exact headings after defense | local developer platform/runbook | owner ratified |
 | Code | infra/platform/observability/{specimens,artifacts.mjs,identity.mjs,inventory.mjs,readiness.mjs,install.mjs,custody.mjs,tests}; infra/verification/smoke/observability/; connection/upgrade/verification paths frozen in R5-GEOGRAPHY | shared platform CLI and existing lifecycle | no implementation until mapped; negative proof of unsafe producer, changed UID, wrong digest, pending fence |
-| Related | existing OBSERVABILITY-NATIVE acceptance ledger and active Change catalog | Agent Core experiment qualification | all A1–A12 mapped to successor, transfer source custody only after owner ratification |
+| Related | archived OBSERVABILITY-NATIVE proof predicates and active Change catalog | Agent Core experiment qualification | all A1–A12 mapped to successor, source custody transferred |
 
 ## Acceptance and discriminating negative proof
 Provisional gates in design dossier. Required: WSL actual application-shaped all-signal query and correlated trace, tested prohibited canary exclusion and bounded metric labels (trusted producer scope), repeat no-op, preserve exact storage/credential identities, unauthorized/wrong target/foreign pending refusal, cleanup only owned session. Existing original gate debts remain open. Focused source tests Cursor; heavy acceptance ChatGPT/owner. No destructive or release permission.

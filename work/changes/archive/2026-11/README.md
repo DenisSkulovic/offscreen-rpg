@@ -234,7 +234,9 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-19--hk09-reconcile-open-change-inventory](../../../../work/changes/archive/2026-11/maintenance/2026-11-19--hk09-reconcile-open-change-inventory/CHANGE.md)
 - [2026-11-20--work01-first-class-operational-tasks](../../../../work/changes/archive/2026-11/maintenance/2026-11-20--work01-first-class-operational-tasks/CHANGE.md)
 
-## observability (11)
+## observability (12)
+
+- [2026-11-26--observability-native](observability/2026-11-26--observability-native/CHANGE.md) — superseded
 
 - [2026-11-15--obs00-c-provider-wire-equality](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-c-provider-wire-equality/CHANGE.md)
 - [2026-11-15--obs00-l-local-story-trial-guards](../../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-l-local-story-trial-guards/CHANGE.md)
