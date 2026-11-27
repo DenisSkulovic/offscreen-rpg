@@ -4,9 +4,11 @@
 
 ## Current source
 
-The public root export is serializable `AgentDefinitionV1`, `MissionV1`, and `MissionOutcomeV1` plus `missionWorkflowId`, which returns `agent-core-e1-${missionId}`. There is no Worker, client, or model import in that closure. The `./workflow` export path is declared; `src/workflow.ts` is not part of this Change and arrives with the native loop.
+The public root export is serializable `AgentDefinitionV1`, `MissionV1`, and `MissionOutcomeV1` plus `missionWorkflowId`, which returns `agent-core-e1-${missionId}`. There is no Worker, client, or model import in that closure. The `./workflow` export path is declared; `src/workflow.ts` arrives with the native loop.
 
-`pnpm --filter @offscreen/agent-core build` and `typecheck` compile `src`. `test` runs `node --test test/*.test.mjs` and must stay offline. `qualify` is explicit (`node test/qualification.mjs`) and is never invoked by `test`. Fixtures, runtime, and live qualification are absent until successor Changes. Build, typecheck, ordinary tests, frozen install, and joint proof are **NOT RUN** here; AC08 owns them. AC-M04 remains open until that qualification.
+Internal admission is `admitMission` and `assembleContext`. `createMissionLedger` / `resolveOutcome` keep a per-run step and tool budget: denial outranks limit, then failure, then a normal nonempty stop. These modules do not import Temporal or the AI SDK. Requested tools are copied and never expanded. The fixture envelope is 1–3 steps, 2 tool attempts, and 4096 UTF-16 code units of instructions or input.
+
+`pnpm --filter @offscreen/agent-core build` and `typecheck` compile `src`. `test` runs `node --test test/*.test.mjs` against `dist` and must stay offline. `qualify` is explicit and is never invoked by `test`. Fixtures and the live harness are still absent. A local `tsc --noEmit` passed on this source. Package `build`, `test`, and joint proof are **NOT RUN**; AC08 owns them. AC-M04 remains open until that qualification.
 
 ## Limits still in force
 
