@@ -21,12 +21,13 @@ import test from 'node:test';
 
 import { createServer } from 'node:net';
 
-import { parseConnectArgs, runObservabilityConnect } from '../connect.mjs';
+import { parseConnectArgs, runObservabilityConnect, superviseObservabilityConnect } from '../connect.mjs';
 import {
   FORWARD_ALLOWLIST,
   ownedChildEnv,
   openForwards,
   probeForwardTransport,
+  readGrafanaAdmin,
   startOwnedChild,
 } from '../forward.mjs';
 
@@ -437,4 +438,132 @@ test('connect accepts only empty argv or --queries and refuses a predecessor', a
   });
   assert.equal(refused.reasonCode, 'upgrade-required');
   assert.equal(refused.exitCode, 1);
+});
+
+test('grafana credentials stay in memory and tcp uses loopback', async () => {
+  const encoded = Buffer.from('secret-value').toString('base64');
+  const secret = {
+    kind: 'Secret',
+    type: 'Opaque',
+    metadata: { name: 'obs-grafana-admin', uid: 'uid-grafana' },
+    data: {
+      'admin-user': Buffer.from('admin').toString('base64'),
+      'admin-password': encoded,
+    },
+  };
+  let leaked = '';
+  const write = process.stdout.write;
+  process.stdout.write = (chunk, encoding, callback) => {
+    leaked += String(chunk);
+    return write.call(process.stdout, chunk, encoding, callback);
+  };
+  try {
+    const auth = await readGrafanaAdmin(
+      { snapshotPath: '/tmp/kubeconfig', contextName: 'dev', namespace: 'obs' },
+      'uid-grafana',
+      { run: async () => ({ ok: true, stdout: JSON.stringify(secret) }) },
+    );
+    assert.equal(auth.password, 'secret-value');
+    assert.equal(leaked.includes('secret-value'), false);
+    await assert.rejects(
+      () =>
+        readGrafanaAdmin(
+          { snapshotPath: '/tmp/kubeconfig', contextName: 'dev', namespace: 'obs' },
+          'other-uid',
+          { run: async () => ({ ok: true, stdout: JSON.stringify(secret) }) },
+        ),
+      /does not match/,
+    );
+  } finally {
+    process.stdout.write = write;
+  }
+
+  const server = createServer();
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const port = server.address().port;
+  const transport = await probeForwardTransport({ developerGrpc: port });
+  server.close();
+  assert.equal(transport.ok, true);
+});
+
+test('connect supervision stops on a premature child and on SIGINT', async () => {
+  let cleaned = false;
+  const failed = await superviseObservabilityConnect(
+    {
+      ok: true,
+      failure: Promise.resolve('child-exit'),
+      cleanup: async () => {
+        cleaned = true;
+        return { ok: true };
+      },
+      held: { close() {} },
+      identity,
+      profileContext: 'dev',
+    },
+    {
+      intervalMs: 60_000,
+      readPending: () => ({ pending: false, valid: true }),
+      recheckIdentity: () => ({ ok: true }),
+    },
+  );
+  assert.equal(failed, 1);
+  assert.equal(cleaned, true);
+
+  const controller = new AbortController();
+  controller.abort();
+  const interrupted = await superviseObservabilityConnect(
+    {
+      ok: true,
+      failure: new Promise(() => {}),
+      cleanup: async () => ({ ok: true }),
+      held: { async close() {} },
+      identity,
+      profileContext: 'dev',
+    },
+    {
+      signal: controller.signal,
+      stopReason: 'SIGINT',
+      intervalMs: 60_000,
+      readPending: () => ({ pending: false, valid: true }),
+      recheckIdentity: () => ({ ok: true }),
+    },
+  );
+  assert.equal(interrupted, 0);
+
+  let bindings = null;
+  const connected = await runObservabilityConnect({
+    argv: [],
+    readPlatformProfile: () => ({ contextName: 'dev' }),
+    acquireCustody: async () => ({ fd: 3, mode: 'shared', close() {} }),
+    captureIdentity: () => identity,
+    recheckIdentity: () => ({ ok: true }),
+    loadObservabilityVariants: () => ({ desired: { releases: [] }, predecessor: null }),
+    collectInventory: async () => ({
+      pending: false,
+      objects: { 'Secret/obs-grafana-admin': { metadata: { uid: 'uid-grafana' } } },
+    }),
+    classifyInventory: () => ({ state: 'ready', reasonCode: 'ready', pending: false }),
+    openForwards: async (_identity, _held, options) => {
+      bindings = options.bindings;
+      return {
+        ports: { developerHttp: 14318, developerGrpc: 14317, grafana: 13000 },
+        failure: new Promise(() => {}),
+        close: async () => ({ ok: true }),
+      };
+    },
+    readGrafanaAdmin: async (_identity, uid) => {
+      assert.equal(uid, 'uid-grafana');
+      return { user: 'admin', password: 'secret-value' };
+    },
+    probeForwardTransport: async (ports, options) => {
+      assert.equal(ports.grafana, 13000);
+      assert.equal(options.grafanaAuth.password, 'secret-value');
+      return { ok: true, reasonCode: 'transport' };
+    },
+  });
+  assert.equal(connected.ok, true);
+  assert.deepEqual(
+    bindings.map((row) => row.key),
+    ['developerHttp', 'developerGrpc', 'grafana'],
+  );
 });

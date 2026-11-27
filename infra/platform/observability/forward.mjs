@@ -1,7 +1,9 @@
 import { Buffer } from 'node:buffer';
 import { spawn } from 'node:child_process';
-import { createServer } from 'node:net';
+import { connect as netConnect, createServer } from 'node:net';
 import { constants } from 'node:fs';
+import { runPlatformCommand } from '../common/commands.mjs';
+import { GRAFANA_ADMIN_SECRET } from './inventory.mjs';
 import { accessSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import process from 'node:process';
@@ -828,10 +830,7 @@ export async function probeForwardTransport(ports, options = {}) {
     }
   }
   if (ports.developerGrpc != null) {
-    const connect = options.connect;
-    if (typeof connect !== 'function') {
-      return { ok: false, reasonCode: 'developer-grpc' };
-    }
+    const connect = options.connect ?? connectLoopback;
     try {
       await connect(ports.developerGrpc);
     } catch {
@@ -876,4 +875,107 @@ export async function probeForwardTransport(ports, options = {}) {
     }
   }
   return { ok: true, reasonCode: 'transport' };
+}
+
+/**
+ * TCP connect to a loopback port, then destroy the socket. Not an OTLP claim.
+ *
+ * @param {number} port
+ */
+export function connectLoopback(port) {
+  return new Promise((resolve, reject) => {
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      reject(new Error('refused: forward port is invalid'));
+      return;
+    }
+    const socket = netConnect({ host: '127.0.0.1', port });
+    const fail = (error) => {
+      socket.destroy();
+      reject(error);
+    };
+    socket.once('error', fail);
+    socket.once('connect', () => {
+      socket.end();
+      resolve();
+    });
+  });
+}
+
+/**
+ * Read Grafana admin credentials bound to the classified Secret UID.
+ * Values stay in memory and are never written to argv, receipts, or logs.
+ *
+ * @param {object} identity
+ * @param {string} expectedSecretUid
+ * @param {{ run?: typeof runPlatformCommand }} [deps]
+ */
+export async function readGrafanaAdmin(identity, expectedSecretUid, deps = {}) {
+  if (typeof expectedSecretUid !== 'string' || expectedSecretUid.length === 0) {
+    const error = new Error('refused: grafana secret uid is missing');
+    error.reasonCode = 'grafana-auth';
+    throw error;
+  }
+  const namespace = identity.tuple?.targetNamespace ?? identity.namespace;
+  const context = identity.tuple?.contextName ?? identity.contextName;
+  const run = deps.run ?? runPlatformCommand;
+  const result = await run(
+    'kubectl',
+    [
+      '--kubeconfig',
+      identity.snapshotPath,
+      '--context',
+      context,
+      '-n',
+      namespace,
+      'get',
+      'secret',
+      GRAFANA_ADMIN_SECRET,
+      '-o',
+      'json',
+    ],
+    { timeoutMs: 10_000 },
+  );
+  if (!result?.ok) {
+    const error = new Error('refused: grafana secret is unreadable');
+    error.reasonCode = 'grafana-auth';
+    throw error;
+  }
+  let secret;
+  try {
+    secret = JSON.parse(result.stdout ?? '');
+  } catch {
+    const error = new Error('refused: grafana secret is invalid');
+    error.reasonCode = 'grafana-auth';
+    throw error;
+  }
+  const data = secret?.data ?? {};
+  const user = decodeSecret(data['admin-user']);
+  const password = decodeSecret(data['admin-password']);
+  if (
+    secret?.kind !== 'Secret' ||
+    secret?.metadata?.name !== GRAFANA_ADMIN_SECRET ||
+    secret?.metadata?.uid !== expectedSecretUid ||
+    secret?.type !== 'Opaque' ||
+    user == null ||
+    password == null
+  ) {
+    const error = new Error('refused: grafana secret does not match the snapshot');
+    error.reasonCode = 'grafana-auth';
+    throw error;
+  }
+  return { user, password };
+}
+
+/**
+ * @param {string | undefined} value
+ */
+function decodeSecret(value) {
+  if (typeof value !== 'string' || value.length === 0) {
+    return null;
+  }
+  const decoded = Buffer.from(value, 'base64').toString('utf8');
+  if (decoded.length === 0) {
+    return null;
+  }
+  return decoded;
 }

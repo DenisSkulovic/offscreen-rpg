@@ -84,6 +84,7 @@ function harness(snapshot, extras = {}) {
           loadObservabilityVariants: () => variants,
           readPlatformProfile: () => profile,
           openForwards: false,
+          recheckIdentity: () => ({ ok: true }),
           readPending: (contextName) => readPending(contextName, { stateRoot }),
           runMutation: extras.runMutation,
           ...extras.deps,
@@ -220,4 +221,92 @@ test('timeout and failed transport keep the pending fence', async () => {
   }).run();
   assert.equal(failed.pending, true);
   assert.equal(failed.ok, false);
+});
+
+test('changed preservation, missing inventory, wrong forwards and failed cleanup stay fenced', async () => {
+  const predecessor = buildPredecessorDevSnapshot(variants.desired, variants.predecessor);
+  const upgraded = buildUpgradedDevSnapshot(variants.desired, variants.predecessor);
+  const changed = cloneSnapshot(upgraded);
+  changed.objects['Pod/obs-loki-0'].metadata.uid = 'uid-pod-changed';
+  let writes = 0;
+  const drifted = await harness(predecessor, {
+    next: changed,
+    runMutation: async () => {
+      writes += 1;
+      return { ok: true };
+    },
+  }).run();
+  assert.equal(writes, 1);
+  assert.equal(drifted.ok, false);
+  assert.equal(drifted.pending, true);
+  assert.equal(drifted.mutation, 'possible');
+  assert.equal(drifted.newRevision, null);
+
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-upgrade-missing-'));
+  mkdirSync(join(stateRoot, 'locks'), { recursive: true, mode: 0o700 });
+  process.env.OFFSCREEN_OBSERVABILITY_UPGRADE = 'authorized';
+  let missingWrites = 0;
+  const missing = await runObservabilityUpgrade({
+    argv: [],
+    run: async () => memoryOk,
+    observeRun: () => ({ ok: false, stdout: '', stderr: 'missing' }),
+    captureIdentity: async () => ({
+      snapshotPath: '/tmp/kubeconfig',
+      contextName: profile.contextName,
+      namespace: profile.namespaces.observability,
+      tuple: { targetNamespaceUid: 'uid-namespace' },
+      cleanup() {
+        return { ok: true };
+      },
+    }),
+    acquireCustody: (contextName, deps) =>
+      acquireCustody(contextName, { ...deps, stateRoot }),
+    loadObservabilityVariants: () => variants,
+    readPlatformProfile: () => profile,
+    runMutation: async () => {
+      missingWrites += 1;
+      return { ok: true };
+    },
+  });
+  delete process.env.OFFSCREEN_OBSERVABILITY_UPGRADE;
+  rmSync(stateRoot, { recursive: true, force: true });
+  assert.equal(missingWrites, 0);
+  assert.equal(missing.mutation, 'none');
+  assert.equal(missing.ok, false);
+
+  let forwardOptions = null;
+  const forwarded = await harness(predecessor, {
+    next: upgraded,
+    runMutation: async () => ({ ok: true }),
+    deps: {
+      openForwards: async (_identity, held, options) => {
+        forwardOptions = { mode: held.mode, bindings: options.bindings };
+        return {
+          ports: { developerHttp: 14318 },
+          failure: new Promise(() => {}),
+          close: async () => ({ ok: true }),
+        };
+      },
+      probeForwardTransport: async () => ({ ok: true }),
+    },
+  }).run();
+  assert.equal(forwarded.ok, true);
+  assert.equal(forwardOptions.mode, 'exclusive');
+  assert.deepEqual(forwardOptions.bindings, [{ key: 'developerHttp' }]);
+
+  const unclean = await harness(predecessor, {
+    next: upgraded,
+    runMutation: async () => ({ ok: true }),
+    deps: {
+      openForwards: async () => ({
+        ports: { developerHttp: 14318 },
+        failure: new Promise(() => {}),
+        close: async () => ({ ok: false }),
+      }),
+      probeForwardTransport: async () => ({ ok: true }),
+    },
+  }).run();
+  assert.equal(unclean.ok, false);
+  assert.equal(unclean.pending, true);
+  assert.equal(unclean.mutation, 'possible');
 });
