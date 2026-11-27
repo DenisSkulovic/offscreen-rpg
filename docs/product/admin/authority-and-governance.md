@@ -4,11 +4,9 @@
 
 **Does not own:** the technical grant schema ([topology and authorization](../../technical/admin/topology-and-authorization.md)).
 
-**Status:** proposed operating policy, 2026-11-14, pending owner review of the package catalog.
+**Status:** proposed operating policy, 2026-11-14, pending owner review of the package catalog. Landed Admin access and audit slices do not accept this catalog as production grants. Production `support-investigator` grant issuance for live workers remains **absent**, and the OBS06/07 Situation UI is synthetic or disposable-grant proof only.
 
-**Selected intent.** A staff permission is one coherent grant, never a sum of independent actions and scopes. Request, approve and execute are separate, and every player-access mode is explicit and attributed.
-
-**Current realization.** Landed Admin access and audit slices do not accept this catalog as production grants. Production `support-investigator` grant issuance for live workers remains **absent**. OBS06/07 Situation UI is synthetic or disposable-grant proof only.
+This page states three rules. A staff permission is one coherent grant, never a sum of independent actions and scopes. Request, approve and execute are separate acts. Every player-access mode is explicit and attributed.
 
 ## A grant is one coherent permission
 

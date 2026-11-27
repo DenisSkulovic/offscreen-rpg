@@ -2,15 +2,13 @@
 
 **Owns:** the shift-start surface for a multi-role employee, and the analytical vocabulary for arrival, activation, value and experiments.
 
-**Status:** proposed, 2026-11-14.
+**Status:** proposed, 2026-11-14. These are not live dashboards, and the page does not claim exhaustive current analytics. Portfolio demos are not this product. No widget framework, search index, realtime transport or numerical target is selected.
 
-**Selected intent.** The home answers what needs this employee's attention, composed only from the sections their grants allow. It is a set of scoped jobs, not a monitoring wall over staff or players. Insights state population, basis, window and freshness, and never treat a chart as a cause.
-
-**Current realization.** These are not live dashboards, and the page does not claim exhaustive current analytics. Portfolio demos are not this product. No widget framework, search index, realtime transport or numerical target is selected.
+The home and the insights views are scoped jobs. The home answers what needs this employee's attention, composed only from the sections their grants allow. Insights answer how people arrive, activate and stay. Neither is a monitoring wall over staff or players, and neither treats a chart as a cause.
 
 ## A home for my work, not a panopticon
 
-Command Center answers what needs this employee's attention now. It composes only the sections their grants allow.
+Command Center is a work queue, not a surveillance surface and not an exhaustive analytics page. It answers what needs this employee's attention now, and it composes only the sections their grants allow. It does not watch staff or players, and it does not claim to show everything the business knows.
 
 | Role on this shift | The home may show | It does not show |
 | --- | --- | --- |
@@ -25,7 +23,7 @@ Overlapping grants add sections. They do not recombine into a stronger action. A
 
 ### Freshness and search
 
-A delayed aggregate is labeled delayed, not live. An unknown or missing metric is unknown, not zero. Saved searches, recent items and pins re-check access after revocation. A link from a coworker does not reveal a protected record through a search suggestion. Global search is specified on [the charter](charter-and-personas.md).
+Freshness and search are scoped jobs too. A delayed aggregate is labeled delayed, not live. An unknown or missing metric is unknown, not zero, and no inference is drawn from its absence. Saved searches, recent items and pins re-check access after revocation. A link from a coworker does not reveal a protected record through a search suggestion. Global search is specified on [the charter](charter-and-personas.md).
 
 **Normal.** The morning after a provider incident, Engineering opens one incident from the home. Support opens the customer cases tied to that same incident. Each person sees the fields their grant allows.
 
@@ -33,7 +31,7 @@ A delayed aggregate is labeled delayed, not live. An unknown or missing metric i
 
 ## Growth and insights
 
-Growth & Insights explains how people arrive, activate, convert and stay, without treating a chart as a cause or as permission to read a story.
+Growth & Insights is the analytical job: explaining how people arrive, activate, convert and stay. It is scoped to aggregate evidence. A chart is not a cause and not permission to read a story.
 
 Person, account, campaign and activity are different units. Paying-customer acquisition, active paid relationships, renewal, cancellation, behavioral absence, refund rate and a quality-adjusted view are different metrics. Churn from a cancelled subscription is not churn from a quiet week. No 7-day or 30-day policy and no success target is accepted here. An illustrative retention number does not become product policy. Every chart states population, basis, source, window, freshness and gaps.
 

@@ -2,11 +2,9 @@
 
 **Owns:** why Offscreen Control exists, the jobs it must make possible, and the workspace map staff use to find those jobs.
 
-**Status:** accepted long-term direction, 2026-11-14. Every powerful action is still conditional.
+**Status:** accepted long-term direction, 2026-11-14. Every powerful action is still conditional. Production Support, refund, raw-prompt and emergency-edit powers remain absent until a named grant exists, and nothing here asserts a shipped console workspace ([illustrative examples](README.md#what-this-section-establishes-and-what-it-does-not)).
 
-**Selected intent.** Staff do jobs; jobs are not permissions. A persona name, a workspace or a case assignment never grants a capability. Only a named grant for one subject, one reason and stated limits does ([authority and governance](authority-and-governance.md)).
-
-**Current realization.** Production Support, refund, raw-prompt and emergency-edit powers remain absent until a named grant exists. Nothing on this page asserts a shipped console workspace.
+Staff do jobs; jobs are not permissions. Only a named grant for one subject, one reason and stated limits confers a capability ([authority and governance](authority-and-governance.md)).
 
 ## What the console is for
 
@@ -63,20 +61,22 @@ This map names the page that owns each product job.
 
 ## Personas and workspaces
 
-A persona is a responsibility pattern. Authority is a separate capability package. Do not invent compound roles in advance. A persona never implies a grant; the last column lists what the job name alone must not deliver.
+A persona is the job a person does on a shift, described by the question they bring to the console. It is intended product: it says what the console must make possible, not what anyone is assigned or allowed. Authority is a separate capability package, and compound roles are not invented in advance. The last column lists what the job name alone must not deliver.
 
-| Persona | Everyday question | Must not receive by the job name alone |
+| Persona | Job and everyday question | Must not receive by the job name alone |
 | --- | --- | --- |
-| Customer Support | What is wrong for this account, and what low-risk remedy is allowed? | Private narrative, raw prompts, major refunds |
-| Customer Success | Where is this relationship stuck? | Enforcement files |
-| Engineering | What did this operation actually do? | Trust sanctions, ledger rewrites |
-| Game Design / LiveOps | Which behavior is live, for whom? | Unreviewed production prompt edits |
-| Product | How do people arrive and leave? | Private story text |
-| Finance / Revenue | What is owed, charged and exposed? | Game-state edits |
-| Marketing / Growth | Who may be offered what? | Individual narratives as a targeting list |
-| Trust & Safety | Is this a fair, evidenced restriction? | Commercial refunds, universal story browsing |
-| Security / Staff admin | Who can do what, and who did it? | Self-erasure of the audit |
-| Leadership | Is the service and the business healthy? | An implicit superuser |
+| Customer Support | Resolve an account problem. What is wrong for this account, and what low-risk remedy is allowed? | Private narrative, raw prompts, major refunds |
+| Customer Success | Keep a relationship moving. Where is it stuck? | Enforcement files |
+| Engineering | Explain what an operation did. What did it actually do? | Trust sanctions, ledger rewrites |
+| Game Design / LiveOps | Own behavior in the live game. Which behavior is live, for whom? | Unreviewed production prompt edits |
+| Product | Understand arrival and departure. How do people arrive and leave? | Private story text |
+| Finance / Revenue | Account for money. What is owed, charged and exposed? | Game-state edits |
+| Marketing / Growth | Decide offers. Who may be offered what? | Individual narratives as a targeting list |
+| Trust & Safety | Judge restrictions. Is this a fair, evidenced restriction? | Commercial refunds, universal story browsing |
+| Security / Staff admin | Govern access. Who can do what, and who did it? | Self-erasure of the audit |
+| Leadership | Watch health. Is the service and the business healthy? | An implicit superuser |
+
+A workspace is where a job's questions are answered. Each names what it must not become.
 
 | Workspace | Question it answers | It must not become |
 | --- | --- | --- |

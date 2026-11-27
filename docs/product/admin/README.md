@@ -4,11 +4,13 @@ Admin is the staff-facing product intent: the jobs employees must be able to do 
 
 ## What this section establishes, and what it does not
 
-Selected intent: staff work is organized by jobs and scoped, purpose-bound grants. A job name, a persona, a workspace or a case assignment never grants a capability. Metadata, private narrative, raw model context and secrets are separate disclosure classes.
+Staff work is organized by jobs and scoped, purpose-bound grants. A job name, a persona, a workspace or a case assignment never grants a capability. Metadata, private narrative, raw model context and secrets are separate disclosure classes, each opened by its own grant.
 
-Current realization: a narrow set of landed Admin slices exists (player-safe reads, case anchors, redacted diagnostic reads, audit). Those slices do not expand into the journeys written here. Production grant issuance for live Support workers is absent, and Situation UI in OBS06/07 is synthetic or disposable-grant proof only. Technical owners state what is realized and guaranteed ([admin technical](../../technical/admin/topology-and-authorization.md)).
+Only a narrow set of Admin slices has landed: player-safe reads, case anchors, redacted diagnostic reads and audit. They do not expand into the journeys written here. Production grant issuance for live Support workers is absent, and the Situation UI in OBS06/07 is synthetic or disposable-grant proof only. Technical owners state what is realized and guaranteed ([admin technical](../../technical/admin/topology-and-authorization.md)).
 
-Several pages below are **proposed operating policy**. They are written here so the proposal has one owner. They are not production grants and not a silent acceptance of refunds, raw-prompt access, or emergency world edits.
+Most pages below are **proposed operating policy**, written here so each proposal has one owner. They are not production grants and not a silent acceptance of refunds, raw-prompt access or emergency world edits.
+
+**Illustrative examples.** Illustrative Support, impersonation, raw-prompt, refund, export and LiveOps examples on every Admin page stay Proposed or Blocked. This paragraph is their single owner statement; the other pages link here instead of repeating it.
 
 ## Page map
 
