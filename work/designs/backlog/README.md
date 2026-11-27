@@ -11,3 +11,5 @@ Deferred worthwhile investigations, not selected designs or implementation commi
 - [Player experience renewal](player-experience-renewal/README.md): deferred creative design; reactivate at suitable game/Storyteller/publication contract milestone or explicit independent visual study.
 
 | [Livelihood economy](livelihood-economy/README.md) | Await mechanical authority and concrete world need | Relevant accepted authority/activity contracts plus selected world need, or explicit owner investigation | Product owner + Game Authority/Storyteller; [original](https://github.com/DenisSkulovic/offscreen-rpg/blob/8acf432dcdbfea6f99a02dbd6abf547d917e6a78/work/designs/open/livelihood-economy/README.md) |
+
+| [Spatial play](spatial-play/README.md) | Await authority/time architecture and concrete movement need | Relevant accepted authority/time contracts plus selected spatial scenario, or explicit owner investigation | Product owner + Game Authority/Storyteller; [original](https://github.com/DenisSkulovic/offscreen-rpg/blob/792f529eea391965893a00a42d7224e1e09d3ab3/work/designs/open/spatial-play/README.md) |
