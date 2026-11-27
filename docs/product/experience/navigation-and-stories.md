@@ -1,6 +1,6 @@
 # Navigation and stories
 
-**Owns:** the player's mental map of spaces, organized by what the reader is trying to do. **Does not own:** a flows, patterns, or spaces taxonomy.
+**Owns:** the player’s mental map of spaces, organized by what the reader is trying to do. **Does not own:** a flows, patterns, or spaces taxonomy.
 
 **Selected POC composition:** [Living Book](living-book-poc.md) presents these existing spaces within a low-chrome book; it does not change the three navigation contexts or require permanent six-tab navigation. Final visual details remain open.
 
@@ -24,7 +24,7 @@ A story is never an administrator workspace with peer tabs for Campaign, Activit
 | Now: scene | Perceive and decide | Read passage; choose intention | Chat log / command console |
 | Now: ongoing | Understand earned action | Progress, safe controls, expectation | Tick dashboard |
 | Now: return | Catch up | Compact digest; continue at present | Infinite activity ledger |
-| Journal | Revisit continuity | Overview, then passages with source links | "Chapters" |
+| Journal | Revisit continuity | Overview → passages with source links | “Chapters” |
 | World | Explore *known* places/people/threads | Inspect without omniscience or fictional time cost | Mandatory map / global DB |
 | You | Inspect relevant self | Actionable status and records | Mandatory humanoid sheet |
 | Settings | Change supported preferences | Inspect impact and confirm | Modify past facts / secretly spend |
