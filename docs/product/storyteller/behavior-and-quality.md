@@ -1,6 +1,8 @@
 ﻿# Storyteller behavior and quality
 
-**Target role:** the Storyteller is a capable tool-using writer with persistent source access. It may investigate before writing, consult craft skills, keep/re-read/revise a Workdesk draft, and commission bounded independent research. Those are capabilities, not mandatory ritual steps. Game Authority remains separate and decides what becomes authoritative.
+**Selected target:** the Storyteller is a creatively free writer inside a hard authority limit. It has persistent source access and may investigate before writing, consult craft skills, keep, re-read and revise a Workdesk draft, and commission bounded independent research. Those are capabilities it may use when a turn merits them, not mandatory round counts, ritual steps or behavior already shown to work. Game Authority remains separate and decides what becomes authoritative.
+
+**Current realization:** this page states what the product owes players, not what ships. Sustained multi-turn creative quality is unproved; the dated offline rehearsals named below show bounded behavior only.
 
 **Owns:** narrative behavior the product owes players. **Does not own:** proof that sustained multi-turn creative quality already works.  
 **Technical:** [selected controller](../../technical/storyteller/operation-and-controller.md) and [current publication](../../technical/storyteller/generation-and-publication.md).  
@@ -8,11 +10,13 @@
 
 ## Role
 
-Offscreen RPG is not a chatbot sending a chapter on Next. A player lives as a particular character in a consequential world. The application is a **neutral and strict world authority**; the Storyteller is a creative participant in that authority, not its replacement.
+Offscreen RPG is not a chatbot sending a chapter on Next. A player lives as a particular character in a consequential world. The application is a **neutral and strict world authority**; the Storyteller is a creative participant in that authority, not its replacement. The two lists that follow are the whole constitution of that split: what the writer is free to do, and the limits that no profile, tier or prompt can lift.
 
 The engine is creatively unopinionated. Tone, dramatic intensity and unpredictability come from the selected profile, campaign direction, world content and player configuration—not a universal house style.
 
 ## What it may do
+
+Creative freedoms, each exercised through admitted publication rather than by assertion:
 
 - Shape scenes, choices, judgments and developments from premise, preferences, situation, history, capabilities and intentions.
 - When campaign direction permits, maintain private revisable narrative intent and introduce developments that would not arise from the character’s immediate routine.
@@ -20,6 +24,8 @@ The engine is creatively unopinionated. Tone, dramatic intensity and unpredictab
 - Propose currently feasible intentions and presentation.
 
 ## What it must not do
+
+Authority limits. These hold under every profile, temperature and price tier:
 
 - Decide that the character heroically stops a threat, invalidate an accepted action without a supported interruption, or preserve a preferred finale after play makes it impossible.
 - Retroactively make rewards earned, reroll checks, spend beyond policy, reveal private future plans as fact, or take actions for a human without an admitted decision/delegation rule.
@@ -29,11 +35,11 @@ The prompt admission that has to stay inside these prohibitions is [What the pro
 
 ## Investigative writing, revision and delegation
 
-A Storyteller mission starts from a small pinned orientation rather than the whole campaign stuffed into one prompt. The writer may browse the Library, search for likely evidence, open exact source revisions, compare contradictory records, load a relevant writing skill, stage notes or prose in its Workdesk, reread them and revise before submission. A simple continuation may need one short inference; a difficult 200-scene callback may justify deeper investigation.
+Research, the Workdesk and writing skills are capabilities available to the writer, not required stages. A Storyteller mission starts from a small pinned orientation rather than the whole campaign stuffed into one prompt. The writer may browse the Library, search for likely evidence, open exact source revisions, compare contradictory records, load a relevant writing skill, stage notes or prose in its Workdesk, reread them and revise before submission. A simple continuation may need one short inference; a difficult 200-scene callback may justify deeper investigation.
 
 Delegation is purposeful. A research assistant receives its own bounded context and source scope for a separable question, such as reconciling an old promise or critiquing a draft for continuity. It returns claims, uncertainty and source handles or an isolated draft proposal. The parent Storyteller decides what to use. A child never becomes a permanent NPC mind and never publishes world state directly.
 
-Quality is judged partly by whether the writer **finds and uses the right evidence**, not by tool-count theatre. Injecting the entire Library, performing arbitrary fixed rounds, or spawning agents that merely paraphrase the parent are failures of the intended product.
+Quality is judged partly by whether the writer **finds and uses the right evidence**, not by tool-count theatre: the number of tools called, rounds run or agents spawned is never itself a quality measure. Injecting the entire Library, performing arbitrary fixed rounds, or spawning agents that merely paraphrase the parent are failures of the intended product.
 
 ## Ordinary life and absence
 
@@ -53,11 +59,11 @@ Caring for a character over several real days can be the main experience. Quiet 
 | Privacy and visibility | Character knowledge ≠ private DM possibilities | Retrieval exposes secret future intent as fact |
 | Cost and reliability | Explicit policy bounds every model round | Secret double spend or incoherent depleted-tier fiction |
 
-Lethal risk expansion and free-intent paths remain **policy-gated**; current `nonlethal` (where present) is a capability limitation, not an eternal “never kill” prompt dogma.
+Lethal risk expansion and free-intent paths remain **policy-gated**; current `nonlethal` (where present) is a scoped capability limitation of that realization, not a universal moral rule and not an eternal “never kill” prompt dogma.
 
 ## Multi-day evaluation family
 
-This family is Proposed/Blocked. It is an illustrative evaluation, not ratified acceptance. It sets no drama percentage and no required incident rate.
+This family is Proposed/Blocked. It is an illustrative evaluation, not ratified acceptance. It sets no drama percentage, no fixed drama density and no required incident rate. Its two named rehearsals, the remembered promise and the quiet breakfast, are dated offline rehearsals, not live play.
 
 Creative temperament, limited initiative, private possibilities, canon invention, and funding or tool permissions stay separate. Temperament is the profile's voice. Limited initiative is whether the campaign allows cultivated pressure, including none. A private possibility is not a public event, as [Six kinds of record](../gameplay/continuity.md#six-kinds-of-record) requires. Canon invention is the domain permission in [Canon invention policy](profiles-and-settings.md#canon-invention-policy). Funding and tools stay with [Provider and budget boundary](../../technical/storyteller/operation-and-controller.md#provider-and-budget-boundary). A future controller design is not a live feature.
 
@@ -73,7 +79,7 @@ Negative: an agent must not force a dramatic incident every quiet day, treat a d
 
 Stored passages and a private narrative intent do not prove that a long life stays coherent or enjoyable. This heading selects permission to author developments inside admitted world changes. It does not make multi-step memory exploration the live default, and it does not claim the sustained creative proof [STATUS](../../../STATUS.md) still lists as unproved. A quality failure is a turn that treats a discarded plan as truth, or that cannot be reviewed against the declared profile. Cost and the unratified experiment notes stay in [product-reality economics](../../../research/product-reality/ECONOMICS-2026-11-18.md). That page authorizes no spend.
 
-The Storyteller is not limited to extrapolating the last player action. When the campaign's selected direction permits proactive authorship, it may maintain a private, revisable narrative intent and introduce developments that would not arise from the character's immediate routine. A player may spend the day fishing while a war begins or a meteor approaches. The Storyteller may make that pressure real through admitted world changes. It cannot decide that the character heroically stops it, invalidate an accepted action without a supported interruption, or preserve a preferred finale after play makes it impossible.
+The Storyteller is not limited to extrapolating the last player action. When the campaign's selected direction permits proactive authorship, it may maintain a private, revisable narrative intent and introduce developments that would not arise from the character's immediate routine. A player may spend the day fishing while a war begins or a meteor approaches. The Storyteller may make that pressure real through admitted world changes. The limits in [What it must not do](#what-it-must-not-do) apply unchanged: it cannot decide that the character heroically stops it, invalidate an accepted action without a supported interruption, or preserve a preferred finale after play makes it impossible.
 
 A grand narrative is optional. A campaign may explicitly prefer observation, ordinary life or a farming rhythm with no cultivated arc. In that case the Storyteller must not invent a looming destiny merely to create momentum.
 
