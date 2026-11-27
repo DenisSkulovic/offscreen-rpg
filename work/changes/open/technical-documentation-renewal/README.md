@@ -6,14 +6,14 @@ Repository `DenisSkulovic/offscreen-rpg`. Accepted E1 [Design](../../../designs/
 
 | ID | Outcome | Prerequisite / coordination | Standing |
 | --- | --- | --- | --- |
-| [TD01](2026-11-27--td01-developer-platform/CHANGE.md) | Developer platform (5 pages) | None; active ownership fence | READY; owner-authorized for named dispatch |
-| [TD02](2026-11-27--td02-topology-deployment/CHANGE.md) | Topology/deployment (3 pages) | None; active ownership fence | READY; owner-authorized for named dispatch |
-| [TD03](2026-11-27--td03-persistence-primitives/CHANGE.md) | Persistence/reusable primitives (3 pages) | None; M04 | READY; owner-authorized for named dispatch |
-| [TD04](2026-11-27--td04-game-engine/CHANGE.md) | Engine (8 pages) | PD02 transfer facts frozen before dispatch; M01 | READY; owner-authorized for named dispatch |
-| [TD05](2026-11-27--td05-storyteller-architecture/CHANGE.md) | Storyteller (9 pages) | PD01/PD02/PD05 transfer facts frozen before dispatch | READY; owner-authorized for named dispatch |
-| [TD06](2026-11-27--td06-client-api/CHANGE.md) | Client/API (10 pages) | PD04 transfer facts frozen before dispatch | READY; owner-authorized for named dispatch |
-| [TD07](2026-11-27--td07-admin-trust-spend/CHANGE.md) | Admin/trust/spend (7 pages) | PD06 scoped source facts frozen; M04 | READY; owner-authorized for named dispatch |
-| [TD08](2026-11-27--td08-application-evidence-lab/CHANGE.md) | Application evidence/lab (7 pages) | PD06 scoped redacted diagnostic evidence; no policy transfer | READY; owner-authorized for named dispatch |
+| [TD01](../../archive/2026-11/documentation/2026-11-27--td01-developer-platform/CHANGE.md) | Developer platform (5 pages) | None; active ownership fence | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [TD02](../../archive/2026-11/documentation/2026-11-27--td02-topology-deployment/CHANGE.md) | Topology/deployment (3 pages) | None; active ownership fence | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [TD03](../../archive/2026-11/documentation/2026-11-27--td03-persistence-primitives/CHANGE.md) | Persistence/reusable primitives (3 pages) | None; M04 | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [TD04](../../archive/2026-11/documentation/2026-11-27--td04-game-engine/CHANGE.md) | Engine (8 pages) | PD02 transfer facts frozen before dispatch; M01 | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [TD05](../../archive/2026-11/documentation/2026-11-27--td05-storyteller-architecture/CHANGE.md) | Storyteller (9 pages) | PD01/PD02/PD05 transfer facts frozen before dispatch | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [TD06](../../archive/2026-11/documentation/2026-11-27--td06-client-api/CHANGE.md) | Client/API (10 pages) | PD04 transfer facts frozen before dispatch | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [TD07](../../archive/2026-11/documentation/2026-11-27--td07-admin-trust-spend/CHANGE.md) | Admin/trust/spend (7 pages) | PD06 scoped source facts frozen; M04 | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
+| [TD08](../../archive/2026-11/documentation/2026-11-27--td08-application-evidence-lab/CHANGE.md) | Application evidence/lab (7 pages) | PD06 scoped redacted diagnostic evidence; no policy transfer | ARCHIVED on this branch (source joined); joint acceptance NOT RUN |
 | [TD10](2026-11-27--td10-technical-integration/CHANGE.md) | Technical integration (index, shared maps, STATUS) | TD01–TD08; M02/M03; transfer completeness | READY (dependency-gated); owner-authorized for named dispatch |
 
 TD09 is a protected NO-OP disposition for seven active foundation/native pages, not an executable Change.
