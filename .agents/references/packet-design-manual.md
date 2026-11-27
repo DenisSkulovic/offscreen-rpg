@@ -1,29 +1,18 @@
 # Execution-first Change packet design | ChatGPT planner manual
 
+**Owns:** construction of a bounded task DAG and execution routes after settled architecture. [Investigation](planner-investigation-standard.md) supplies source facts; [submission standard](planning-artifact-quality.md) sets scope, files and budgets; [readiness review](packet-readiness-review.md) independently tests the result.
+
 ## Dependency readiness is not a planner blocker
 
-Owner direction (2026-11-24): distinguish design readiness, execution dependency order, commission, and live-resource permission. A settled packet with frozen interfaces, selected algorithm, scope and proof is **Ready (dependency-gated)** even when predecessors have not landed. An explicitly commissioned batch may dispatch each named packet as soon as its recorded predecessor receipts and source postconditions hold, without further planner promotion, certification, or owner approval. A parent may verify those postconditions and mechanically reconcile import paths, manifests, symbols and test paths under a frozen mapping; this is execution, not delegated architecture discovery. Do not require a pre-existing test harness when creating it is the selected task. Source implementation and deterministic tests proceed independently of separately gated live proof. Use **PLANNER-BLOCKED** only for a named material unresolved design, algorithm, authority, safety, or semantic contradiction that prevents correct execution; state exact missing decision/evidence and affected task, not a generic readiness disclaimer. Unfinished predecessors, normal integration sequencing, or absent future source implementing an already frozen contract are not planner blockers. Preserve all actual safety, correctness and resource permission gates. Before recommending `do ID`, ChatGPT must ensure the repository packet is actually commissioned and executable now or explicitly dependency-gated, and verify the push. No repeated approval for an unchanged commissioned contract. This rule clarifies all readiness/review language below; it does not waive source-grounded planning or permit uncommissioned sibling work.
-
-**Owner:** ChatGPT planner. **Purpose:** design an implementation Change that a Cursor parent can dispatch after brief orientation, and Composer children can execute with small local reads. **Authority:** complements, does not replace, [change work-unit standard](change-work-unit-standard.md), [packet profiles](change-packet-profiles.md), [planner investigation](planner-investigation-standard.md), [Composer tasks](composer-first-execution.md), and [branch/integration policy](bounded-parent-orchestration.md). Product/technical docs remain the authority for behavior. This document sets a *planning technique*, not a new Change state or permission.
-
-**Entry gate:** This is an execution-packet manual, not an architecture-design method. For material new design or renewal, finish the [design-led renewal gate](../rules/target-driven-renewal.md) in the active Design first, with independent review, specimens, experiments and accepted target. Only use this manual when packet-based delegation is actually selected. Do not convert an unresolved Design into a series of Change folders.
-
-The [planning artifact quality standard](planning-artifact-quality.md) governs active file roles, size/retrieval smells, edit-in-place repair and mandatory submission quality. It is part of readiness, not cosmetic polish.
+Follow [shared rule](../../AGENTS.md#dependency-readiness-is-not-a-planner-blocker). Freeze predecessor receipts and exact source postconditions. Dispatch after verified prerequisites and commission; changed material contract returns to planner. A specified future harness is not itself a blocker.
 
 ## 1. Plan backward from cheap execution, not forward from document completion
 
-Imagine the parent has received `do ID`. The first useful actions should be branch/worktree guard, read the short front door and task queue, and **dispatch a ready task**, without surveying the architecture. Imagine the child sees only its T-ID and 2–5 named anchors. It should be able to open those anchors, write the planned edit, run an exact focused positive and negative proof, and return a short receipt. If either agent must first determine who owns a contract, which callers exist, what semantics are intended, or how to test the change, the *planner* is not finished.
-
-**Important:** "small initial read" is a dispatch goal, not a prohibition on targeted debugging, inspecting real local code, or exercising engineering judgment. Do not mistake fewer tokens for correctness. Optimize accepted Changes per total spend including rework and safety failures.
+Imagine parent does branch guard, reads front door/index and dispatches; child opens card and 2–5 named anchors, applies decided edit, runs focused checks and returns receipt. If either must find architecture, authority, callers or invent fixture/algorithm, planner is unfinished. Targeted source verification and debugging are necessary; never optimize tokens at correctness expense.
 
 ## 2. Complete the expensive source investigation against the accepted target
 
-1. Inspect actual selected integration branch and HEAD, live source, tests, manifests, ownership and concurrent work. Read the repository's current instructions; memory/older packet claims are not proof. Record inspected SHA and any inaccessible worktree.
-2. Set the accepted end state: what changes and what explicitly must not, and which selected product/technical owners authorize it. Distinguish proposed, ratified, observed and tested.
-3. Trace the full impact surface (beyond a child's first 2–5 anchors): entrypoints, callers, consumers, schemas/types/exports, composition roots, tests, build/lockfiles, docs. For stateful work add rows/IDs, transaction boundaries, outbox, retries, failure and permission fences.
-4. Decide the *one* interface/algorithm and failure semantics, including normal and discriminating negative path. Move genuine unresolved design to Proposed/PLANNER-BLOCKED, never to an implementation task's "investigate" step.
-5. Create a **change manifest** when fanout makes ownership nontrivial. For migrations/extractions record source path/symbol → target path/symbol, export map, every known caller/import edit, dependency/lockfile edit, test move/addition, doc owner and invariants. For policy injection record **each composition root**, policy source, default-deny rule and fixture/production cases.
-6. Identify source drift conditions. Exact stable symbols, not merely an old SHA, determine whether a task recipe can be trusted after another Change merges.
+Follow [planner source investigation](planner-investigation-standard.md#before-authoring-settle-design-then-map-the-current-repo). Material design must have passed [design gate](../rules/target-driven-renewal.md) before implementation planning. Record verified source/authority, actual impact map, exact algorithm and normal/negative semantics, migration/composition map and drift conditions. Keep facts, contracts and proof in their respective owners; no duplicate source transcript.
 
 ## 3. Design the execution DAG before writing T-IDs
 
@@ -40,15 +29,11 @@ Draw a DAG of *edits and validations*, not just document sections. Each node has
 
 A parent may run **two** independent Composer children concurrently under the existing bounded-orchestration default, only if a planner-provided matrix establishes nonoverlap and the execution environment supports safe isolated writes/joins. More candidates may form later waves but are not an invitation to a swarm. If children share a Change worktree, disjoint file sets alone may be insufficient: tests and Git-index/build-output collisions must also be absent; parent owns all staging, commit and final joins. Where isolation is not proven, dispatch serially. Parallelism is not a success metric in itself.
 
-**Prefer a small critical path** without slicing atomic transaction or authority changes into contradictory parallel writers. Do not split one straightforward 15-minute edit into four children; dispatch overhead can cost more than implementation. Some Changes have only serial tasks, and that is healthy.
+**Prefer a small critical path** without slicing atomic transaction or authority changes into contradictory parallel writers. Do not create artificial subagents for a single straightforward edit. If the Change exceeds the active implementation target, reconsider its scope under the submission standard. Some Changes have only serial tasks, and that is healthy.
 
 ## 4. Write two audiences, one source of truth
 
-**Parent front door** (CHANGE.md + TASKS header): reference branch, baseline/current drift rule, chosen outcome, constraints, authorized scope, DAG/waves, shared owner/resource locks, first dispatch, final acceptance, stop/escalation and closure destination. One quick read, no mandatory whole-wiki preload.
-
-**Child task card** (T-ID, preferably one screen): exact owned write paths/symbols, 2–5 initial read anchors, frozen API and edit algorithm, no-choice code expectations, prerequisite receipts, focused command/cwd and expected positive + discriminating negative result, bounded local repair permission, stop on *specific* contradiction, compact receipt. A child should not need to read every SOURCE-MAP/EXECUTION/PROOF page.
-
-**Planner deep notes**: keep only current source facts and decided implementation contracts, with exact section-level child anchors; no amendment diary or raw research paste. SOURCE-MAP contains inspected real graph and source assertions; EXECUTION settles algorithms and cross-boundary migration; PROOF fixes fixtures and failure observations. These pages are for planning provenance and debugging exceptional drift, not for universal child preload. Avoid duplicating and contradicting core decisions across five files: link to one canonical location and repeat only indispensable routing facts.
+Parent: CHANGE + TASKS index, recorded reference/HEAD, scope, constraints, prerequisite DAG/waves and shared locks, first dispatch, assigned proof and acceptance handoff, closure. Child: [canonical task card](composer-first-execution.md#tasksmd-format) with precise permitted writes, anchors, selected edit, prerequisites, exact focused normal/negative and stop. Planner: [file roles](planning-artifact-quality.md#3-execution-packet-shape), current source facts and selected contracts, direct section anchors. No raw history, multiple normative owners or universal preload.
 
 ## 5. Test dispatchability while writing
 
@@ -69,4 +54,4 @@ Its selected neutral Contracts port must exist before Application re-exports and
 
 ## 7. Finish with an auditable launch statement
 
-Only after an independent [packet readiness audit](packet-readiness-review.md) returns READY, specify first T-ID/wave, target branch, permitted model/permissions and the exact stop/closure policy. An accepted Change commission covers all T-IDs, acceptance, archive, squash join and push, not future sibling Changes. Do not invent model spend evidence or promise that a packet guarantees no debugging.
+Only after [independent readiness](packet-readiness-review.md) passes, record first T-ID/wave, branch, prerequisites, permissions, model route, assigned cheap proof, heavy acceptance owner and stop/closure. Readiness does not commission; verify explicit commission before suggesting do ID. One parent owns one selected Change, no sibling or unassigned live proof. No fabricated cost or zero-debugging claims.
