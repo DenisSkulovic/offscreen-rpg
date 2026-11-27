@@ -1,58 +1,40 @@
-# Current planner readiness audit | recovery25
+# Packet readiness
 
-**Target inspected:** OBSERVABILITY-DEVELOPER on main at 77b60c6f3841d5e2a5484859bc0d58e1187a8772. **Disposition:** PLANNER-BLOCKED / UNVERIFIED as specified below; independent review and all dispatch held. This is the author's adversarial repair audit, not an independent committee verdict. Architecture R5 defended and promoted; amended deadlines and scoped evidence still require verification. No implementation or live operation authority.
+**Disposition:** PLANNER-BLOCKED / UNVERIFIED. All dispatch remains held. R5 architecture is accepted and promoted; material implementation-contract candidates remain subject to independent review. No successor implementation or live acceptance has run.
 
-## G0–G7 current disposition
+## Outstanding work
 
-| Gate | Result | Reason / next owner |
-|---|---|---|
-| G0 | FAIL | Verified remote main and current AGENTS/CHATGPT/packet readiness rules; R5 authority known, prior commission suspended. Independent candidate deadline review and actual local branch/worktree collision check outstanding; owner/ChatGPT. |
-| G1 | UNVERIFIED | Operational census reconciled remotely by exact baseline-to-current tree delta (Recovery29 SOURCE-MAP); no operational source drift or new owner. Exact Grafana rendered Service targetPort still not measured here; earlier evidence corroborates named targetPort. Owner exact render pending, planner interprets. |
-| G2 | FAIL | Deadline schedule selected and arithmetic checked, but actual pinned D3/D4 query behavior, subprocess boundedness and A9 chain feasibility not verified. T11 fixed Tempo-only closure, disruption record shape and bounded sync/async contract selected in recovery26; actual Linux tests, source reconciliation and independent ratification pending. No executor design discretion. |
-| G3 | FAIL | All twelve cards screened individually below; three concrete contradictions corrected in this batch. Full cold simulation cannot establish safe implementation for flagged tasks; do not declare twelve PASS. |
-| G4 | FAIL | First dispatch prohibited by explicit review hold, no verified local worktree. Candidate first dispatch T01 only after accepted whole packet and explicit commission; parent reads CHANGE/TASKS and exact T01 anchors, runs branch guard, never runs owner proof. |
-| G5 | PASS (plan only) | Single serial T01→T02→T03→T04→T05.1–.4→T06→T07→T08→T09→T10→T11.1–.6→T12; shared install/forward/proof fixtures and packet ledger serialize. Human integration custodian; parent joins committed child receipts in dedicated branch. No parallel waves. |
-| G6 | FAIL | Source focused commands and positive/negative cases specified; isolated D3/D4 batch not run, A6/A8/A9 availability unknown, measured deadline feasibility absent. No source/live tests executed here. |
-| G7 | FAIL | Serial bounded routing selected, T12 source-only closure; T05/T11 partitioned into ten bounded child subcards in recovery27; verify subcard cold simulations and joins before independent acceptance, no repeat architecture discovery. Pending owner proof prohibits merge/retirement. |
+| Owner | Required decision or evidence | Affected cards |
+| --- | --- | --- |
+| ChatGPT + owner | Obtain actual pinned Grafana Service port/targetPort and Collector configuration render; verify local branch/worktree collision state. Operational reference census is already reconciled in SOURCE-MAP.md. | T01, T06, T10, T12 |
+| ChatGPT + owner | Run the bounded pinned D3/D4 experiment in PROOF.md; verify exact metric labels, timestamps and raw query behavior. Resolve and ratify the D4.1 durable allocation watermark for delayed ingestion/clock rollback, including proof-local state custody. | T09 |
+| ChatGPT | Reconcile and independently ratify the candidate deadline allocations, owned process cancellation and FD/lock semantics, exact Tempo restoration and A9 wrapper chain. Verify feasible Linux execution and affected source seams; do not weaken bounds to fit. | T03–T05, T07–T11 |
+| ChatGPT + owner | Confirm isolated A6/A8/A9 environment availability, exact identities and permission boundaries. No live or destructive operation authorized here. | T11, owner acceptance |
+| Independent reviewer | Cold-read all execution cards (including the ten T05/T11 subcards), re-audit G0–G7 and record a verdict against the exact candidate. | All |
 
-## Individual child-context screening
+The owner evidence batch is in [PROOF.md](PROOF.md). Run read-only census/render first; isolated Docker experiments are separately opt-in. No workstation evidence or implementation test is claimed by this document. The D4.1 Python phase allocation is 573s work + 22s slack + 5s termination within 600s; arithmetic alone does not establish feasibility.
 
-Read TASKS cards first, then named sections/symbols; this table identifies first remaining blocking or verification boundary, not a substitute for final independent cold simulation. Predecessors not yet implemented are normal dependency gates, not planner blockers.
+## Gate disposition
 
-| Task / prerequisite | Exact implementation owner | First decision or evidence boundary | Discriminating negative |
-|---|---|---|---|
-| T01 / none | artifacts, install argv, input geography, fixtures | Recovery29 scoped census reconciled; offline Helm parity exact | final archive/YAML invalid refuses before render |
-| T02 / T01 | artifact variant + overlay, render fixtures | private temp setup now explicit; compare own pre-overlay release render, no prior shell dependency | missing overlay / release predecessor refusal |
-| T03 / T02 | identity, namespace UID binding, shared constants | candidate deadlines and synchronous command termination limits require ratification; no later read on unknown create | changed CA/snapshot/UID, malformed create response |
-| T04 / T03 | custody and owned direct child | actual Linux FD/parent-death semantics proof specified; async owned flock and close-unconfirmed selected; actual Linux proof pending | ignored TERM, replaced record, stdin failure, no green cancellation |
-| T05 / T04 | inventory/readiness/install/receipts/external callers | exact phase runner and caller mapping, inventory/cancellation feasibility; four serial subcards selected; individual cold review still needed | malformed history/manifest/secret, foreign pending, wrong worker receipt |
-| T06 / T05 | forward orchestration and connect | exact actual Grafana rendered Service mapping pending local evidence | wrong targetPort, occupied port untouched, failure closes owned forwards |
-| T07 / T06 | upgrade | selected host check and preservation projection; actual candidate phase ceilings pending ratification | unauthorized, stale UID/pending, unknown mutation no retry |
-| T08 / T07 | proof session and UID ledger | exact bounded create/cleanup routing, terminal result; ensure earlier proof modes cannot silently use obsolete host runner | attempted-unknown create, replacement, foreign CM consumer, no namespace delete |
-| T09 / T08 | signal/developer Python and typed Node gate | D3/D4 pinned query evidence mandatory; D4.1 durable allocation selected, state amendment requires ratification; label/timestamp algorithm not measured | previous-only samples, invalid label, timestamp trap, no replay POST |
-| T10 / T09 | health/resource observation | exact node set and scoped cadence selected; actual Grafana port and phase ceilings pending | wrong auth/UID/URL, missing/stale role, cycle overrun |
-| T11 / T10 | disruption, A9 wrapper, narrow custody/engine adapters | fixed restoration-only closure/record fields, inclusive nested wrapper deadline and close semantics selected; six serial subcards selected; actual Linux/isolated proof and individual cold review pending | stale RV/foreign record, unknown write, repeat timeout not refusal |
-| T12 / T11 | parent aggregate/receipt/runbook | exact tested SHA and actual child receipts; no source edits; current runbook reconciliation assigned | aggregate failure prohibits IMPLEMENTED checkpoint; all owner gates NOT RUN |
+| Gate | Result | Reason |
+| --- | --- | --- |
+| G0 Authority | FAIL | Commission held; amendment ratification and local worktree collision check outstanding. |
+| G1 Source truth | UNVERIFIED | Remote operational census reconciled; actual Grafana render evidence and affected source recheck outstanding. |
+| G2 Decisions | FAIL | Deadline, query freshness, restoration and containment candidates require verification and ratification. |
+| G3 Child context | FAIL | Full independent cold simulations outstanding. |
+| G4 Dispatch | FAIL | No authorized first dispatch. |
+| G5 Ownership | PASS (plan only) | Serial execution, one dedicated branch/worktree, explicit milestone joins and human integration custodian. |
+| G6 Proof | FAIL | Required pinned evidence, feasibility and isolated target availability outstanding. |
+| G7 Closure | FAIL | Independent readiness review and child handoff verification outstanding. Heavy acceptance remains separately gated. |
 
-## Parent route after acceptance only
+## Execution route after commission
 
-Human owner commissions the exact reviewed candidate and supplies local worktree/collision evidence. Dedicated change/observability-developer, target main, commissioned BASE recorded; run node scripts/repo-tools/change-branch-guard.mjs --change OBSERVABILITY-DEVELOPER --target main from existing dedicated worktree, use --resume only after reviewed target drift per guard. Check git status --short and git worktree list; preserve existing dirty changes, stop on collision. Parent dispatch T01 only, then serial next executable card after predecessor committed proof and frozen postconditions. T05/T11 are milestones; dispatch T05.1–.4 and T11.1–.6 separately, never whole milestone. Both joins mandatory before downstream task. No repeated owner approval for unchanged dependency-gated cards; no source execution now. All source tests remain NOT RUN; independent review required after remaining planner blockers are closed.
+Record the reviewed integration BASE and verify the dedicated change/observability-developer worktree against main. Inspect git status and worktree list; preserve dirty changes. Run the repository branch guard with --change OBSERVABILITY-DEVELOPER --target main, using --resume only in accordance with the guard and reviewed drift.
 
-## Remaining planner-owned work (not another generic rewrite)
+Execute T01 → T02 → T03 → T04 → T05.1–T05.4 → T06 → T07 → T08 → T09 → T10 → T11.1–T11.6 → T12. This is 19 child dispatches plus parent closure, with mandatory joins after T05.4 and T11.6. Supply the selected [task card](TASKS.md) and [implementation contract](INTERFACES.md), not the entire dossier. Verify predecessor receipts and frozen postconditions. No additional approval for unchanged commissioned dependency-gated tasks.
 
-1. Operational census reconciled in Recovery29; complete actual Helm-rendered Grafana Service mapping and local worktree checks. Combined workstation evidence batch in PROOF.md needs owner execution and receipt, not a guessed fixture; census/render run first, D3/D4 isolated Docker portion explicit opt-in.
-2. Reconcile recovery26 selected restoration/runner/deadline contracts against all affected consumers and independent review; review recovery27 ten bounded subcards individually (not milestone summaries).
-3. Confirm isolated A6/A8/A9 availability, exact targets/identity and permission boundaries. No destructive authorization assumed.
-4. Re-audit all G0–G7 and each individual child after changes; submit exact candidate to independent committee, no commission before verdict.
+Cursor stops at IMPLEMENTED — ACCEPTANCE PENDING with exact SHA, focused test receipts and remaining owner proofs. No merge or retirement until mandatory acceptance is recorded.
 
-Historical author status (not current authority) preserved at [prior READINESS.md](https://github.com/DenisSkulovic/offscreen-rpg/blob/77b60c6f3841d5e2a5484859bc0d58e1187a8772/work/changes/open/2026-11-27--observability-developer/READINESS.md). No previous PASS upgraded by this repair.
+## Review evidence
 
-Recovery26: B01–B07 selected contract corrections committed in INTERFACES/TASKS/PROOF. No claim of full G2/G3 closure; exact new contract must be re-audited and tested. Workstation evidence and independent approval outstanding. All dispatch held.
-
-Recovery27: T05 and T11 decomposed into four and six child subcards, respectively; 19 Composer dispatches plus T12 parent closure (20 execution cards), still one Change and twelve milestone IDs. Exact focused test filters/commands, allowed paths, deferred intermediate consumer migration, and milestone join conditions selected. Read-only source and test anchor verification on fcb09f136d58c69c6dd93f0ff3da4af8ae7089ce; full independent cold simulation of ten new cards not yet performed. All dispatch held.
-
-Recovery28: one combined owner batch prepared (current tracked census, local branch/worktree census, exact rendered Grafana Service/targetPort and pinned OTLP config, optionally immutable Docker-only D3/D4 experiment with producer timestamp comparison). No live Kubernetes or destructive operations. Owner target availability remains a separate response/verification; successor runtime timings remain NOT RUN. No local access from planner; command not executed.
-
-Recovery30: cold-read T01–T04/T06–T10 and T05/T11 handoff review identified missing explicit operation/revision parameters, private prefix validator reuse, unowned intentional-down projection, intermediate legacy gate dispatch and D4 strict HTTP/timestamp bounds. Selected concrete repairs in INTERFACES/TASKS. Cross-session delayed ingestion plus clock rollback is a substantive remaining D4 planner issue; no waiver or guessed durable state. Further subcard cold review, pinned evidence and independent ratification remain outstanding. Actual successor tests are implementation/acceptance, not pre-existing code evidence. No gate promoted; all dispatch held.
-
-Recovery31: cross-session delayed ingestion/clock rollback now has selected D4.1 write-ahead timestamp watermark contract and exact T09 owner/argv/FD binding. One durable proof-local file, no new platform service/metric dimension, no reset, trusted state custody explicitly required. Independent material amendment ratification and actual pinned evidence remain prerequisites; no architecture approval claimed. 573s work +22s slack +5s termination stays inside Python600s. No runtime test or live operation. Other subcard cold review remains outstanding.
+The prior planner audit, individual milestone screening and recovery history are preserved in [the pre-consolidation revision](https://github.com/DenisSkulovic/offscreen-rpg/blob/0404baf17c69765bac4e32b30403fff578042ed1/work/changes/open/2026-11-27--observability-developer/READINESS.md). No prior gate is upgraded by this consolidation. Independent review remains mandatory.
