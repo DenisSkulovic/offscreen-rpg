@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { DEFINITIONS, FIXTURE, MODEL_ID } from './fixtures/scenarios.mjs';
-import { decideFixture, createFixturePlugin } from './fixtures/model.mjs';
+import { CANCEL_HOLD_MS, TIMEOUT_HOLD_MS, decideFixture, createFixturePlugin } from './fixtures/model.mjs';
 import { createFixtureActivities, evaluateFixtureTool, missionWorkflowId } from './fixtures/tools.mjs';
 
 const MISSION = '11111111-1111-4111-8111-111111111111';
@@ -166,6 +167,19 @@ test('arithmetic sentinel is admitted and then fails without a result', async ()
     input: FIXTURE.arithmeticArgs,
   });
   assert.equal(ok, '12');
+});
+
+test('cancel and timeout holds match the pinned heartbeat and cancellation contract', () => {
+  const workflow = readFileSync(new URL('./mission.workflow.ts', import.meta.url), 'utf8');
+  const runtime = readFileSync(new URL('../src/loop/generate.ts', import.meta.url), 'utf8');
+  for (const source of [workflow, runtime]) {
+    assert.match(source, /startToCloseTimeout: '10s'/);
+    assert.match(source, /heartbeatTimeout: '2s'/);
+    assert.match(source, /maximumAttempts: 1/);
+    assert.match(source, /WAIT_CANCELLATION_COMPLETED/);
+  }
+  assert.equal(CANCEL_HOLD_MS > 2000 && CANCEL_HOLD_MS < 10_000, true);
+  assert.equal(TIMEOUT_HOLD_MS > 10_000, true);
 });
 
 test('held model records abort and does not return success', async () => {
