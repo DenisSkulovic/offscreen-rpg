@@ -1,8 +1,8 @@
 # TD04 | Game engine and Game Authority
 
-**State:** READY; owner-authorized for named dispatch. **Kind:** DOC. **Base:** `a28693dcefe80a3242a870ed03a6c144b47f1ac7` main; E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`, owner accepted 2026-11-27. No runtime changes between original snapshot and this planning base. **Target:** `implementation/technical-documentation-renewal`. [Accepted Design](../../../../designs/open/technical-documentation-renewal/README.md) · [Group](../README.md).
+**State:** Done — source joined to implementation/technical-documentation-renewal; joint semantic acceptance pending (PD07/TD10 and Design). **Kind:** DOC. **Base:** `a28693dcefe80a3242a870ed03a6c144b47f1ac7` main; E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`, owner accepted 2026-11-27. No runtime changes between original snapshot and this planning base. **Target:** `implementation/technical-documentation-renewal`. [Accepted Design](../../../../../designs/open/technical-documentation-renewal/README.md) · [Group](../../../../open/technical-documentation-renewal/README.md).
 
-**Release:** [group readiness and dispatch](../README.md#owner-release-and-independent-readiness); exact reviewed candidate `606de3a0a4856eb36ce275bd4bc109ea46d480c0`. Verify named assignment, actual target, branch guard, prerequisites and custody before editing.
+**Release:** [group readiness and dispatch](../../../../open/technical-documentation-renewal/README.md#owner-release-and-independent-readiness); exact reviewed candidate `606de3a0a4856eb36ce275bd4bc109ea46d480c0`. Verify named assignment, actual target, branch guard, prerequisites and custody before editing.
 
 ## Implementation first-screen brief
 
@@ -37,3 +37,15 @@ DOC-E1-M01: keep mechanical-authority prohibition and dated D-0001 choice distin
 ## Closure
 
 May write only listed paths and own packet closure artifacts. Recheck current branch, HEAD, dirty paths and protected ownership before dispatch. No Ready or commission granted by this file. [PROOF](PROOF.md) gates Change join; group joint acceptance remains. On commissioned completion archive packet before reporting, under current branch/target lock policy.
+
+## Closure receipt
+
+Page commit `f55b8e9de2f3a3be996337f309ecc7ebdcb51114`. Changed: the eight engine pages, `docs/decisions/D-0001--modular-engine.md`, `packages/story-engine/README.md`.
+
+Checks: `git diff --check` clean; `check_docs.py` 96 to 94 problems (fixed the stale OBS04 and MA12 links; no new); `docs-health` unchanged at 3 pre-existing violations. Link health is not semantic proof. Runtime tests, source builds: NOT RUN.
+
+Transfers landed: PD02 rules to `mechanics-and-capabilities.md` (Supported mechanisms and the future kernel; Persistence and known limits); PD02 time-and-autonomy to `ticks-and-tags.md` (Fixed real-second scheduling and fictional time, new h3 Existing narrative rehearsal adapter); PD02 continuity scene-frame.v1 to `mechanics-and-capabilities.md` (Opportunity boundary, unratified). Product text unchanged.
+
+Semantic negatives (all answered from rewritten text): T01 authority-and-transitions Selected authority contract, Situation authorization, Commands recovery; concurrency Proof boundary and What C1 and C2 actually proved. T02 ticks-and-tags rehearsal adapter and header; chronology Permission to advance, Decisions with deadlines; calendars Shared settlement. T03 mechanics Supported mechanisms, Start eligibility is not ongoing validity, Persistence and known limits. T04 lifecycle Forked continuities, Start exactly the reviewed story, Workflow replay compatibility. T05 selected-architecture Package-boundary evolution criterion and Source-reality checkpoint; D-0001 Choice and Continuity.
+
+Findings: Medium, source routes under `packages/application` in older evidence text are annotated with current paths rather than rewritten (destination: the pages' own evidence paragraphs). Low, calendars and lifecycle bodies largely retained (group register, custodian). Medium, 8 stories/campaign to storyteller reverse imports remain MA09 debt (selected-architecture).
