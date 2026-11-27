@@ -1,6 +1,8 @@
 # React / Next.js engineering target | DECIDED architecture
 
-**State: ARCHITECTURE SELECTED (2026-11-12) + W-program implemented (reconciled 2026-11-15).** This contract owns the **frontend engineering target** (F1–F15). TanStack Query is mandatory. **Architecture selected ≠ “code not implemented.”**
+**Authority: SELECTED architecture (2026-11-12).** This contract owns the **frontend engineering target** (F1–F15): stack, data ownership, Query operating contract, command and recovery discipline, update transport, forms, security posture and acceptance clauses. TanStack Query is mandatory.
+
+**Two statuses are kept apart.** The sections below the [Implementation status](#implementation-status-w-program) table state the selected target. That table is a *dated realization record* (W-program, reconciled 2026-11-15). A landed W slice is a delivery fact and never the F1–F15 acceptance. Selected does not mean "code not implemented", and implemented does not mean "accepted".
 
 ## Who owns the client guarantee
 
@@ -15,25 +17,13 @@
 | System roles and scene tokens | [Tokens](semantic-design-foundation.md#tokens-primitive-scales-and-semantic-roles-not-a-hardcoded-genre-palette) |
 | Book shell | [Living Book client target](living-book-poc.md). It does not replace the rows above. |
 
-Dated W delivery stays in [Implementation status](#implementation-status-w-program) and the [web source map](../../../apps/web/README.md). Demonstrated tiers for SSE and the presentation language are in [capability coverage](../../../STATUS.md#capability-coverage).
+Two guarantees hold across every row: a stale SSE hint or a hydration race does not re-enable an old choice, and a creative scene style does not change a command or an error state.
 
-A stale SSE hint or a hydration race does not re-enable an old choice. A creative scene style does not change a command or an error state.
+## Scope and routing
 
-### Implementation status (W-program)
+**Scope:** React 19, Next.js 16 App Router, `apps/web`, the browser/SSR boundary, Nest-facing contracts and verification. **Purpose:** senior-engineering portfolio. **Excluded from this target's authority:** inventing new game rules, live model spending, unrelated infrastructure. **Behavioral authority:** this page for the frontend target; [identity and access](../platform/identities-and-access.md) for sessions and membership; [story lifecycle](../engine/lifecycle-and-compatibility.md), [execution](../platform/execution-and-delivery.md) and [player experience](../../product/experience/principles.md) for what the client renders.
 
-| Layer | Status | Where |
-| --- | --- | --- |
-| F1–F15 acceptance clauses | **Target** (normative) | [§7 below](#7-required-f1f15-acceptance-contract) |
-| W01–W11, W13–W22 | **Done** | [changes queue](../../../work/changes/README.md); source [apps/web/README.md](../../../apps/web/README.md) |
-| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [STATUS](../../../STATUS.md#capability-coverage); product [play](../../product/experience/play-and-decisions.md) |
-| Admin `/control` | **Done** (AD04+) | [admin](../../product/admin/README.md) |
-| New frontend Changes | Only via [work/changes/README.md](../../../work/changes/README.md) | Not authorized by this target alone |
-
-This table is the delivery pointer. It is not the F1–F15 acceptance contract. Current source maps are the [web package](../../../apps/web/README.md). Demonstrated tiers for SSE and the presentation language are [capability coverage](../../../STATUS.md#capability-coverage).
-
-**Later selected visual-shell POC:** [Living Book client target](living-book-poc.md) may replace `StoryFrame` visual markup and in-book navigation while retaining **all** W-program Query, SSR, frozen-intent and privacy contracts below. No code or final art direction is accepted merely by this note.
-
-**Scope:** React 19, Next.js 16 App Router, `apps/web`, browser/SSR boundary, Nest-facing contracts and verification. **Purpose:** senior-engineering portfolio. **Excluded from this target’s authority:** inventing new game rules, live model spending, unrelated infrastructure. **Behavioral authority:** this page for the frontend target; [identity and access](../platform/identities-and-access.md) for sessions and membership; [story lifecycle](../engine/lifecycle-and-compatibility.md), [execution](../platform/execution-and-delivery.md), [player experience](../../product/experience/principles.md).
+The selected [Living Book client target](living-book-poc.md) may replace `StoryFrame` visual markup and in-book navigation while retaining **all** Query, SSR, frozen-intent and privacy contracts below. That target accepts no code or final art direction.
 
 **Read by exact question, not full file:** [SSR/provider](#2-tanstack-query-architecture-exact-operating-contract) (W02/W15) · [commands/reload](#3-command-error-and-recovery-contract) (W04/W09/W19) · [SSE/fallback](#4-end-to-end-update-transport-selected-not-future-conjecture) (W16/W17) · [RHF/components](#5-forms-components-and-accessibility) (W06/W08/W11) · [privacy/quality](#6-security-diagnostics-performance-and-proof) (W07/W12/W13/W14). The [15 compact acceptance clauses](#7-required-f1f15-acceptance-contract) are a quick normative index; **current source** lives in [web owner maps](../../../apps/web/README.md). A selected Change should link only its relevant heading.
 
@@ -56,7 +46,7 @@ This table is the delivery pointer. It is not the F1–F15 acceptance contract. 
 
 **Version policy:** keep existing pinned Next 16/React 19/Zod 4. Add the compatible *stable* major versions above, pin exact lockfile versions after installation and confirm compatibility on Node 24 with a successful build. Do not assert a particular future patch version without verification. Avoid experimental TanStack streaming package, React compiler auto-enablement and new client-state libraries. Native controls remain the default; accessible Radix-like primitives are permissible **only** for a genuinely complex control added under the later UI/UX target, not as a blanket rewrite.
 
-**No discretionary technology decisions left to Cursor:** it may choose local implementation details, but not substitute SWR/Redux, omit TanStack Query/RHF, invent Server Actions, replace SSE with WebSockets, broaden game authority or silently change retry/security semantics.
+**No discretionary technology decisions left to the implementer:** an implementation agent may choose local implementation details, but not substitute SWR/Redux, omit TanStack Query/RHF, invent Server Actions, replace SSE with WebSockets, broaden game authority or silently change retry/security semantics.
 
 ## 1. Desired data and rendering topology
 
@@ -156,6 +146,7 @@ Use `useInfiniteQuery` for stories, drafts and chronology, with typed per-resour
 - **Resolution/admitted expensive commands:** add a small, owner-scoped read-only Nest **operation receipt endpoint** (see W19); it reports the persisted operation identity/status and only authorized public fields. This is a frontend-supporting API contract, **not** game mechanic redesign.
 - Persist a **minimal nonsecret, versioned operation envelope with a fixed 24-hour TTL in sessionStorage**, keyed by authenticated viewer, story and operation ID, for commands needing same-key reload recovery (Play resolutions and Start). **Do not persist session secrets, private narrative, prompt bodies, arbitrary form prose or the Query cache.** If the original payload cannot safely be stored, store an operation reference and require receipt reconciliation; never invent a replacement intent.
 - On reload first GET the authoritative story/operation receipt, never POST automatically. Only an explicit user recovery control can reissue the *identical* frozen envelope after authorization/contract validation. If receipt absent/ambiguous, show a blocked/unknown state, not a new charge.
+- **Story launch (dated realization, source-observed, not proof of human UX):** the Stories-home launch form submits one Story Prompt as a `PUT` launch operation. `use-story-launch.ts` freezes the serialized request body and polls launch status at a 2-second cadence while the state is pending, preparing or composing. `story-launch-intent-store.ts` keeps a viewer-keyed, versioned operation pointer (operation ID and request hash, no prompt text) in `sessionStorage` with a 24-hour TTL. A missing server-side launch after reload yields a needs-input state ("Nothing was started") rather than an automatic resend. This follows the same rule as Start: reload reads first, and only an explicit user action may reissue the identical frozen envelope.
 - **Start:** keep `?story=UUID` as recovery anchor. Freeze candidate ID, draft revision, locked flag, speed and optional start package when first submitted. On reload GET `/api/stories/:storyId` first; only if not settled and still authorized may the original frozen Start envelope be offered for explicit same-body retry.
 - **Draft saves:** expected revision fence + captured submitted form values; GET latest draft on ambiguous response, preserve dirty edits. They are not equivalent to a charged Storyteller command.
 - **Generation:** explicit new request vs repeat admitted attempt. Existing `202` generation and provider-uncertain policy respected; no automatic second model dispatch.
@@ -163,9 +154,15 @@ Use `useInfiniteQuery` for stories, drafts and chronology, with typed per-resour
 
 ## 4. End-to-end update transport (selected, not future conjecture)
 
-**Selected contract, with a source-observed client:** authenticated SSE for committed story/version **invalidation hints**, plus HTTP GET reconciliation. `apps/web/src/features/play/use-story-live-updates.ts` and `src/shared/api/story-update-stream.ts` implement the browser half. Do not describe that client path as future or absent. Hosting, missed-event drills and production fan-out remain unclaimed here. Backend sends no private narrative in events. Use `EventSource` with same-origin cookie and server-side auth/object authorization, a bounded heartbeat, proper proxy streaming and disconnect cleanup. A server append/update emits a compact `{eventId,storyId,viewVersion,kind}` after commit. Use PostgreSQL transactional `LISTEN/NOTIFY` as the minimal cross-process hint source. This is not a durable replay or an additional business queue. Sessions remain [identity and access](../platform/identities-and-access.md).
+**Selected contract:** authenticated SSE carries committed story/version **invalidation hints**, and HTTP GET reconciliation establishes truth.
 
-**Client:** one SSE stream per actively viewed story; on opening/reconnect and newer hint invalidate the matching Query key, then fetch authoritative snapshot. Dedupe event/version hints and ignore wrong story/viewer; close on session/resource change. If stream unavailable, keep bounded, visibility-aware `2s` pending-status polling as a fallback; when SSE is healthy, use a slower **30s** reconciliation safety poll while pending, plus immediate focus/reconnect/visibility refresh. Backoff on repeated error, no query storm, no paid mutation from events. The final end-to-end suite must simulate a missed event and recover from GET. **No WebSockets, Redis Pub/Sub or RabbitMQ.** SSE is a frontend transport with a narrowly necessary Nest/DB notification addition, not gameplay implementation.
+- **Server side.** The backend sends no private narrative in events. After a committed append or update it emits a compact `{eventId,storyId,viewVersion,kind}`. PostgreSQL transactional `LISTEN/NOTIFY` is the minimal cross-process hint source. It is not a durable replay or an additional business queue. The stream uses same-origin cookie auth with server-side object authorization, a bounded heartbeat, proper proxy streaming and disconnect cleanup. Sessions remain [identity and access](../platform/identities-and-access.md).
+- **Client side.** One `EventSource` per actively viewed story. On opening, on reconnect and on a newer hint, invalidate the matching Query key and fetch the authoritative snapshot. Dedupe event/version hints, ignore a wrong story or viewer, and close on session or resource change.
+- **Fallback and cadence.** If the stream is unavailable, keep bounded, visibility-aware `2s` pending-status polling. When SSE is healthy, use a slower **30s** reconciliation safety poll while pending, plus immediate focus, reconnect and visibility refresh. Back off on repeated error. No query storm, and no paid mutation from events.
+- **Proof required.** The final end-to-end suite must simulate a missed event and recover from GET.
+- **Rejected transports.** No WebSockets, Redis Pub/Sub or RabbitMQ. SSE is a frontend transport with one narrowly necessary Nest/DB notification addition, not gameplay implementation.
+
+**Dated realization (source-observed):** the browser half exists in `apps/web/src/features/play/use-story-live-updates.ts` and `src/shared/api/story-update-stream.ts`; do not describe that client path as future or absent. Hosting, missed-event drills and production fan-out remain unclaimed here. The hint channel is narrow (a committed-view invalidation only), not full push, and reaches no device; device delivery is the [notifications](../platform/notifications.md) target.
 
 ## 5. Forms, components and accessibility
 
@@ -269,11 +266,21 @@ Measure initial HTML, client JS, hydration, request waterfalls, polling/SSE traf
 
 ## 9. Convergence, status and handoff
 
-The [Nov 12 audit](../../../research/legacy-audits/react-next-gap-2026-11-12.md) records the unchanged code baseline; [Change queue](../../../work/changes/README.md) governs the ordered implementation program and newly added stack-specific packets. The November 11/early-November-12 cautious proposal is **superseded as an architecture recommendation**, not deleted as historical evidence.
+**Selected handoff.** Owner direction resolved: adopt TanStack Query, the professional support stack, end-to-end quality and correctness rather than optimizing for the smallest source diff or the minimal dependency count. The architect chose the remaining decisions above, and the [Nov 12 audit](../../../research/legacy-audits/react-next-gap-2026-11-12.md) records the unchanged code baseline from which they were chosen. The November 11 and early-November-12 cautious proposal is **superseded as an architecture recommendation**, not deleted as historical evidence. This contract does not authorize a new code pass. An implementation agent follows only a selected Change from the [Change queue](../../../work/changes/README.md), never the whole area program in one uncontrolled diff. The "no change if source proves safe" outcome remains legitimate for an individual packet.
 
-**Owner direction resolved:** adopt TanStack Query, professional support stack, end-to-end quality and correctness rather than optimizing for smallest source diff or minimal dependency count. **The architect has chosen the remaining decisions above.** This contract is the selected frontend target. The W-program slices named above have landed. This page does not itself authorize a new code pass. Cursor follows only a selected Change, not the whole area program in one uncontrolled diff.
+**Exit rule:** for each F1–F15, attach a revision-specific evidence receipt (demonstrated, accepted design-only, or deliberately out-of-scope). An installed library, a green mock, a Storybook screenshot or a completed folder is not proof of engineering quality.
 
-**Exit rule:** for each F1–F15, attach an actual revision-specific evidence receipt (demonstrated / accepted design-only / deliberately out-of-scope); an installed library, a green mock, a Storybook screenshot or a completed folder is not proof of engineering quality.
+### Implementation status (W-program)
+
+**Dated realization, reconciled 2026-11-15; not target authority.** Current source maps are the [web package](../../../apps/web/README.md). Demonstrated tiers for SSE and the presentation language are in [capability coverage](../../../STATUS.md#capability-coverage). The table is a delivery pointer, not the F1–F15 acceptance contract.
+
+| Layer | Status | Where |
+| --- | --- | --- |
+| F1–F15 acceptance clauses | **Target** (normative) | [§7 below](#7-required-f1f15-acceptance-contract) |
+| W01–W11, W13–W22 | **Done** | [changes queue](../../../work/changes/README.md); source [apps/web/README.md](../../../apps/web/README.md) |
+| UX01–UX12 / PX / PF | **Done** (portfolio UI; human UX not fully validated) | [STATUS](../../../STATUS.md#capability-coverage); product [play](../../product/experience/play-and-decisions.md) |
+| Admin `/control` | **Done** (AD04+) | [admin](../../product/admin/README.md) |
+| New frontend Changes | Only via [work/changes/README.md](../../../work/changes/README.md) | Not authorized by this target alone |
 
 ## 10. Professional references
 
