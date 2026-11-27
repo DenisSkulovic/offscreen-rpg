@@ -58,3 +58,16 @@ Ledger outcomes (all headings retained; no heading renamed or removed):
 - Checks: `git diff --check` clean; `python3 scripts/check_docs.py` 96 problems, identical to baseline; `docs-health.mjs` identical to baseline (3 violations). Link health is not semantic proof. Runtime, human walkthrough and joint acceptance NOT RUN.
 - Transfer facts: product-side facts preserved in place (demo manual-time/reset/no-provider; current POC route/preset/scripted observe; terminal paragraph; fork/checkpoint implementation notes). PD07 removes them only after TD06 lands on main.
 - Deferred findings: Low, `return-and-journal.md` fork conditions delegated to technical Forked continuities (that owner); Low, `entry-and-onboarding.md` POC section anchors to source routes that will move when TD06 lands (group register, custodian).
+
+## Reconstruction pass (R2)
+
+Why: the first pass (`7bcfc9bea`) mostly added status labels to five pages. R2 restructures them. Page commit `b7bfece4a`.
+
+- T01 presentation.md: the three label sub-headings under Product promises became three plain promises; the C3 gate now states the selected contract (color not sole carrier, focus independent of scene styling, deterministic fallback) apart from the PX realization note and the no-human-validation claim.
+- T03 play-and-decisions.md: Negatives/Current POC labels folded into Choosing; duplicated illustration sentence replaced with a link to Presentation; duplicate "no required number of choices" bullet removed; Waiting rewritten as one statement; terminal section split into the selected contract (same authority, nested options, operation identity, device pairing, `player-story` scope, `--json`) and implementation notes with proof state.
+- T04 living-book-poc.md: duplicate status paragraph merged into one Status opening; Journal reach rewritten as the honesty contract; walkthrough restructured into numbered procedure, fail criteria and NOT RUN state. design-system-and-expression.md: label paragraphs folded into State and the vocabulary intro; duplicate palette and Welcome/Stories/Create sentences consolidated. settings-and-accessibility.md: accessibility independence stated once, linked to Visual hierarchy item 5.
+- Pure dash/quote/apostrophe normalisation reverted in principles, entry-and-onboarding, navigation-and-stories.
+- Survival check: all facts, numbers, `/demo`, POC route/preset/observe, terminal and fork notes, anchors survive; removed text were duplicates with named survivors.
+- Checks: `git diff --check` clean; check_docs 96 problems and docs-health 3 violations, identical to baseline. Link health is not semantic proof.
+- Semantic answers: Demo time is not game time (principles, Demo vs live); a decorative scene never overrides system status (presentation, Product promises; design-system, Visual hierarchy); POC acceptance does not establish final UX and the walkthrough is NOT RUN (living-book-poc, Human POC acceptance walkthrough); a locked campaign never removes accessibility (settings, Player settings); reload does not resend a stale offer (play-and-decisions, Denied, waiting, error, lost connection, and a stale offer).
+- Deferred Low: accessibility bullets in settings-and-accessibility.md are unchanged; destination PD07 or the page itself.
