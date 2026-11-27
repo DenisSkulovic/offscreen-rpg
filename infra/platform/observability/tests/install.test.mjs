@@ -117,6 +117,7 @@ function makeEnsureDeps(options = {}) {
   /** @type {{ command: string, args: string[] }[]} */
   const calls = options.calls ?? [];
   const outputs = options.outputs ?? [];
+  const pendingWrites = [];
   let clock = 0;
   const complete = snapshotForPhases([
     'namespace',
@@ -177,20 +178,29 @@ function makeEnsureDeps(options = {}) {
     cancel() {
       this.cancelled = true;
     },
-    begin() {},
-    advance() {},
+    begin(record) { pendingWrites.push(structuredClone(record)); },
+    advance(record) { pendingWrites.push(structuredClone(record)); },
     clear() {},
     close() {},
   };
 
   return {
+    pendingWrites,
     verifyArchive: false,
     now: () => clock,
     captureIdentity: async () => identity,
     acquireCustody: async () => custody,
     readPending: () => ({ pending: false, valid: true }),
     collectInventorySnapshot: () => stages[Math.min(phase, stages.length - 1)],
-    recheckIdentity: () => ({ ok: true }),
+    recheckIdentity: (bound, { expectedNamespaceUid }) => {
+      const observed = stages[Math.min(phase, stages.length - 1)].namespace;
+      const uid = observed.absent ? null : observed.uid;
+      return {
+        ok: expectedNamespaceUid === uid &&
+          bound.tuple.targetNamespaceUid === uid,
+        reason: 'namespace-uid-changed',
+      };
+    },
     runMutation: async (command, args) => {
       calls.push({ command, args: args.slice() });
       if (
@@ -536,4 +546,48 @@ test('plan and status stay read-only', async () => {
   );
   assert.equal(receipt.reasonCode, 'context-mismatch');
   assert.equal(receipt.mutation, 'none');
+});
+
+test('fresh ensure binds namespace UID before secret and persists it under custody', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps();
+    const result = await runObservabilityEnsure('dev', devKind.contextName, deps);
+    assert.equal(result.ok, true);
+    const uid = snapshotForPhases(['namespace']).namespace.uid;
+    assert.equal(deps.pendingWrites[0].tuple.targetNamespaceUid, null);
+    assert.equal(deps.pendingWrites[1].phase, 'namespace');
+    assert.equal(deps.pendingWrites[1].tuple.targetNamespaceUid, uid);
+    assert.equal(deps.pendingWrites[2].phase, 'secret');
+    assert.ok(deps.pendingWrites.slice(1).every(row => row.tuple.targetNamespaceUid === uid));
+    assert.ok(deps.calls[0].args.includes('create'));
+    assert.ok(deps.calls[1].args.includes('create'));
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+  }
+});
+
+test('replacement namespace after binding prevents secret creation', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps();
+    const check = deps.recheckIdentity;
+    let checks = 0;
+    deps.recheckIdentity = (identity, options) => {
+      checks += 1;
+      if (checks === 3) return { ok: false, reason: 'namespace-uid-changed' };
+      return check(identity, options);
+    };
+    const result = await runObservabilityEnsure('dev', devKind.contextName, deps);
+    assert.equal(result.ok, false);
+    assert.equal(result.reasonCode, 'identity-changed');
+    assert.equal(result.pending, true);
+    assert.equal(deps.calls.length, 1);
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+  }
 });
