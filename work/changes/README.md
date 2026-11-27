@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-**Documentation renewal E1:** [product](open/product-documentation-renewal/README.md) and [technical](open/technical-documentation-renewal/README.md) — both owner-accepted for planning; first detailed packets PD01, PD03, TD01 Proposed, remaining current-sprint partitions in group registers. No readiness verdict, commission, queue or branch change.
+**Documentation renewal E1:** [product](open/product-documentation-renewal/README.md) and [technical](open/technical-documentation-renewal/README.md) — both owner-accepted for planning; eight detailed packets PD01/02/03/05 and TD01/03/04/05 Proposed; remaining current-sprint partitions in group registers. No readiness verdict, commission, queue or branch change.
 
 [Agent Core E1](open/agent-core-monorepo-map/README.md) — eight current-sprint Changes; final independent READY (all eight) and owner-commissioned for construction/assigned offline proof. Live qualification and final main integration remain held. Grouped workspace compatibility, synthetic-only runtime, joint qualification on `implementation/agent-core-monorepo-map`.
 
