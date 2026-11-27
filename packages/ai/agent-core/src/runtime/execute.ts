@@ -31,7 +31,7 @@ function denied(code: string): MissionOutcomeV1 {
 
 function safeLog(event: string, summary: ReturnType<typeof summarizeMission>): void {
   try {
-    log.info(event, summary);
+    log.info(event, { ...summary });
   } catch {
     // Logging must not change the mission result.
   }

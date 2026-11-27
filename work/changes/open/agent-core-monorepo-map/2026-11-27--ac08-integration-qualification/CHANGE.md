@@ -1,6 +1,6 @@
 # AC08 | Maintained runtime qualification and E1 joint acceptance
 
-**State:** READY (dependency-gated); owner-commissioned
+**State:** IMPLEMENTED — source gate passed; joint acceptance NOT RUN
 
 **Kind:** implementation
 
@@ -35,6 +35,6 @@ Owner-commissioned: linked Change worktree from latest verified `implementation/
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/technical/platform/agent-core.md#residual-e1-proof-not-yet-run-for-maintained-source | technical | unchanged selected contract; source realizes assigned portion | pending implementation receipt | NOT RUN | assigned in PROOF | named durable owner at closure |
-| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain changes authorized | pending diff inspection | no production exposure | no product change |
-| packages/README.md / affected README | related | reconcile actual source and proof standing only | pending implementation receipt | NOT RUN | no unsupported claims | closure receipt |
+| docs/technical/platform/agent-core.md findings | technical | unchanged contract; status now records offline pass and live NOT RUN | AC08 worktree after source edits | offline PASS; live NOT RUN | no provider or cluster call | technical owner updated |
+| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain behavior edits | source-inspected | no production exposure | no product change |
+| packages/README.md / package README / repo-tools README | related | status only: build and offline tests passed; joint proof open | same worktree | offline PASS; joint NOT RUN | module-graph still has the pre-existing story-engine writer import | READMEs updated |

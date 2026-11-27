@@ -17,11 +17,7 @@ function stableError(code: string): Error {
 
 function cancellationObserved(error?: unknown): boolean {
   const scope = CancellationScope.current();
-  return (
-    scope.consideredCancelled ||
-    scope.cancelRequested ||
-    (error !== undefined && isCancellation(error))
-  );
+  return scope.consideredCancelled || (error !== undefined && isCancellation(error));
 }
 
 /**
