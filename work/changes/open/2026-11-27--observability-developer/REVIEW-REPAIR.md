@@ -26,3 +26,5 @@ Repair 10 (7041a3a36c493cfe2113cf2df0f47cc653b45103): consolidated numerical rep
 Repair 11 (a9402d66e7fb29ee80d57ba428598e4dd765d385): reject unnecessary concurrent inventory redesign; retain 120s complete aggregate cap subject to timing evidence, preserve all prefix checks, recompute gate sums, identify A9 as separately blocked by actual child cap. Candidate only; F08 open, no live or commission.
 
 Repair 12 (3f0517c88533046b8118fd4976fb991067c7fb02): selected universal bounded outer Helm cap candidate, exact inherited-lock read-only intent adapter, wrapper subprocess/FD/phase/receipt constraints and developer missing evidence route. A9 cap requires ratification; exact read-only argv census and pinned metric label/timestamp evidence still open. No source execution or commission.
+
+Repair13: freeze exact template/list/history/manifest/install argv arrays and read-only pre-pending snapshot binding; correct tentative metric labels for explicitly configured resource promotion. Actual rendered config/label fixture and pinned timestamp horizon still open, no tests/live.
