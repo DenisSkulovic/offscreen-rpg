@@ -319,11 +319,11 @@ function attachPersistencePodInventory(observation, podUids = {}) {
     phase: 'Running',
     conditions: [{ type: 'Ready', status: 'True' }],
   };
-  objects['Pod/obs-prometheus-0'] = {
+  objects['Pod/obs-prometheus-6d4f8c9b7-k9x2p'] = {
     kind: 'Pod',
     metadata: {
       uid: active['Deployment/obs-prometheus'],
-      name: 'obs-prometheus-0',
+      name: 'obs-prometheus-6d4f8c9b7-k9x2p',
       ownerReferences: [
         { kind: 'ReplicaSet', name: 'obs-prometheus-rs', uid: 'rs-prom' },
       ],
@@ -341,11 +341,11 @@ function attachPersistencePodInventory(observation, podUids = {}) {
     },
     status: readyStatus,
   };
-  objects['Pod/obs-grafana-0'] = {
+  objects['Pod/obs-grafana-6d4f8c9b7-m3q8w'] = {
     kind: 'Pod',
     metadata: {
       uid: active['Deployment/obs-grafana'],
-      name: 'obs-grafana-0',
+      name: 'obs-grafana-6d4f8c9b7-m3q8w',
       ownerReferences: [
         { kind: 'ReplicaSet', name: 'obs-grafana-rs', uid: 'rs-grafana' },
       ],

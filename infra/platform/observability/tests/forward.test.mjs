@@ -22,6 +22,7 @@ import test from 'node:test';
 import { createServer } from 'node:net';
 
 import { parseConnectArgs, runObservabilityConnect, superviseObservabilityConnect } from '../connect.mjs';
+import { PREFLIGHT_BUDGET_MS } from '../identity.mjs';
 import {
   FORWARD_ALLOWLIST,
   ownedChildEnv,
@@ -566,4 +567,74 @@ test('connect supervision stops on a premature child and on SIGINT', async () =>
     bindings.map((row) => row.key),
     ['developerHttp', 'developerGrpc', 'grafana'],
   );
+});
+
+test('session recheck calls now and credential failure releases children', async () => {
+  let deadline = null;
+  const checked = await superviseObservabilityConnect(
+    {
+      ok: true,
+      failure: new Promise(() => {}),
+      cleanup: async () => ({ ok: true }),
+      held: { close() {} },
+      identity,
+      profileContext: 'dev',
+    },
+    {
+      intervalMs: 1,
+      now: () => 5_000,
+      readPending: () => ({ pending: false, valid: true }),
+      recheckIdentity: (_identity, deps) => {
+        deadline = deps.deadline;
+        return { ok: false };
+      },
+    },
+  );
+  assert.equal(checked, 1);
+  assert.equal(deadline, 5_000 + PREFLIGHT_BUDGET_MS);
+
+  let closed = false;
+  let cleaned = false;
+  let heldClosed = false;
+  const failed = await runObservabilityConnect({
+    argv: [],
+    readPlatformProfile: () => ({ contextName: 'dev' }),
+    acquireCustody: async () => ({
+      fd: 3,
+      mode: 'shared',
+      close() {
+        heldClosed = true;
+      },
+    }),
+    captureIdentity: () => ({
+      ...identity,
+      cleanup() {
+        cleaned = true;
+        return { ok: true };
+      },
+    }),
+    recheckIdentity: () => ({ ok: true }),
+    loadObservabilityVariants: () => ({ desired: { releases: [] }, predecessor: null }),
+    collectInventory: async () => ({
+      pending: false,
+      objects: { 'Secret/obs-grafana-admin': { metadata: { uid: 'uid-grafana' } } },
+    }),
+    classifyInventory: () => ({ state: 'ready', reasonCode: 'ready', pending: false }),
+    openForwards: async () => ({
+      ports: { developerHttp: 1, developerGrpc: 2, grafana: 3 },
+      failure: new Promise(() => {}),
+      close: async () => {
+        closed = true;
+        return { ok: true };
+      },
+    }),
+    readGrafanaAdmin: async () => {
+      throw Object.assign(new Error('credential'), { reasonCode: 'credential' });
+    },
+  });
+  assert.equal(failed.ok, false);
+  assert.equal(failed.reasonCode, 'credential');
+  assert.equal(closed, true);
+  assert.equal(cleaned, true);
+  assert.equal(heldClosed, true);
 });

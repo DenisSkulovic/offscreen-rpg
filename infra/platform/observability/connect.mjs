@@ -91,6 +91,35 @@ export async function runObservabilityConnect(deps = {}) {
     stateRoot: deps.stateRoot,
   });
   let identity;
+  /** @type {{ close?: () => Promise<{ ok?: boolean }> } | null} */
+  let opened = null;
+  const releaseAttempt = async () => {
+    let cleanup = { ok: true };
+    if (opened?.close) {
+      try {
+        cleanup = (await opened.close()) ?? { ok: true };
+      } catch {
+        cleanup = { ok: false };
+      }
+      opened = null;
+    }
+    if (identity?.cleanup) {
+      try {
+        const cleaned = identity.cleanup();
+        if (cleaned?.ok === false) {
+          cleanup = { ok: false };
+        }
+      } catch {
+        cleanup = { ok: false };
+      }
+    }
+    try {
+      await held.close?.();
+    } catch {
+      cleanup = { ok: false };
+    }
+    return cleanup;
+  };
   try {
     identity = (deps.captureIdentity ?? captureIdentity)('dev', profile.contextName, {
       run: deps.run ?? runPlatformCommand,
@@ -103,7 +132,7 @@ export async function runObservabilityConnect(deps = {}) {
       predecessorArtifacts: variants.predecessor ?? null,
     });
     if (classified.reasonCode !== 'ready' || classified.pending === true || classified.state !== 'ready') {
-      await held.close?.();
+      await releaseAttempt();
       return {
         ok: false,
         reasonCode: classified.reasonCode ?? 'not-ready',
@@ -119,11 +148,11 @@ export async function runObservabilityConnect(deps = {}) {
       expectedNamespaceUid: identity.tuple?.targetNamespaceUid,
     });
     if (!checked.ok) {
-      await held.close?.();
+      await releaseAttempt();
       return { ok: false, reasonCode: 'identity', ports: null, cleanup: null, exitCode: 1 };
     }
     const bindings = [...PUBLIC_KEYS, ...(args.queries ? QUERY_KEYS : [])].map((key) => ({ key }));
-    const opened = await (deps.openForwards ?? openForwards)(
+    opened = await (deps.openForwards ?? openForwards)(
       identity,
       { ...held, mode: held.mode ?? 'shared', pending: false },
       {
@@ -149,23 +178,25 @@ export async function runObservabilityConnect(deps = {}) {
       connect: deps.connect ?? connectLoopback,
     });
     if (!transport.ok) {
-      const cleanup = await opened.close();
-      await held.close?.();
-      return { ok: false, reasonCode: transport.reasonCode, ports: opened.ports, cleanup, exitCode: 1 };
+      const ports = opened.ports;
+      const cleanup = await releaseAttempt();
+      return { ok: false, reasonCode: transport.reasonCode, ports, cleanup, exitCode: 1 };
     }
+    const connected = opened;
+    opened = null;
     return {
       ok: true,
       reasonCode: 'connected',
-      ports: opened.ports,
-      cleanup: opened.close,
+      ports: connected.ports,
+      cleanup: connected.close,
       exitCode: 0,
       held,
       identity,
       profileContext: profile.contextName,
-      failure: opened.failure,
+      failure: connected.failure,
     };
   } catch (error) {
-    await held.close?.();
+    await releaseAttempt();
     return {
       ok: false,
       reasonCode: error.reasonCode ?? 'connect',
@@ -208,7 +239,7 @@ async function checkSession(session, deps) {
   const recheck = (deps.recheckIdentity ?? recheckIdentity)(session.identity, {
     run: deps.run ?? runPlatformCommand,
     now,
-    deadline: now + PREFLIGHT_BUDGET_MS,
+    deadline: now() + PREFLIGHT_BUDGET_MS,
     expectedNamespaceUid: session.identity?.tuple?.targetNamespaceUid,
   });
   if (!recheck?.ok) {

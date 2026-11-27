@@ -341,8 +341,66 @@ function expectedHelmChartRef(release) {
  * @param {object} snapshot
  * @param {ReturnType<typeof loadArtifacts>} artifacts
  */
+/**
+ * Dev collector revision 2 keeps the superseded revision-1 Secret beside the deployed revision.
+ *
+ * @param {object} snapshot
+ * @param {ReturnType<typeof loadArtifacts>} artifacts
+ */
+function upgradedDevCollectorRetention(snapshot, artifacts) {
+  if (artifacts.profile?.id !== 'dev') {
+    return { mode: 'none' };
+  }
+  const release = (snapshot.helmReleases ?? []).find((row) => row.name === 'obs-collector');
+  if (String(release?.revision) !== '2' || release?.status !== 'deployed') {
+    return { mode: 'none' };
+  }
+  const history = snapshot.helmHistory?.['obs-collector'];
+  if (
+    !Array.isArray(history) ||
+    history.length !== 2 ||
+    String(history[0]?.revision) !== '1' ||
+    history[0]?.status !== 'superseded' ||
+    String(history[1]?.revision) !== '2' ||
+    history[1]?.status !== 'deployed'
+  ) {
+    return { mode: 'reject', detail: 'helm-storage-history' };
+  }
+  return {
+    mode: 'retain',
+    retained: 'sh.helm.release.v1.obs-collector.v1',
+    deployed: 'sh.helm.release.v1.obs-collector.v2',
+  };
+}
+
+/**
+ * @param {object} object
+ * @param {string | undefined} namespace
+ * @param {string} releaseName
+ * @param {string} revision
+ * @param {string} status
+ */
+function helmStorageMetadataMatches(object, namespace, releaseName, revision, status) {
+  const labels = object.metadata?.labels ?? {};
+  return (
+    object.metadata?.namespace === namespace &&
+    typeof object.metadata?.uid === 'string' &&
+    !isTerminating(object.metadata) &&
+    object.type === 'helm.sh/release.v1' &&
+    (object.dataKeys ?? []).includes('release') &&
+    labels.owner === 'helm' &&
+    labels.name === releaseName &&
+    String(labels.version) === revision &&
+    labels.status === status
+  );
+}
+
 function verifyHelmStorageBijection(snapshot, artifacts) {
   const namespace = artifacts.profile?.namespaces?.observability;
+  const retention = upgradedDevCollectorRetention(snapshot, artifacts);
+  if (retention.mode === 'reject') {
+    return { ok: false, detail: retention.detail };
+  }
   const expected = new Map();
   for (const row of snapshot.helmReleases ?? []) {
     const revision = Number.parseInt(String(row.revision), 10);
@@ -350,6 +408,9 @@ function verifyHelmStorageBijection(snapshot, artifacts) {
       return { ok: false, detail: 'helm-storage-revision' };
     }
     expected.set(row.name, `sh.helm.release.v1.${row.name}.v${revision}`);
+  }
+  if (retention.mode === 'retain') {
+    expected.set('obs-collector-retained', retention.retained);
   }
   const observed = new Set();
   for (const object of Object.values(snapshot.objects ?? {})) {
@@ -372,6 +433,16 @@ function verifyHelmStorageBijection(snapshot, artifacts) {
     }
     if (!(object.dataKeys ?? []).includes('release')) {
       return { ok: false, detail: 'helm-storage-data-keys' };
+    }
+    if (retention.mode === 'retain' && name === retention.retained) {
+      if (!helmStorageMetadataMatches(object, namespace, 'obs-collector', '1', 'superseded')) {
+        return { ok: false, detail: 'helm-storage-metadata' };
+      }
+    }
+    if (retention.mode === 'retain' && name === retention.deployed) {
+      if (!helmStorageMetadataMatches(object, namespace, 'obs-collector', '2', 'deployed')) {
+        return { ok: false, detail: 'helm-storage-metadata' };
+      }
     }
     observed.add(name);
   }

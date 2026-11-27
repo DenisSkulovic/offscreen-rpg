@@ -42,6 +42,62 @@ export function relaySha256(artifacts) {
 }
 
 /**
+ * Active backend Pod owned by the live workload.
+ * Deployments resolve Deployment → ReplicaSet → Pod. Names are never inferred.
+ *
+ * @param {Record<string, object>} objects
+ * @param {'Deployment' | 'StatefulSet'} kind
+ * @param {string} workloadName
+ */
+function activeBackendPodUid(objects, kind, workloadName) {
+  const workload = objects[`${kind}/${workloadName}`];
+  const workloadUid = workload?.metadata?.uid;
+  if (typeof workloadUid !== 'string') {
+    return null;
+  }
+  /** @type {string[]} */
+  const uids = [];
+  for (const object of Object.values(objects)) {
+    if (object?.kind !== 'Pod' || object.metadata?.deletionTimestamp != null) {
+      continue;
+    }
+    const owners = object.metadata?.ownerReferences ?? [];
+    if (owners.length !== 1) {
+      continue;
+    }
+    const owner = owners[0];
+    if (typeof owner?.uid !== 'string' || typeof owner?.name !== 'string') {
+      continue;
+    }
+    let owned = false;
+    if (kind === 'StatefulSet') {
+      owned =
+        owner.kind === 'StatefulSet' &&
+        owner.name === workloadName &&
+        owner.uid === workloadUid;
+    } else if (owner.kind === 'ReplicaSet') {
+      const replicaSet = objects[`ReplicaSet/${owner.name}`];
+      const replicaOwners = replicaSet?.metadata?.ownerReferences ?? [];
+      const replicaOwner = replicaOwners.length === 1 ? replicaOwners[0] : null;
+      owned =
+        replicaSet?.metadata?.uid === owner.uid &&
+        replicaSet?.metadata?.deletionTimestamp == null &&
+        replicaOwner?.kind === 'Deployment' &&
+        replicaOwner?.name === workloadName &&
+        replicaOwner?.uid === workloadUid;
+    }
+    const podUid = object.metadata?.uid;
+    if (owned && typeof podUid === 'string') {
+      uids.push(podUid);
+    }
+  }
+  if (uids.length !== 1) {
+    return null;
+  }
+  return uids[0];
+}
+
+/**
  * @param {object} snapshot
  * @param {ReturnType<typeof loadObservabilityVariants>['desired']} artifacts
  */
@@ -105,7 +161,7 @@ export function projectUpgradePreservation(snapshot, artifacts) {
     backends[release.role] = {
       direct,
       workloadUid: objects[`${kind}/${workloadName}`]?.metadata?.uid ?? null,
-      podUid: objects[`Pod/${workloadName}-0`]?.metadata?.uid ?? null,
+      podUid: activeBackendPodUid(objects, kind, workloadName),
       serviceUids: direct.filter((row) => row.kind === 'Service').map((row) => row.uid),
       revision,
       helmSecretUid: secret?.metadata?.uid ?? null,
@@ -221,7 +277,7 @@ export function upgradeHistoryPreserved(before, after) {
   ) {
     return false;
   }
-  if (retainedObject != null && retainedObject !== previous) {
+  if (retainedObject == null || retainedObject !== previous) {
     return false;
   }
   const beforeHistory = before.helmHistory?.['obs-collector'];
@@ -376,9 +432,6 @@ export function helmUpgradeArgv(identity, release) {
 }
 
 /**
- * @param {object} [deps]
- */
-/**
  * @param {object} snapshot
  */
 function collectorRevision(snapshot) {
@@ -401,21 +454,29 @@ function confirmIdentity(identity, deps) {
   });
 }
 
+const INVENTORY_PHASE_MS = 120_000;
+
+/**
+ * Fresh inventory budget for one observation. The upgrade's earlier phases do not consume it.
+ *
+ * @param {() => number} now
+ */
+export function inventoryObservationDeadline(now) {
+  return now() + INVENTORY_PHASE_MS;
+}
+
 /**
  * @param {object} identity
  * @param {object} artifacts
  * @param {object} deps
- * @param {number} started
+ * @param {number} _started
  */
-function collectObserved(identity, artifacts, deps, started) {
+function collectObserved(identity, artifacts, deps, _started) {
   if (deps.collectInventory) {
     return deps.collectInventory(identity, artifacts);
   }
   const now = deps.now ?? (() => Date.now());
-  const deadline = Math.min(
-    deps.deadline ?? now() + 120_000,
-    started + 120_000,
-  );
+  const deadline = inventoryObservationDeadline(now);
   const snapshot = collectInventory(identity, artifacts, {
     run: deps.observeRun ?? runPlatformCommand,
     now,
@@ -607,11 +668,6 @@ export async function runObservabilityUpgrade(deps = {}) {
       ) {
         return fenced('not-ready');
       }
-      const afterMutation = confirmIdentity(identity, deps);
-      if (!afterMutation?.ok) {
-        return fenced('unreadable');
-      }
-      custody.assertOwnPending();
       if (deps.failTransport === true) {
         return fenced('phase-failed');
       }
@@ -642,6 +698,10 @@ export async function runObservabilityUpgrade(deps = {}) {
         if (!probe?.ok) {
           return fenced('phase-failed');
         }
+      }
+      const afterMutation = confirmIdentity(identity, deps);
+      if (!afterMutation?.ok) {
+        return fenced('unreadable');
       }
       custody.assertOwnPending();
       custody.clear();

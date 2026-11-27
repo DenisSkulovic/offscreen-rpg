@@ -297,6 +297,27 @@ export function buildCompleteDevSnapshot(artifacts, options = {}) {
     };
   }
 
+  if (collectorRevision === 2) {
+    const retainedName = 'sh.helm.release.v1.obs-collector.v1';
+    objects[`Secret/${retainedName}`] = {
+      kind: 'Secret',
+      metadata: {
+        name: retainedName,
+        namespace: NS,
+        uid: 'uid-helm-obs-collector-v1',
+        labels: {
+          owner: 'helm',
+          name: 'obs-collector',
+          status: 'superseded',
+          version: '1',
+        },
+      },
+      type: 'helm.sh/release.v1',
+      dataKeys: ['release'],
+      hasValues: true,
+    };
+  }
+
   for (const release of liveArtifacts.releases) {
     const role = release.role;
     const expectedImage = release.expectedImage;
@@ -315,7 +336,7 @@ export function buildCompleteDevSnapshot(artifacts, options = {}) {
     let podOwnerName = workloadName;
 
     if (kind === 'Deployment') {
-      const rsName = `${workloadName}-rs`;
+      const rsName = `${workloadName}-6d4f8c9b7`;
       const rsUid = `uid-${rsName}`;
       uids[rsName] = rsUid;
       objects[`ReplicaSet/${rsName}`] = {
@@ -344,7 +365,8 @@ export function buildCompleteDevSnapshot(artifacts, options = {}) {
       podOwner = workload;
     }
 
-    const podName = `${workloadName}-0`;
+    const podName =
+      kind === 'Deployment' ? `${podOwnerName}-k9x2p` : `${workloadName}-0`;
     const podUid = `uid-pod-${workloadName}`;
     objects[`Pod/${podName}`] = {
       kind: 'Pod',

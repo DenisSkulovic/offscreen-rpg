@@ -10,8 +10,10 @@ import { acquireCustody, readPending } from '../custody.mjs';
 import {
   exitCodeForUpgrade,
   helmUpgradeArgv,
+  inventoryObservationDeadline,
   projectUpgradePreservation,
   runObservabilityUpgrade,
+  upgradeHistoryPreserved,
 } from '../upgrade.mjs';
 import {
   buildCompleteDevSnapshot,
@@ -309,4 +311,80 @@ test('changed preservation, missing inventory, wrong forwards and failed cleanup
   assert.equal(unclean.ok, false);
   assert.equal(unclean.pending, true);
   assert.equal(unclean.mutation, 'possible');
+});
+
+test('backend pod identity follows the live owner chain', () => {
+  const snapshot = buildCompleteDevSnapshot(variants.desired);
+  const preserved = projectUpgradePreservation(snapshot, variants.desired);
+  assert.equal(typeof preserved?.backends?.prometheus?.podUid, 'string');
+  assert.equal(
+    Object.keys(snapshot.objects).some((key) => key === 'Pod/obs-prometheus-0'),
+    false,
+  );
+
+  const assumed = cloneSnapshot(snapshot);
+  for (const [key, object] of Object.entries(assumed.objects)) {
+    if (object.kind === 'Pod' && object.metadata?.name?.startsWith('obs-prometheus-')) {
+      delete assumed.objects[key];
+    }
+  }
+  assumed.objects['Pod/obs-prometheus-0'] = {
+    kind: 'Pod',
+    metadata: { name: 'obs-prometheus-0', namespace: profile.namespaces.observability, uid: 'uid-assumed' },
+  };
+  assert.equal(projectUpgradePreservation(assumed, variants.desired), null);
+
+  const ambiguous = cloneSnapshot(snapshot);
+  const livePod = Object.values(ambiguous.objects).find(
+    (object) => object.kind === 'Pod' && object.metadata?.name?.startsWith('obs-prometheus-'),
+  );
+  ambiguous.objects['Pod/obs-prometheus-6d4f8c9b7-other'] = structuredClone(livePod);
+  ambiguous.objects['Pod/obs-prometheus-6d4f8c9b7-other'].metadata.name =
+    'obs-prometheus-6d4f8c9b7-other';
+  ambiguous.objects['Pod/obs-prometheus-6d4f8c9b7-other'].metadata.uid = 'uid-other-pod';
+  assert.equal(projectUpgradePreservation(ambiguous, variants.desired), null);
+});
+
+test('collector revision 1 storage identity stays required after upgrade', () => {
+  const before = buildPredecessorDevSnapshot(variants.desired, variants.predecessor);
+  const after = buildUpgradedDevSnapshot(variants.desired, variants.predecessor);
+  assert.equal(upgradeHistoryPreserved(before, after), true);
+  const dropped = cloneSnapshot(after);
+  delete dropped.objects['Secret/sh.helm.release.v1.obs-collector.v1'];
+  assert.equal(upgradeHistoryPreserved(before, dropped), false);
+  const replaced = cloneSnapshot(after);
+  replaced.objects['Secret/sh.helm.release.v1.obs-collector.v1'].metadata.uid = 'uid-replaced';
+  assert.equal(upgradeHistoryPreserved(before, replaced), false);
+});
+
+test('each inventory observation receives a fresh phase deadline', () => {
+  assert.equal(inventoryObservationDeadline(() => 1_000), 121_000);
+  assert.equal(inventoryObservationDeadline(() => 500_000), 620_000);
+});
+
+test('identity is rechecked after transport closure and before clear', async () => {
+  const predecessor = buildPredecessorDevSnapshot(variants.desired, variants.predecessor);
+  const upgraded = buildUpgradedDevSnapshot(variants.desired, variants.predecessor);
+  const order = [];
+  const receipt = await harness(predecessor, {
+    next: upgraded,
+    runMutation: async () => ({ ok: true }),
+    deps: {
+      openForwards: async () => ({
+        ports: { developerHttp: 14318 },
+        failure: new Promise(() => {}),
+        close: async () => {
+          order.push('close');
+          return { ok: true };
+        },
+      }),
+      probeForwardTransport: async () => ({ ok: true }),
+      recheckIdentity: () => {
+        order.push('recheck');
+        return { ok: true };
+      },
+    },
+  }).run();
+  assert.equal(receipt.ok, true);
+  assert.deepEqual(order.slice(-2), ['close', 'recheck']);
 });
