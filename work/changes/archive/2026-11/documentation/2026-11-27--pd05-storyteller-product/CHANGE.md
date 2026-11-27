@@ -45,3 +45,15 @@ Semantic negatives (answered from rewritten text):
 Transfer to TD05 (versioned-settings Current adapters): product facts preserved in place; PD07 removes them only after the technical successor is on main.
 
 Deferred findings: none beyond the unlocated 20-revision source anchor (Low; destination: group register, custodian).
+
+## Reconstruction pass (R2)
+
+Why: the first pass (38790b75e) mostly inserted status labels and disclaimers; this pass executes the card Algorithms. Page commit: `7d628516f`.
+
+- T01 behavior-and-quality: Role, What it may do, What it must not do and Investigative writing consolidated (shared lead-in; freedoms now cross-link to Narrative initiative, promotion and Investigative writing instead of repeating them; the unsupported "whole constitution" and "no prompt can lift" claims removed, replaced by the supported "profile, temperature or tier changes voice and depth, not these limits"). Two opening labels merged into one Owns/evidence paragraph. Abandoned-route negative now stated once in full (Selected solo proof boundary), linked from reading 3.
+- T02 memory-and-continuity: opening rewritten around branch scope, current canon vs inspectable past, promotion and active-scene attachment; the "Status of this page" bullets folded into one prose paragraph (tiers, 2026-11-14, evidence limits, Cognee, cost).
+- T03 profiles-and-settings: opening merged (intro, selected contract, neutrality, companion note with date); Changes during play reorganised into captured-settings rules; lock paragraph separated from "a lock is not anti-cheat or permadeath"/Ironman; Current implementation boundary split into editor, offline narrator, tags and not-yet-exposed, TD05 facts verbatim (16 tags, four snippets, 20 revisions). Server-side lock verified in story-engine campaign/settings.ts (state.locked rejects update); 20-revision limit verified.
+- Survival check: PASS against the fact inventory; sections already correct and unchanged: Falsifiable principles, Ordinary life, Developments, Canon invention policy, Tags, Settings table.
+- Checks: git diff --check clean; check_docs.py identical to baseline (96); docs-health differs from baseline only by other Changes' register links.
+- Semantic: tool count not quality (Investigative writing); child never publishes (same); private plans not fact (What it must not do, Narrative initiative); quiet day needs no danger (Multi-day evaluation family, Ordinary life); no search across parent future/sibling (Branch-scoped knowledge); stale identity cannot select similar name (Selected retrieval routes); invention not recall (Creative exploration is not retrieval); tone change does not reroll or invalidate plan (Changes during play); tag creates no mechanics (Tags and custom content); lock is not anti-cheat or permadeath (Free and locked campaigns).
+- Deferred Low: behavior page still carries some overlap between the principles table and prose sections.
