@@ -19,12 +19,11 @@ Existing classifications below are historical starting points, not fresh disposi
 | Item | Status |
 | --- | --- |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
-| [legacy-initiatives-index/](open/legacy-initiatives-index/README.md) | **Retained historical reference**, not a current design authorization; canonical and research pages still cite unique legacy analyses. HK08 left this route in place |
 | [product-open-questions.md](open/product-open-questions.md) | Index of the gates above |
 | [repository-agent-workbench/](open/repository-agent-workbench/README.md) | **Mixed historical/remaining study:** HAR01–03/HAR06–08 are Done, HAR09 Cancelled, HAR10 Done, and HAR05 Done. No Cognee/semantic vendor adopted; this is not a current executable Change |
 
 Selected presentation language, prompt tools, the world-capability kernel and the document-store gates live under `docs/`. The generic parked Engine, Experience, Storyteller and expired-handoff studies were removed from HEAD on 2026-11-16. Recover a body with `git show 69ac3c5682007d647dac2eae24eb43f6afe14930:work/designs/parked/<path>`. That history is not a contract. The content-unit ledger is the [DOC04 disposition](../changes/archive/2026-11/documentation/2026-11-16--doc04-shadow-knowledge-retirement/DISPOSITION.md).
 
-**Next triage after the Storyteller wiki branch merges:** retire/promote source-grounded historical programs with inbound wiki citations, starting with `legacy-initiatives-index`, `repository-agent-workbench`, and older completed support programs. Writer's Workbench product/technical promotion verified from WR01/WRD02–04; dossier archived with research retained and successor references.
+**Next triage after the Storyteller wiki branch merges:** retire/promote source-grounded historical programs with inbound wiki citations, starting with `repository-agent-workbench` and older completed support programs. `legacy-initiatives-index` archived 2026-11-27 with unique analyses retained; Writer's Workbench product/technical promotion verified from WR01/WRD02–04.
 
 - [Developer observability](open/observability-developer/README.md) — R5 defended, accepted, canon promoted; active bounded-implementation recovery and staged certification decision, no commission.

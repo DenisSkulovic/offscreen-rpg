@@ -51,7 +51,7 @@ The intended complete sequence is:
 | 25 | A cursor 20 | Draw 9 + 6 = 15; add 3; event draw 17 > 8, no interruption | 9/9 |
 | 25 | Complete A | Set damaged=false; harbor credit 0→4 exactly once | Terminal |
 
-**Current gap:** `startTick + cursorTick` can set the campaign back to 15 at the target world-tick-20 settlement. The retained A row does not prove correct shared chronology. Current resume matching also uses reusable action identity rather than explicitly choosing the exact instance. The existing integration shortcut manually finishes B and restores an offer; it does not demonstrate this full sequence. See [activity phase 1](../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#activities-participation-and-progress).
+**Current gap:** `startTick + cursorTick` can set the campaign back to 15 at the target world-tick-20 settlement. The retained A row does not prove correct shared chronology. Current resume matching also uses reusable action identity rather than explicitly choosing the exact instance. The existing integration shortcut manually finishes B and restores an offer; it does not demonstrate this full sequence. See [activity phase 1](../../work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#activities-participation-and-progress).
 
 The target clock correction must show A's next effort due at world 20 without rewriting historical receipts. A fresh offer should select the exact A instance and explain if tools or target state changed. It must not resume whichever matching definition happens to be first in a query.
 

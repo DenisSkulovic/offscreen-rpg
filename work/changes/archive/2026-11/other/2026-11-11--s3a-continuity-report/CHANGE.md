@@ -13,7 +13,7 @@
 | Technical | changed: docs/technical/storyteller/context-selection-and-recall.md#mechanical-continuity-dependencies--s3-design records that the local report separates the five evidence states and leaves the mechanical contract unimplemented | docs/technical/storyteller/context-selection-and-recall.md | A missing field stays unknown |
 | Code | changed: scripts/repo-tools/story-session-report.mjs adds the five-state provenance from persisted fields. Negative: a proposed body is not retained, and a catalogue-only handle is not packed | scripts/repo-tools/story-session-report.mjs | The report does not dispatch a provider |
 | Related | changed: work/changes/README.md records this report and leaves the rest of S3 unselected | work/changes/README.md | Queue selection is not permission to start S3b |
-**Parent initiative:** [Vvardenfell Story-mode continuity, S3a](../../../../../designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity).
+**Parent initiative:** [Vvardenfell Story-mode continuity, S3a](../../../../../designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity).
 **Technical authority:** [Canonical files and mechanical dependencies](../../../../../../docs/technical/storyteller/context-and-memory.md#mechanical-continuity-dependencies--s3-design), [connected proof and corrected October memory diagnosis](../../../../../../research/legacy-engineering/connected-poc-proof.md#memory-reinspection--2026-10-23).
 
 ## One bounded code outcome
@@ -59,8 +59,8 @@ exception: work/designs/README.md because the design index counts this report as
 exception: work/designs/open/backlog-convergence-2026-11-18/README.md because the backlog map records that this report is finished
 exception: work/designs/open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md because the handoff must not ask for this report again
 exception: work/changes/archive/2026-11/other/2026-11-11--s3a-continuity-report/PLAN.md because the execution plan records the landed report
-exception: work/designs/open/legacy-initiatives-index/AUDIT-2026-11-11.md because the audit link now points at the archived report
-exception: work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md because the parked initiative now points at the archived report
+exception: work/designs/archive/legacy-initiatives-index/AUDIT-2026-11-11.md because the audit link now points at the archived report
+exception: work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md because the parked initiative now points at the archived report
 
 S3b stays unselected. This packet does not start it.
 

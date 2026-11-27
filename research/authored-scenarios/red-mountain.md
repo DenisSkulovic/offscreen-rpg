@@ -1,6 +1,6 @@
 # Red Mountain: the itinerary is not one giant timer
 
-Companion to the [chained-journey benchmark](../../docs/product/gameplay/acceptance-scenarios.md). Entire chain/traversal/report flow is target behavior. The [autonomy plan](../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) owns the contract; these are worked fixture terms, not an API schema or a canonical map of Morrowind.
+Companion to the [chained-journey benchmark](../../docs/product/gameplay/acceptance-scenarios.md). Entire chain/traversal/report flow is target behavior. The [autonomy plan](../../work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) owns the contract; these are worked fixture terms, not an API schema or a canonical map of Morrowind.
 
 ## RM-01: accept a small itinerary
 

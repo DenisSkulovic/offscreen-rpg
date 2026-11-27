@@ -2,7 +2,7 @@
 
 Status: proposed selection and acceptance reference, not a new claim of implementation or owner approval. Runtime coverage remains in [progress](../../STATUS.md). This document chooses a small connected proof from the larger examples; it does not replace the owning feature phases.
 
-The readiness pass makes this session concrete in [GS-01 through GS-07](harbor-session.md), with state/roll/task ledgers and alternate failure/quiet branches. Use the [solo integration contract](../../docs/technical/engine/authority-and-transitions.md) for selected timing, publication, hold and authority defaults, and the [Change queue](../../work/changes/README.md) for any future authorized implementation. The old [initiative dossiers](../../work/designs/open/legacy-initiatives-index/README.md) are historical context.
+The readiness pass makes this session concrete in [GS-01 through GS-07](harbor-session.md), with state/roll/task ledgers and alternate failure/quiet branches. Use the [solo integration contract](../../docs/technical/engine/authority-and-transitions.md) for selected timing, publication, hold and authority defaults, and the [Change queue](../../work/changes/README.md) for any future authorized implementation. The old [initiative dossiers](../../work/designs/archive/legacy-initiatives-index/README.md) are historical context.
 
 ## The player-facing promise
 
@@ -40,15 +40,15 @@ Aim for roughly a minute of active waiting at an explicit demo rate, not a real 
 | Proof | Exact trace anchors | Current boundary | Owning work |
 | --- | --- | --- | --- |
 | Options change with state and preserve quiet agency | SB-02 through SB-05 | Cover branch changes plans; failed reassurance reuses the opening family; quiet endpoint has no continuing-life route | [Storytelling and owner taste](../../evidence/inspections/doc01-retained-observations/history/initiatives/RETIRED-2026-11-11.md#storyteller-agency-and-taste) |
-| Effort, eligibility and ETA differ | BC-01/02, NH-02 | Contribution checks exist; alternate progress families are proposed | [Activity foundation](../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#activities-participation-and-progress) |
+| Effort, eligibility and ETA differ | BC-01/02, NH-02 | Contribution checks exist; alternate progress families are proposed | [Activity foundation](../../work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#activities-participation-and-progress) |
 | Real A → B → A with no rewind | BC-04, NH-03 | Retention exists; current clock reconstruction can regress; integration shortcut does not prove B settlement | Activity phase 1 |
-| Quiet completion and bounded successor | BM-02/03, RM-02/06 | Implemented for finite linear chains, including horizon/cancellation/blocking and explicit player re-entry after a Storyteller scene handoff | [Autonomy](../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) U2a quiet settlement, U2c accepted successor |
+| Quiet completion and bounded successor | BM-02/03, RM-02/06 | Implemented for finite linear chains, including horizon/cancellation/blocking and explicit player re-entry after a Storyteller scene handoff | [Autonomy](../../work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry) U2a quiet settlement, U2c accepted successor |
 | Choose/repeat local activities while the Storyteller stays dormant | LO-02/03/04 | Implemented situation authorization retains selected reusable plans, revalidates them and projects fresh offers after quiet completion | [Rules and activities](../../docs/technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities); autonomy consumes eligible entries but does not author availability |
 | Rapid scenes explicitly keep routine access closed | GS-02/03/04, LO-04 | No durable situation-authorization lifecycle | Situations S1/S3 |
 | Optional historical report versus required scene | GS-06, RM-04/05 | Strict report-only execution contract exists; gameplay admission, hook storage, historical publication and configurable boundary policy do not | Autonomy U2b |
 | Cancel/suspend/pause are distinct | RM-03, BC-06 | Pause/retention partial; abandonment and complete chain controls absent | Activity lifecycle + autonomy |
 | Nonhuman contrast uses the same authority | NH-01 through NH-03 | Applicable capabilities and an immediate microbe fixture exist; extended loop is proposed | Each introduced rule needs this contrast |
-| Return remembers relevant commitments | VV-06 | Source-backed note window exists; long-history discovery absent | [Memory/recall](../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall) |
+| Return remembers relevant commitments | VV-06 | Source-backed note window exists; long-history discovery absent | [Memory/recall](../../work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall) |
 | Transformations/multiple actors do not fake state | WZ-03/05/06, CG-04/05 | No general containment, capability transformation, multiplayer or delivery flow | Later scoped work, not a blocker for the solo proof |
 
 ## Ready-to-implement reasoning, not another engine rewrite

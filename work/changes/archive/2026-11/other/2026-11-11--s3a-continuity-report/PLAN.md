@@ -2,7 +2,7 @@
 
 Change: [S3a continuity evidence report](./CHANGE.md).
 Status: **Done (2026-11-18).** The report separates the five evidence states. The rest of the S3 program stays unselected.
-Execution route: historical [Vvardenfell initiative](../../../../../designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity). This is one bounded code outcome, not the full S3 program.
+Execution route: historical [Vvardenfell initiative](../../../../../designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#vvardenfell-story-mode-continuity). This is one bounded code outcome, not the full S3 program.
 
 ## Phases
 
