@@ -1,14 +1,14 @@
 # OBSERVABILITY-DEVELOPER | practical developer telemetry
 
-**State:** Ready with explicit limits — T01 source-only commissioned; T02–T12 not dispatched.
+**State:** Independent packet review pending — ALL dispatch suspended by owner.
 **Kind:** implementation.
-**Approval and owner:** Owner requested packet creation and active planning 2026-11-27. ChatGPT planner + human owner; owner commissions T01 source-only; no live mutation authority.
+**Approval and owner:** Owner requested packet creation and active planning 2026-11-27. ChatGPT planner + human owner; prior T01 source-only commission suspended pending independent packet review; no live mutation authority.
 **Baseline:** main 76e28a45dbddbbc551c7a3efb35691e7ba23c379 (pre-promotion compatibility baseline); dedicated branch change/observability-developer, linked worktree from promoted main.
 **Design:** [active workshop](../../../designs/open/observability-developer/README.md).
 **Parallel execution:** single successor implementation owner after ratification; OBSERVABILITY-NATIVE is superseded by owner decision; all remaining A1–A12 obligations transfer to this sole successor. Historical evidence preserved; no separate predecessor certification. Human owner integration custodian. No global queue change.
 
 ## Cursor first-screen brief
-Execute T01 only, then return receipt. Read TASKS.md and READINESS.md. Existing authority is native observability infrastructure, synthetic-only admission and install-only lifecycle. Proposed outcome is developer-accessible application-shaped telemetry without destructive reinstall. Do not reinterpret this proposal as permission to remove privacy filters, upgrade live Helm releases or enroll producers. R5 defended and promoted. T01 has bounded readiness; T02–T12 require planner review before dispatch.
+STOP: do not dispatch any task until independent packet review is resolved. Read TASKS.md and READINESS.md for proposed scope only. Existing authority is native observability infrastructure, synthetic-only admission and install-only lifecycle. Proposed outcome is developer-accessible application-shaped telemetry without destructive reinstall. Do not reinterpret this proposal as permission to remove privacy filters, upgrade live Helm releases or enroll producers. R5 defended and promoted. Prior T01 bounded self-review is historical; entire packet requires independent review.
 
 ## Outcome and motivation
 Enable safe application-shaped traces/logs/metrics from WSL into the existing dev platform, query them in Grafana/backends, and disconnect cleanly. P0/P1 currently exports no telemetry by its own contract; do not change that dossier or block base runs on full observability certification. Preserve the existing five services, three PVCs and Grafana credentials. Retain synthetic diagnostics and explicitly track the older acceptance debt rather than asserting it passed.
@@ -48,3 +48,6 @@ Provisional gates in design dossier. Required: WSL actual application-shaped all
 
 ## Owner supersession decision 2026-11-27
 Native source already integrated. Predecessor archived as Cancelled/superseded, not certified Done. Transfer original A1–A12 predicates and unrun obligations to successor PROOF.md. No second active implementation owner. Main compatibility 35f2c8b0d75f5088bb11c01725735505be47ae1f: intervening changes are documentation/retirement only, no runtime source changes. No third defense; this is lifecycle bookkeeping.
+
+## Independent packet review hold | 2026-11-27
+Owner requests a fresh independent adversarial readiness review of all T01–T12 under .agents/references/packet-readiness-review.md. Freeze implementation and packet edits during review. Review-only verdict artifact may be committed to a separate review branch. No architecture reopening by default, no source execution, no live commands. Previous T01 launch instruction withdrawn; if already started, stop new work and preserve current changes/receipts without reverting.
