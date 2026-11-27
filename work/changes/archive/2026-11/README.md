@@ -2,6 +2,14 @@
 
 Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.md](../../../../work/changes/README.md).
 
+## Native platform foundations (5)
+
+- [PostgreSQL](platform-operations/2026-11-26--postgres-native-baseline/CHANGE.md) — bounded foundation accepted.
+- [Gateway](platform-operations/2026-11-26--gateway-native-baseline/CHANGE.md) — bounded foundation accepted.
+- [Redis](platform-operations/2026-11-26--redis-native-baseline/CHANGE.md) — bounded foundation accepted; canonical cutover gated.
+- [RabbitMQ](platform-operations/2026-11-26--rabbitmq-native/CHANGE.md) — source foundation accepted; live qualification gated.
+- [Object storage](platform-operations/2026-11-26--object-storage-native/CHANGE.md) — source foundation accepted; live qualification gated.
+
 ## admin (8)
 
 - [2026-11-14--admin-game-ai-diagnostics](../../../../work/changes/archive/2026-11/admin/2026-11-14--admin-game-ai-diagnostics/CHANGE.md)

@@ -3,7 +3,7 @@
 2026-11-26 · integration main `88b6ebae6acb1664c8c571aadd8cc4385dbb40eb` · designer ChatGPT.
 **State: Accepted and promoted; archived by owner 2026-11-27.** Bounded R9 accepted on 2026-11-26 after independent pass 02. Source integrated on main at `5079a086`; heavy acceptance and occupied legacy admission remain pending under the implementation Change. [Original complete dossier](https://github.com/DenisSkulovic/offscreen-rpg/tree/79e00fb1e81563133c1588fea35dd1960571c79e/work/designs/open/object-storage-platform). Research, proposals, experiments and review instructions below are historical, not dispatch authority. No migration, credential transition or live mutation permission.
 
-Canonical authority: [native object storage](../../../../docs/technical/platform/object-storage-infrastructure.md). [Implementation Change](../../../changes/open/2026-11-26--object-storage-native/CHANGE.md). Actual occupied admission still gated. [Pass 02](committee/pass-02.md) committed at abf279fe586a9b2d99c6b554e9e62e68bc2b4dc3.
+Canonical authority: [native object storage](../../../../docs/technical/platform/object-storage-infrastructure.md). [Implementation Change](../../../changes/archive/2026-11/platform-operations/2026-11-26--object-storage-native/CHANGE.md). Actual occupied admission still gated. [Pass 02](committee/pass-02.md) committed at abf279fe586a9b2d99c6b554e9e62e68bc2b4dc3.
 
 ## Historical design reading order
 

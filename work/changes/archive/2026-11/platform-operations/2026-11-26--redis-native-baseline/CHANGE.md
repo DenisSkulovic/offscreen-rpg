@@ -1,0 +1,21 @@
+# REDIS-NATIVE | Native singleton Redis baseline
+
+**State:** Done — owner-accepted bounded local foundation; archived 2026-11-28.
+
+**Final disposition (owner direction):** Accept integrated foundation at main `c0e8c56a627d891f772bf8cfe4152edfc40ff87f`; close this initial Change, not the broader qualification obligations. Isolated dev/release lifecycle, repeat, refusal and fault recovery observed; 90/90 final focused regression at 6df4eb1; final measured inventory equality recorded. Final cleanup correction not live-retested; intermittent TTL assertion and completeness of foreign-context/volume evidence remain limitations. Legacy canonical cutover, canonical readiness, authentication and destructive migration remain separately gated. No new tests, deployment, cutover or cleanup performed or authorized.
+
+**Reconciliation (P/T/C/Related):** product unchanged; technical owner [Redis](../../../../../../docs/technical/platform/redis-native-infrastructure.md) retains residual gates; source unchanged by this closeout; catalogs, ledger, links and STATUS reconciled. Original packet and earlier evidence preserved below as historical execution record; earlier dispatch, hold and archive instructions are superseded only for this bounded retirement, not for the deferred operations or proofs. Original full packet recoverable at `c0e8c56a627d891f772bf8cfe4152edfc40ff87f:work/changes/open/2026-11-26--redis-native-baseline/`.
+
+## Historical implementation record
+Historical pre-closure disposition: Status: **STRUCTURAL SOURCE INTEGRATION AUTHORIZED; CHANGE OPEN FOR RESIDUAL ASSURANCE AND CANONICAL CUTOVER.** Owner explicitly directed integration after the final 90/90 focused regression. See ACCEPTANCE-OBSERVATIONS.md for exact live evidence and limitations. Existing canonical pools remain untouched; interim refusal accepted. No public canonical readiness or destructive migration authorization. INF60 cancelled.
+
+Authority: [selected target](../../../../../../docs/technical/platform/redis-native-infrastructure.md), [R9](https://github.com/DenisSkulovic/offscreen-rpg/blob/75bb1fe5490d16fa645fa1f99517bade352ffd01/work/designs/open/redis-platform/R9.md), [committee](https://github.com/DenisSkulovic/offscreen-rpg/blob/75bb1fe5490d16fa645fa1f99517bade352ffd01/work/designs/open/redis-platform/committee/pass-02.md). [Tasks](TASKS.md) · [Source map and interfaces](SOURCE-MAP.md) · [Proof](PROOF.md).
+
+Outcome: replace legacy render/create/CAS ownership with one native Helm fresh-only lifecycle, source and host tests plus isolated verification. Existing canonical Redis remains untouched. Owner directed structural source integration with interim canonical legacy refusal; residual assurance and canonical cutover remain open. Source edits and deterministic tests need not wait for that operational choice. Do not mark Done or claim runtime readiness before proof. Live fixtures and recovery separately authorized; no destructive canonical migration. No sibling auto-start.
+
+Parent: verify actual main HEAD and active branches/worktrees; run `node scripts/repo-tools/change-branch-guard.mjs --change REDIS-NATIVE --target main` after creation; read tasks, send only selected T-ID and its 2–5 anchors. Preserve old code until adapter switch in same branch, no intermediate main joins. Run focused changed-file formatting/quality checks and code-health comparison, reconcile runbook/catalog/overview/evidence, stop on exact contradiction. Source-only receipts separate from live proof. Do not archive while gates outstanding.
+
+Impact: chart, Redis lifecycle/observer, common render CLI, platform planner/status, smoke, diagnostic/source registration and affected layout test. No gameplay/authority/schema/secrets/provider impact. Exact identity/permission, no-op/unknown and no baseline writes are essential. No generic reconciliation/normalizer. Claims: selected target (design accepted), implementation tested in isolated contexts; residual assurance remains open.
+
+
+Current owner/planner acceptance checkpoint supersedes older source-only status and execution ownership: [ACCEPTANCE-CORRECTIONS.md](ACCEPTANCE-CORRECTIONS.md). The implementation agent implements only the named corrective tasks and cheap checks, then commits and stops for acceptance-lead and owner heavy acceptance. Existing scope and integration gates remain.

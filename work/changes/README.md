@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+**Native platform foundations (2026-11-28):** [PostgreSQL](archive/2026-11/platform-operations/2026-11-26--postgres-native-baseline/CHANGE.md) · [Gateway](archive/2026-11/platform-operations/2026-11-26--gateway-native-baseline/CHANGE.md) · [Redis](archive/2026-11/platform-operations/2026-11-26--redis-native-baseline/CHANGE.md) · [RabbitMQ](archive/2026-11/platform-operations/2026-11-26--rabbitmq-native/CHANGE.md) · [Object storage](archive/2026-11/platform-operations/2026-11-26--object-storage-native/CHANGE.md). Done at bounded foundation scope; RabbitMQ/object storage source-only. Residual qualification and cutover gates retained in technical owners. No open Change packets or new commission.
+
 **Documentation renewal E1:** [product](../designs/archive/product-documentation-renewal/README.md) and [technical](../designs/archive/technical-documentation-renewal/implementation-record/README.md) — both owner-accepted. Technical: TD01–TD08 and TD10 archived, technical joint semantic acceptance PASS (see the retired group's [implementation record](../designs/archive/technical-documentation-renewal/implementation-record/README.md)); TD09 protected no-op. Product: PD01–PD07 archived and product joint semantic acceptance PASS (see the retired group's [implementation record](../designs/archive/product-documentation-renewal/implementation-record/README.md)). Runtime, native and live qualification NOT RUN; no queue change.
 
 [Agent Core E1](../designs/archive/agent-core-monorepo-map/README.md) — owner-accepted initial foundation; AC01–AC08 and AC08R archived; full native qualification remains unestablished.
@@ -8,9 +10,7 @@
 
 [Developer observability](../designs/archive/observability-developer/README.md) — owner-accepted local foundation, OBS-D01–D11 source archived; original native/developer packets superseded, full A/V certification remains unestablished.
 
-[RABBITMQ-NATIVE](open/2026-11-26--rabbitmq-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and fresh release separately gated.
 
-[OBJECT-STORAGE-NATIVE](open/2026-11-26--object-storage-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and occupied legacy admission separately gated.
 
 [INF51 autonomous verification](archive/2026-11/platform-operations/2026-11-24--inf51-autonomous-verification/CHANGE.md) — Done source, full lifecycle transferred to [INF52](archive/2026-11/platform-operations/2026-11-25--inf52-owned-lifecycle-verification/CHANGE.md) (source Done; live NOT-RUN).
 
@@ -382,7 +382,6 @@ Original CACHE01–07 eight Changes archived; CACHE08 source Done and archived. 
 
 ## Redis infrastructure source wave
 
-- [REDIS-NATIVE](open/2026-11-26--redis-native-baseline/CHANGE.md) — R9 architecture accepted; T08a–T08d source corrections implemented on `change/redis-native-baseline-renewal`; isolated lifecycle/fault/idempotency and measured preservation passed; structural integration authorized; residual assurance and canonical cutover open. INF60 cancelled.
 - [INF58 Redis chart configuration and rollout identity](archive/2026-11/platform-operations/2026-11-25--inf58-redis-chart-configuration/CHANGE.md) — Done (source); 13/13 render tests; live NOT-RUN.
 - [INF59 Redis installer safety and readiness](archive/2026-11/platform-operations/2026-11-25--inf59-redis-reconciliation-safety/CHANGE.md) — Done (source); observe/reconcile CAS + readiness; focused 79/79; live NOT-RUN.
 - [INF60 Named Redis pools and operator inspection](archive/2026-11/platform-operations/2026-11-25--inf60-redis-named-cache-pools/CHANGE.md) — Cancelled; isolation principle retained in caching contract.

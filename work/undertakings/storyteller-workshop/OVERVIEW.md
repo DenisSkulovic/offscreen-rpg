@@ -15,7 +15,7 @@ Uncertainty ±20pp or more. Subjective effort/risk, not packet counts or measure
 
 - 2026-11-26: Observability R34 independently defended; [native platform packet](../../changes/open/2026-11-26--observability-native/CHANGE.md) source-only commissioned with T01 artifact gate. No source or runtime credit; estimates unchanged (~75/40/30/45 ±20pp).
 
-- Redis native R9 structural architecture independently defended and owner accepted; [implementation packet](../../changes/open/2026-11-26--redis-native-baseline/CHANGE.md) source commissioned; live and integration held. INF60 suspended. No runtime or outcome credit; estimates unchanged.
+- Redis native R9 structural architecture independently defended and owner accepted; [implementation packet](../../changes/archive/2026-11/platform-operations/2026-11-26--redis-native-baseline/CHANGE.md) source integrated and subsequently accepted as a bounded foundation; residual qualification and cutover gated. INF60 cancelled. No runtime or outcome credit; estimates unchanged.
 
 - Library and domain ownership improved; generic contracts workspace removed. Five recognized Authority-to-Writer exceptions remain.
 - Cache original eight Changes archived; CACHE04 source Done, CACHE07 superseded, CACHE08 source Done (runtime residuals; package fakes). VER06 source Done (owned Redis resource + harness migration + `pnpm verify package cache` source); live Redis/SQL acceptance remains VER07/VER08. No outcome credit.
@@ -51,7 +51,7 @@ Finish line: ordinary authenticated player creates story, resolves scene, reache
 
 - 2026-11-26: [Temporal greenfield implementation and live findings](../../../evidence/runs/2026-11-26-temporal-platform.md) supersede prior legacy architecture as the current development implementation. Native Helm + shared CNPG provisioned in 66s; six ready Pods, SERVING, working UI after pinned upstream fix, repeat ensure 2s. Release, workflow and fresh-clone proof remain open. Estimates retained at ~75/40/30/45 (±20pp or more): real component progress but no sufficiently grounded change to rounded undertaking-wide effort/risk estimates. Owner-selected design-led method now governs future material redesign; PostgreSQL/Redis candidates, not commissioned implementation.
 
-- 2026-11-26: Object storage R9 independently defended and owner accepted; [OBJECT-STORAGE-NATIVE](../../changes/open/2026-11-26--object-storage-native/CHANGE.md) source commissioned, heavy acceptance NOT RUN, occupied admission separately gated. No outcome credit; estimates unchanged (~75/40/30/45, ±20pp).
+- 2026-11-26: Object storage R9 independently defended and owner accepted; [OBJECT-STORAGE-NATIVE](../../changes/archive/2026-11/platform-operations/2026-11-26--object-storage-native/CHANGE.md) source integrated and subsequently accepted as source foundation; heavy qualification unestablished, occupied admission separately gated. No outcome credit; estimates unchanged (~75/40/30/45, ±20pp).
 
 **2026-11-26:** K8S10 moved to backlog by owner. Existing harness retained; redesigned normal-path acceptance and refreshed plan before recommission, no live fault authorization.
 

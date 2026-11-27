@@ -1,17 +1,8 @@
 # Open Changes | current sprint / execution horizon
 
+**Current open Change packets: none.** Native PostgreSQL, Gateway, Redis, RabbitMQ and object storage foundations accepted and archived; residual qualification and cutover gates remain with their permanent technical owners. No queue change or new commission.
+
 **Documentation renewal E1:** [product](../../designs/archive/product-documentation-renewal/README.md) and [technical](../../designs/archive/technical-documentation-renewal/implementation-record/README.md) — both owner-accepted. Technical: TD01–TD08 and TD10 archived, technical joint semantic acceptance PASS (see the retired group's [implementation record](../../designs/archive/technical-documentation-renewal/implementation-record/README.md)); TD09 protected no-op. Product: PD01–PD07 archived and product joint semantic acceptance PASS (see the retired group's [implementation record](../../designs/archive/product-documentation-renewal/implementation-record/README.md)). Runtime, native and live qualification NOT RUN; no queue change.
-
-
-
-
-
-
-[RABBITMQ-NATIVE](2026-11-26--rabbitmq-native/CHANGE.md): owner-accepted R10, source-only commission; live acceptance and join held.
-
-[GATEWAY-NATIVE](2026-11-26--gateway-native-baseline/CHANGE.md): owner-selected local gateway renewal, source-only ready upon dispatch; live and join held. Independent committee waived for this scope. No queue change.
-
-[REDIS-NATIVE](2026-11-26--redis-native-baseline/CHANGE.md): T08a–T08d source corrections implemented on `change/redis-native-baseline-renewal`; isolated lifecycle/fault/idempotency and measured preservation passed; structural integration authorized; residual assurance and canonical cutover open. INF60 cancelled. No queue change.
 
 ## Database platform redesign
 
@@ -45,18 +36,9 @@
 
 **2026-11-23 source-only commissions:** [TURN03-R2C scripted player-smoke composition](../archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) is archived Done at injected-trace tier, 9/9. [TURN03-R2D](../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) is archived Done at injected-query tier, 6/6. Neither produces cross-Pod PASS. R2A and R2B remain archived Done at source-only tier. Parent TURN03 cancelled; legacy operator not commissioned.
 
-
 **2026-11-23:** [TURN03-R2A secure HTTP transport](../archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) is Done as an injected fake-fetch check. It is not a live login or cross-Pod PASS. [TURN03-R2B pinned fixture verifier](../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) is Done as an injected read-only check. [TURN03-R2D causal SQL observer](../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) is Done as an injected read-only query check, 6/6. It is not a live database read or cross-Pod PASS. Parent [TURN03](../archive/2026-11/distributed/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) is cancelled (legacy acceptance retired).
 
-
-| Change | Why it remains open |
-| --- | --- |
-| [CL01 terminal player](2026-11-22--cl01-terminal-player-client/CHANGE.md) | Historical next-wave dependency; redesign determines current applicability |
-
 ## Existing incomplete or terminal-reconciliation obligations
-
-| Change | Why NOT moved to backlog/archive blindly |
-| --- | --- |
 
 **Promotion:** move a deferred [backlog](../backlog/README.md) Change here as soon as the owner makes it part of the current execution horizon, even before source/readiness review or commission. Refresh source/dependencies and verify readiness before dispatch. **Retirement:** only verified Done/Cancelled moves to [archive](../archive/README.md) with evidence/ledger. Move unfinished work back to backlog only when genuinely deferred by owner decision, not simply because it is blocked or later in the current sprint.
 

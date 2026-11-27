@@ -1,6 +1,6 @@
 # Redis infrastructure | selected first wave, 2026-11-25
 
-**Historical wave:** 2026-11-26 native R9 supersedes the create/CAS and named-pool direction. See [selected contract](../../../docs/technical/platform/redis-native-infrastructure.md) and [implementation draft](../../changes/open/2026-11-26--redis-native-baseline/CHANGE.md). INF60 cancelled; historical commission below not executable.
+**Historical wave:** 2026-11-26 native R9 supersedes the create/CAS and named-pool direction. See [selected contract](../../../docs/technical/platform/redis-native-infrastructure.md) and [implementation draft](../../changes/archive/2026-11/platform-operations/2026-11-26--redis-native-baseline/CHANGE.md). INF60 cancelled; historical commission below not executable.
 
 Baseline c5da10d8d722c3d067fbb06d84d8fd57c22faf00, main. Owner wants medium-company design with small local footprints. One default shared cache pool per environment; logical per-domain key namespaces, physical separation only for incompatible eviction, resource, latency or failure requirements. No Redis for durable business correctness; no large media bytes. PostgreSQL/Temporal/object storage remain authoritative. Existing application cache verification stays VER07/VER08; no shared fixture use.
 
