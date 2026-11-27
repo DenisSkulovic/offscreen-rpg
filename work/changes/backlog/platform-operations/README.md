@@ -47,3 +47,18 @@ INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execut
 - [VER08 SQL-origin cache and Story snapshot acceptance](2026-11-25--ver08-cache-sql-origin-programme/CHANGE.md): deferred; all security/correctness proof retained, no current commission. VER07 source prerequisite and current consumer/resource refresh required before owner-selected promotion.
 
 - [K8S10 distributed fault and load harness](2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md): deferred; existing implementation and receipts retained; fresh TURN03 PASS, current release ownership and owner-selected refreshed plan required. No commission or live mutation permission.
+
+## Developer observability (prepared proposals)
+
+[Programme and acceptance](../../../designs/open/observability-developer/IMPLEMENTATION-PLAN.md). D01 is in open as the first proposed packet. D02–D11 are full bounded draft folders, not Ready or commissioned; each names actual material planner gates and predecessor contracts. Promote individually after applicable review, owner choice and source refresh.
+
+- [OBS-D02 target identity](2026-11-27--obs-d02-target-identity/CHANGE.md) — Proposed / PLANNER-BLOCKED.
+- [OBS-D03 operation custody](2026-11-27--obs-d03-operation-custody/CHANGE.md) — Proposed / PLANNER-BLOCKED.
+- [OBS-D04 collector topology](2026-11-27--obs-d04-collector-topology/CHANGE.md) — Proposed / PLANNER-BLOCKED.
+- [OBS-D05 foreground connection](2026-11-27--obs-d05-foreground-connection/CHANGE.md) — Proposed / PLANNER-BLOCKED.
+- [OBS-D06 collector upgrade](2026-11-27--obs-d06-collector-upgrade/CHANGE.md) — Proposed / PLANNER-BLOCKED.
+- [OBS-D07 synthetic proof](2026-11-27--obs-d07-synthetic-proof/CHANGE.md) — Proposed / PLANNER-BLOCKED.
+- [OBS-D08 developer signal proof](2026-11-27--obs-d08-developer-signal-proof/CHANGE.md) — Proposed / PLANNER-BLOCKED.
+- [OBS-D09 health resource proof](2026-11-27--obs-d09-health-resource-proof/CHANGE.md) — Proposed / PLANNER-BLOCKED.
+- [OBS-D10 recovery proof](2026-11-27--obs-d10-recovery-proof/CHANGE.md) — Proposed / PLANNER-BLOCKED.
+- [OBS-D11 partial install proof](2026-11-27--obs-d11-partial-install-proof/CHANGE.md) — Proposed / PLANNER-BLOCKED.

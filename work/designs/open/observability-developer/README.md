@@ -1,6 +1,6 @@
 # Developer observability
 
-**State:** R5 architecture accepted and promoted; implementation recovery active. Owner: ChatGPT planner; human integration custodian. Next review: staged certification decision and independent D01 packet readiness. No implementation or live operation commissioned. The old monolithic packet is superseded and archived; D01 is the only imminent implementation proposal.
+**State:** R5 architecture accepted and promoted; implementation recovery active. Owner: ChatGPT planner; human integration custodian. Next review: owner acceptance of D01-only defended exception, independent D01 packet readiness, and broader OD-05–07 re-defense. [Independent pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/114cc39cf4e1477ac34e24d4a26684ad9f91b8c3/work/designs/open/observability-developer/committee/pass-03.md) defends D01 only; broader staged activation requires revision. No implementation or live operation commissioned. The old monolithic packet is superseded and archived; D01 is the only imminent open proposal; [D02–D11 draft packets](IMPLEMENTATION-PLAN.md#proposed-successor-map) are prepared in the existing platform-operations backlog.
 
 ## Objective
 
