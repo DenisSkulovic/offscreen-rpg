@@ -23,7 +23,7 @@ import {
   queryGrafanaDatasourceHealth,
   runResourcesProof,
 } from './resources.mjs';
-import { runPartialInstallProof } from './partial-install.mjs';
+import { runIsolatedPartialInstallProof } from './partial-install.mjs';
 
 const MODULE_ROOT = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(MODULE_ROOT, '../../../..');
@@ -108,7 +108,7 @@ async function runLiveProof(parsed, sessionDeps = {}) {
     runPartialInstall:
       sessionDeps.runPartialInstall ??
       ((session) =>
-        runPartialInstallProof(session, sessionDeps.partialInstallDeps)),
+        runIsolatedPartialInstallProof(session, sessionDeps.partialInstallDeps)),
   });
 }
 

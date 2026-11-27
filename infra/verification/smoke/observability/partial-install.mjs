@@ -23,6 +23,10 @@ export const EXPECTED_CLUSTER_UID_ENV =
   'OFFSCREEN_OBSERVABILITY_EXPECTED_CLUSTER_UID';
 export const PROOF_AUTHORIZATION_ENV = 'OFFSCREEN_OBSERVABILITY_PROOF';
 
+export const A9_DENIAL_MARKER = 'OFFSCREEN_A9_ISOLATED_LOKI_DENIAL';
+export const A9_POLICY_NAME = 'offscreen-a9-isolated-loki';
+export const A9_BINDING_NAME = 'offscreen-a9-isolated-loki';
+
 export const QUOTA_NAME = 'deny-loki-statefulset';
 export const QUOTA_HARD_KEY = 'count/statefulsets.apps';
 export const QUOTA_WAIT_MS = 20_000;
@@ -396,6 +400,244 @@ export async function maybeInjectQuotaForLokiInstall(
   }
 
   return { ok: true, quotaCreated: true, reasonCode: null };
+}
+
+/**
+ * @param {unknown} policy
+ * @param {unknown} binding
+ */
+export function assessAdmissionPolicy(policy, binding) {
+  const objects = [policy, binding];
+  for (const object of objects) {
+    if (object == null || typeof object !== 'object') {
+      return { ok: false, reasonCode: 'admission-policy-missing' };
+    }
+    const value = /** @type {Record<string, unknown>} */ (object);
+    const metadata = /** @type {Record<string, unknown>} */ (value.metadata ?? {});
+    if (value.apiVersion !== 'admissionregistration.k8s.io/v1') {
+      return { ok: false, reasonCode: 'admission-policy-api' };
+    }
+    if (typeof metadata.uid !== 'string' || metadata.uid.length === 0) {
+      return { ok: false, reasonCode: 'admission-policy-uid' };
+    }
+    if (metadata.deletionTimestamp != null) {
+      return { ok: false, reasonCode: 'admission-policy-terminating' };
+    }
+  }
+  const policyMeta = /** @type {Record<string, unknown>} */ (
+    /** @type {Record<string, unknown>} */ (policy).metadata
+  );
+  const bindingMeta = /** @type {Record<string, unknown>} */ (
+    /** @type {Record<string, unknown>} */ (binding).metadata
+  );
+  if (policyMeta.name !== A9_POLICY_NAME || bindingMeta.name !== A9_BINDING_NAME) {
+    return { ok: false, reasonCode: 'admission-policy-name' };
+  }
+  const spec = /** @type {Record<string, unknown>} */ (
+    /** @type {Record<string, unknown>} */ (policy).spec ?? {}
+  );
+  const validations = spec.validations;
+  const message = Array.isArray(validations)
+    ? validations.map((row) => String(row?.message ?? '')).join('\n')
+    : '';
+  if (!message.includes(A9_DENIAL_MARKER)) {
+    return { ok: false, reasonCode: 'admission-policy-marker' };
+  }
+  return { ok: true, reasonCode: null, policyUid: policyMeta.uid, bindingUid: bindingMeta.uid };
+}
+
+/**
+ * @param {unknown} rows
+ */
+export function assessLokiFailureHistory(rows) {
+  if (!Array.isArray(rows) || rows.length !== 1) {
+    return { ok: false, reasonCode: 'loki-history-shape' };
+  }
+  const row = /** @type {Record<string, unknown>} */ (rows[0]);
+  if (row.revision !== 1 || row.status !== 'failed') {
+    return { ok: false, reasonCode: 'loki-history-revision' };
+  }
+  const description = String(row.description ?? '');
+  if (
+    !description.includes(A9_DENIAL_MARKER) ||
+    !description.includes(A9_POLICY_NAME) ||
+    !description.includes(A9_BINDING_NAME) ||
+    !description.includes('obs-loki')
+  ) {
+    return { ok: false, reasonCode: 'loki-denial-marker-missing' };
+  }
+  return { ok: true, reasonCode: null };
+}
+
+/**
+ * @param {{ releases?: { name: string, revision: number, status: string }[], lokiStatefulSet?: unknown, prometheusReady?: boolean }} snapshot
+ */
+export function assessRetainedPartialSnapshot(snapshot) {
+  if (snapshot.lokiStatefulSet != null) {
+    return { ok: false, reasonCode: 'loki-statefulset-present' };
+  }
+  const releases = snapshot.releases ?? [];
+  for (const name of LATER_PHASES) {
+    if (releases.some((row) => row.name === name)) {
+      return { ok: false, reasonCode: 'later-release' };
+    }
+  }
+  const prometheus = releases.find((row) => row.name === 'obs-prometheus');
+  const loki = releases.find((row) => row.name === 'obs-loki');
+  if (
+    snapshot.prometheusReady !== true ||
+    prometheus?.revision !== 1 ||
+    prometheus.status !== 'deployed'
+  ) {
+    return { ok: false, reasonCode: 'prometheus-not-retained' };
+  }
+  if (loki?.revision !== 1 || loki.status !== 'failed') {
+    return { ok: false, reasonCode: 'loki-not-failed' };
+  }
+  return { ok: true, reasonCode: null };
+}
+
+/**
+ * @param {Record<string, unknown> | null} record
+ * @param {{ namespaceUid: string, kubeSystemUid: string }} expected
+ */
+export function assessA9Pending(record, expected) {
+  if (record == null || record.schema !== 2 || record.operation !== 'ensure') {
+    return { ok: false, reasonCode: 'pending-not-ensure' };
+  }
+  if (record.phase !== 'obs-loki') {
+    return { ok: false, reasonCode: 'pending-phase' };
+  }
+  const tuple = /** @type {Record<string, unknown>} */ (record.tuple ?? {});
+  if (tuple.targetNamespaceUid !== expected.namespaceUid) {
+    return { ok: false, reasonCode: 'namespace-uid-mismatch' };
+  }
+  if (tuple.kubeSystemUid !== expected.kubeSystemUid) {
+    return { ok: false, reasonCode: 'cluster-uid-mismatch' };
+  }
+  return { ok: true, reasonCode: null };
+}
+
+/**
+ * Public installer argv. Live spawn stays behind an explicit owner flag.
+ */
+export function publicEnsureArgv() {
+  return ['infra:up', '--env', 'dev', '--services', 'observability', '--json'];
+}
+
+/**
+ * @param {object} session
+ * @param {{ runPublicCli?: Function, readPolicy?: Function, readHistory?: Function, readRetained?: Function, inspectPending?: Function }} [deps]
+ */
+export async function runIsolatedPartialInstallProof(session, deps = {}) {
+  const auth = requireIsolatedProofAuthorization(session.env ?? process.env);
+  if (auth.refused) {
+    return { ok: false, reasonCode: auth.reasonCode, phase: 'isolated-auth' };
+  }
+  if (session.identity.tuple.kubeSystemUid !== auth.expectedClusterUid) {
+    return {
+      ok: false,
+      reasonCode: 'expected-cluster-uid-mismatch',
+      phase: 'preflight',
+    };
+  }
+  if (session.identity.tuple.targetNamespaceUid != null) {
+    return {
+      ok: false,
+      reasonCode: 'target-namespace-present',
+      phase: 'preflight',
+    };
+  }
+  const readPolicy = deps.readPolicy;
+  if (!readPolicy) {
+    return { ok: false, reasonCode: 'policy-read-required', phase: 'policy' };
+  }
+  const before = await readPolicy(session);
+  const policy = assessAdmissionPolicy(before.policy, before.binding);
+  if (!policy.ok) {
+    return { ok: false, reasonCode: policy.reasonCode, phase: 'policy' };
+  }
+  if (!deps.runPublicCli) {
+    return {
+      ok: false,
+      reasonCode: 'live-process-withheld',
+      phase: 'ensure',
+      argv: publicEnsureArgv(),
+    };
+  }
+  const first = await deps.runPublicCli(session, { attempt: 'first' });
+  if (first.reason === 'timeout' || first.reason === 'close-unconfirmed') {
+    return {
+      ok: false,
+      reasonCode: first.reason,
+      phase: 'ensure',
+      mutation: 'possible',
+    };
+  }
+  if (
+    first.code === 0 ||
+    first.workerState !== 'partial' ||
+    first.reason !== 'phase-failed' ||
+    first.pending !== true ||
+    (first.mutation !== 'confirmed' && first.mutation !== 'possible')
+  ) {
+    return { ok: false, reasonCode: 'first-ensure-receipt', phase: 'ensure' };
+  }
+  const phases = first.completedPhases ?? [];
+  if (
+    phases.includes('obs-loki') ||
+    phases.join(',') !== 'namespace,secret,obs-prometheus'
+  ) {
+    return { ok: false, reasonCode: 'completed-phases', phase: 'ensure' };
+  }
+  const pending = await deps.inspectPending(session);
+  const pendingCheck = assessA9Pending(pending.record, {
+    namespaceUid: first.namespaceUid,
+    kubeSystemUid: auth.expectedClusterUid,
+  });
+  if (!pendingCheck.ok || pending.outcome !== 'record') {
+    return {
+      ok: false,
+      reasonCode: pendingCheck.reasonCode ?? 'pending-not-ensure',
+      phase: 'pending',
+    };
+  }
+  const history = assessLokiFailureHistory(await deps.readHistory(session));
+  if (!history.ok) {
+    return { ok: false, reasonCode: history.reasonCode, phase: 'history' };
+  }
+  const retainedBefore = await deps.readRetained(session);
+  const retained = assessRetainedPartialSnapshot(retainedBefore);
+  if (!retained.ok) {
+    return { ok: false, reasonCode: retained.reasonCode, phase: 'retained' };
+  }
+  const repeat = await deps.runPublicCli(session, { attempt: 'repeat' });
+  if (repeat.mutation !== 'none' || (repeat.completedPhases ?? []).length > 0) {
+    return { ok: false, reasonCode: 'repeat-ensure-mutated', phase: 'repeat' };
+  }
+  if (repeat.code === 0 || typeof repeat.reason !== 'string' || repeat.reason.length === 0) {
+    return { ok: false, reasonCode: 'repeat-ensure-succeeded', phase: 'repeat' };
+  }
+  const retainedAfter = await deps.readRetained(session);
+  if (JSON.stringify(retainedBefore) !== JSON.stringify(retainedAfter)) {
+    return { ok: false, reasonCode: 'retained-state-changed', phase: 'repeat' };
+  }
+  const policyAfter = await readPolicy(session);
+  if (
+    policyAfter.policy?.metadata?.uid !== policy.policyUid ||
+    policyAfter.binding?.metadata?.uid !== policy.bindingUid
+  ) {
+    return { ok: false, reasonCode: 'admission-policy-changed', phase: 'repeat' };
+  }
+  return {
+    ok: true,
+    reasonCode: null,
+    phase: 'partial-install-complete',
+    cleanup: false,
+    intentionalRetainedPlatform: true,
+    policyUid: policy.policyUid,
+    bindingUid: policy.bindingUid,
+  };
 }
 
 /**
