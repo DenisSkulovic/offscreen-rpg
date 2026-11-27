@@ -7,7 +7,7 @@
 | | Design dossier | Change packet |
 | --- | --- | --- |
 | Purpose | Discover and defend the best bounded target | Deliver one decided, source-grounded, independently verifiable outcome |
-| Reader | Designer, owner, independent architecture committee | Cursor parent and bounded implementation children; independent packet committee |
+| Reader | Designer, owner, independent architecture committee | Implementation coordinator and bounded workers; independent packet committee |
 | Shape | Flexible; problem-specific research, alternatives, specimens, experiments and decision records | Standardized roles and direct execution routes; no unresolved architecture homework |
 | Current front door | README.md or existing clearly named entrypoint: scope, posture, status, current target/unknowns, next decision, links by purpose | CHANGE.md: selected outcome, authority, baseline, scope/exclusions, execution/acceptance route, current state |
 | History | Research and actual experimental/committee receipts may be substantial, explicitly non-normative | No research diary in executable contracts; historical receipts are separate, compact and optional reads |
@@ -57,7 +57,7 @@ Above 15 current planning documents or 100 KiB current prose, or when independen
 
 These bands are planning signals. Exceeding one prompts a look at scope and readability. It does not by itself block readiness, commission or review.
 
-| Scale | Actual executable tasks | Current planning documents | Current prose | Estimated active Cursor implementation |
+| Scale | Actual executable tasks | Current planning documents | Current prose | Estimated active implementation |
 | --- | ---: | ---: | ---: | --- |
 | Small | 1–2 | 1–3 | up to 8 KiB | 2–5 min |
 | Standard | 3–5 | 3–6 | 8–20 KiB | 5–10 min |
@@ -67,7 +67,7 @@ These bands are planning signals. Exceeding one prompts a look at scope and read
 
 A narrowly justified exception may exceed seven tasks when splitting the outcome would add coordination, break an atomic correctness boundary, or increase implementation and integration risk. The exception still needs bounded child context, clear ownership, manageable dispatch and meaningful acceptance. Do not use it to restore a monolithic packet. Do not manufacture several Changes merely to satisfy the count when one coherent bounded Change is safer and more economical.
 
-Normal target 5–10 minutes of active Cursor work includes orientation, coordination, implementation, focused inexpensive tests, review and commit. It excludes dependency waits, substantial builds and heavy acceptance. These are estimates, not timers or measured results. Above the band, consider scope. Never skip essential security, financial or data-integrity checks, and never leave an unsafe partial state, in order to meet a clock. If the outcome cannot be executed as a bounded Change, simplify it or choose a separately authorized route. Do not delegate the unresolved architecture to Cursor.
+Normal target 5–10 minutes of active implementation includes orientation, coordination, implementation, focused inexpensive tests, review and commit. It excludes dependency waits, substantial builds and heavy acceptance. These are estimates, not timers or measured results. Above the band, consider scope. Never skip essential security, financial or data-integrity checks, and never leave an unsafe partial state, in order to meet a clock. If the outcome cannot be executed as a bounded Change, simplify it or choose a separately authorized route. Do not delegate the unresolved architecture to the implementation agent.
 
 Above eight current documents or 35 KiB of current prose, consider consolidation, an indispensable contract that cannot be factored, and whether the reading routes stay bounded. A large artifact is a High finding when it prevents reliable review, hides an important decision, forces unbounded execution context or creates contradictory authority. A slightly oversized but coherent and actionable artifact is Medium or Low. No exception permits multiple unrelated outcomes, contradictory instructions or unresolved design. Do not pad a packet toward a lower band.
 
@@ -141,4 +141,4 @@ On a later pass, inspect the corrected text and its dependents. Reuse unaffected
 
 The author fixes the current files, not a shadow packet or a second architecture dossier. Address the known Critical and High findings together: identify the current owner, reconcile each affected claim and negative proof, replace obsolete text, and repair links. Leave Medium and Low findings deferred. If a design is unnecessarily complicated in a way that prevents safe execution, return to its owner and ratify a smaller mechanism. Editorial cleanup does not waive an accepted guarantee. Existing archives are historical and are not retroactively reformatted. The engineering handbook follows current-state editing, one policy owner, short root routes and conditional specialist references. Do not create another policy file when the existing owner can be edited.
 
-This is a review and authoring contract, not an automatic parser or token meter. Existing link and quality guards remain complementary. Passing a word count does not prove quality. Do not add a mandatory script, manifest, receipt file or approval step merely to enforce formatting. The reviewer owns the verdict, the planner owns the blocking repair, and Cursor does not pay to interpret an incoherent packet. Open work is subject to this standard at its next formal review or new commission. Already commissioned work stops only for an actual Critical or High contradiction or safety failure, not for a cosmetic retrofit.
+This is a review and authoring contract, not an automatic parser or token meter. Existing link and quality guards remain complementary. Passing a word count does not prove quality. Do not add a mandatory script, manifest, receipt file or approval step merely to enforce formatting. The reviewer owns the verdict, the planner owns the blocking repair, and the implementation agent does not pay to interpret an incoherent packet. Open work is subject to this standard at its next formal review or new commission. Already commissioned work stops only for an actual Critical or High contradiction or safety failure, not for a cosmetic retrofit.

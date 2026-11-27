@@ -6,7 +6,7 @@
 
 This harness governs **how** coding agents navigate the three authority layers: product documentation (what and why), technical documentation (architecture, authority and invariants), generated code (implementation). It never turns code into the product specification. External practice notes are in [industry practices](references/industry-practices.md); practical token hygiene is in [context economics](references/context-economics.md).
 
-**Planner/executor economics:** The [planner investigation standard](references/planner-investigation-standard.md) puts broad source and architectural discovery upstream of implementation. The implementation task receives a short route card and only verifies the current source, implements and tests. [CHATGPT.md](../CHATGPT.md) is the read-only ChatGPT adapter. This role distinction does **not** require every agent to preload the planner standard; see the table below for load triggers.
+**Planner/executor economics:** The [planner investigation standard](references/planner-investigation-standard.md) puts broad source and architectural discovery upstream of implementation. The implementation task receives a short route card and only verifies the current source, implements and tests. [CHATGPT.md](../CHATGPT.md), [CLAUDE.md](../CLAUDE.md) and [.cursor/MODEL-POLICY.md](../.cursor/MODEL-POLICY.md) are client adapters. The ChatGPT adapter describes the owner's current read-only session. This role distinction does **not** require every agent to preload the planner standard; see the table below for load triggers.
 
 **Development runtime:** use the current [owned dev stack runbook](../docs/runbooks/dev-worktree-stacks.md) only when needed. Verify actual worktree/environment identity and recorded acceptance; no ambient context, stale rollout assumption or foreign resource mutation. Lease state is machine-local.
 
@@ -45,7 +45,7 @@ At a significant design gate, the role selects **one relevant manual** (and mayb
 
 ## Native subagent surfaces (opt-in)
 
-Claude has two optional read-only critics; Cursor has additional bounded execution/utility roles. [Actual model roster and policy](references/cursor-model-budget-policy.md) owns selection. Native design-challenger and test-strategist use inherit and are not approved for automatic invocation; follow the explicit model and owner gate. A read-only critic does not substitute for an independent review context when material new architecture requires one. The reviewer persists the verdict when authorized to write; otherwise the custodian persists the delivered verdict. Check client discovery and actual tool permissions, not assumed behavior.
+Each client keeps its own native roster and model policy. Cursor's roster and allowlist are [.cursor/MODEL-POLICY.md](../.cursor/MODEL-POLICY.md). Claude Code's roster and aliases are [.claude/MODEL-POLICY.md](../.claude/MODEL-POLICY.md). Those files do not redefine engineering roles. A read-only critic does not substitute for an independent review context when material new architecture requires one. The reviewer persists the verdict when authorized to write; otherwise the custodian persists the delivered verdict. Check client discovery and actual tool permissions, not assumed behavior.
 
 **Planning-unit boundary:** [work-unit standard](references/change-work-unit-standard.md) distinguishes Designs, Changes, Tasks and evaluation; no default execution if no work selected. Legacy initiative material is historical, not commission.
 
@@ -86,9 +86,9 @@ At a role change, pass **decisions and evidence identifiers**, not the transcrip
 - More skills are not automatically better. Add one only for distinct triggers, expert facts/procedures and an evaluable benefit. Consolidate overlapping advice rather than generate a 40-skill menu.
 - Documentation drift belongs to its permanent owner. An oversized plan checkpoint is a symptom; move durable findings to evidence owners and shorten the checkpoint. Git preserves history.
 
-## Frontend Cursor efficiency route
+## Frontend implementation route
 
-The [preinvestigated frontend execution playbook](../.agents/skills/frontend-engineering/SKILL.md) supplies source-symbol anchors, a verification ladder and warm pnpm/Turbo/Next commands for the owner-selected React/Next modernization. Cursor receives one selected Change; the conditional [frontend implementation rule](../.cursor/rules/frontend-implementation.mdc) is short and does **not** preload the whole playbook. [W20 local test/caching](../work/changes/archive/2026-11/web/2026-11-12--web-fast-feedback-toolchain/CHANGE.md) and [W21 CI selection](../work/changes/archive/2026-11/web/2026-11-12--web-ci-budget/CHANGE.md) are archived Done changes. This page does not claim a new measured token saving.
+The [preinvestigated frontend execution playbook](../.agents/skills/frontend-engineering/SKILL.md) supplies source-symbol anchors, a verification ladder and warm pnpm/Turbo/Next commands for the owner-selected React/Next modernization. The implementation agent receives one selected Change. When Cursor is that client, the conditional [frontend implementation rule](../.cursor/rules/frontend-implementation.mdc) is short and does **not** preload the whole playbook. [W20 local test/caching](../work/changes/archive/2026-11/web/2026-11-12--web-fast-feedback-toolchain/CHANGE.md) and [W21 CI selection](../work/changes/archive/2026-11/web/2026-11-12--web-ci-budget/CHANGE.md) are archived Done changes. This page does not claim a new measured token saving.
 
 ## First real-client proof, before buying more tools
 

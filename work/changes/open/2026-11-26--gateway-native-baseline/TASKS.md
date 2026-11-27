@@ -12,4 +12,4 @@ All tasks: precise diff, test command/result, remaining limitation, no broad arc
 
 
 ## Acceptance corrective tasks (current execution)
-Read [ACCEPTANCE-CORRECTIONS.md](ACCEPTANCE-CORRECTIONS.md) for ordered T05 tasks and source/owner proof split. These supersede the original completion receipt, not the selected design. No heavy live proof by Cursor.
+Read [ACCEPTANCE-CORRECTIONS.md](ACCEPTANCE-CORRECTIONS.md) for ordered T05 tasks and source/owner proof split. These supersede the original completion receipt, not the selected design. No heavy live proof by the implementation agent.

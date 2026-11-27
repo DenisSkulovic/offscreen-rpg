@@ -35,7 +35,7 @@ Use the official documentation appropriate to the **installed** version rather t
 | Decision needed | Load |
 | --- | --- |
 | Challenge a large idea after source investigation, before writing code | `independent-design-review` |
-| Convert an approved CHANGE.md/optional PLAN and authoritative contract into a cheap executor packet | `cursor-handoff` |
+| Convert an approved CHANGE.md/optional PLAN and authoritative contract into a cheap executor packet | `implementation-handoff` |
 | Implement a bounded, authorized slice | `implementation-slice` |
 | Design minimal discriminating unit/integration/E2E tests from approved acceptance | `test-strategy` + [testing manual](../../.agents/knowledge/testing-and-quality-evidence.md) |
 | Design or review HTTP/API contract semantics, evolution and network behavior | `api-contract-design` + [API manual](../../.agents/knowledge/api-and-network-contracts.md) |

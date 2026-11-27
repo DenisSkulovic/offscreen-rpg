@@ -26,6 +26,6 @@ For a consequential design/review, select the relevant section of [durable opera
 
 `Invariant | evidence (files/symbols + state transition) | most likely failure interleaving | smallest safe fix or clarifying experiment | exact acceptance`.
 
-If recommending a change, supply a bounded transactional slice for Cursor and name what must remain unchanged. Reject generic assertions that a system is "idempotent" without identifying the persistent key, side-effect fence and duplicate delivery behavior. No broad data resets, live inference, or worker/deployment changes without task-specific permission.
+If recommending a change, supply a bounded transactional slice for the implementation agent and name what must remain unchanged. Reject generic assertions that a system is "idempotent" without identifying the persistent key, side-effect fence and duplicate delivery behavior. No broad data resets, live inference, or worker/deployment changes without task-specific permission.
 
 **Example:** a late provider settlement exceeds one funding account's reservation. Its stop action must target the liable account; separately defined shared usage windows still constrain all affected operations. A regression must create at least two accounts and demonstrate no unrelated stop, not merely check that the charged account stopped.

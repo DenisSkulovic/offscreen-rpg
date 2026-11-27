@@ -16,7 +16,7 @@ Start with the [fresh-clone bootstrap runbook](docs/runbooks/fresh-clone-bootstr
 | --- | --- |
 | Persistent stories, characters and worlds | Product and technical documentation as explicit design authority |
 | Deterministic rules, state, time and outcomes | Undertaking → Design → Change → small implementation tasks → proof |
-| AI Storyteller proposing narrative continuations | ChatGPT as source-grounded architect/planner; bounded Cursor executors |
+| AI Storyteller proposing narrative continuations | A planner prepares source-grounded work; an implementation agent executes bounded tasks. ChatGPT, Claude Code and Cursor are clients, not roles |
 | Durable Library, branch/fork and source identity | A navigable wiki with retrieval, link/claim-health checks and lifecycle rules |
 | Controlled publication, retries and provider costs | Reproducible evidence, negative tests, cost-aware agent orchestration |
 | Browser, API, workers and data services | Isolated Change worktrees, parallel workstreams and controlled integration |
@@ -30,8 +30,8 @@ The repository treats its development process as **inspectable software engineer
 ```mermaid
 flowchart LR
     A["Product intent\ndocs/product"] --> B["Technical contracts\ndocs/technical"]
-    B --> C["ChatGPT planning\nDesigns + bounded Changes"]
-    C --> D["Cursor implementation\nindependent worktrees"]
+    B --> C["Planner\nDesigns + bounded Changes"]
+    C --> D["Implementation agent\nindependent worktrees"]
     D --> E["Source + focused tests\nnegative cases"]
     E --> F["Evidence + reconciliation\nstatus, wiki, lifecycle"]
     F -. "New findings" .-> A
@@ -41,7 +41,7 @@ The current method emphasizes:
 
 - **Documentation before new contracts:** Selected product behavior and architectural guarantees are established in the owning wiki before implementation is commissioned. Code and tests show *realization*, not product authority.
 - **Explicit work lifecycles:** Undertakings coordinate multi-Change efforts; Designs resolve questions; Changes own lasting code or substantive documentation outcomes; standalone Tasks record independent actions; temporary packets retire after their results are promoted.
-- **Planner-first, executor-cheap:** ChatGPT inspects source, interfaces, data schemas, failure paths and tests, deciding algorithms and preparing small execution-ready tasks. Cursor's parent and inexpensive subagents implement bounded edits and return factual receipts rather than repeating the investigation.
+- **Planner-first, executor-cheap:** The planner inspects source, interfaces, data schemas, failure paths and tests, decides the algorithm and prepares small execution-ready tasks. The implementation coordinator and its workers implement bounded edits and return factual receipts. They do not repeat the investigation. The client may be ChatGPT, Claude Code, Cursor or another authorized environment.
 - **Parallelism without shared-checkout chaos:** Independently commissioned Changes get separate branches **and linked Git worktrees**. One integration custodian serializes shared files, reconciliations and final joins.
 - **Discoverability and evidence:** The wiki has heading-level lookup and health checks. Change outcomes are reconciled with product/technical claims, tests, status and dated evidence. A selected design, an inspected implementation, a passing fixture and a live operational proof are not interchangeable.
 - **Economics with correctness:** Limit unnecessary agent context, fanout and repeated test sweeps, without waiving authorization, privacy, data integrity, idempotency or provider spending safeguards.
@@ -54,7 +54,7 @@ The current method emphasizes:
 | [How We Work](WORKFLOW.md) | End-to-end Undertaking, Design, Change, Task, review and Git lifecycle |
 | [Repository Structure](REPOSITORY-STRUCTURE.md) | What belongs where; permanent knowledge versus temporary dossiers and retirement |
 | [Documentation wiki](docs/README.md) | Product/technical authority and discoverable topic maps |
-| [Agent entrypoint](AGENTS.md) · [ChatGPT planner](CHATGPT.md) | How a new coding agent or planner bootstraps repository-specific rules |
+| [Agent entrypoint](AGENTS.md) · [ChatGPT](CHATGPT.md) · [Claude Code](CLAUDE.md) | How a coding agent loads shared rules. Client adapters do not own the roles |
 | [Work selection](work/QUEUE.md) · [Change catalog](work/changes/README.md) | Current default assignment, proposed work and execution receipts |
 | [Evidence](evidence/README.md) · [realization status](STATUS.md) | What actually ran, what exists and what remains unproven |
 | [Developer environments, illustrated](docs/architecture/10-developer-environments.md) | How several Cursor agents share one workstation without sharing code, tenants or active processes; current vs planned capabilities |
@@ -98,8 +98,8 @@ The current codebase includes a Next.js frontend, API and worker services, TypeS
 | --- | --- |
 | **Evaluating the engineering work or portfolio** | [Engineering System Tour](ENGINEERING.md), then one product → technical → source → evidence trace |
 | **Exploring the game design** | [Product wiki](docs/product/README.md) and [architecture atlas](docs/architecture/README.md) |
-| **A new ChatGPT planner** | [AGENTS.md](AGENTS.md) → [CHATGPT.md](CHATGPT.md) → relevant source and planning standards |
-| **A Cursor or other coding agent** | [AGENTS.md](AGENTS.md) → commissioned Change → bounded task and worktree instructions |
+| **A planner on any capable client** | [AGENTS.md](AGENTS.md) → the client adapter ([CHATGPT.md](CHATGPT.md), [CLAUDE.md](CLAUDE.md), or Cursor rules) → the relevant planning standard |
+| **An implementation agent** | [AGENTS.md](AGENTS.md) → commissioned Change → bounded task and worktree instructions |
 | **Running locally or checking proofs** | [Choose a local test tier](docs/runbooks/local-development.md); for a Cursor worktree, [owned dev-stack runbook](docs/runbooks/dev-worktree-stacks.md) → focused tests/evidence |
 
 This project deliberately exposes its assumptions, gaps, unsuccessful experiments and development process. Its goal is not to appear finished, but to make both **the software and the way it gets built** understandable and testable.

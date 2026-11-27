@@ -4,7 +4,7 @@
 
 **Lifecycle walkthrough:** [How we work](../WORKFLOW.md) connects these types to the practical docs-first / ChatGPT-plans / Cursor-implements / verification and branch workflow. This file remains the precise classification reference.
 
-**Status:** selected repository operating convention, 2026-11-20. **Owner:** engineering work management, not game product behavior. [One selection queue](QUEUE.md) · [Change standard](../.agents/references/change-work-unit-standard.md) · [Composer microtasks](../.agents/references/composer-first-execution.md) · [Tasks](tasks/README.md).
+**Status:** selected repository operating convention, 2026-11-20. **Owner:** engineering work management, not game product behavior. [One selection queue](QUEUE.md) · [Change standard](../.agents/references/change-work-unit-standard.md) · [Task execution standard](../.agents/references/task-execution-standard.md) · [Tasks](tasks/README.md).
 
 ## Words that mean different things
 

@@ -1,6 +1,6 @@
 # Product documentation renewal
 
-**Status:** Deferred, unratified design investigation. Owner: human owner + ChatGPT designer. Deferred 2026-11-27 at owner request. Reactivation: explicit owner selection, refresh actual main, move dossier to open. No fixed deadline, implementation commission, paid calls or runtime mutation. Inventory baseline: `59693e9d86f9cfcdc3227669257d89dab5aaaf11`.
+**Status:** Deferred, unratified design investigation. Owner: human owner and designer. Deferred 2026-11-27 at owner request. Reactivation: explicit owner selection, refresh actual main, move dossier to open. No fixed deadline, implementation commission, paid calls or runtime mutation. Inventory baseline: `59693e9d86f9cfcdc3227669257d89dab5aaaf11`.
 
 ## Desired outcome
 

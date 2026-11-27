@@ -22,24 +22,24 @@ The target is **accepted, maintainable work per unit of total cost**: coding sub
 
 For Claude Code, use `/clear` between unrelated tasks, `/compact` within a long continuing one, `/context all` to inspect eager instructions and `/usage` for reported usage. Subscription usage bars are not API-billed price per token. See [official cost guidance](https://code.claude.com/docs/en/costs).
 
-For Cursor, do not require it to redo costly product design. Provide the `cursor-handoff` packet with exact heading anchors, 2–5 likely code owners, one rejection/retry case and cheapest relevant proof. For ChatGPT, reason from authoritative specs and a compact source investigation, not a fabricated full-code understanding.
+Do not make the implementation agent redo settled design. Provide the [implementation handoff](../skills/implementation-handoff/SKILL.md) with exact heading anchors, 2–5 likely code owners, one rejection or retry case and the cheapest relevant proof. The planner reasons from authoritative specs and a compact source investigation.
 
-**Tool costs:** Auto-loading every MCP server description, spinning up parallel subagents, or transferring raw Claude notes to Cursor can waste more than a few extra paragraphs of needed contract. Use a tool or new context only when its information gain justifies it.
+**Tool costs:** Auto-loading every MCP server description, spinning up parallel workers, or pasting one client's raw notes into another can waste more than a few extra paragraphs of needed contract. Use a tool or a new context only when its information gain justifies it.
 
 ## Delegate for context hygiene, not only difficulty
 
-A subagent is also a **context boundary**. The parent should keep judgment, integration state and unresolved decisions in its own conversation, while offloading straightforward missions that are cheap in reasoning but noisy in execution. If a bounded chore needs many reads, Git commands, repeated searches or mechanical edits and the parent only needs the result, prefer an **Auto utility subagent** and request a compact factual receipt.
+A worker is also a **context boundary**. The coordinator keeps judgment, integration state and unresolved decisions, and offloads straightforward missions that are cheap in reasoning but noisy in execution. If a bounded chore needs many reads, Git commands, repeated searches or mechanical edits and the coordinator only needs the result, use the client's mechanical utility route and request a compact factual receipt. Cursor's route is Auto. Claude Code's route is Haiku. See each client's model policy.
 
-Do not over-delegate microscopic work: one or two small actions are usually cheaper in the parent. The useful threshold is a **small mission** with enough intermediate chatter to create compounding context tax. Auto utility work must have a known finish line and stop on ambiguity; implementation, architecture, security-sensitive reasoning and open-ended diagnosis stay with the appropriate stronger route.
+Do not over-delegate microscopic work: one or two small actions are usually cheaper for the coordinator. The useful threshold is a **small mission** with enough intermediate chatter to create compounding context tax. Utility work must have a known finish line and stop on ambiguity. Implementation, architecture, security-sensitive reasoning and open-ended diagnosis stay with the stronger route that client policy names.
 
 ## What to measure
 
 Record actual loaded files/skills (not merely linked ones), selected model/tool calls, tokens _if the client reports them_, time, expensive wrong turns, owner intervention and defects caught. Do not convert changed Markdown byte counts into supposed token savings. Benchmark the same accepted scope in a fresh context before claiming improvement.
 
-## Total-cost optimization: Cursor tokens, local time, human attention
+## Total-cost optimization
 
-The owner runs cheaper/faster Cursor models under a limited subscription and delegates expensive architecture, alternatives and broad source investigations to ChatGPT. **Don't make Cursor rediscover resolved design or load all manuals.** A selected Change plus 2–5 source anchors, one failure case and a verified narrow command is the default handoff; unresolved architectural contradictions return to ChatGPT with concise evidence.
+The planner does the expensive architecture, alternatives and broad source investigation. The implementation client receives a selected Change, 2–5 source anchors, one failure case and a verified narrow command. It does not rediscover resolved design or load every manual. Unresolved architectural contradictions return to the planner with concise evidence. Cursor model spend follows [.cursor/MODEL-POLICY.md](../../.cursor/MODEL-POLICY.md). Claude Code model spend follows [.claude/MODEL-POLICY.md](../../.claude/MODEL-POLICY.md).
 
-The workstation is now more powerful than the earlier laptop, but wall-clock remains scarce. Prefer pinned pnpm, workspace filters, warm Turbo/Next/Vitest/TypeScript caches and staged check cadence. No automatic entire repo build, install or E2E on each small edit; no default 'never check' either. See [frontend execution playbook](../../research/legacy-engineering/frontend-execution-playbook.md#5-command-and-cache-cookbook). Measure _actual_ elapsed time, cache hits and Cursor usage rather than claiming imaginary savings.
+The workstation is now more powerful than the earlier laptop, but wall-clock remains scarce. Prefer pinned pnpm, workspace filters, warm Turbo/Next/Vitest/TypeScript caches and staged check cadence. No automatic entire repo build, install or E2E on each small edit; no default of never checking either. See [frontend execution playbook](../../research/legacy-engineering/frontend-execution-playbook.md#5-command-and-cache-cookbook). Measure actual elapsed time, cache hits and client usage rather than claiming imaginary savings.
 
 **Stop rule:** once you know scope, owner, actual implementation, negative case and next action, stop searching. Escalate only for a concrete unresolved uncertainty. The [evaluation protocol](../../.agents/references/context-economics.md) captures the evidence.

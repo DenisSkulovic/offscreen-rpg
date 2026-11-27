@@ -11,4 +11,4 @@ Parent: check latest main, active worktrees and competing platform-plan/status e
 Source receipt (2026-11-26): T01–T04 are implemented on this branch and not joined. `node --test` of the gateway installer tests, platform-plan, infra-cli, infra-cli-operation, and gateway smoke tests passed 85/85, including the real local Helm render and the corrupt-checksum refusal. Shell syntax and `backend.py` compile passed. Live install, upgrade, and the 45s stream were not run.
 
 
-Current owner/planner acceptance checkpoint supersedes older source-only status and execution ownership: [ACCEPTANCE-CORRECTIONS.md](ACCEPTANCE-CORRECTIONS.md). Cursor implements only the named corrective tasks and cheap checks, then commits and stops for owner/ChatGPT heavy acceptance. Existing scope and integration gates remain.
+Current owner/planner acceptance checkpoint supersedes older source-only status and execution ownership: [ACCEPTANCE-CORRECTIONS.md](ACCEPTANCE-CORRECTIONS.md). The implementation agent implements only the named corrective tasks and cheap checks, then commits and stops for acceptance-lead and owner heavy acceptance. Existing scope and integration gates remain.

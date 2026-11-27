@@ -46,7 +46,7 @@ Evidence: audited sampled history and tested local hook acceptance/rejection.
 
 1. `pnpm repo:commit:check:test` runs offline Node validator tests. Run `node scripts/repo-tools/check-commit-message.mjs <message-file>` to check one proposed message manually.
 2. `pnpm repo:hooks:install` sets local `core.hooksPath=.githooks`. This installs the *correct* `commit-msg` hook, not `pre-commit`; it uses Node with no third-party dependencies and preserves an existing custom hooks path unless `--force` is explicitly supplied. The tracked hook has executable Git mode. Each clone must install its own hook.
-3. A local hook is **not server-side enforcement**. `--no-verify` and direct GitHub API writes bypass it. ChatGPT and other connector users must self-check message shape and truthfulness before calling commit APIs. True remote rejection would require a configured mandatory status or server rule; no new paid GitHub Actions/branch-protection requirement was introduced.
+3. A local hook is **not server-side enforcement**. `--no-verify` and direct GitHub API writes bypass it. A connector client that commits through an API must self-check message shape and truthfulness before calling that API. True remote rejection would require a configured mandatory status or server rule; no new paid GitHub Actions/branch-protection requirement was introduced.
 4. Historical commits remain unchanged, and the check must not reject a new PR merely because an ancestor predates this policy.
 
 **Human judgment after the parser:** From subject + Why, can you tell what was done and why? From Evidence + Remaining, do you know what was actually proved and what was not? A tiny honest message beats an elaborate fabricated receipt.

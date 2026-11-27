@@ -54,7 +54,7 @@ Use the depth that matches the risk. Do not apply the material-architecture gate
 4. Passed self-defense and [independent committee](#mandatory-independent-design-committee) on the exact candidate and scope. Decisive uncertainties are evidenced or explicitly gated outside the selected slice. Only unresolved Critical and High findings block that slice.
 5. Separate owner acceptance of material decisions and promotion into permanent product/technical owners, distinguishing selected, implemented and proven.
 
-Do not prepare implementation packets or dispatch a material new architecture before the selected design passes these gates. Narrow authorized experiments may precede acceptance; no implied implementation or ratification. A settled dependency-gated Change is not a design blocker. Proportionality is not permission to leave consequential architecture undecided for Cursor, or to skip proof that an established safety guarantee requires.
+Do not prepare implementation packets or dispatch a material new architecture before the selected design passes these gates. Narrow authorized experiments may precede acceptance; no implied implementation or ratification. A settled dependency-gated Change is not a design blocker. Proportionality is not permission to leave consequential architecture undecided for the implementation agent, or to skip proof that an established safety guarantee requires.
 
 ### Select execution by economics and fit
 

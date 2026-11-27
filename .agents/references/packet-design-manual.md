@@ -29,13 +29,13 @@ Draw a DAG of *edits and validations*, not just document sections. Each node has
 | T01 + T02 | exact independent outputs | none, or name conflicts | `parallel-safe` only when all relevant overlaps are absent |
 | T03 | consumes T01/T02 outputs | integration ownership | `after T01,T02`; one parent joins and proves |
 
-A parent may run **two** independent Composer children concurrently under the existing bounded-orchestration default, only if a planner-provided matrix establishes nonoverlap and the execution environment supports safe isolated writes/joins. More candidates may form later waves but are not an invitation to a swarm. If children share a Change worktree, disjoint file sets alone may be insufficient: tests and Git-index/build-output collisions must also be absent; parent owns all staging, commit and final joins. Where isolation is not proven, dispatch serially. Parallelism is not a success metric in itself.
+A coordinator may run **two** independent implementation workers concurrently under the existing bounded-orchestration default, only if a planner-provided matrix establishes nonoverlap and the execution environment supports safe isolated writes/joins. More candidates may form later waves but are not an invitation to a swarm. If children share a Change worktree, disjoint file sets alone may be insufficient: tests and Git-index/build-output collisions must also be absent; parent owns all staging, commit and final joins. Where isolation is not proven, dispatch serially. Parallelism is not a success metric in itself.
 
 **Prefer a small critical path** without slicing atomic transaction or authority changes into contradictory parallel writers. Do not create artificial subagents for a single straightforward edit. If the Change exceeds the active implementation target, reconsider its scope under the submission standard. Some Changes have only serial tasks, and that is healthy.
 
 ## 4. Write two audiences, one source of truth
 
-Parent: CHANGE + TASKS index, recorded reference/HEAD, scope, constraints, prerequisite DAG/waves and shared locks, first dispatch, assigned proof and acceptance handoff, closure. Child: [canonical task card](composer-first-execution.md#tasksmd-format) with precise permitted writes, anchors, selected edit, prerequisites, exact focused normal/negative and stop. Planner: [file roles](planning-artifact-quality.md#3-execution-packet-shape), current source facts and selected contracts, direct section anchors. No raw history, multiple normative owners or universal preload.
+Parent: CHANGE + TASKS index, recorded reference/HEAD, scope, constraints, prerequisite DAG/waves and shared locks, first dispatch, assigned proof and acceptance handoff, closure. Child: [canonical task card](task-execution-standard.md#tasksmd-format) with precise permitted writes, anchors, selected edit, prerequisites, exact focused normal/negative and stop. Planner: [file roles](planning-artifact-quality.md#3-execution-packet-shape), current source facts and selected contracts, direct section anchors. No raw history, multiple normative owners or universal preload.
 
 ## 5. Test dispatchability while writing
 

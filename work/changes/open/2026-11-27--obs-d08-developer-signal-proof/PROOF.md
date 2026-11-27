@@ -1,6 +1,6 @@
 # OBS-D08 proof
 
-NOT RUN. All Cursor commands repo-root, local/offline focused tests only; no live cluster or paid operations. Heavy proof ChatGPT/owner with explicit target authorization and exact tested SHA.
+NOT RUN. All implementation commands are repo-root, local/offline focused tests only; no live cluster or paid operations. Heavy proof belongs to the acceptance lead and the owner with explicit target authorization and exact tested SHA.
 
 V03/V08: exact parent/child/status, correlated log, exact ten metric series plus target_info, labels/buckets/value/raw submitted timestamp; two sequential retained-store runs. Negative old-only and wrong fixture, forbidden canaries absent in successful complete cycles >=60s; failed controls/queries fail. D4/D4.1 actual pinned feasibility and seven durable increasing allocations, rollback/delayed ingest/failed state/wrong lock refuse. Owner real WSL through owned forwards, no SDK/paid calls. Before any live operation/main merge, actual pinned D3/D4 evidence: use the isolated optional Docker mode of the existing immutable preflight linked in [implementation plan](../../../designs/open/observability-developer/IMPLEMENTATION-PLAN.md#release-and-execution), with explicit owner authorization; compare actual raw labels/timestamps/window receipt against Exact metric fixture, fail on mismatch. No working cluster or mutable image pulls.
 

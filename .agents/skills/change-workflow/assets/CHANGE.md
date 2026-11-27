@@ -11,7 +11,7 @@
 
 **Planner admission:** [verify actual source/authority, apply .agents/references/planning-artifact-quality.md and packet-readiness-review.md; material multi-task work requires TASKS, SOURCE-MAP, PROOF and selected contracts. Record current disposition; do not leave this instruction in a completed packet.]
 
-## Cursor first-screen brief
+## Implementation first-screen brief
 
 [Actual task count; current planning count/KiB; parent/largest child required words; estimated active implementation minutes; heavy acceptance owner. Use existing readiness/review receipt, not another ledger.]
 

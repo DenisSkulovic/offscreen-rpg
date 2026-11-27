@@ -12,6 +12,6 @@ description: Design or review a consequential HTTP/API/client-server contract, r
 3. Define resource/business intent identity, HTTP/wire semantics, what success/acceptance actually proves, timeouts/cancellation, conditional writes, idempotency and permitted retries. Identify at least one plausible alternative and which constraint would reverse the design.
 4. Specify request/response/error shape, serialization (time, null, money, versions), authz scope, pagination/streaming/cache semantics, rolling upgrade compatibility and reasonable resource bounds. Do not invent an API-wide versioning system for a small change.
 5. Produce a compact acceptance/consumer contract, including success, denied/conflict, stale/duplicate, and one transport/proxy-related case if material.
-6. Handoff to Cursor only after approved technical owner. No code editing, live provider calls, database reset or server startup in design/review role.
+6. Hand off to an implementation agent only after the technical owner is approved. No code editing, live provider calls, database reset or server startup in design/review role.
 
 **Output:** `consumer outcome | options and criteria | authoritative operation | wire/status/lifecycle | compatibility and security | one falsifying test | source anchors and remaining decision`.

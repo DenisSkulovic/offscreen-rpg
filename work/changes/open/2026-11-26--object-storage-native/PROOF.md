@@ -1,8 +1,8 @@
 # Acceptance ownership and executable proof contract
 
-All new implementation proofs NOT RUN. R7 matrix as amended by R8/R9 and independent pass 02 mandatory. Source fixtures and actual live acceptance distinguished. Cursor constructs tools and runs focused tests only. ChatGPT/owner run heavy batch on exact committed SHA, one fixture at a time, explicit permissions, no paid calls.
+All new implementation proofs NOT RUN. R7 matrix as amended by R8/R9 and independent pass 02 mandatory. Source fixtures and actual live acceptance distinguished. The implementation agent constructs tools and runs focused tests only. The acceptance lead and the owner run the heavy batch on exact committed SHA, one fixture at a time, explicit permissions, no paid calls.
 
-## Cursor-owned focused proof
+## Implementation-agent focused proof
 
 T01–T07 commands in TASKS; one positive and diagnostic negative per subcard, actual Helm lint/template permitted; short fake writer process tests permitted. Focused package checks, no full monorepo build. Register new source suite so broad owner command includes it. No live resources created, restarted or deleted. Report counts, exact commands, failures and SHA.
 

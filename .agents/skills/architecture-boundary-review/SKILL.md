@@ -45,6 +45,6 @@ Deliver at most:
 - **Verdict:** chosen option with two specific reasons and one serious alternative.
 - **Evidence:** 3–8 path/symbol anchors and the exact broken or risky invariant.
 - **Contract change:** product/technical owner and what remains unchanged.
-- **Execution handoff:** one bounded Cursor-sized slice, exclusions, smallest safe regression/trace, and any meaningful unresolved decision.
+- **Execution handoff:** one bounded implementation slice, exclusions, smallest safe regression/trace, and any meaningful unresolved decision.
 
 Do not launch autonomous parallel refactors, modify unrelated packages, or equate green tests with a coherent architecture. Expensive reviewers are reserved for contested state/transaction boundaries. Never dispatch a paid Storyteller call for architecture inspection.

@@ -148,7 +148,7 @@ The owner requested a **durable capture**, not more prematurely Cursor-ready tas
 | [CH01 Chamber experiments](backlog/experience-admin/2026-11-22--ch01-chamber-experiment-workbench/CHANGE.md) | Isolated scene-N Scenario × Recipe × Experiment and transparent run/compare | **PROPOSED**, after MA12/CFG01/EV01 interfaces |
 | [CFG02 Admin governance](backlog/policy-finance/2026-11-22--cfg02-admin-policy-management/CHANGE.md) | Draft/validate/activate/roll back operator-managed policies with permissions/audit | **DEFERRED**, after CFG01 accepted |
 
-No Change has an authorized T-ID; do not dispatch these shallow packets to Composer. Paid evals default to **zero authorized spend**, even if a prior proposal mentioned a possible $0.75 cap. Real run requires separate explicit user authorization and measured worst-case cost. No automatic model judge, CI eval, retry or paid background run.
+No Change has an authorized T-ID; do not dispatch these shallow packets to an implementation worker. Paid evals default to **zero authorized spend**, even if a prior proposal mentioned a possible $0.75 cap. Real run requires separate explicit user authorization and measured worst-case cost. No automatic model judge, CI eval, retry or paid background run.
 
 
 ## Agent internals, reproducibility and inspectability (planned 2026-11-22)
@@ -167,7 +167,7 @@ No Change has an authorized T-ID; do not dispatch these shallow packets to Compo
 
 ## Human-owner readability wave, planned 2026-11-22
 
-**A separate structural refactor wave, not a replacement for CL01/WR11/K8S10.** The [canonical code-quality rule](../../.agents/rules/code-quality.md#human-ownership-refactors-controlled-mechanical-freedom) now explicitly supports **planner-fixed package layouts + Composer mechanical discretion**. No new feature, scheme, SQL transaction, external provider or migration.
+**A separate structural refactor wave, not a replacement for CL01/WR11/K8S10.** The [canonical code-quality rule](../../.agents/rules/code-quality.md#human-ownership-refactors-controlled-mechanical-freedom) now explicitly supports **planner-fixed package layouts plus implementation-worker mechanical discretion**. No new feature, scheme, SQL transaction, external provider or migration.
 
 | Change | Package ownership and purpose | Gate |
 | --- | --- | --- |

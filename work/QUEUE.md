@@ -26,11 +26,11 @@ Use exactly one `Current work:` line near the top. Valid values are `none`, a Ma
 | Assess actual successful/failed runs | [Evidence](../evidence/README.md) | Dated reproducible observations |
 | Know shipped/observed capability | [STATUS](../STATUS.md) | Demonstrated implementation only |
 
-## Cursor dispatch
+## Dispatch
 
 **Finite parent control:** a named user-authorized batch is a temporary schedule, not another selector or permission to drain every Ready Change. Checkpoint after 2–5 T-IDs, then continue. A full dedicated Change commission continues within the same Change. A batch commission stops at its agreed boundary. A routine checkpoint does not require another owner confirmation of an already commissioned task. Follow [parent policy](../.agents/references/bounded-parent-orchestration.md). A Done T-ID leaves its parent Change open until the Change's actual acceptance is proved; completed Changes should be archived in the same batch window, not forgotten.
 
-Start with this pointer, then the selected packet, then **one** T-ID when the selection is a Change. When Cursor is selected, Composer Standard remains the normal parent and child model. An unresolved technical decision goes back to the planner for source-backed investigation. Do not turn it into a paid investigation by default. [Economical work rule](../.agents/references/composer-first-execution.md) · [current backlog handoff](changes/CURSOR-OPEN-BACKLOG-HANDOFF-2026-11-20.md).
+Start with this pointer, then the selected packet, then **one** T-ID when the selection is a Change. Model choice belongs to the selected client's execution policy. An unresolved technical decision goes back to the planner for source-backed investigation. Do not turn it into a paid investigation by default. [Task execution standard](../.agents/references/task-execution-standard.md) · [current backlog handoff](changes/CURSOR-OPEN-BACKLOG-HANDOFF-2026-11-20.md).
 
 ## Transition
 
