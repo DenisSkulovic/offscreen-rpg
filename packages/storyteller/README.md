@@ -1,22 +1,22 @@
 # Storyteller contracts and adapters
 
-This package prepares bounded tasks, projects provider requests and validates results. It does not own story transactions, dice, publication or durable retry; those belong to the [application package](../application/README.md). A creative profile is data, not a running agent.
+This package prepares bounded tasks, projects provider requests and validates results. It does not own story transactions, dice, publication or durable retry; those belong to the [Story Engine package](../story-engine/README.md). The former application package is deleted; do not look for it. A creative profile is data, not a running agent.
 
-[Concepts](../../docs/product/foundations/concepts.md) distinguishes a Storyteller turn, model round, published passage and contextual scene. The field `result.scene` is an output envelope, not a scene lifecycle. Historical reports do not open decisions or advance time.
+[Concepts](../../docs/product/foundations/concepts.md) distinguishes a Storyteller turn, model round, published passage and contextual scene. The field `result.scene` is an output envelope, not a scene lifecycle. Historical reports do not open decisions or advance time. The technical realization record for these storage names is [Execution and storage concepts](../../docs/technical/storyteller/operation-and-controller.md#execution-and-storage-concepts-dated-realization-of-the-vocabulary).
 
 ## Follow one request
 
 | Stage | Owner | Boundary to inspect |
 | --- | --- | --- |
-| Load committed evidence | Application [context.ts](../application/src/storyteller/context.ts) | Story/root-scoped storage reads |
+| Load committed evidence | Story Engine [context.ts](../story-engine/src/storyteller/context.ts) | Story/root-scoped storage reads |
 | Bound context | [context/index.ts](src/context/index.ts) | Required sources, complete bodies, recent window and overflow |
 | Task/result contracts | [task-contracts.ts](src/tasks/task-contracts.ts) | Stored task/result schemas, task versions, task-specific provider opening schemas and normalization |
 | Construct and capture request | [tasks/index.ts](src/tasks/index.ts) | `prepareStorytellerTask`, exact profile/context request, bounded immutable task |
 | Validate result and repair evidence | [result-validation.ts](src/tasks/result-validation.ts) | Semantic admission, historical evidence/provenance validation, diagnostic and explicit correction packet |
 | Bound work and route | [resources.ts](src/tasks/resources.ts), [policy.ts](src/tasks/policy.ts) | Recipe/envelope versus provider policy; application admission supplies authority |
 | Produce output | [fixtures](src/fixtures/index.ts) or [OpenRouter adapter](src/providers/openrouter.ts) | Offline data versus explicit provider transport |
-
-| Publish | Application [publication.ts](../application/src/storyteller/publication.ts) | Independent state fence and atomic commit |
+| Publish | Story Engine [publication.ts](../story-engine/src/storyteller/publication.ts) | Independent state fence and atomic commit |
+| Recovery and retry | Story Engine [recovery.ts](../story-engine/src/storyteller/recovery.ts) (re-exports `retryStoryteller` from [stories/storyteller-retry.ts](../story-engine/src/stories/storyteller-retry.ts)) | Explicit retry of the same admitted intention; no resend of an uncertain dispatch |
 
 Internal `contextInputSchema` and provider `contextRequestSections` are different projections. Narrative evidence uses task-local handles; some resolution data deliberately retains internal receipt identity. Inspect the exact packet before claiming which IDs or evidence the model sees. The [worked request trace](../../research/authored-scenarios/storyteller.md) illustrates the boundary.
 
@@ -37,7 +37,7 @@ Task preparation currently captures `storyteller.v17` / `inputVersion: 17`; a sa
 
 The OpenRouter packet builder and inspector use the same body as live serialization. [Request audit](src/providers/request-audit.ts) reports packet/schema bytes, hashes, sections and omitted evidence without I/O. Bytes are not verified tokenizer counts, cache hits or savings. [Model route capabilities](src/providers/model-route-capabilities.ts) (SA08) declare reasoning-off, provider-reported-only cache billing and fail closed on unknown price; packet reports never treat reusable prefix bytes as hits. [Operation trace](src/providers/operation-trace.ts) (SA01) composes those inspections into a redacted cause→packet→round→publication→cost timeline with explicit null/unknown usage fields. [Evidence lineage](src/providers/evidence-lineage.ts) (SA05) records stored→loaded→final-packet→cited→published checkpoints without claiming prose faithfulness. `pnpm --filter @offscreen/chamber storyteller-packet-audit` writes the request manifest, operation traces, evidence-lineage and route-capability fixtures.
 
-Captured policy chooses native JSON schema or evaluation-only JSON-object validation, plus buffered or bounded streaming response framing. Strict-provider projection handles nullable placeholders against the original schema; it does not repair arbitrary bad values. A partial stream is not settled. Inspect [providers/openrouter.ts](src/providers/openrouter.ts) and its called adapter modules only for transport questions. Dispatch/reconciliation belongs to [application recovery](../application/README.md#execution-failure-and-retry).
+Captured policy chooses native JSON schema or evaluation-only JSON-object validation, plus buffered or bounded streaming response framing. Strict-provider projection handles nullable placeholders against the original schema; it does not repair arbitrary bad values. A partial stream is not settled. Inspect [providers/openrouter.ts](src/providers/openrouter.ts) and its called adapter modules only for transport questions. Dispatch/reconciliation belongs to [Story Engine recovery](../story-engine/README.md) (`recovery.ts`).
 
 ## Context and memory
 

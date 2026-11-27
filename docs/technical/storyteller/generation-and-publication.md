@@ -1,78 +1,64 @@
 # Generation and publication
 
-**Target seam:** generation ends with a **proposal**; publication is Game Authority's coherent commit of passage, visible choices with stored intent, admitted document changes, exact Library root, semantic world-state frontier and effective source/profile/rule pins. The writer never mutates canon or mechanics directly.
+**Selected guarantees (leading).** Generation ends with a **proposal**; publication is Game Authority's coherent commit of passage, visible choices with stored intent, admitted document changes, exact Library root, semantic world-state frontier and effective source/profile/rule pins. The writer never mutates canon or mechanics directly. Publication is allowed only against the exact roots, actor, generation, operation and narrative revision the task captured ([What publication is allowed to do](#what-publication-is-allowed-to-do)); it refuses stale, unauthorized or out-of-scope proposals ([What publication must refuse](#what-publication-must-refuse)); and the [Scene publication fence](#scene-publication-fence) holds or redoes under captured policy rather than overwrite newer canon. Three consequences hold everywhere on this page:
 
-**WR03 landing:** a writer mission can return that proposal, including staged object hashes and pinned-root citations, without calling publication. Forged citations and a private possibility asserted as fact are refused. Game Authority still owns the later commit.
+- A saved or replayed response never bypasses the stale-root fence: it is checked against the current root and revision at publication time, and a mismatch is `stale`.
+- A successful model output does not publish itself: schema-valid JSON is a candidate, a proposal, and only the publication fence under the story lock admits it.
+- Replay and recovery reuse the saved result and never resend a dispatched request or open a second charge.
 
 **Owns:** when a Storyteller operation may become a published passage, a historical report, or a held state, and what must stay unpublished.  
 **Selected target:** the publication step of the [bounded controller](operation-and-controller.md#two-loops).  
-**Landed prototype:** opening, continuation, mechanical consequence and historical-report tasks on the existing generation row, described in [current prototype runtime](operation-and-controller.md#current-prototype-runtime).  
-**Not a claim** that the adaptive multi-round controller or a narrative director is running.
+**Landed prototype:** opening, continuation, mechanical consequence and historical-report tasks on the existing generation row, described in [current prototype runtime](operation-and-controller.md#current-prototype-runtime). The historical field `result.scene` and the committed record `story_passage` are distinct storage names; their realization is recorded once, under [Execution and storage concepts](operation-and-controller.md#execution-and-storage-concepts-dated-realization-of-the-vocabulary), and is not duplicated here.
+**Not a claim** that the adaptive multi-round controller or a narrative director is running. The WR03, WR09B and WR11 sections below are explicitly scoped legacy implementation and proof: they are neither a generic Agent Core runtime nor end-to-end certification, and wire/version and durable custody formats stay compatible with them.
 
-## Selected durable Writer replay stage (WR09B; prerequisite WR09A)
+**WR03 landing:** a writer mission can return that proposal, including staged object hashes and pinned-root citations, without calling publication. Forged citations and a private possibility asserted as fact are refused. Game Authority still owns the later commit.
 
-A model-delivered response is only useful for recovery if the exact decision can be rehydrated and its **downstream tool and publication effects** can continue idempotently. After WR09A atomically links a private response object and provider charge to a Writer step, WR09B will read those exact bytes after restart and pass them through one versioned decision interpreter shared with scripted operation. A result-settled step does **not** mean tools were applied or a scene was published.
-
-The parent Writer round uses the existing (mission, context, ordinal) step identity and a unique recorded tool-call ID within the mission context. Recorded Library calls are replayed from saved request/result digests; Workdesk mutations use their existing idempotent tool ledger. A mismatch in name/arguments for a reused ID is rejected, not executed again. Next model-round preparation and parent step transition must commit in one SQL transaction after tool results, with existing maximum-round and shared research budgets respected. A final proposal is rehydrated from the immutable response and passed to Game Authority's usual publication fence. Writer code never admits a canonical passage by independently writing story rows. No model-provider credentials or paid calls are authorized for this next offline implementation stage; tests use injected fake transport and disposable SQL.
-
-Default continuation admission still pins scripted-offline. A server-owned provider-authorized admission may pin an allowlisted model and policy version instead. Approved spending and source-faithful long-form quality remain separately gated. [WR09B](../../../work/changes/archive/2026-11/other/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md) is joined: a fake transport can replay a settled v3 round and apply tools once. That is not live player routing or approved provider spend.
+**Staging is not commit.** Staged private S3 bytes (Workdesk objects, staged document objects) are not committed canon and are not permission to retry or republish; only the publication transaction commits.
 
 ## What publication is allowed to do
 
-Publication may admit one coherent scene outcome against the captured prior frontier: immutable passage/choices; accepted descriptive/document changes; exact resulting Library root; typed mechanical/world effects where supported; fictional clock/progress and active commitments; effective source/profile/rule pins; and causal lineage.
-
-Publication may create branch-local operational follow-up identities after the scene is committed. Those identities are not themselves part of the fictional snapshot.
+Publication may admit one coherent scene outcome against the captured prior frontier: immutable passage and choices; accepted descriptive/document changes; the exact resulting Library root; typed mechanical/world effects where supported; fictional clock/progress and active commitments; effective source/profile/rule pins; and causal lineage. It may also create branch-local operational follow-up identities after the scene is committed; those are not part of the fictional snapshot.
 
 ### Existing publication guarantees retained
 
-A short authoritative publication fence may write a current passage, a fresh valid offer, source-linked descriptive notes, or a historical report attached to its original event. It checks that the scene, canonical root and current offer are still the ones the task captured. If they are stale, the operation holds or redoes only under the captured policy. It never overwrites newer canon.
-
-Historical report attaches to the original history. It cannot supersede Now. An opening candidate never starts fictional time. Speculative or early prepared consequences stay private until exact settlement. A validator must not treat a predicted success as true.
+A short authoritative fence may write a current passage, a fresh valid offer, source-linked descriptive notes, or a historical report attached to its original event. It checks that scene, canonical root and current offer are still the captured ones. If stale, the operation holds or redoes only under the captured policy and never overwrites newer canon. A historical report attaches to the original history and cannot supersede Now. An opening candidate never starts fictional time. Speculative or early prepared consequences stay private until exact settlement, and a validator must not treat a predicted success as true.
 
 ## What publication must refuse
 
-Publication refuses a proposal when its captured root/frontier is stale, a required source is missing or outside scope, a proposed mechanical effect lacks authority, a visible choice lacks stable intent semantics, document changes cannot produce a valid rooted Library, or the resulting scene would be advertised as forkable without enough admitted semantic state to continue it faithfully.
-
-It also refuses attempts to copy parent/sibling future knowledge, provider attempts, leases, billing identity or external side-effect ownership into a fork. A writer's private possibility remains private possibility unless explicitly admitted as the appropriate record type.
+Publication refuses a proposal when its captured root/frontier is stale, a required source is missing or outside scope, a proposed mechanical effect lacks authority, a visible choice lacks stable intent semantics, document changes cannot produce a valid rooted Library, or the resulting scene would be advertised as forkable without enough admitted semantic state to continue it faithfully. It also refuses attempts to copy parent/sibling future knowledge, provider attempts, leases, billing identity or external side-effect ownership into a fork. A writer's private possibility stays private unless admitted as the appropriate record type.
 
 ### Existing refusal and hold guarantees retained
 
-- A model-written item transfer, dice result, or clock advance that admission did not commit.
-- A second publication of the same accepted action identity.
-- A failed or uncertain provider attempt that would advance fictional time or release a decision hold.
-- A repair that rewrites a settled receipt.
-- Direct story writes from an evidence-investigation subphase. That subphase may return a private evidence packet only.
+Concretely it must not commit or accept:
 
-If generation is unavailable or the captured budget is exhausted, publication uses only still-valid prepared content or a supported fallback. Otherwise it preserves the last published situation and explains the interruption. It does not invent progress.
+- a model-written item transfer, dice result, or clock advance that admission did not commit;
+- a second publication of the same accepted action identity;
+- a failed or uncertain provider attempt that advances fictional time or releases a decision hold;
+- a repair that rewrites a settled receipt, or a proposal that contradicts a committed mechanical receipt (the receipt stands; prose, a rumor or a summary cannot transfer an item, choose a die face, move the clock or mark a living character dead);
+- direct story writes from an evidence-investigation subphase, which may return a private evidence packet only.
 
-A failed or stale case keeps that committed situation. The scene, root, or offer no longer matches the capture, so the operation holds. Narrator text does not transfer an item, roll a die, or move the clock. A second publication of the same accepted action identity is refused. See [Step status](operation-and-controller.md#step-status). Who holds the task, who may retry it, and who publishes is [Remote task custody](#remote-task-custody).
+If generation is unavailable or the captured budget is exhausted, publication uses only still-valid prepared content or a supported fallback; otherwise it preserves the last published situation and explains the interruption. It does not invent progress. A failed or stale case keeps the committed situation: the operation holds, and narrator text transfers nothing. See [Step status](operation-and-controller.md#step-status); who holds the task, who may retry and who publishes is [Remote task custody](#remote-task-custody).
 
 ## Scene publication fence
 
-One scene publication selects the **post-publication** Library root and semantic world-state frontier under the same authority/version fence. The immutable passage, choices and their stored intentions refer to that boundary.
-
-A later mechanical event is a later causal frontier. It cannot retroactively rewrite the state associated with an already published scene. Likewise, a late document-indexing or summary job may improve retrieval projections but cannot change what source root scene 37 historically referenced.
-
-If SQL/state commit fails, staged Workdesk/Library proposals remain unpublished. If the commit succeeds but the HTTP response is lost, retry returns/locates the committed scene identity rather than generating or settling again.
+One scene publication selects the **post-publication** Library root and semantic world-state frontier under the same authority/version fence; the immutable passage, choices and stored intentions refer to that boundary. A later mechanical event is a later causal frontier and cannot rewrite the state of an already published scene; a late indexing or summary job may improve retrieval projections but cannot change what scene 37 historically referenced. If the SQL/state commit fails, staged Workdesk/Library proposals remain unpublished. If it succeeds but the HTTP response is lost, retry returns the committed scene identity rather than generating or settling again.
 
 ### Existing fence guarantees retained
 
-**Pre-refoundation selected/current fence detail retained.** The records being bound are the [committed pair](canonical-documents-and-packages.md#the-committed-pair): one game-state checkpoint and the canon root committed with it. The engine's publication transaction is the consistency boundary for that pair. A Storyteller process returns bounded descriptive proposals and evidence dependencies. It does not commit the checkpoint or the canon root.
+The records being bound are the [committed pair](canonical-documents-and-packages.md#the-committed-pair): one game-state checkpoint and the canon root committed with it. The engine's publication transaction is the consistency boundary; a Storyteller process returns bounded descriptive proposals and evidence dependencies and commits neither. One fence admits the source passage, accepted descriptive changes, already-admitted mechanical effects and the new canon root paired with the resulting checkpoint, all or none. Markdown and JSON projections of an accepted passage are application output, not a second model rendering.
 
-One fence admits the source passage, the accepted descriptive changes, the mechanical effects the engine has already admitted, and the new canon root paired with the resulting checkpoint. It admits all of those, or none of them. A model proposal is not a direct write. Markdown and JSON projections of an accepted passage are application output, not a second model rendering.
+- A lost acknowledgement is recovered from the saved operation and root; effects are not applied again.
+- A stale root, including a late provider task whose captured pair is no longer current, holds or rebuilds against an explicit fresh base and cannot publish over a newer root.
+- Concurrent publishers conflict on the expected root: one commit wins, and the loser retries on the new base without a last-write merge.
 
-- A lost acknowledgement is recovered from the saved operation and root. The effects are not applied again.
-- A stale root, including a late provider task whose captured pair is no longer current, holds or rebuilds against an explicit fresh base. It cannot publish over a newer root.
-- Concurrent publishers conflict on the expected root. One commit wins. A retry of the loser uses the new base. It does not merge by last write.
-- A proposal that contradicts a committed mechanical receipt loses. The receipt stands. Prose, a rumor, or a summary cannot transfer an item, choose a die face, move the clock, or mark a living character dead.
-- A second publication of the same accepted action identity is refused. Speculative consequences stay private until exact settlement.
-
-Search indexes, Cognee, and vector stores are not part of this fence. This Change does not install them. A lagging index does not mean the commit failed, and it is not a reason to publish again.
+Search indexes, Cognee and vector stores are not part of this fence; a lagging index does not mean the commit failed and is no reason to publish again.
 
 ## Remote task custody
 
-**STORY02 scripted custody (Done, 2026-11-20):** [Closeout decision](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/storyteller/2026-11-19--story02-private-task-and-result-custody/DECISION-2026-11-20.md). `createStorytellerTaskCustody` refuses provider-mode tasks and non-scripted attempts on fetch, claim, save, and read with `unsupported-execution`, inside the generation/attempt transaction. It does not adopt a provider attempt or change a provider charge through those endpoints. Scripted first claim, duplicate claim, same-hash replay, and hash conflict stay. Local `createStorytellerExecution.complete` is unchanged. Current-head proof is provider-free: contracts **7/7**, application **6/6**, Game Authority unit **3/3**, disposable PostgreSQL integration **4/4** from `apps/game-authority`, worker client and executor **7/7** (**27/27**). The negative is a provider-mode refusal and a worker that does not send. This is in-process plus disposable PostgreSQL, not a cross-Pod race. Cross-Pod acceptance remains **STORY03/TURN03**. Paid provider custody remains **TURN04**.
+**STORY02 scripted custody (Done, 2026-11-20):** [Closeout decision](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/storyteller/2026-11-19--story02-private-task-and-result-custody/DECISION-2026-11-20.md). `createStorytellerTaskCustody` refuses provider-mode tasks and non-scripted attempts on fetch, claim, save, and read with `unsupported-execution`, inside the generation/attempt transaction. It does not adopt a provider attempt or change a provider charge through those endpoints. Scripted first claim, duplicate claim, same-hash replay, and hash conflict stay. Local `createStorytellerExecution.complete` is unchanged. Current-head proof was provider-free (the `application` test paths named in this section and below date from before the application package was deleted; they are historical evidence, not current routes): contracts **7/7**, application **6/6**, Game Authority unit **3/3**, disposable PostgreSQL integration **4/4** from `apps/game-authority`, worker client and executor **7/7** (**27/27**). The negative is a provider-mode refusal and a worker that does not send. This is in-process plus disposable PostgreSQL, not a cross-Pod race. Cross-Pod acceptance remains **STORY03/TURN03**. Paid provider custody remains **TURN04**.
 
+
+**Scripted claim, save and read-back seam (moved from [operation and controller](operation-and-controller.md#custody-of-one-task)).** `createStorytellerExecution` can fetch one committed generation by id with the pinned canon root on that task (`context.canonicalKnowledge.rootHash`, or no root). `claimGeneration` takes that same root and inserts one `storyteller_attempt` row while the generation row is locked. A second caller finds that row and does not insert another. The in-memory generation set in `createStorytellerRuntime.complete` still only coalesces calls inside one process. It is not the claim. `saveValidatedResult` runs `validateStorytellerResult`, stores that result and its SHA-256 on the attempt's `attribution`, and settles a scripted claim as a zero charge with reconciliation `unavailable`. The same hash reads the saved result back. A different hash conflicts and leaves the saved result in place. An unknown generation or a different root is refused. `storyteller_attempt` has no result-hash column, so this seam uses the existing attribution JSON. A scripted task names no funding account, so the attempt's required `account_id` and `run_id` point at a stopped zero-limit funding row and a disabled run. That parent exists to satisfy the foreign keys. It is not a second attempt ledger and it cannot pay a provider. This seam does not write `story`, `campaign`, `story_passage`, or `story_document_commit`. `storytellerV1` is still one `completeStoryteller` activity. The remote workflow is still not split.
 
 **Default chamber.** `storytellerV1` still awaits one `completeStoryteller` activity, and that activity still generates and publishes. Compose does not poll the distributed queues.
 
@@ -119,7 +105,19 @@ The durable generation row is the operation receipt for one admitted task, not a
 | [Remote task custody](#remote-task-custody) | constrained-by | [Storyteller workflow identity](../platform/execution-and-delivery.md#storyteller-workflow-identity) | The single activity and the future workflow type have to stay the same claim. A patched `storytellerV1` would rewrite histories this section leaves on the combined activity. |
 | [Remote task custody](#remote-task-custody) | constrained-by | [Proposed service ownership](../platform/topology.md#proposed-service-ownership) | The engine publishes. The Storyteller proposes and does not commit the checkpoint or the canon root. |
 
+## Selected durable Writer replay stage (WR09B; prerequisite WR09A)
+
+*Scope: legacy Writer implementation and fake-transport proof, not a generic agent runtime and not end-to-end certification.*
+
+A model-delivered response is only useful for recovery if the exact decision can be rehydrated and its **downstream tool and publication effects** can continue idempotently. After WR09A atomically links a private response object and provider charge to a Writer step, WR09B will read those exact bytes after restart and pass them through one versioned decision interpreter shared with scripted operation. A result-settled step does **not** mean tools were applied or a scene was published.
+
+The parent Writer round uses the existing (mission, context, ordinal) step identity and a unique recorded tool-call ID within the mission context. Recorded Library calls are replayed from saved request/result digests; Workdesk mutations use their existing idempotent tool ledger. A mismatch in name/arguments for a reused ID is rejected, not executed again. Next model-round preparation and parent step transition must commit in one SQL transaction after tool results, with existing maximum-round and shared research budgets respected. A final proposal is rehydrated from the immutable response and passed to Game Authority's usual publication fence. Writer code never admits a canonical passage by independently writing story rows. No model-provider credentials or paid calls are authorized for this next offline implementation stage; tests use injected fake transport and disposable SQL.
+
+Default continuation admission still pins scripted-offline. A server-owned provider-authorized admission may pin an allowlisted model and policy version instead. Approved spending and source-faithful long-form quality remain separately gated. [WR09B](../../../work/changes/archive/2026-11/other/2026-11-21--wr09b-durable-writer-round-replay/CHANGE.md) is joined: a fake transport can replay a settled v3 round and apply tools once. That is not live player routing or approved provider spend.
+
 ## Landed provider-authorized continuation (WR11)
+
+*Scope: legacy Writer continuation path with fake-transport proof, not generic agent architecture and not end-to-end certification.*
 
 New writer scene wakes still use `writer.scene.v1` → `writerSceneDistributedV2` → `storyteller-execute-v1` and WR10 private custody. There is no second provider topic or workflow. The SQL-capable worker admits the mission through `createStories` → `createCampaignActionExecutions` → `settleNarrativeIntentExecution` → `scheduleWriterContinuation`. Omitted admission stays scripted-offline. Provider admission is server-owned: it freezes the allowlisted model and policy version into the v3 capture, and Game Authority rejects a mismatch before prepare or send. `writerSceneDistributedV2` loops only while finalization returns `needs-next-round`, with one execute attempt per ordinal. A possibly-sent attempt is not given a new attempt id. Ordinary Library and Workdesk rounds prepare the next parent step; `research.delegate` is held unsupported. A disposable fake-transport proof covers one tool round, one final v3 publication, replay without a second send, and the scripted WR10B path. That proof is not a paid OpenRouter call, not a player-chosen model, and not opening or research. Optional paid smoke stays separately authorized and is **NOT RUN**.
 
