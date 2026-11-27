@@ -66,6 +66,7 @@ export function createFixtureActivities(observations, readContext) {
       }
       observations.push({
         workflowId: info.workflowExecution.workflowId,
+        runId: info.workflowExecution.runId ?? null,
         activityId: info.activityId,
         attempt: info.attempt,
         phase: 'admitted',
@@ -77,6 +78,7 @@ export function createFixtureActivities(observations, readContext) {
         if (result.length > 4096) throw fail('text-limit', 'Fixture result exceeds 4096.');
         observations.push({
           workflowId: info.workflowExecution.workflowId,
+          runId: info.workflowExecution.runId ?? null,
           activityId: info.activityId,
           attempt: info.attempt,
           phase: 'completed',
@@ -87,6 +89,7 @@ export function createFixtureActivities(observations, readContext) {
       } catch (error) {
         observations.push({
           workflowId: info.workflowExecution.workflowId,
+          runId: info.workflowExecution.runId ?? null,
           activityId: info.activityId,
           attempt: info.attempt,
           phase: 'failed',

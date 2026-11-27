@@ -2,8 +2,10 @@ import { DEFINITIONS, FIXTURE, MODEL_ID, SCENARIO_NAMES } from './scenarios.mjs'
 
 const TEXT_LIMIT = 4096;
 const ARGS_LIMIT = 1024;
-const CANCEL_HOLD_MS = 8000;
-const TIMEOUT_HOLD_MS = 12000;
+/** Longer than the 2s heartbeat and shorter than the 10s start-to-close, so cancellation is observable while the plugin heartbeat keeps the Activity alive. */
+export const CANCEL_HOLD_MS = 8000;
+/** Longer than the 10s start-to-close. The hold must not finish as a successful generation. */
+export const TIMEOUT_HOLD_MS = 12000;
 
 function fail(code, message) {
   const error = new Error(message);
@@ -231,6 +233,7 @@ function record(observations, context, phase, extra = {}) {
   if (!observations) return;
   observations.push({
     workflowId: context?.info?.workflowExecution?.workflowId ?? null,
+    runId: context?.info?.workflowExecution?.runId ?? null,
     activityId: context?.info?.activityId ?? null,
     attempt: context?.info?.attempt ?? null,
     phase,

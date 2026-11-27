@@ -50,42 +50,81 @@ function matches(event, suffix) {
   return name === suffix || name.endsWith(`_${suffix}`) || name.endsWith(suffix);
 }
 
-export function summarizeHistory(history, observations) {
+function publicObservation(item) {
+  return {
+    workflowId: item.workflowId ?? null,
+    runId: item.runId ?? null,
+    activityId: item.activityId ?? null,
+    attempt: item.attempt ?? null,
+    phase: item.phase ?? null,
+    kind: item.kind ?? null,
+    workerGeneration: item.workerGeneration ?? null,
+    toolName: item.toolName ?? null,
+    code: item.code ?? null,
+  };
+}
+
+/**
+ * Keep physical observations for one Workflow execution.
+ * Activity identity must be one scheduled in that history. Run identity is required when both sides have it.
+ */
+export function scopeObservations(observations, execution, activityIds) {
+  const ids = activityIds instanceof Set ? activityIds : new Set(activityIds ?? []);
+  return (observations ?? []).filter((item) => {
+    if (execution?.workflowId && item.workflowId !== execution.workflowId) return false;
+    if (execution?.runId && item.runId && item.runId !== execution.runId) return false;
+    if (item.activityId && ids.size > 0 && !ids.has(item.activityId)) return false;
+    return true;
+  });
+}
+
+export function summarizeHistory(history, observations, execution) {
   const events = history?.events ?? [];
   const scheduled = [];
-  const completedIds = [];
+  const completions = [];
   for (const event of events) {
     if (matches(event, 'ACTIVITY_TASK_SCHEDULED')) {
       const attrs = event.activityTaskScheduledEventAttributes ?? {};
       scheduled.push({
         eventId: event.eventId,
         name: attrs.activityType?.name ?? '',
+        activityId: attrs.activityId ?? '',
       });
     }
     if (matches(event, 'ACTIVITY_TASK_COMPLETED')) {
-      completedIds.push(event.activityTaskCompletedEventAttributes?.scheduledEventId);
+      const attrs = event.activityTaskCompletedEventAttributes ?? {};
+      completions.push({
+        eventId: event.eventId,
+        scheduledEventId: attrs.scheduledEventId,
+      });
     }
   }
-  const byId = new Map(observations.map((item) => [item.activityId, item]));
+  const activityIds = new Set(scheduled.map((item) => item.activityId).filter(Boolean));
+  const scoped = scopeObservations(observations, execution, activityIds).map(publicObservation);
+  const byId = new Map(scoped.map((item) => [item.activityId, item]));
   return {
+    workflowId: execution?.workflowId ?? null,
+    runId: execution?.runId ?? null,
     eventCount: events.length,
     scheduled,
-    completedIds,
+    completions,
+    completedIds: completions.map((item) => item.scheduledEventId),
     workflowTaskCompleted: events.filter((event) => matches(event, 'WORKFLOW_TASK_COMPLETED')).map((event) => event.eventId),
     counts: {
       invokeModel: scheduled.filter((item) => item.name === 'invokeModel').length,
       runSyntheticTool: scheduled.filter((item) => item.name === 'runSyntheticTool').length,
     },
-    observations: observations.map((item) => ({
-      activityId: item.activityId,
-      attempt: item.attempt,
-      phase: item.phase,
-      kind: item.kind,
-      toolName: item.toolName ?? null,
-      code: item.code ?? null,
-    })),
+    observations: scoped,
     observationByActivity: Object.fromEntries(byId),
   };
+}
+
+const SECRET = /api[_-]?key|secret|token|password|bearer\s+|sk-[a-z0-9]/i;
+
+export function publicFailure(error) {
+  const message = String(error?.message ?? 'qualification-failed');
+  if (SECRET.test(message)) return 'redacted-failure';
+  return message.slice(0, 300);
 }
 
 export async function createHarness(checked) {
@@ -96,26 +135,39 @@ export async function createHarness(checked) {
   const taskQueue = `agent-core-e1-${randomUUID()}`;
   const workflowsPath = fileURLToPath(new URL('./mission.workflow.ts', import.meta.url));
   const state = {
+    generations: [],
     observations: [],
     worker: null,
     runPromise: null,
     runError: null,
+    last: null,
   };
+
+  function trackGeneration() {
+    const generation = state.generations.length + 1;
+    const bucket = [];
+    const push = bucket.push.bind(bucket);
+    bucket.push = (item) => push({ ...item, workerGeneration: generation });
+    state.generations.push(bucket);
+    state.observations = bucket;
+    return bucket;
+  }
 
   const harness = {
     namespace: checked.namespace,
     taskQueue,
     workflowsPath,
     observations: () => state.observations,
+    generations: () => state.generations,
     async startWorker() {
-      state.observations = [];
-      const fixture = createFixturePlugin(state.observations, activityContext);
+      const bucket = trackGeneration();
+      const fixture = createFixturePlugin(bucket, activityContext);
       state.worker = await Worker.create({
         connection: native,
         namespace: checked.namespace,
         taskQueue,
         workflowsPath,
-        activities: createFixtureActivities(state.observations, activityContext),
+        activities: createFixtureActivities(bucket, activityContext),
         plugins: [
           new AiSdkPlugin({
             modelProvider: fixture.modelProvider,
@@ -157,10 +209,34 @@ export async function createHarness(checked) {
         workflowExecutionTimeout: '30s',
       });
       const missionId = raw && typeof raw === 'object' ? raw.missionId : null;
+      state.last = { handle, workflowId };
       return { handle, missionId, workflowId };
     },
     async history(handle) {
-      return summarizeHistory(await handle.fetchHistory(), state.observations);
+      const described = await handle.describe();
+      const events = await handle.fetchHistory();
+      const execution = { workflowId: described.workflowId, runId: described.runId };
+      return summarizeHistory(events, state.generations.flat(), execution);
+    },
+    async failureEvidence(error) {
+      const evidence = {
+        message: publicFailure(error),
+        errorName: error?.name ?? 'Error',
+      };
+      if (!state.last?.handle) return evidence;
+      try {
+        const summary = await harness.history(state.last.handle);
+        return {
+          ...evidence,
+          workflowId: summary.workflowId,
+          runId: summary.runId,
+          historyEventCount: summary.eventCount,
+          counts: summary.counts,
+          observations: summary.observations,
+        };
+      } catch {
+        return { ...evidence, workflowId: state.last.workflowId };
+      }
     },
     handle(workflowId) {
       return client.workflow.getHandle(workflowId);
@@ -200,15 +276,24 @@ export async function main(env = process.env) {
     await harness.startWorker();
     const scenarios = await runScenarios(harness);
     receipt.cases.push(...scenarios.cases);
-    const recovery = await runRecovery(harness, scenarios.completedP1);
-    receipt.cases.push(...recovery.cases);
+    if (scenarios.cases.every((item) => item.status === 'pass')) {
+      const recovery = await runRecovery(harness, scenarios.completedP1);
+      receipt.cases.push(...recovery.cases);
+    }
     receipt.status = receipt.cases.every((item) => item.status === 'pass') ? 'pass' : 'failed';
   } catch (error) {
     receipt.status = 'failed';
-    receipt.failure = error instanceof Error ? error.message : 'qualification-failed';
+    receipt.failure = publicFailure(error);
+    if (harness.failureEvidence) {
+      receipt.evidence = await harness.failureEvidence(error);
+    }
   } finally {
     await harness.close();
   }
+  receipt.historyEventCount = receipt.cases.reduce(
+    (total, item) => total + (item.historyEventCount ?? 0),
+    0,
+  );
   console.log(JSON.stringify(receipt));
   return receipt.status === 'pass' ? 0 : 1;
 }

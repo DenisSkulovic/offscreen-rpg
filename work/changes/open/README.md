@@ -2,7 +2,7 @@
 
 ## Agent Core E1 | current sprint (2026-11-27)
 
-[Eight Changes](agent-core-monorepo-map/README.md) implement the accepted E1 foundation. Final independent READY (all eight) and owner-commissioned for construction/assigned offline proof; the group owns dependency scheduling and joint qualification.
+[Eight Changes](agent-core-monorepo-map/README.md) are archived on `implementation/agent-core-monorepo-map`. Their offline source gates passed. Native live qualification has not passed, and the group index still holds that joint obligation.
 
 ## Developer observability | current sprint (2026-11-27)
 
