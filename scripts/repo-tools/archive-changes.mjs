@@ -104,7 +104,7 @@ export function changeNeedsLedger(text) {
 
 /**
  * Depth of packet dir under work/changes (number of path segments after changes/).
- * flat leaf → 1; open/leaf → 2; archive/YYYY-MM/program/leaf → 4
+ * flat leaf → 1; open/leaf → 2; open/group/leaf → 3; archive/YYYY-MM/program/leaf → 4
  * @param {string} relFromChanges
  */
 export function depthUnderChanges(relFromChanges) {
@@ -178,9 +178,24 @@ export function rewriteMarkdownLinksInText(
  * @param {string} leaf
  * @param {string} newRelFromChanges posix path
  */
-export function rewriteInboundLeafPaths(content, leaf, newRelFromChanges) {
+export function rewriteInboundLeafPaths(content, leaf, newRelFromChanges, previousRel = null) {
   const escaped = leaf.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   let out = content;
+  if (previousRel && previousRel !== leaf) {
+    const escapedPrev = previousRel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(
+      new RegExp(`work/changes/${escapedPrev}(?=/|[)\\s#"'\`])`, 'g'),
+      `work/changes/${newRelFromChanges}`,
+    );
+    out = out.replace(
+      new RegExp(`(?<=[/\\"\\(])changes/${escapedPrev}(?=/|[)\\s#"'\`])`, 'g'),
+      `changes/${newRelFromChanges}`,
+    );
+    out = out.replace(
+      new RegExp(`(?<=\\()${escapedPrev}(?=/|[)\\s#"'\`])`, 'g'),
+      newRelFromChanges,
+    );
+  }
   out = out.replace(
     new RegExp(`work/changes/${escaped}(?=/|[)\\s#"'\`])`, 'g'),
     `work/changes/${newRelFromChanges}`,

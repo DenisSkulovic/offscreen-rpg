@@ -796,3 +796,169 @@ test('unresolved Change-level work is not archived and an open packet cannot be 
 function implementationSha(cwd) {
   return git(cwd, 'rev-parse', 'refs/heads/implementation/demo');
 }
+
+const GROUP = 'observability-developer';
+
+function seedGroupedPacket(cwd) {
+  const dir = path.join(cwd, 'work/changes/open', GROUP, LEAF);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(
+    path.join(cwd, 'work/changes/open', GROUP, 'README.md'),
+    '# Group\n\n| Change | Status |\n| --- | --- |\n| D03 | open |\n',
+  );
+  writeFileSync(path.join(dir, 'CHANGE.md'), '**State:** Implementing\n');
+  git(cwd, 'add', 'work');
+  git(cwd, 'commit', '-qm', 'grouped open packet');
+}
+
+test('a grouped packet is read from the target revision when this checkout does not have it', () =>
+  repo((cwd, add) => {
+    ensureDesignImplementationBranch({ cwd, design: 'demo', base: 'main' });
+    const integration = add('implementation/demo', 'main', { existing: true });
+    seedGroupedPacket(integration);
+    assert.equal(
+      existsSync(path.join(cwd, 'work/changes/open', GROUP, LEAF)),
+      false,
+    );
+    const found = lookupCommission({
+      repoCwd: cwd,
+      target: 'implementation/demo',
+      leaf: LEAF,
+    });
+    assert.equal(found.status, 'open');
+    assert.equal(
+      found.paths.open,
+      `work/changes/open/${GROUP}/${LEAF}/CHANGE.md`,
+    );
+  }));
+
+test('a grouped packet archived on the target is not recommissioned while main stays open', () =>
+  repo((cwd, add) => {
+    seedGroupedPacket(cwd);
+    const implementation = ensureDesignImplementationBranch({
+      cwd,
+      design: 'demo',
+      base: 'main',
+    });
+    const integration = add('implementation/demo', 'main', { existing: true });
+    const change = add('change/jjj-group', implementation.sha);
+    const paths = changePacketPaths(LEAF, GROUP);
+    mkdirSync(path.dirname(path.join(change, paths.archived)), { recursive: true });
+    git(change, 'mv', paths.open, paths.archived);
+    git(change, 'commit', '-qm', 'archive grouped packet');
+    const joined = integrateChange({
+      change: 'JJJ',
+      changeCwd: change,
+      integrationCwd: integration,
+      design: 'demo',
+      recordedTarget: 'implementation/demo',
+      requestedTarget: 'implementation/demo',
+      indispensable: 'pass',
+      designAcceptance: 'pending',
+      permitSourceJoin: true,
+      leaf: LEAF,
+      obligationsTransferred: true,
+      target: 'implementation/demo',
+    });
+    assert.equal(joined.closed, true);
+    assert.equal(
+      lookupCommission({
+        repoCwd: cwd,
+        target: 'implementation/demo',
+        leaf: LEAF,
+      }).status,
+      'archived',
+    );
+    assert.equal(
+      lookupCommission({ repoCwd: cwd, target: 'main', leaf: LEAF }).status,
+      'open',
+    );
+    assert.throws(
+      () =>
+        integrateChange({
+          change: 'JJJ',
+          changeCwd: change,
+          integrationCwd: integration,
+          design: 'demo',
+          recordedTarget: 'implementation/demo',
+          requestedTarget: 'implementation/demo',
+          indispensable: 'pass',
+          designAcceptance: 'pending',
+          permitSourceJoin: true,
+          leaf: LEAF,
+          obligationsTransferred: true,
+          target: 'implementation/demo',
+        }),
+      /already archived/,
+    );
+  }));
+
+test('sequential joins keep group register rows and a stale register conflicts', () =>
+  repo((cwd, add) => {
+    ensureDesignImplementationBranch({ cwd, design: 'demo', base: 'main' });
+    const integration = add('implementation/demo', 'main', { existing: true });
+    const beforeRegister = git(integration, 'rev-parse', 'HEAD');
+    const readme = path.join(
+      integration,
+      'work/changes/open',
+      GROUP,
+      'README.md',
+    );
+    mkdirSync(path.dirname(readme), { recursive: true });
+    writeFileSync(readme, 'A done\n');
+    git(integration, 'add', 'work');
+    git(integration, 'commit', '-qm', 'register A');
+    const first = add('change/kkk-a', git(integration, 'rev-parse', 'HEAD'));
+    writeFileSync(
+      path.join(first, 'work/changes/open', GROUP, 'README.md'),
+      'A done\nB done\n',
+    );
+    git(first, 'add', 'work');
+    git(first, 'commit', '-qm', 'register B');
+    integrateChange({
+      change: 'KKK',
+      changeCwd: first,
+      integrationCwd: integration,
+      design: 'demo',
+      recordedTarget: 'implementation/demo',
+      requestedTarget: 'implementation/demo',
+      indispensable: 'pass',
+      constituent: true,
+      target: 'implementation/demo',
+    });
+    assert.match(
+      readFileSync(
+        path.join(integration, 'work/changes/open', GROUP, 'README.md'),
+        'utf8',
+      ),
+      /A done\nB done\n/,
+    );
+    const stale = add('change/lll-stale', beforeRegister);
+    const staleReadme = path.join(stale, 'work/changes/open', GROUP, 'README.md');
+    mkdirSync(path.dirname(staleReadme), { recursive: true });
+    writeFileSync(staleReadme, 'C only\n');
+    git(stale, 'add', 'work');
+    git(stale, 'commit', '-qm', 'stale register');
+    assert.throws(
+      () =>
+        integrateChange({
+          change: 'LLL',
+          changeCwd: stale,
+          integrationCwd: integration,
+          design: 'demo',
+          recordedTarget: 'implementation/demo',
+          requestedTarget: 'implementation/demo',
+          indispensable: 'pass',
+          constituent: true,
+          target: 'implementation/demo',
+        }),
+      /Join refused/,
+    );
+    assert.match(
+      readFileSync(
+        path.join(integration, 'work/changes/open', GROUP, 'README.md'),
+        'utf8',
+      ),
+      /A done\nB done\n/,
+    );
+  }));

@@ -99,7 +99,7 @@ flowchart TD
   C --> J["Accepted integrated outcome"]
 ```
 
-Map a Design's Change dependency graph before writing its task cards. Record the edges in the existing implementation plan or catalog. Each commissioned Change joins through the serialized lifecycle in [branch policy](.agents/references/bounded-parent-orchestration.md#mandatory-change-branch-policy). [Parallel scheduling standard](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19) owns the schedule fields and isolation checks.
+Map a Design's Change dependency graph before writing its task cards. Record the operational edges in that Design's group README under `work/changes/open/<design-slug>/`. Each commissioned Change joins through the serialized lifecycle in [branch policy](.agents/references/bounded-parent-orchestration.md#mandatory-change-branch-policy). [Parallel scheduling standard](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19) owns the relationship rules and isolation checks.
 
 ## 6. After design convergence: cheap execution
 

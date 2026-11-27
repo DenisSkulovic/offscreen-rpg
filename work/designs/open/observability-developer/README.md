@@ -13,9 +13,9 @@ Make the optional native observability stack useful for local development: maint
 | [TARGET](TARGET.md) | Selected architecture, tradeoffs, remaining material decisions |
 | [SOURCE-MAP](SOURCE-MAP.md) | Current source ownership and integration seams |
 | [ACCEPTANCE](ACCEPTANCE.md) | Complete native/developer gate ownership and binding certification rule |
-| [IMPLEMENTATION-PLAN](IMPLEMENTATION-PLAN.md) | Bounded successor outcomes, dependencies and recovery |
+| [IMPLEMENTATION-PLAN](IMPLEMENTATION-PLAN.md) | Historical successor mapping and contract disposition |
+| [Change group](../../../changes/open/observability-developer/README.md) | Operational dependency graph, collisions and execution status |
 | [Canonical technical contract](../../../../docs/technical/platform/observability-native-infrastructure.md) | Permanent selected authority |
-| [D01 artifact normalization](../../../changes/open/2026-11-27--obs-d01-native-artifacts/CHANGE.md) | First owner-released offline packet; remaining review at acceptance |
 
 ## Historical and transition material
 
