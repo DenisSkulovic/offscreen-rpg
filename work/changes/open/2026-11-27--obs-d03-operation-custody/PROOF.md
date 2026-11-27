@@ -1,6 +1,12 @@
 # OBS-D03 proof
 
-NOT RUN. Commands from repo root; only existing offline Helm/dependencies and short local subprocess tests. No cluster, image pull, network or paid operation during Cursor implementation. Any required live acceptance is owner-operated after separate authorization; no PASS inferred from fixtures.
+Local focused tests passed on this Change branch. Commands from repo root; only existing offline Helm/dependencies and short local subprocess tests. No cluster, image pull, network or paid operation during Cursor implementation. Any required live acceptance is owner-operated after separate authorization; no live PASS inferred from fixtures.
+
+```text
+node --test --test-concurrency=1 infra/platform/observability/tests/{custody,forward,install}.test.mjs
+```
+
+Result: 47 pass, 0 fail (Linux, Node from the implementation worktree). This is the cheap source proof only. Full A/V certification remains open.
 
 | Gate | Predicate |
 |---|---|

@@ -132,6 +132,11 @@ function namespaceCreateStdout(uid = STAGED_NAMESPACE_UID) {
  *   emptyNamespaceCreateStdout?: boolean,
  *   wrongNamespaceCreateUid?: string,
  *   failCustodyAdvanceAt?: string,
+ *   timeoutAt?: string,
+ *   closeUnconfirmed?: boolean,
+ *   unknownAttempt?: boolean,
+ *   cancelAfterFirst?: boolean,
+ *   replacedBeforeClear?: boolean,
  *   calls?: { command: string, args: string[] }[],
  *   outputs?: string[],
  *   helmDurationMs?: number,
@@ -201,32 +206,73 @@ function makeEnsureDeps(options = {}) {
     cleanup: () => ({ ok: true }),
   };
 
+  /** @type {Record<string, unknown> | null} */
+  let stored = null;
   const custody = {
     fd: 9,
+    mode: 'exclusive',
+    pendingPath: '/tmp/observability-ensure-pending',
+    lockDirectory: '/tmp',
     cancelled: false,
     cancel() {
       this.cancelled = true;
     },
     begin(record) {
-      pendingWrites.push(globalThis.structuredClone(record));
+      if (this.cancelled || stored) {
+        throw new Error('begin refused');
+      }
+      stored = {
+        schema: 2,
+        operationId: '00000000-0000-4000-8000-000000000010',
+        service: 'observability',
+        context: devKind.contextName,
+        start: '2026-11-27T00:00:00.000Z',
+        operation: record.operation ?? 'ensure',
+        phase: record.phase,
+        tuple: globalThis.structuredClone(record.tuple),
+        details: globalThis.structuredClone(record.details ?? {}),
+      };
+      pendingWrites.push(globalThis.structuredClone(stored));
     },
     advance(record) {
+      if (this.cancelled || !stored) {
+        throw new Error('advance refused');
+      }
       if (options.failCustodyAdvanceAt === record.phase) {
         throw new Error('advance refused');
       }
-      pendingWrites.push(globalThis.structuredClone(record));
+      stored = {
+        ...stored,
+        phase: record.phase,
+        tuple: globalThis.structuredClone(record.tuple),
+        details: globalThis.structuredClone(record.details ?? {}),
+      };
+      pendingWrites.push(globalThis.structuredClone(stored));
     },
-    clear() {},
+    assertOwnPending() {
+      if (this.cancelled || !stored) {
+        throw new Error('pending record is not owned');
+      }
+      return globalThis.structuredClone(stored);
+    },
+    clear() {
+      if (this.cancelled || !stored || options.replacedBeforeClear) {
+        throw new Error('clear refused');
+      }
+      stored = null;
+    },
     close() {},
   };
 
   return {
     pendingWrites,
+    custody,
     verifyArchive: false,
     now: () => clock,
     captureIdentity: async () => identity,
     acquireCustody: async () => custody,
-    readPending: () => ({ pending: false, valid: true }),
+    readPending: () =>
+      stored ? { pending: true, valid: true } : { pending: false, valid: true },
     collectInventorySnapshot: () => stages[Math.min(phase, stages.length - 1)],
     recheckIdentity: (bound, { expectedNamespaceUid }) => {
       const observed = stages[Math.min(phase, stages.length - 1)].namespace;
@@ -240,6 +286,55 @@ function makeEnsureDeps(options = {}) {
     },
     runMutation: async (command, args) => {
       calls.push({ command, args: args.slice() });
+      if (options.cancelAfterFirst && calls.length === 1) {
+        custody.cancel();
+        return {
+          ok: false,
+          stdout: '',
+          exitCode: null,
+          signal: null,
+          timedOut: false,
+          cancelled: true,
+          attempted: true,
+          closeUnconfirmed: false,
+        };
+      }
+      if (options.closeUnconfirmed && calls.length === 1) {
+        return {
+          ok: false,
+          stdout: '',
+          exitCode: null,
+          signal: null,
+          timedOut: false,
+          cancelled: false,
+          attempted: true,
+          closeUnconfirmed: true,
+        };
+      }
+      if (options.unknownAttempt && calls.length === 1) {
+        return {
+          ok: false,
+          stdout: '',
+          exitCode: null,
+          signal: null,
+          timedOut: false,
+          cancelled: false,
+          attempted: true,
+          closeUnconfirmed: false,
+        };
+      }
+      if (options.timeoutAt === 'namespace' && calls.length === 1) {
+        return {
+          ok: false,
+          stdout: '',
+          exitCode: null,
+          signal: 'SIGKILL',
+          timedOut: true,
+          cancelled: false,
+          attempted: true,
+          closeUnconfirmed: false,
+        };
+      }
       if (
         options.failAt &&
         calls.length === 1 &&
@@ -319,6 +414,32 @@ function makeEnsureDeps(options = {}) {
   };
 }
 
+test('ready observation is a no-op without writes', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps();
+    const ready = buildCompleteDevSnapshot(artifacts);
+    deps.collectInventorySnapshot = () => ({
+      ...ready,
+      pending: false,
+      pendingValid: true,
+    });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, true);
+    assert.equal(receipt.mutation, 'none');
+    assert.equal(receipt.pending, false);
+    assert.equal(deps.calls.length, 0);
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+  }
+});
+
 test('ensure refuses missing authorization before lock', async () => {
   const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
   delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
@@ -351,6 +472,8 @@ test('failed namespace phase stops before later mutations', async () => {
       deps,
     );
     assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutation, 'possible');
+    assert.equal(receipt.pending, true);
     assert.deepEqual(receipt.completedPhases, []);
     assert.equal(deps.calls.length, 1);
     assert.equal(deps.calls[0]?.command, 'kubectl');
@@ -780,6 +903,54 @@ test('replacement namespace after binding prevents secret creation', async () =>
     assert.equal(result.reasonCode, 'identity-changed');
     assert.equal(result.pending, true);
     assert.equal(deps.calls.length, 1);
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+  }
+});
+
+test('uncertain namespace outcomes stay possible and do not continue', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    for (const options of [
+      { timeoutAt: 'namespace' },
+      { closeUnconfirmed: true },
+      { unknownAttempt: true },
+      { cancelAfterFirst: true },
+    ]) {
+      const deps = makeEnsureDeps(options);
+      const receipt = await runObservabilityEnsure(
+        'dev',
+        devKind.contextName,
+        deps,
+      );
+      assert.equal(receipt.ok, false);
+      assert.equal(receipt.mutation, 'possible');
+      assert.equal(receipt.pending, true);
+      assert.equal(deps.calls.length, 1);
+      assert.equal(deps.custody.cancelled, options.cancelAfterFirst === true);
+    }
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+  }
+});
+
+test('replaced pending record cannot be cleared', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps({ replacedBeforeClear: true });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.reasonCode, 'cleanup-failed');
+    assert.equal(receipt.pending, true);
+    assert.equal(deps.calls.length, 7);
   } finally {
     if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
     else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
