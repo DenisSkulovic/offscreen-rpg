@@ -1,6 +1,10 @@
 # Replay, retention and privacy | Time travel without rewriting history
 
-**Status: technical/product recommendation, 2026-11-15; not approved for implementation.** The earlier 30/90-day raw AI windows below were exploratory. The current **candidate**, still awaiting product, legal and cost acceptance, is 90 days by default and up to 180 days for a documented incident hold. It is not an accepted retention policy. [Evidence model](./identities-and-evidence.md) defines durable source and artifacts. Expected replay experiences are the four modes in this file. [Chamber](../lab/chamber-and-fixtures.md) owns isolated test execution. Historic display, deterministic re-execution and a new model run are **different products**.
+**Authority:** this page owns the four replay modes, the historical-frontier concept, the retention-class candidates and the storage and privacy safeguards for forensic evidence. It is a technical/product recommendation (2026-11-15) and is not approved for implementation. Retention figures here are **candidates**: 90 days by default and up to 180 days for a documented incident hold for raw AI artifacts, still awaiting product, legal and cost acceptance. The earlier 30/90-day windows were exploratory and are superseded as candidates only; no figure is an accepted retention policy.
+
+**Current realization:** no replay, checkpoint, transition ledger or retention job exists, and no ratified retention policy exists. The story, passage, receipt and event rows the modes would read are ordinary game tables; existing columns that may hold private content are named on [the forensic contract](investigation-and-reconstruction.md#7-erasure-expiry-and-legitimate-forensic-retention).
+
+**Neighbours.** [Evidence model](./identities-and-evidence.md) defines durable source and artifacts. [Chamber](../lab/chamber-and-fixtures.md) owns isolated test execution. Historic display, deterministic re-execution and a new model run are **different products**; the four modes in [section 1](#1-four-replay-modes-do-not-call-them-all-replay) are the expected replay experiences.
 
 ## Owner map
 
@@ -12,7 +16,7 @@ Retention and access stay on this page and remain unratified where this page alr
 | Capture and causal identity | [Committed transition capture](./capture-and-provenance.md#owner-map) | Proposal. |
 | Investigation and reconstruction | [Forensic read contract](./investigation-and-reconstruction.md#owner-map) | Proposed read. |
 | Retention and access | This page | Unratified where this page already says so. |
-| Telemetry | [Runtime telemetry](./telemetry-and-diagnostics.md#owner-map) | Planned. A noninstalled observer stack stays planned. |
+| Telemetry | [Runtime telemetry](./telemetry-and-diagnostics.md#owner-map) | Application enrollment proposed. The optional native stack is owned by [native observability](../platform/observability-native-infrastructure.md). |
 
 The figures in [Retention classes](#6-retention-classes-with-explicit-trade-offs) stay candidates.
 
@@ -94,6 +98,8 @@ A checkpoint includes versioned validated **authoritative** actor/world/time/set
 
 ## 4. Player playback: a game feature, not an incident debugger
 
+**Standing:** proposed and deferred. No player playback exists, and this page does not schedule it. It is separate from incident forensics and from staff access.
+
 **Proposed UI:** “Replay story” from Story/Journal. A side rail navigates scene cards/meaningful committed events; a central narrative stage renders the old published prose and appearance, with historical setting/time and original response; an optional “What changed?” panel shows player-known facts and results. Seek by scene, event, date or character/perspective where permitted. Bookmark a scene without modifying gameplay.
 
 - **Recorded options** are displayed as history, not buttons that execute. “You chose…” comes from actual accepted source, not a speculative generated menu.
@@ -106,7 +112,7 @@ A checkpoint includes versioned validated **authoritative** actor/world/time/set
 
 ## 5. Deterministic test replay: what has to be recorded
 
-Exact reconstruction of an old **deterministic mechanical result** needs:
+Deterministic replay is possible only for what was recorded; it cannot be inferred from the current world or a fresh draw. Exact reconstruction of an old **deterministic mechanical result** needs:
 - accepted command/plan/offer + actor/control and prerequisites;
 - *actual* RNG draw(s) and rule version (not a new draw); any rounding/fractional clock remainder;
 - virtual/real timing boundaries, stored pace and change events, idempotency identities;
@@ -121,7 +127,7 @@ A comparator then reports **old recorded truth** vs **newly computed test result
 
 ## 6. Retention classes, with explicit trade-offs
 
-**These are proposed starting policies for review, not legal commitments or current system configuration.** An EU-facing production service needs documented lawful purpose, privacy notice, erasure/hold requirements and measured storage cost before final durations.
+**These are proposed starting policies for review, not legal commitments or current system configuration; every duration in the table stays a candidate until product, legal and cost acceptance.** An EU-facing production service needs documented lawful purpose, privacy notice, erasure/hold requirements and measured storage cost before final durations.
 
 | Data category | Recommended first policy | Reason and limitations |
 | --- | --- | --- |
