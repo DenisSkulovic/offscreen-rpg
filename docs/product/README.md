@@ -26,14 +26,13 @@ This describes product intent. It does **not** assert that every loop, arbitrary
 | How does creation work now? | [Prepared Play / Story Prompt](experience/entry-and-onboarding.md#creation-information-architecture) |
 | What is the Storyteller as a writer? | [Investigative writing, revision and delegation](storyteller/behavior-and-quality.md#investigative-writing-revision-and-delegation) |
 | What does historical forkability promise? | [Scene history and alternate continuities](foundations/vision.md#scene-history-and-alternate-continuities) · [acceptance narratives](gameplay/acceptance-scenarios.md#storyteller-refoundation-acceptance-narratives) |
-
 | What do the nouns mean? | [Concepts](foundations/concepts.md) |
 | What do dice, items and forms promise? | [Rules](gameplay/rules.md) |
 | How does an intention become committed work? | [Actions and commitments](gameplay/actions-and-commitments.md) |
 | When does time move if nobody accepts an action? | [Pace](gameplay/time-and-autonomy.md#pace) |
 | What is remembered, and what is only prose? | [Continuity](gameplay/continuity.md) |
 | Which bodies and worlds must work? | [Flexible settings and protagonists](gameplay/worlds-and-characters.md#flexible-settings-and-protagonists). Ability applicability stays on that heading. Sparse identity and pinned starts follow on the same page |
-| Which stories define acceptance texture? | [Harbor and return](gameplay/acceptance-scenarios.md#first-solo-acceptance-walkthrough--harbor-and-return) is the first solo acceptance oracle. It is an authored target, not a logged run. [Acceptance scenarios](gameplay/acceptance-scenarios.md) keeps the later wizard and goblin stress vignette. [Long-life benchmark playthroughs](gameplay/long-life-benchmark-playthroughs.md) covers accumulated time. The first tested milestone is solo. The small-party ambition is a distant later aspiration, not that milestone. Each decision point names its governing heading |
+| Which stories define acceptance texture? | [Harbor and return](gameplay/acceptance-scenarios.md#first-solo-acceptance-walkthrough--harbor-and-return) is the first solo acceptance oracle. It is an authored target, not a logged run. [Acceptance scenarios](gameplay/acceptance-scenarios.md) keeps the later wizard and goblin stress vignette. [Long-life benchmark playthroughs](gameplay/long-life-benchmark-playthroughs.md) covers accumulated time. The selected first milestone is solo; see STATUS for what has actually been tested. The small-party ambition is a distant later aspiration, not that milestone. Each decision point names its governing heading |
 | What reusable visual language and Storyteller expression may the player experience? | [Design system and expressive worlds](experience/design-system-and-expression.md) |
 | What must the screen never fake? | [Principles](experience/principles.md) |
 | How does someone arrive and create a life? | [Entry](experience/entry-and-onboarding.md#current-poc-honesty). Prepared starts and Create your own story are both present. The freeform route is not a promise that any premise plays |

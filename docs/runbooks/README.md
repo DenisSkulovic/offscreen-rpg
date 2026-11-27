@@ -9,11 +9,16 @@ Source-adjacent package procedures may remain beside code.
 
 | Runbook | Question |
 | --- | --- |
+| [Fresh-clone bootstrap](fresh-clone-bootstrap.md) | Supported workstation preparation and scoped local development setup. |
+| [Bootstrap acceptance](fresh-clone-bootstrap-acceptance.md) | Owner-operated proof, recorded evidence and deferred acceptance. Not the ordinary startup route. |
 | [Owned developer environments](dev-worktree-stacks.md) | Which commands exist, how do I start/status/park my dev slot, and how do I react to image or memory failures without affecting other Cursors? Start with the [human diagram](../architecture/10-developer-environments.md) if unfamiliar. |
 | [Local development](local-development.md) | Which tests require zero infrastructure, and how do I distinguish source-only work, owned dev slots and historical release-lab procedures? |
 | [Game Authority seam](local-development.md#game-authority-seam) | How does the optional private story process stay off the public API and off Compose? |
 | [Kubernetes lab](kubernetes-lab.md) | How do I create and delete the disposable kind cluster without touching Compose volumes? |
 | [Kubernetes developer UI](kubernetes-developer-ui.md) | How do I open Tilt and a Headlamp kubeconfig for `kind-offscreen-release` on loopback? |
+| [Kubernetes gateway](kubernetes-gateway.md) | Authorized synthetic Gateway API routing proof on the disposable release target. |
+| [Kubernetes Redis](kubernetes-redis.md) | Optional isolated Redis install and smoke; inspect native baseline for current operator constraints. |
+| [Native Redis failure notes](redis-native-baseline.md) | Pending receipt, ownership, refusal and recovery; no live permission from documentation. |
 | [Kubernetes Postgres](kubernetes-postgres.md) | How do I run one disposable CloudNativePG primary, and what does a Pod deletion keep? |
 | [Kubernetes RabbitMQ](kubernetes-rabbitmq.md) | How do I run one disposable RabbitMQ broker, and what does a consumer crash redeliver? |
 | [Kubernetes fault harness](kubernetes-fault.md) | How do I delete one broker consumer before ack, and what does a replay prove? |
@@ -24,9 +29,12 @@ Source-adjacent package procedures may remain beside code.
 | [Kubernetes Temporal](kubernetes-temporal.md) | How do I provision, inspect and operate the native Helm Temporal release with shared CNPG? |
 | [Kubernetes service skeletons](kubernetes-skeletons.md) | How do I run four synthetic placeholders, and what does a duplicate operation id do? |
 | [Local integration tests](local-integration-tests.md) | How do I run provider-free database and identity checks on a disposable database? |
+| [Provider-free game tests](provider-free-game-tests.md) | Bounded launch-grant harness; real lab SQL writes require separate operator permission. |
 | [Local Storyteller rehearsal](local-storyteller-rehearsal.md) | How do I run a provider-free Chamber demo, and where does an explicitly authorized paid rehearsal stay separated? |
 | [ChatGPT design snapshot](chatgpt-design-snapshot.md) | How do I export a source ZIP for design investigation in ordinary ChatGPT? |
 | [Agent-native harness evaluation](agent-native-harness-evaluation.md) | Where is the historical A/B method after the fake runner was removed? |
 | [Content package authoring](content-package-authoring.md) | How do I author, validate and pin a world, rule or start package? |
 | [Uncertain work recovery](uncertain-work-recovery.md) | What do I read before holding, recording unknown, or escalating an uncertain Storyteller or workflow operation? |
 | [Release and restore readiness](release-restore-readiness.md) | Which backup and restore checks are a selected requirement, a local record, hosted-unproven, or blocked? |
+
+**Historical only:** [bootstrap design record](fresh-clone-bootstrap-design-history.md) retains prior proposals and their rationale. It is not a second operator procedure; use the current bootstrap and acceptance owners above.

@@ -14,7 +14,7 @@ Product truth has two questions. Authority asks what the owner selected as a pre
 
 ## Storyteller evolution | fastest authoritative routes
 
-The permanent wiki describes the **selected target state that implementation must realize**. `STATUS.md` still owns implementation evidence until the corresponding code Changes land.
+Permanent owners distinguish selected targets, proposals and realization. [STATUS](../STATUS.md) and dated evidence describe actual coverage; integration alone does not prove acceptance.
 
 | Question | Permanent owner |
 | --- | --- |
@@ -46,7 +46,7 @@ flowchart LR
     Scene --> UI[Browser GET renders committed truth]
 ```
 
-**This is the selected full-turn target, not a demonstrated Kubernetes run.** Inspect [current readiness](../work/designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) before treating any arrow as implemented.
+**This diagram explains the selected full-turn target, not demonstrated Kubernetes behavior.** Use [STATUS](../STATUS.md) and the governing technical contracts for current coverage. The [19 November distributed-turn audit](../work/designs/archive/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) is superseded historical evidence, not the current implementation plan.
 
 Start here, then open the owner. Two steps should be enough for a scoped question.
 
@@ -74,7 +74,7 @@ Start here, then open the owner. Two steps should be enough for a scoped questio
 | How do I operate the portfolio locally? | [Runbooks](runbooks/README.md) |
 | Which source package owns a behavior? | [API routes](../apps/api/README.md#find-the-request-route) · [Story Engine operations](../packages/story-engine/README.md) · [Game mechanics](../packages/game/README.md#find-the-owning-rule). A product proposal is not a source owner |
 | Is a selected product target already feasible? | [STATUS](../STATUS.md) · [product-reality claims](../research/product-reality/CLAIM-REGISTER-2026-11-18.md). Selection is not proof. The claim register adds no rule |
-| What is actually true this week, and which Change may be implemented? | [STATUS](../STATUS.md) · [strategy](../ROADMAP.md) · [work selection](../work/QUEUE.md) · [Change catalog](../work/changes/README.md) · [Tasks](../work/tasks/README.md) |
+| What has been demonstrated, and which Change may be implemented? | [STATUS](../STATUS.md) · [strategy](../ROADMAP.md) · [work selection](../work/QUEUE.md) · [Change catalog](../work/changes/README.md) · [Tasks](../work/tasks/README.md) |
 
 Subject maps: [product](product/README.md), [technical](technical/README.md), [runbooks](runbooks/README.md). Open policy that is not accepted lives under [work/designs](../work/designs/README.md). Dated observations live under [evidence](../evidence/README.md). Coding-agent rules live under `.agents/`, separate from in-game provider cost ([spending](technical/platform/spending-and-entitlements.md)).
 

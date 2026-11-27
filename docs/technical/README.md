@@ -29,7 +29,7 @@ flowchart LR
     Worker -->|validated proposal only| GA
 ```
 
-**Selected distributed target, not current deployed topology.** The current worker still combines execution and publication, and Nest still owns some local story routes. The [Architecture Atlas](../architecture/README.md) distinguishes the actual baseline, transaction/crash paths, checkpoint forks and deployment proof; [current-source audit](../../work/designs/open/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) names missing seams. This index continues to route normative contracts, not status claims.
+**Selected distributed target illustration, not a live topology inventory.** The [Architecture Atlas](../architecture/README.md) explains the architecture; [STATUS](../../STATUS.md), current source and dated evidence establish realization. The [19 November distributed-turn audit](../../work/designs/archive/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) is superseded historical evidence, not current readiness. Recheck the owning contracts and source before planning.
 
 | Question | Owner |
 | --- | --- |
@@ -38,20 +38,24 @@ flowchart LR
 | How should infrastructure commands present plans, status, progress and failures? | [Infrastructure operator experience](platform/infrastructure-operator-experience.md) |
 | Who owns dev image build/load, Tilt deployment selection, slot identities and safe backoff? | [Developer environments contract](platform/developer-environments.md) · [human diagram](../architecture/10-developer-environments.md). Selected architecture is distinct from DXK09 integrated/live proof |
 | What may the educational laboratory practice, and what is still the current runtime? | [Distributed learning target](platform/topology.md#distributed-learning-target). A selected learning target. Not a deployed cluster, not a broker in the game, and not a replacement of [D-0001](../decisions/D-0001--modular-engine.md) |
-| Which proposed service would own a write, and is that service running? | [Proposed service ownership](platform/topology.md#proposed-service-ownership). Proposed target. The current runtime remains the modular monolith on Compose. One local Game Authority process serves a single story seam and is not the Compose default. The other rows are not separate processes. A Game Economy service was considered and rejected |
+| Which proposed service would own a write, and is that service running? | [Proposed service ownership](platform/topology.md#proposed-service-ownership). The linked service-ownership section includes historical proposals; check accepted successors and current source/STATUS for deployment. A Game Economy service was considered and rejected |
 | What is a command, a business event, and a workflow? | [Commands, business events, and workflows](platform/execution-and-delivery.md#commands-business-events-and-workflows). The chamber outbox still wakes Temporal. A broker event is not a committed story fact |
 | Does a shared database cluster allow every service to write every schema? | [Proposed service schemas and delivery records](platform/data-and-persistence.md#proposed-service-schemas-and-delivery-records). No. A shared logical PostgreSQL cluster does not grant shared schema writes |
 | Can a replay duplicate an admitted roll, a story-item transfer, or another committed effect? | [Commands, business events, and workflows](platform/execution-and-delivery.md#commands-business-events-and-workflows). No. An imaginary market is not a service |
-| Who owns a committed scene checkpoint for a future fork? | [Proposed service ownership](platform/topology.md#proposed-service-ownership). The engine is the single consistency boundary. Selected future behavior. Checkpoint-backed source code now supports a restricted quiescent historical fork in local tests at 584b594; the full cross-Pod scene and arbitrary active-scene fork remain unproven |
+| Who owns a committed scene checkpoint for a future fork? | [Proposed service ownership](platform/topology.md#proposed-service-ownership). The engine is the single consistency boundary. See [lifecycle and compatibility](engine/lifecycle-and-compatibility.md#forked-continuities) for the selected contract and STATUS for measured coverage. Historical fixture proof is not arbitrary active-scene or cross-Pod acceptance |
 | Is a service command a new player HTTP route? | [Service calls are not player routes](platform/http-api-and-client-contracts.md#service-calls-are-not-player-routes). No route was added |
 | Who is logged in, and what may they read? | [Identities and access](platform/identities-and-access.md) |
 | What must every player route agree about actor, operation id, 202, GET, and errors? | [HTTP and client contracts](platform/http-api-and-client-contracts.md) |
 | Which trust boundary may this actor cross? | [Platform trust boundaries](platform/security-and-trust-boundaries.md) |
+| How do local platform capabilities compose? | [Local developer platform](platform/local-developer-platform.md) · [operator guide](../runbooks/local-development-platform.md) |
+| How are persistent workstation resource records collected? | [Workstation observability](platform/workstation-observability.md) · [operator guide](../runbooks/workstation-observability.md); source/fixture evidence is not installed collector proof |
+| How is optional native Redis installed and operated? | [Native Redis contract](platform/redis-native-infrastructure.md) · [operator failure notes](../runbooks/redis-native-baseline.md); check residual assurance in the owner |
+| How is optional native RabbitMQ installed and proved? | [Native RabbitMQ contract](platform/rabbitmq-native-infrastructure.md) · [operator guide](../runbooks/kubernetes-rabbitmq.md); integrated source is not heavy acceptance |
 | How is local Temporal deployed, persisted and operated? | [Temporal infrastructure](platform/temporal-infrastructure.md) · [operator runbook](../runbooks/kubernetes-temporal.md) |
 | How is optional native Kubernetes observability installed and proved? | [Native observability infrastructure](platform/observability-native-infrastructure.md) · [operator runbook](../runbooks/kubernetes-observability.md) |
 | Who owns SQL declarations and database execution? | [Database infrastructure and domain persistence](platform/database-infrastructure.md) |
 | How are exceptional local data repairs catalogued and targeted? | [Controlled database operations](platform/database-operations.md). Operator tool in `tools/db-operations`; not application runtime. Live proof separately gated. |
-| How is local object storage provisioned and portable S3 bound? | [Native local object storage](platform/object-storage-infrastructure.md). Selected target, implementation pending. |
+| How is local object storage provisioned and portable S3 bound? | [Native local object storage](platform/object-storage-infrastructure.md). Selected native source integrated; heavy acceptance pending per owning contract. |
 | Where does durable state live? | [Data and persistence](platform/data-and-persistence.md) |
 | May a cache replace the durable record? | [Redis boundary](platform/persistence-and-caching.md#redis-boundary). Optional acceleration. PostgreSQL remains the record |
 | How does a command survive retry? | [Execution and delivery](platform/execution-and-delivery.md) |
@@ -86,6 +90,8 @@ flowchart LR
 | How does the staff console navigate, render and isolate its data? | [Console and read models](admin/console-and-read-models.md) |
 | What may an investigation reveal? | [Investigation and privacy](admin/investigation-and-privacy.md) |
 | Does an Admin command description grant a write? | [Operational intent is not a raw CRUD mutation](admin/commands-and-audit.md#1-operational-intent-is-not-a-raw-crud-mutation). Selected target. No production write grant. The refusal list is [Negative acceptance](admin/commands-and-audit.md#8-negative-acceptance) |
+| What may a forensic reader reconstruct? | [Investigation and reconstruction](observability/investigation-and-reconstruction.md). Proposed read/security contract, not a new grant |
+| How is application telemetry separated from durable evidence? | [Telemetry and diagnostics](observability/telemetry-and-diagnostics.md). Application instrumentation recommendation; native platform contract is separate |
 | What is a forensic turn capsule? | [Identities and evidence](observability/identities-and-evidence.md#turn-evidence-capsule) |
 | Is a raw-artifact retention window already mandatory? | [Retention owner map](observability/retention-and-access.md#owner-map). Unratified recommendation. Candidate day counts are not a grant |
 | Does transition capture authorize a writer? | [Capture owner map](observability/capture-and-provenance.md#owner-map). Proposal. No code, schema, or test is authorized |
