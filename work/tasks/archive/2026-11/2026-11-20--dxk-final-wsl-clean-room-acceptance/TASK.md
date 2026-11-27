@@ -1,7 +1,7 @@
 # DXK-FINAL | clean Windows/WSL clone, graphical Pod operations and game proof
 
-**State:** Proposed; requires all DXK01-07 and TURN02/03 prerequisites actually implemented. **Kind:** independent operational verification, not an implementation Change. **Selected by:** owner when safe. **Current selection:** none here; work/QUEUE.md governs.
-**Linked program:** [Kubernetes-first development](../../../designs/open/kubernetes-first-developer-experience-2026-11-20/README.md). **Evidence destination:** evidence/runs/<date>--dxk-clean-room/ with redacted textual logs and version/pod/image/commit inventory; do not record secrets, sessions or private story contents.
+**State:** Cancelled by owner 2026-11-27; never executed. Old topology and TURN03 scripted gameplay acceptance retired. No dispatch, live mutation or PASS. General infrastructure safety and verification remain in the [capability catalog](../../../../../infra/verification/CAPABILITIES.md) and [bootstrap acceptance](../../../../../docs/runbooks/fresh-clone-bootstrap-acceptance.md). Historical procedure below is not executable. Original: `5f5750eca2f31d92fac6bfa478d1cae7203e1815:work/tasks/open/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md`.
+**Linked program:** [Kubernetes-first development](../../../../designs/archive/kubernetes-first-developer-experience-2026-11-20/README.md). **Evidence destination:** evidence/runs/<date>--dxk-clean-room/ with redacted textual logs and version/pod/image/commit inventory; do not record secrets, sessions or private story contents.
 
 ## Exact environment and permission
 

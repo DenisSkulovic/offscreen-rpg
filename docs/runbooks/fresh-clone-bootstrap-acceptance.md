@@ -74,3 +74,5 @@ Owner explicitly stopped the standalone campaign: exercise fresh agent onboardin
 ## Integration receipt (2026-11-26)
 
 Merged source at `dd8b18b114497c11d52cfdb5f47bd813602563a0` on main, owner-operated WSL regression 160/160, zero failures/skips/cancellations, 9.615s test duration. Merge had no conflicts, diff --check passed, push succeeded, clean working tree. Remote main verified at the integrated revision before this documentation-only receipt. The deferred outcomes above remain NOT RUN and are to be exercised with the next feature requiring fresh tenancy. Preserve local worktrees and branch references until their owners explicitly retire them; no resource cleanup implied.
+
+**2026-11-27 lifecycle reconciliation:** DXK-FINAL and its old scripted-game/GUI matrix are cancelled; this newer bootstrap acceptance contract and its recorded owner disposition remain unchanged. General infrastructure safety and proof stay in [verification capabilities](../../infra/verification/CAPABILITIES.md). No new PASS or live authority.

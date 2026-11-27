@@ -1,4 +1,6 @@
-# Kubernetes-first developer experience | owner-selected end state, not yet shipped
+> **Terminal owner disposition (2026-11-27): Superseded.** Older DXK programme retired in favor of current developer environments and fresh-clone bootstrap. All schedules, old cluster identities, source paths and gameplay-dependent acceptance below are historical, not dispatch authority. Preserve safe ownership, loopback exposure, data retention, truthful readiness, current-generation checks and bounded recovery. DXK-FINAL cancelled; no new PASS. [Current developer environment contract](../../../../docs/technical/platform/developer-environments.md) · [Bootstrap](../../../../docs/runbooks/fresh-clone-bootstrap.md) · [Verification capabilities](../../../../infra/verification/CAPABILITIES.md) · [Original tree](https://github.com/DenisSkulovic/offscreen-rpg/tree/5f5750eca2f31d92fac6bfa478d1cae7203e1815/work/designs/open/kubernetes-first-developer-experience-2026-11-20).
+
+# Kubernetes-first developer experience | superseded design
 
 **Date and evidence:** 2026-11-20. Planner read attached ZIP 13bcd6cf and connected GitHub main through 8796daaa. Local unpushed Cursor work not inspected; executor must recheck HEAD and worktree. **State:** implementation program approved as desired outcome by owner; no code executed here. **Selection:** work/QUEUE.md remains the only active selector. Do not usurp BOOT03 or TURN02 in flight.
 
@@ -54,8 +56,8 @@ Existing TURN02 T03→T04→T05→T06 enables real release; related BOOT03/STORY
 | [DXK04](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk04-package-command-surface/CHANGE.md) | Root package command redesign |
 | [DXK05](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk05-kubernetes-ci-and-lab-guards/CHANGE.md) | Kubernetes CI and lab safety replacement |
 | [DXK06](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/infrastructure/2026-11-20--dxk06-compose-retirement/CHANGE.md) | Done: Compose runtime and the retired compose mode are removed. Clean-clone proof stays DXK07 |
-| [DXK07](../../../changes/open/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) | Clean-clone readiness and regression harness |
+| [DXK07](../../../changes/archive/2026-11/infrastructure/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) | Clean-clone readiness and regression harness |
 | [DXK08](../../../changes/archive/2026-11/infrastructure/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md) | Fast dev/watch loop distinct from immutable release verification — Done |
-| [DXK09](../../../changes/open/2026-11-20--dxk09-parallel-worktree-dev-stacks/CHANGE.md) | Isolated branch/worktree dev stacks for parallel Cursor chats |
+| [DXK09 historical proposal](../../../changes/backlog/quality-evaluation/2026-11-20--dxk09-parallel-worktree-dev-stacks/CHANGE.md) | Isolated branch/worktree dev stacks for parallel Cursor chats |
 
 Nothing here makes a change Done or permits paid provider calls, foreign-cluster changes, automatic data deletion, unsafe host binding or automatic selection of all packets.

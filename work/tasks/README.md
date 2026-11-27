@@ -10,7 +10,7 @@
 | [archive/](archive/README.md) | Done/Cancelled Task packets with links to durable evidence |
 | [TEMPLATE.md](TEMPLATE.md) | Minimal exact, safe, Composer-friendly run contract |
 
-**One proposed future DXK-FINAL operator acceptance Task** is registered in [open/](open/README.md); it is unselected and not executed.
+DXK-FINAL cancelled and [archived](archive/2026-11/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md) 2026-11-27; no execution or PASS. Current infrastructure acceptance belongs to its existing owners.
 
 **No standalone Tasks selected at adoption (2026-11-20).** Do not create or select an empty placeholder Task for every Change-owned test or Composer `Txx`. Existing Change-owned work remains [under Changes](../changes/README.md).
 
