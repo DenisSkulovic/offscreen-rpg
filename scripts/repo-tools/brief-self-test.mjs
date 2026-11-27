@@ -79,6 +79,14 @@ export function runBriefSelfTest() {
       selectedWorkFromQueue('Current work: [change](changes/open/leaf/CHANGE.md)\n'),
       'work/changes/open/leaf/CHANGE.md',
     );
+    const grouped = 'work/changes/open/observability-developer/2026-11-27--obs-d05-foreground-connection/CHANGE.md';
+    assert.equal(
+      selectedWorkFromQueue(`Current work: [OBS-D05](changes/open/observability-developer/2026-11-27--obs-d05-foreground-connection/CHANGE.md)\n`),
+      grouped,
+    );
+    const groupedReceipt = receiptFrom(collectCheckout(clean), grouped);
+    assert.equal(groupedReceipt.workKind, 'change');
+    assert.equal(groupedReceipt.change, grouped);
     const taskPath = 'work/tasks/open/2026-11-20--test-run/TASK.md';
     assert.equal(
       selectedWorkFromQueue('Current work: [test run](tasks/open/2026-11-20--test-run/TASK.md)\n'),

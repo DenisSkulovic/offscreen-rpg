@@ -6,6 +6,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { classifyChangeText } from './archive-changes.mjs';
+import { auditOpenChangeTree, parseChangePacketPath } from './change-paths.mjs';
 import { parseCurrentWork, WORK_QUEUE_FILE } from './work-selection.mjs';
 import { scanDocuments } from './wiki-core/content-health.mjs';
 import { parseMarkdownDocument } from './wiki-core/markdown.mjs';
@@ -306,16 +307,30 @@ export function scanMaintenance(input) {
   }
 
   for (const rel of markdown) {
-    if (!/^work\/changes\/open\/[^/]+\/CHANGE\.md$/.test(rel)) continue;
-    const leaf = rel.slice(0, rel.lastIndexOf('/'));
-    if (!queueTargets || !covers(queueTargets, leaf)) {
+    const parsed = parseChangePacketPath(rel);
+    if (!parsed.ok || parsed.area !== 'open') continue;
+    const packetDir = rel.slice(0, rel.lastIndexOf('/'));
+    const groupDir = parsed.group ? `work/changes/open/${parsed.group}` : null;
+    const groupReadme = groupDir ? `${groupDir}/README.md` : null;
+    const groupTargets = groupReadme && markdown.includes(groupReadme)
+      ? localLinks(root, groupReadme, readText(groupReadme)).targets
+      : null;
+    const routedDirectly = queueTargets && covers(queueTargets, packetDir);
+    const routedThroughGroup = Boolean(
+      groupDir &&
+        queueTargets &&
+        covers(queueTargets, groupDir) &&
+        groupTargets &&
+        covers(groupTargets, packetDir),
+    );
+    if (!routedDirectly && !routedThroughGroup) {
       findings.push(
         finding(
           'error',
           'missing-route',
           rel,
           'Open Change packet is missing from work/changes/README.md.',
-          'Link this CHANGE.md from the Change catalog. No current work selected remains valid.',
+          'Link this CHANGE.md from the Change catalog, or link its design-group README and index the packet there. No current work selected remains valid.',
         ),
       );
     }
@@ -346,26 +361,43 @@ export function scanMaintenance(input) {
     }
   }
 
-  const openLeafFolders = new Set();
-  const openChangesPrefix = 'work/changes/open/';
-  for (const rel of files) {
-    if (!rel.startsWith(openChangesPrefix)) continue;
-    const rest = rel.slice(openChangesPrefix.length);
-    const slash = rest.indexOf('/');
-    if (slash === -1) continue;
-    openLeafFolders.add(`${openChangesPrefix}${rest.slice(0, slash)}`);
-  }
-  for (const prefix of [...openLeafFolders].sort()) {
-    if (files.includes(`${prefix}/CHANGE.md`)) continue;
+  for (const item of auditOpenChangeTree(files)) {
+    const orphan = item.code === 'orphan-open-folder';
     findings.push(
       finding(
         'error',
-        'orphan-open-folder',
-        prefix,
-        'Tracked files exist under an open Change folder with no CHANGE.md front door.',
-        'Restore the Change front door (CHANGE.md) or move completed artifacts beside their archived Change.',
+        item.code,
+        item.path,
+        orphan
+          ? 'Tracked files exist under an open Change folder with no CHANGE.md front door.'
+          : item.code === 'malformed-group'
+            ? 'Design-group directory is not a valid coordination index of Change packets.'
+            : item.code === 'duplicate-change-identity'
+              ? 'The same Change leaf is open in more than one location.'
+              : 'Open Change path is nested more deeply than a design group allows.',
+        orphan
+          ? 'Restore the Change front door (CHANGE.md) or move completed artifacts beside their archived Change.'
+          : 'Use one flat packet or one design-group directory of packets. Keep a single leaf identity and a group README that is not itself a Change.',
       ),
     );
+  }
+  const groupReadmes = files.filter((rel) =>
+    /^work\/changes\/open\/[a-z0-9]+(?:-[a-z0-9]+)*\/README\.md$/.test(rel),
+  );
+  for (const rel of groupReadmes) {
+    const groupDir = rel.slice(0, rel.lastIndexOf('/'));
+    if (files.includes(`${groupDir}/CHANGE.md`)) continue;
+    if (!queueTargets || !covers(queueTargets, groupDir)) {
+      findings.push(
+        finding(
+          'error',
+          'missing-route',
+          rel,
+          'Design-group execution index is missing from work/changes/README.md.',
+          'Link the group README from the Change catalog. Do not copy its dependency graph into the catalog.',
+        ),
+      );
+    }
   }
 
   for (const rel of markdown) {

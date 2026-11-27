@@ -2,6 +2,7 @@
  * Read-only Change plan/close guard. Zero provider, zero writes.
  *
  * pnpm wiki:change-guard --mode plan --change work/changes/open/<leaf>
+ *   or work/changes/open/<design-slug>/<leaf>
  * pnpm wiki:change-guard --mode close --change work/changes/open/<leaf> --base <git-sha>
  * pnpm wiki:change-guard --self-test
  */

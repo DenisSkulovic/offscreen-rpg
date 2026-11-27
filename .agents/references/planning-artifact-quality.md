@@ -28,7 +28,7 @@ Use established packet profiles. A tiny PATCH or exact documentation/VERIFY rout
 
 | File | Required contents and exclusions |
 | --- | --- |
-| CHANGE.md | Short front door, selected outcome, baseline/authority, scope and exclusions, permissions, route to tasks and proof, impact/closure obligations. Not a thesis. |
+| CHANGE.md | Short front door, selected outcome, baseline/authority, scope and exclusions, permissions, route to tasks and proof, impact/closure obligations. Not a thesis. In a design group, point at the group README for the batch graph instead of copying it. |
 | TASKS.md | Compact DAG/dispatch index, stable T-IDs and narrow task cards. Exact prerequisites, write owners, 2–5 initial anchors with file/symbol/heading, decided edits, positive and diagnostic negative command/cwd, stop condition, receipt. Parent selects one card, not a chapter. |
 | SOURCE-MAP.md | Verified current SHA, affected code/caller/export/data/test/ownership graph, concrete source facts, migration disposition and named gaps. No pasted source dumps, investigation chronology or invented line anchors. |
 | EXECUTION.md / INTERFACES.md or directly indexed contracts | One selected algorithm, exact interfaces, invariants, ordered edit steps and failure/permission behavior not already owned by canonical specification. No competing plans or old task recipes. Only needed if cards and precise canonical anchors do not suffice. |

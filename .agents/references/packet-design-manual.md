@@ -16,7 +16,7 @@ Follow [planner source investigation](planner-investigation-standard.md#before-a
 
 ## 3. Design the execution DAG before writing T-IDs
 
-The Design's Change graph comes first. [Parallel scheduling](change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19) owns those edges. This section is the task DAG inside one Change, after that graph exists.
+The Design's Change graph comes first and lives in the group README. [Parallel scheduling](change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19) owns those edges. This section is the task DAG inside one Change, after that graph exists.
 
 Apply [Change scale](planning-artifact-quality.md#4-submission-scale-and-measurement) first: one preferred measurable outcome, normally 5–10 minutes of active implementation. Seven actual executor assignments, including nested subcards, is a strong default. Exceeding it requires the narrow justification in that standard. Do not rename a many-task campaign as one Change, and do not split an atomic correctness boundary to satisfy the count.
 

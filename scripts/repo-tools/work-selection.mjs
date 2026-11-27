@@ -3,8 +3,12 @@
  * No side effects and no dependency on a checked-out filesystem.
  *
  * work/QUEUE.md may select one open Change or one standalone operational Task,
- * never a nested Composer TASKS.md item or a design proposal.
+ * never a nested Composer TASKS.md item, a design proposal, or a group README.
+ * An open Change is either changes/open/<leaf>/CHANGE.md or
+ * changes/open/<design-slug>/<leaf>/CHANGE.md.
  */
+import { parseOpenChangeHref } from './change-paths.mjs';
+
 export const WORK_QUEUE_FILE = 'work/QUEUE.md';
 
 export function parseCurrentWork(text) {
@@ -32,13 +36,13 @@ export function parseCurrentWork(text) {
   if (href.startsWith('/') || href.split('/').includes('..') || href.split('/').includes('.')) {
     return { ok: false, selected, message: 'Current work path must not escape the work/ directory.' };
   }
-  const change = /^changes\/open\/[a-zA-Z0-9._-]+\/CHANGE\.md$/.test(href);
+  const change = parseOpenChangeHref(href);
   const task = /^tasks\/open\/[a-zA-Z0-9._-]+\/TASK\.md$/.test(href);
   if (!change && !task) {
     return {
       ok: false,
       selected,
-      message: 'Current work must target changes/open/<leaf>/CHANGE.md or tasks/open/<leaf>/TASK.md.',
+      message: 'Current work must target changes/open/<leaf>/CHANGE.md, changes/open/<design-slug>/<leaf>/CHANGE.md, or tasks/open/<leaf>/TASK.md.',
     };
   }
   return {
@@ -47,5 +51,6 @@ export function parseCurrentWork(text) {
     kind: change ? 'change' : 'task',
     href,
     target: `work/${href}`,
+    ...(change ? { leaf: change.leaf, group: change.group } : {}),
   };
 }

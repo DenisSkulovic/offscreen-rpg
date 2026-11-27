@@ -56,6 +56,22 @@ The manifest's `trackedModifiedPaths` lists only locally modified tracked path n
 
 > Use the attached Offscreen RPG source ZIP for a source-grounded design investigation. First inspect `SNAPSHOT.json`. If `portableWiki.status` is `ready`, consult `WIKI-INDEX.json` for authoritative headings, line spans and omitted historical links, then read original Markdown/source sections for evidence. Otherwise use local filesystem search. Treat implementation as evidence, not product law. Before publishing, compare the snapshot commit with live GitHub HEAD.
 
-A ZIP is a **frozen source view**, not a live Git mirror. Local text searches can be fast even if ChatGPT's execution environment does not have the repository's Node 24/pnpm dependencies. The GitHub connector still handles recent commits, source diffs and publishing. If Cursor pushes substantial changes after the export, refresh the ZIP or reconcile affected paths against remote HEAD before designing around them.
+A ZIP is a **frozen source view**, not a live Git mirror. Local text searches can be fast even if ChatGPT's execution environment does not have the repository's Node 24/pnpm dependencies. Read-only GitHub access can reconcile recent commits and source diffs; local custodians persist authorized changes when remote writes are unavailable. If Cursor pushes substantial changes after the export, refresh the ZIP or reconcile affected paths against remote HEAD before designing around them.
+
+### Local patch round trip
+
+For read-only design sessions, [CHATGPT.md](../../CHATGPT.md) describes patch delivery under the existing artifact-handoff procedure. The agent supplies a Git patch and identifies its inspected revision and scope. Download it locally and, from the intended repository root, set `PATCH` to its actual path (on WSL, Windows downloads are normally under `/mnt/c/Users/<user>/Downloads/`).
+
+```bash
+git branch --show-current
+git rev-parse HEAD
+git status --short
+git apply --stat "$PATCH"
+git apply --check "$PATCH" && git apply "$PATCH"
+git diff --stat
+git diff --check
+```
+
+Confirm the repository, branch, base and affected-file drift before applying. If the applicability check fails, stop and reconcile with the author; do not force it. Inspect the full diff and any new untracked files, run applicable checks, and stage only the authorized paths for a policy-compliant commit. A patch check establishes applicability, not behavioral correctness. An optional personal `applypatch` helper may wrap these commands without auto-commit or auto-push; it is not a repository prerequisite. Share the resulting SHA and relevant dirty diffs with the agent before subsequent edits. Push only when authorized; a new snapshot contains committed HEAD only.
 
 **Related:** [developer-agent harness](../../.agents/HARNESS.md) and [repository workbench design](../../work/designs/open/repository-agent-workbench/README.md).

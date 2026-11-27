@@ -205,6 +205,71 @@ test('nested-only artifact under open leaf still flags orphan-open-folder', () =
   );
 });
 
+test('a design group README is an index, and a nested or duplicate packet is rejected', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add(
+    'work/changes/open/observability-developer/README.md',
+    '# Group\n\n[packet](2026-11-27--obs-d05-foreground-connection/CHANGE.md)\n',
+  );
+  fx.add(
+    'work/changes/open/observability-developer/2026-11-27--obs-d05-foreground-connection/CHANGE.md',
+    '# D05\n\n**State:** Implementing\n',
+  );
+  fx.add(
+    'work/changes/README.md',
+    '# Queue\n\n[leaf](open/leaf/CHANGE.md)\n\n[group](open/observability-developer/README.md)\n\n[ledger](ledger/)\n',
+  );
+  const grouped = scan(fx);
+  assert.equal(codes(grouped).some((item) => item.startsWith('orphan-open-folder:')), false);
+  assert.equal(codes(grouped).includes('malformed-group:work/changes/open/observability-developer'), false);
+  assert.equal(
+    codes(grouped).includes(
+      'missing-route:work/changes/open/observability-developer/2026-11-27--obs-d05-foreground-connection/CHANGE.md',
+    ),
+    false,
+  );
+
+  fx.add(
+    'work/changes/open/observability-developer/2026-11-27--obs-d05-foreground-connection/extra/CHANGE.md',
+    '# Nested\n\n**State:** Implementing\n',
+  );
+  fx.add('work/changes/open/2026-11-27--obs-d05-foreground-connection/CHANGE.md', '# Dup\n\n**State:** Implementing\n');
+  const broken = scan(fx);
+  assert.equal(
+    codes(broken).includes(
+      'invalid-change-nesting:work/changes/open/observability-developer/2026-11-27--obs-d05-foreground-connection/extra/CHANGE.md',
+    ),
+    true,
+  );
+  assert.equal(
+    codes(broken).filter((item) => item.startsWith('duplicate-change-identity:')).length,
+    2,
+  );
+  fx.cleanup();
+});
+
+test('a group with a child packet missing its front door is malformed', () => {
+  const fx = fixture();
+  baseFiles(fx);
+  fx.add('work/changes/open/observability-developer/README.md', '# Group\n');
+  fx.add('work/changes/open/observability-developer/orphan/PLAN.md', '# Plan\n');
+  fx.add(
+    'work/changes/README.md',
+    '# Queue\n\n[leaf](open/leaf/CHANGE.md)\n\n[group](open/observability-developer/README.md)\n\n[ledger](ledger/)\n',
+  );
+  const report = scan(fx);
+  assert.equal(
+    codes(report).includes('orphan-open-folder:work/changes/open/observability-developer/orphan'),
+    true,
+  );
+  assert.equal(
+    codes(report).includes('malformed-group:work/changes/open/observability-developer'),
+    true,
+  );
+  fx.cleanup();
+});
+
 test('adding CHANGE.md clears orphan-open-folder but may still need queue route', () => {
   const fx = fixture();
   baseFiles(fx);

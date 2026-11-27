@@ -18,6 +18,15 @@ test('an open Change and an independent Task are distinct top-level selections',
   assert.equal(change.kind, 'change');
   assert.equal(change.target, 'work/changes/open/2026-11-19--turn02-compose-real-kubernetes-application-release/CHANGE.md');
 
+  const grouped = parseCurrentWork('Current work: [OBS-D05](changes/open/observability-developer/2026-11-27--obs-d05-foreground-connection/CHANGE.md)\n');
+  assert.equal(grouped.ok, true);
+  assert.equal(grouped.kind, 'change');
+  assert.equal(grouped.group, 'observability-developer');
+  assert.equal(
+    grouped.target,
+    'work/changes/open/observability-developer/2026-11-27--obs-d05-foreground-connection/CHANGE.md',
+  );
+
   const task = parseCurrentWork('Current work: [run](tasks/open/2026-11-20--test-run/TASK.md)\n');
   assert.equal(task.ok, true);
   assert.equal(task.kind, 'task');
@@ -33,6 +42,9 @@ test('invalid, ambiguous and archived selections fail closed', () => {
     'Current work: [not a task](changes/open/leaf/TASKS.md)',
     'Current work: [design](designs/open/design/README.md)',
     'Current work: [escape](../private/TASK.md)',
+    'Current work: [group](changes/open/observability-developer/README.md)',
+    'Current work: [deep](changes/open/observability-developer/leaf/extra/CHANGE.md)',
+    'Current work: [dot](changes/open/./leaf/CHANGE.md)',
     'Current work: [absolute](/tasks/open/leaf/TASK.md)',
     'Current work: [frag](tasks/open/leaf/TASK.md#T01)',
     'Current work: [external](https://example.com/TASK.md)',

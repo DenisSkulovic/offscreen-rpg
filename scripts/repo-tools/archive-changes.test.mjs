@@ -144,6 +144,51 @@ test('inbound leaf path rewrite', () => {
   );
 });
 
+test('grouped open packet relocation keeps relative and inbound links', () => {
+  const leaf = '2026-11-27--obs-d05-foreground-connection';
+  const peer = '2026-11-27--obs-d06-collector-upgrade';
+  const oldFile = path.join(
+    'repo',
+    'work',
+    'changes',
+    'open',
+    'observability-developer',
+    leaf,
+    'CHANGE.md',
+  );
+  const newFile = path.join(
+    'repo',
+    'work',
+    'changes',
+    'archive',
+    '2026-11',
+    'observability',
+    leaf,
+    'CHANGE.md',
+  );
+  const body = rewriteMarkdownLinksInText(
+    'See [design](../../../../designs/open/observability-developer/README.md) and [peer](../' +
+      peer +
+      '/CHANGE.md).\n',
+    oldFile,
+    newFile,
+  ).replaceAll('\\', '/');
+  assert.match(body, /\(\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/designs\/open\/observability-developer\/README\.md\)/);
+  assert.match(
+    body,
+    /\(\.\.\/\.\.\/\.\.\/\.\.\/open\/observability-developer\/2026-11-27--obs-d06-collector-upgrade\/CHANGE\.md\)/,
+  );
+  const inbound = rewriteInboundLeafPaths(
+    `Catalog [D05](open/observability-developer/${leaf}/CHANGE.md) and work/changes/open/observability-developer/${leaf}/TASKS.md`,
+    leaf,
+    `archive/2026-11/observability/${leaf}`,
+    `open/observability-developer/${leaf}`,
+  );
+  assert.match(inbound, /\(archive\/2026-11\/observability\/2026-11-27--obs-d05-foreground-connection\/CHANGE\.md\)/);
+  assert.match(inbound, /work\/changes\/archive\/2026-11\/observability\/2026-11-27--obs-d05-foreground-connection\/TASKS\.md/);
+  assert.equal(depthUnderChanges(`open/observability-developer/${leaf}`), 3);
+});
+
 test('markdown link rewriter leaves absolute URLs', () => {
   const oldFile = path.join('repo', 'docs', 'changes', 'leaf', 'CHANGE.md');
   const newFile = path.join(

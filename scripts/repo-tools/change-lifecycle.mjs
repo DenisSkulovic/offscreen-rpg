@@ -36,6 +36,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { targetRelFromChanges } from './archive-changes.mjs';
 import { expectedDesignTarget } from './change-branch-guard.mjs';
+import { DESIGN_SLUG, locateLeafPackets } from './change-paths.mjs';
 
 const SCRIPT = fileURLToPath(import.meta.url);
 
@@ -181,17 +182,22 @@ function assertAssessment(options) {
   return verdict;
 }
 
-const LEAF = /^\d{4}-\d{2}-\d{2}--[a-z0-9-]+$/;
+const LEAF = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
-export function changePacketPaths(leaf) {
+export function changePacketPaths(leaf, group = null) {
   if (!LEAF.test(leaf))
     throw Error(`Change leaf must look like YYYY-MM-DD--slug: ${leaf}`);
+  if (group != null && !DESIGN_SLUG.test(group))
+    throw Error(`Design group must be a slug: ${group}`);
+  const open = group
+    ? path.posix.join('work/changes/open', group, leaf, 'CHANGE.md')
+    : path.posix.join(
+        'work/changes',
+        targetRelFromChanges(leaf, 'open'),
+        'CHANGE.md',
+      );
   return {
-    open: path.posix.join(
-      'work/changes',
-      targetRelFromChanges(leaf, 'open'),
-      'CHANGE.md',
-    ),
+    open,
     archived: path.posix.join(
       'work/changes',
       targetRelFromChanges(leaf, 'archive'),
@@ -200,21 +206,33 @@ export function changePacketPaths(leaf) {
   };
 }
 
-function objectExists(cwd, rev, file) {
+function listRevisionFiles(cwd, rev, prefix) {
   try {
-    git(['cat-file', '-e', `${rev}:${file}`], cwd);
-    return true;
+    const listed = git(
+      ['ls-tree', '-r', '--name-only', rev, '--', prefix],
+      cwd,
+    );
+    return listed ? listed.split('\n').filter(Boolean) : [];
   } catch {
-    return false;
+    return [];
   }
 }
 
 export function packetPresence(cwd, rev, leaf) {
-  const paths = changePacketPaths(leaf);
+  const defaults = changePacketPaths(leaf);
+  const located = locateLeafPackets(
+    listRevisionFiles(cwd, rev, 'work/changes'),
+    leaf,
+  );
+  const ambiguous = located.open.length > 1 || located.archived.length > 1;
   return {
-    open: objectExists(cwd, rev, paths.open),
-    archived: objectExists(cwd, rev, paths.archived),
-    paths,
+    open: located.open.length === 1,
+    archived: located.archived.length === 1,
+    ambiguous,
+    paths: {
+      open: located.open[0]?.path ?? defaults.open,
+      archived: located.archived[0]?.path ?? defaults.archived,
+    },
   };
 }
 
@@ -244,7 +262,8 @@ export function lookupCommission({ repoCwd, target, leaf }) {
   if (!refOk(target)) throw Error('Specify --target <implementation branch>');
   const presence = packetPresence(repoCwd, `refs/heads/${target}`, leaf);
   let status = 'absent';
-  if (presence.archived && !presence.open) status = 'archived';
+  if (presence.ambiguous) status = 'ambiguous';
+  else if (presence.archived && !presence.open) status = 'archived';
   else if (presence.open && presence.archived) status = 'split';
   else if (presence.open) status = 'open';
   return { target, leaf, status, ...presence };
@@ -258,11 +277,19 @@ function assertReadyToClose(options) {
     target: options.requestedTarget,
     leaf: options.leaf,
   });
+  if (onTarget.status === 'ambiguous')
+    throw Error(
+      `Change ${options.leaf} has more than one packet on ${options.requestedTarget}.`,
+    );
   if (onTarget.status === 'archived')
     throw Error(
       `Change ${options.leaf} is already archived on ${options.requestedTarget}. Do not execute it again.`,
     );
   const onChange = packetPresence(options.changeCwd, 'HEAD', options.leaf);
+  if (onChange.ambiguous)
+    throw Error(
+      `Change ${options.leaf} has more than one packet on the Change branch.`,
+    );
   if (onChange.open || !onChange.archived)
     throw Error(
       `Completed Change packet must be archived on the Change branch before integration. Open packet present: ${onChange.open}. Archived packet present: ${onChange.archived}.`,
@@ -271,6 +298,10 @@ function assertReadyToClose(options) {
 
 function assertClosedOnTarget(cwd, rev, target, leaf) {
   const presence = packetPresence(cwd, rev, leaf);
+  if (presence.ambiguous)
+    throw Error(
+      `Change ${leaf} has more than one packet on ${target}. Do not report completion.`,
+    );
   if (presence.open)
     throw Error(
       `Completed Change packet remains in open on ${target}. Do not report completion.`,

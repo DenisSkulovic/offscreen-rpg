@@ -10,6 +10,14 @@ Normative batch completion is the [planner continuous-development flow](.agents/
 
 The owner's ChatGPT session has read-only GitHub access. It may investigate, design and review, and it delivers complete artifacts. It does not attempt remote writes. A write-authorized local custodian persists them and verifies the imported content against the reviewed candidate. Optional frozen source packaging is `pnpm repo:snapshot:chatgpt`; see the [snapshot runbook](docs/runbooks/chatgpt-design-snapshot.md). A snapshot is a frozen revision, not a live worktree.
 
+### Local Git patch delivery
+
+Prefer a downloadable, repository-relative Git patch for coordinated design, planning, review or instruction edits when this session is read-only and the owner has a local checkout. Follow the existing [artifact handoff](.agents/references/planner-investigation-standard.md#artifact-handoff): identify the actual base branch/full SHA, affected paths, intended changes, validation performed and limitations. Use the latest accessible source or reconcile affected-file drift; include the complete scoped diff, including authorized additions, moves and removals. Validate patch applicability against the inspected base when possible and state what was actually checked.
+
+The owner or authorized local custodian downloads the patch, checks the current branch, HEAD and dirty paths, previews and checks applicability, applies it, inspects the resulting diff, runs proportionate checks and commits under repository policy. See the [local patch round trip](docs/runbooks/chatgpt-design-snapshot.md#local-patch-round-trip). A local helper is optional. Do not force a conflicting patch, overwrite unrelated work, stage or commit unrelated edits, or claim that a generated patch has been applied or accepted. Reconcile changed affected files before generating the next patch; the committed snapshot and remote HEAD do not include uncommitted local edits.
+
+Do not delegate routine translation of an already-decided document diff to a paid implementation agent merely because ChatGPT cannot write remotely. Use a local custodian or implementation agent when actual execution, integration or local investigation is required. This delivery mechanism does not change design review, approval, commission or proof boundaries.
+
 A new chat does not see this file unless it retrieves it. Load `AGENTS.md` and this adapter from the active branch, then follow the planner standard, before a handoff. If current files are unavailable, say so and request a snapshot or repository access.
 
 Cold-start prompt: “Offscreen RPG planning: load AGENTS.md and CHATGPT.md from the active branch, then follow the planner investigation standard before any implementation handoff.”
