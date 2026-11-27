@@ -6,6 +6,7 @@
     "node": ">=24.19.0 <25"
   },
   "scripts": {
+    "obs:connect": "node infra/platform/observability/connect.mjs",
     "dev": "node tools/dev-environments/src/cli/dev-tilt.mjs",
     "dev:new": "node tools/dev-environments/src/cli/dev-tilt.mjs new",
     "dev:reserve": "node tools/dev-environments/src/cli/dev-tilt.mjs reserve",
