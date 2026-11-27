@@ -4,13 +4,17 @@
 
 **Find the section:** [workflow/DB responsibility](#responsibility-at-the-database-boundary) · [commands and durable delivery](#commands-and-durable-delivery) · [commands, events, and workflows](#commands-business-events-and-workflows) · [decision to consequence](#from-decision-to-consequence) · [prepared continuation](#publishing-a-prepared-continuation) · [retry and uncertain effects](#retry-boundaries-and-uncertain-side-effects) · [outages and recovery](#outages-and-recovery) · [laboratory broker](#laboratory-messaging-broker). Read the relevant section rather than loading this entire document.
 
-Temporal owns the durable control flow: waiting, waking, coordinating inputs and retrying bounded Activities. PostgreSQL owns accepted application commands, committed story content, permissions and spending. Effective spending stays on [distinct authorities](./spending-and-entitlements.md#distinct-authorities). The cadence of future simulation work remains open: scheduled boundaries, lightweight ticks or a hybrid may fit different situations. Temporal coordinates durable waits and commands; a second scheduler must not independently commit the same story outcome. Canonical SQL identity and the transaction stay on [who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record). This page owns the queue, the outbox, and Temporal delivery. Sections headed Implemented are realization records of the chamber flows already described. They stay in place. The delivery contract remains [commands and durable delivery](#commands-and-durable-delivery). Chamber bench tiers, where a row exists, are [capability coverage](../../../STATUS.md#capability-coverage).
+Temporal owns the durable control flow: waiting, waking, coordinating inputs and retrying bounded Activities. PostgreSQL owns accepted application commands, committed story content, permissions and spending. Effective spending stays on [distinct authorities](./spending-and-entitlements.md#distinct-authorities). The cadence of future simulation work remains open: scheduled boundaries, lightweight ticks or a hybrid may fit different situations. Temporal coordinates durable waits and commands; a second scheduler must not independently commit the same story outcome. Canonical SQL identity and the transaction stay on [who owns the durable record](./data-and-persistence.md#who-owns-the-durable-record). This page owns the queue, the outbox, and Temporal delivery. Sections headed Implemented are dated realization records of the chamber flows: what source did when inspected, with the receipt and replay conditions kept exact. They stay in place under their existing headings and are not the selected contract. The delivery contract remains [commands and durable delivery](#commands-and-durable-delivery).
+
+**Selected contract versus local proof.** The selected contract is: an admitted command and its outbox notice commit in one SQL transaction; delivery to Temporal is idempotent and retried with the same message identity; the committed result is recorded under a stable operation or transition identity, and replays return it. A Temporal timer or signal is only a hint to reread SQL, never the commit of gameplay. The Worker lifecycle and Implemented sections below prove pieces of this locally with injected fakes or disposable fixtures. They do not certify distributed recovery of live gameplay, and an unrun trial stays unrun. Chamber bench tiers, where a row exists, are [capability coverage](../../../STATUS.md#capability-coverage).
 
 ## Worker lifecycle safety (OPS12; injected fakes only)
 
 The local distributed Storyteller stack starts relay, control and executor in that order. Each Worker has one idempotent native-resource close path. A failed control or executor start stops already-started roles in reverse order and rethrows the original startup error, combining cleanup failures when those also fail. A normal stop attempts every role in reverse order even after an individual stop error. This does not alter Temporal task queues, workflow IDs, provider attempt liability, the SQL outbox, publication permissions or activity retry. A graceful shutdown grace window is **not** proof that every Activity completed: a terminated activity must rely on its explicit durable, idempotent recovery contract, and a possibly-sent provider request cannot be silently repeated. Deterministic injected Worker/Temporal fakes prove this resource cleanup. A separate end-to-end process-kill trial is still required before claiming distributed recovery of live gameplay. Source owner: [OPS12 packet](../../../work/changes/archive/2026-11/other/2026-11-21--ops12-distributed-worker-lifecycle/CHANGE.md).
 
 ## Implemented opening flow
+
+Dated realization (chamber scripted opening; no provider call). Relay claim, lease, acknowledgement and replay conditions below are exact and bind only this fixture.
 
 The first connected workflow handles only scripted opening previews. `packages/workflows` contains deterministic control flow and a compact Activity contract; `apps/worker` binds it to server operations and runs the outbox relay. The API has no Temporal connection. A saved request can remain pending while Temporal or the worker is unavailable and complete when processing resumes.
 
@@ -24,6 +28,8 @@ The application worker and relay share a process for this slice, but their code 
 
 ## Implemented fixed interval
 
+Dated realization (chamber fixed wait; no provider call). SQL decides due time and completion; the workflow timer and wake signal only prompt a database reread.
+
 The timed chamber saves a versioned wait plan and server-derived due time with its waiting passage. Intervals use a `story.interval.v1` outbox notice. The relay starts `storyIntervalV1` with ID `controlled-interval/<passage-id>` and rejects duplicate reuse. Only the passage ID enters workflow input.
 
 The Activity locks the story, reloads the interval and checks that it is still current. A paused interval returns a held state; a running interval returns its remaining duration or commits its prepared arrival when due. Completion uses the waiting passage ID as transition identity. Repeated or stale completion makes no change. The prepared arrival remains private until publication. No model invocation or per-second database update occurs.
@@ -36,6 +42,8 @@ This executor closes after one arrival; a later interval has its own identity. I
 
 ## Implemented solo response deadline
 
+Dated realization of the chamber fixture's solo response deadline, not engine policy and not general delegation. Provenance: product `acceptance-scenarios.md` / 3. Meet the goblin (GM07 scope paragraph). The goblin, the fruit and any response clock in that scene are illustrative and select no delegated default; an ordinary unanswered decision stays open, and the narrative-rehearsal deadline is not imported into the mechanical campaign. The only other automatic expiry is the narrow archived GM07 harmless invitation (two-choice invitation, owner-enabled `decline-harmless-invitation.v1` before publication, twenty real minutes on the database clock), whose realization and proof limits are owned by [Decisions with deadlines](../engine/chronology-and-activities.md#decisions-with-deadlines). A general timed fallback remains proposed. Storage for this row is [Implemented decision deadline](./data-and-persistence.md#implemented-decision-deadline).
+
 A server-selected continuation may publish an interaction and a version-1 decision plan: a bounded response duration, a default option from that offer and its prepared consequence. It cannot also start a journey wait. The current operation supports one player's answer, not a group ballot. The deadline is computed from PostgreSQL time at publication, never while preparing a future scene. No arbitrary deadline/default/outcome is accepted from the browser.
 
 The publishing transaction stores the plan and deadline and enqueues `story.decision.v1`. The relay starts `storyDecisionV1` with ID `story-decision/<passage-id>`. Its Activity returns remaining time for an early wake or commits the saved default when due. The default uses the common continuation transaction with the originating passage ID as its transition identity and records response provenance as `default`. An answered decision makes a later timeout a no-op. The workflow may retain its timer until that original deadline; early cancellation is not implemented.
@@ -46,6 +54,8 @@ The `chamber.v4` gate fixture gives 15 real seconds to reply, holds fiction and 
 
 ## Elapsed time and execution cadence
 
+**Selected time authority:** elapsed and fictional time are committed SQL state advanced through the normal transition path. Browser time, a wall-clock inference from a provider or a Temporal timer's firing is never sufficient authority for an arrival, balance change or deadline admission.
+
 The proposed live clock uses a committed fictional-time anchor, the corresponding real-time anchor, the applicable pace and explicit running/held state. An active interval also defines its next boundary and elapsed-time policy. Reads may project time within that interval; authoritative effects still commit through the normal transition path. A browser can refresh its display every second without sending a request or appending a passage each second. Browser time is never sufficient authority for an arrival, balance change or deadline admission.
 
 A scheduled-boundary implementation can wait for the earliest relevant change: an interval completion, a supported condition threshold, a prepared incident or a response deadline. A player command can invalidate that plan through the existing control fence. Known ordinary outcomes can advance through bounded, idempotent operations without model calls. Invoke interpretation only when the accepted policy needs it; unknown activities are not executable merely because an LLM described them.
@@ -55,6 +65,8 @@ Every due boundary needs a declared result path: a trusted routine outcome, a va
 This is the intended clock boundary, not an implemented timing schema. The first chamber still uses fixed interval durations and held response windows. General pace changes, recurring routines and condition thresholds follow after its wait/pause/recovery behavior works. A one-second tick remains a candidate where useful; measure its actual work before choosing. Repeated in-memory arithmetic need not imply per-tick persistence, narration or inference. A hybrid must use one authority for each effect so ticks and durable wake-ups cannot apply it twice.
 
 ## Game-time targets and wake-up projections
+
+**Selected time authority:** a game-time target is checked against the committed game clock and event preconditions. A real-time wake-up is a replaceable projection and no provider or wall-clock inference substitutes for that check.
 
 An event tied to the fiction is due at a position on the story's game clock, not an immutable civil-time appointment. A calendar such as “Month of Seeds, Fifth Era” is a presentation of that clock; define its calendar mapping separately from elapsed-time arithmetic. Use an ordered game-time representation with declared units before supporting custom calendar dates. Do not parse arbitrary lore strings as executable dates or compare them lexicographically.
 
@@ -84,6 +96,8 @@ Deadline timestamps in PostgreSQL support the UI and command admission. They are
 
 ## Commands and durable delivery
 
+**Contract in one line:** an admitted command, its receipt and its outbox notice commit in one transaction; delivery is idempotent with a stable message ID; the recorded outcome is the single result a retry or replay returns; and an uncertain external effect is never blindly resent. [Commands, business events, and workflows](#commands-business-events-and-workflows) classifies what crosses which boundary, and the fences for identity/revision, competing deadlines and retry/recovery are in [From decision to consequence](#from-decision-to-consequence), [Deadline admission and competing players](#deadline-admission-and-competing-players) and [Retry boundaries and uncertain side effects](#retry-boundaries-and-uncertain-side-effects).
+
 1. The API validates session, membership, character control and request shape. Look up an authorized prior receipt before applying new-command version/deadline checks, so retrying an accepted command after expiry still returns its receipt. Under a short story/decision lock, check eligibility and persist a new command receipt with a per-story sequence plus an outbox notice. Scope idempotency keys by actor, story and operation; reject reuse with different content.
 2. Return `202` with a receipt ID and pending status. This means the request was durably received, not that its fictional consequence or pause has completed. Clients observe the receipt/current snapshot for the result.
 3. A small outbox relay handles typed messages: a start notice starts the designated operation, while a command notice signals an existing live workflow. Retry uncertain delivery with the same application message ID. Mark delivery only after Temporal acknowledges it or the command is proven already processed. The relay moves messages across the PostgreSQL/Temporal boundary; it never executes game timers or story logic.
@@ -95,7 +109,7 @@ The relay claims bounded outbox batches with short leases and releases database 
 
 ## Commands, business events, and workflows
 
-This section separates three deliveries. It does not replace [Commands and durable delivery](#commands-and-durable-delivery), and it does not deploy a broker. Service owners are [Proposed service ownership](./topology.md#proposed-service-ownership). Keys, the inbox, and schema versions are [Proposed service schemas and delivery records](./data-and-persistence.md#proposed-service-schemas-and-delivery-records).
+This section separates three deliveries around the same admitted command, transaction/outbox, idempotent delivery and recorded outcome defined in [Commands and durable delivery](#commands-and-durable-delivery). It does not replace that section, and it does not deploy a broker. Service owners are [Proposed service ownership](./topology.md#proposed-service-ownership). Keys, the inbox, and schema versions are [Proposed service schemas and delivery records](./data-and-persistence.md#proposed-service-schemas-and-delivery-records).
 
 | Class | What it is | What it is not | Label |
 | --- | --- | --- | --- |
@@ -214,6 +228,8 @@ Recover workflow state through Temporal history, not by guessing execution from 
 First-response identification of an uncertain operation is the task guide [Uncertain work recovery](../../runbooks/uncertain-work-recovery.md). That guide does not change this recovery contract.
 
 ## Laboratory messaging broker
+
+Scope: a laboratory capability only. The broker is not authoritative game history, and no source or fixture here shows a durable game turn passing through it.
 
 The disposable kind clusters can run one optional RabbitMQ broker. Development uses namespace `offscreen-dev-rabbitmq`. Release uses `offscreen-rabbitmq`. The selected contract is [Native RabbitMQ infrastructure](./rabbitmq-native-infrastructure.md). The procedure is [Kubernetes RabbitMQ](../../runbooks/kubernetes-rabbitmq.md). The game does not publish or consume on that broker. [Commands and durable delivery](#commands-and-durable-delivery) remains the bridge from the PostgreSQL outbox to Temporal. A message on the broker is not a committed story fact. [What handles events and background work](./topology.md#what-handles-events-and-background-work) already says the application path has no separate event broker.
 
