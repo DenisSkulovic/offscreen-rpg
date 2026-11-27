@@ -253,8 +253,20 @@ function classifyPending(record, contextName) {
     validateStoredEnsure(value, contextName);
     return 'ensure';
   } catch {
-    return 'invalid';
+    try {
+      validateStoredUpgrade(value, contextName);
+      return 'upgrade';
+    } catch {
+      return 'invalid';
+    }
   }
+}
+
+/**
+ * @param {unknown} kind
+ */
+function isDurableKind(kind) {
+  return kind === 'ensure' || kind === 'upgrade';
 }
 
 /**
@@ -310,6 +322,115 @@ function assertPhase(phase) {
 /**
  * @param {unknown} details
  */
+const UPGRADE_DETAIL_KEYS = [
+  'desiredRelaySha256',
+  'desiredRevision',
+  'oldRelaySha256',
+  'oldRevision',
+  'preservation',
+];
+
+/**
+ * @param {unknown} details
+ */
+function validateUpgradeDetails(details) {
+  if (details == null || typeof details !== 'object' || Array.isArray(details)) {
+    throw new Error('refused: observability upgrade details are invalid');
+  }
+  const value = /** @type {Record<string, unknown>} */ (details);
+  const keys = Object.keys(value);
+  if (
+    keys.length !== UPGRADE_DETAIL_KEYS.length ||
+    UPGRADE_DETAIL_KEYS.some((key) => !Object.hasOwn(value, key))
+  ) {
+    throw new Error('refused: observability upgrade details are invalid');
+  }
+  if (value.oldRevision !== 1 || value.desiredRevision !== 2) {
+    throw new Error('refused: observability upgrade details are invalid');
+  }
+  for (const key of ['oldRelaySha256', 'desiredRelaySha256']) {
+    if (typeof value[key] !== 'string' || !/^[0-9a-f]{64}$/.test(value[key])) {
+      throw new Error('refused: observability upgrade details are invalid');
+    }
+  }
+  validatePreservation(value.preservation);
+  return {
+    oldRevision: 1,
+    desiredRevision: 2,
+    oldRelaySha256: value.oldRelaySha256,
+    desiredRelaySha256: value.desiredRelaySha256,
+    preservation: globalThis.structuredClone(value.preservation),
+  };
+}
+
+/**
+ * @param {unknown} preservation
+ */
+function validatePreservation(preservation) {
+  if (
+    preservation == null ||
+    typeof preservation !== 'object' ||
+    Array.isArray(preservation)
+  ) {
+    throw new Error('refused: observability upgrade preservation is invalid');
+  }
+  const value = /** @type {Record<string, unknown>} */ (preservation);
+  const keys = [
+    'backends',
+    'claims',
+    'collector',
+    'grafanaSecretUid',
+    'namespaceUid',
+  ];
+  if (
+    Object.keys(value).length !== keys.length ||
+    keys.some((key) => !Object.hasOwn(value, key)) ||
+    typeof value.namespaceUid !== 'string' ||
+    typeof value.grafanaSecretUid !== 'string' ||
+    !Array.isArray(value.claims) ||
+    value.claims.length !== 3
+  ) {
+    throw new Error('refused: observability upgrade preservation is invalid');
+  }
+}
+
+/**
+ * @param {Record<string, unknown>} value
+ * @param {string} contextName
+ */
+function validateStoredUpgrade(value, contextName) {
+  const keys = Object.keys(value);
+  const expected = [
+    'schema',
+    'operationId',
+    'service',
+    'context',
+    'start',
+    'operation',
+    'phase',
+    'tuple',
+    'details',
+  ];
+  if (
+    keys.length !== expected.length ||
+    expected.some((key) => !Object.hasOwn(value, key)) ||
+    value.schema !== 2 ||
+    value.operation !== 'upgrade' ||
+    value.phase !== 'collector-upgrade' ||
+    value.service !== OBSERVABILITY_SERVICE ||
+    value.context !== contextName ||
+    typeof value.operationId !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value.operationId,
+    ) ||
+    !isUtcStamp(value.start)
+  ) {
+    throw new Error('refused: observability pending record is invalid');
+  }
+  validateUpgradeDetails(value.details);
+  validateTuple(value.tuple, contextName, value.phase);
+}
+
 function assertEmptyDetails(details) {
   if (details == null) {
     return;
@@ -611,7 +732,7 @@ function replacePending(
 ) {
   const current = inspectPending(pendingPath, contextName);
   if (
-    current.kind !== 'ensure' ||
+    !isDurableKind(current.kind) ||
     current.identity?.dev !== owned.dev ||
     current.identity?.ino !== owned.ino ||
     stable(current.record) !== stable(previous)
@@ -644,7 +765,7 @@ function replacePending(
   closeSync(fd);
   const again = inspectPending(pendingPath, contextName);
   if (
-    again.kind !== 'ensure' ||
+    !isDurableKind(again.kind) ||
     again.identity?.dev !== owned.dev ||
     again.identity?.ino !== owned.ino ||
     stable(again.record) !== stable(previous)
@@ -666,7 +787,7 @@ function replacePending(
   syncDirectory(dirname(pendingPath), deps);
   const verified = inspectPending(pendingPath, contextName);
   if (
-    verified.kind !== 'ensure' ||
+    !isDurableKind(verified.kind) ||
     stable(verified.record) !== stable(replacement)
   ) {
     throw new Error('refused: observability pending record changed');
@@ -1013,7 +1134,7 @@ function createHandle(input) {
       }
       const inspected = inspectPending(input.pendingPath, input.contextName);
       if (
-        inspected.kind !== 'ensure' ||
+        !isDurableKind(inspected.kind) ||
         inspected.identity?.dev !== ownedIdentity.dev ||
         inspected.identity?.ino !== ownedIdentity.ino ||
         stable(inspected.record) !== stable(ownedRecord)
@@ -1034,6 +1155,44 @@ function createHandle(input) {
       const existing = inspectPending(input.pendingPath, input.contextName);
       if (existing.pending) {
         throw new Error('refused: pending path already exists');
+      }
+      if (request.operation === 'upgrade') {
+        if (request.phase !== 'collector-upgrade') {
+          throw new Error('refused: observability upgrade phase is invalid');
+        }
+        const details = validateUpgradeDetails(request.details);
+        const tuple = validateTuple(
+          request.tuple,
+          input.contextName,
+          request.phase,
+        );
+        const record = {
+          schema: 2,
+          operationId: randomUUID(),
+          service: OBSERVABILITY_SERVICE,
+          context: input.contextName,
+          start: new Date().toISOString(),
+          operation: 'upgrade',
+          phase: 'collector-upgrade',
+          tuple,
+          details,
+        };
+        try {
+          createPending(input.pendingPath, record, input.deps);
+          const inspected = inspectPending(input.pendingPath, input.contextName);
+          if (
+            inspected.kind !== 'upgrade' ||
+            stable(inspected.record) !== stable(record)
+          ) {
+            throw new Error('refused: observability pending record changed');
+          }
+          ownedRecord = globalThis.structuredClone(record);
+          ownedIdentity = inspected.identity;
+        } catch (error) {
+          authorityFailed = true;
+          throw error;
+        }
+        return;
       }
       assertEmptyDetails(request.details);
       if (request.operation != null && request.operation !== 'ensure') {
@@ -1149,7 +1308,7 @@ function createHandle(input) {
       }
       const inspected = inspectPending(input.pendingPath, input.contextName);
       if (
-        inspected.kind !== 'ensure' ||
+        !isDurableKind(inspected.kind) ||
         inspected.identity?.dev !== ownedIdentity.dev ||
         inspected.identity?.ino !== ownedIdentity.ino ||
         stable(inspected.record) !== stable(ownedRecord)
