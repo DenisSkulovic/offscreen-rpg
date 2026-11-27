@@ -26,12 +26,8 @@ import {
   expectHeadlessSpec,
 } from './snapshot-fixtures.mjs';
 
-const specimensRoot = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  'specimens',
-);
-const LOCK_PATH = join(specimensRoot, 'image-lock-candidate.tsv');
+const locksRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'locks');
+const LOCK_PATH = join(locksRoot, 'images.tsv');
 const LOCK_LINES = readFileSync(LOCK_PATH, 'utf8').trim().split('\n').slice(1);
 const LOCK_COLLECTOR = LOCK_LINES.find((line) =>
   line.startsWith('collector\t'),
@@ -145,7 +141,11 @@ test('B07 negatives for runtime identity', () => {
   );
   const withStatusImage = {
     containerStatuses: [
-      { ...baseStatus.containerStatuses[0], image: 'sha256:1080afcdde7624998314ebd6cc707c401436f00dfbd778eb9d0466f7a2501c40' },
+      {
+        ...baseStatus.containerStatuses[0],
+        image:
+          'sha256:1080afcdde7624998314ebd6cc707c401436f00dfbd778eb9d0466f7a2501c40',
+      },
     ],
   };
   assert.equal(
@@ -165,13 +165,19 @@ test('status.image cannot substitute for a missing or mismatched imageID', () =>
     state: { running: {} },
     image: expectedImage.canonicalReference,
   };
-  for (const imageID of [undefined, 'sha256:' + 'a'.repeat(64),
-    'ghcr.io/wrong@sha256:' + LOCK_COLLECTOR.split('@sha256:')[1]]) {
-    assert.equal(verifyContainerRuntimeIdentity(
-      { containerStatuses: [{ ...entry, imageID }] },
-      expectedImage.containerName,
-      expectedImage.canonicalReference,
-    ).ok, false);
+  for (const imageID of [
+    undefined,
+    'sha256:' + 'a'.repeat(64),
+    'ghcr.io/wrong@sha256:' + LOCK_COLLECTOR.split('@sha256:')[1],
+  ]) {
+    assert.equal(
+      verifyContainerRuntimeIdentity(
+        { containerStatuses: [{ ...entry, imageID }] },
+        expectedImage.containerName,
+        expectedImage.canonicalReference,
+      ).ok,
+      false,
+    );
   }
 });
 

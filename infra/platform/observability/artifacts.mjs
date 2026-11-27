@@ -7,7 +7,8 @@ import { runPlatformCommand } from '../common/commands.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
 
 const observabilityRoot = dirname(fileURLToPath(import.meta.url));
-const specimensRoot = join(observabilityRoot, 'specimens');
+const valuesRoot = join(observabilityRoot, 'values');
+const locksRoot = join(observabilityRoot, 'locks');
 const vendorRoot = join(observabilityRoot, 'vendor');
 
 const HELM_TIMEOUT_MS = 60_000;
@@ -46,13 +47,13 @@ const TEMPO_PINNED_APP_VERSION = '3.1.1';
 
 /** @typedef {(command: string, args: string[], options?: { timeoutMs?: number }) => { ok: boolean, status: number, stdout: string, stderr: string, timedOut: boolean, missing: boolean }} PlatformRun */
 
-/** @type {readonly { name: string, role: string, specFile: string }[]} */
+/** @type {readonly { name: string, role: string, valuesFile: string }[]} */
 export const OBSERVABILITY_RELEASE_ORDER = Object.freeze([
-  { name: 'obs-prometheus', role: 'prometheus', specFile: 'prometheus.yaml' },
-  { name: 'obs-loki', role: 'loki', specFile: 'loki.yaml' },
-  { name: 'obs-tempo', role: 'tempo', specFile: 'tempo.yaml' },
-  { name: 'obs-collector', role: 'collector', specFile: 'collector.yaml' },
-  { name: 'obs-grafana', role: 'grafana', specFile: 'grafana.yaml' },
+  { name: 'obs-prometheus', role: 'prometheus', valuesFile: 'prometheus.yaml' },
+  { name: 'obs-loki', role: 'loki', valuesFile: 'loki.yaml' },
+  { name: 'obs-tempo', role: 'tempo', valuesFile: 'tempo.yaml' },
+  { name: 'obs-collector', role: 'collector', valuesFile: 'collector.yaml' },
+  { name: 'obs-grafana', role: 'grafana', valuesFile: 'grafana.yaml' },
 ]);
 
 const PRIMARY_WORKLOAD = Object.freeze({
@@ -175,7 +176,7 @@ function validateImageLockRecord(locks) {
 }
 
 function loadPins() {
-  const text = readFileSync(join(specimensRoot, 'pins.yaml'), 'utf8');
+  const text = readFileSync(join(locksRoot, 'charts.yaml'), 'utf8');
   /** @type {unknown} */
   let parsed;
   try {
@@ -474,6 +475,16 @@ function defaultHelmRun(command, args, options) {
 }
 
 /**
+ * Ordered `-f` values paths followed by storage and image arguments.
+ * @param {{ valuesPaths: readonly string[], helmValueArgs: readonly string[] }} release
+ */
+export function helmValuesArgv(release) {
+  return release.valuesPaths
+    .flatMap((path) => ['-f', path])
+    .concat(release.helmValueArgs);
+}
+
+/**
  * @param {ObservabilityProfileId} profileId
  * @param {{ run?: PlatformRun, verifyArchive?: boolean, imageLocks?: Record<string, string>, pins?: ReturnType<typeof loadPins> }} [deps]
  */
@@ -491,26 +502,35 @@ export function loadArtifacts(profileId, deps = {}) {
 
   const pins = deps.pins ?? loadPins();
   const canonicalImageLocks = parseImageLock(
-    readFileSync(join(specimensRoot, 'image-lock-candidate.tsv'), 'utf8'),
+    readFileSync(join(locksRoot, 'images.tsv'), 'utf8'),
   );
   const imageLocks = deps.imageLocks ?? canonicalImageLocks;
   if (deps.imageLocks) {
     validateImageLockRecord(imageLocks);
   }
   const expectedInventory = JSON.parse(
-    readFileSync(join(specimensRoot, 'expected-inventory.json'), 'utf8'),
+    readFileSync(join(observabilityRoot, 'expected-inventory.json'), 'utf8'),
   );
   const expected = expectedInventory[profileId];
   if (!expected?.direct || !expected?.generatedClaims) {
     throwArtifactInvalid('missing expected inventory profile');
   }
 
-  /** @type {{ release: (typeof OBSERVABILITY_RELEASE_ORDER)[number], pin: { name: string, version: string, sha256: string, appVersion?: string }, chartPath: string, valuesPath: string, helmValueArgs: string[], expectedImage: { containerName: string, renderedReference: string, canonicalReference: string } }[]} */
+  /** @type {{ release: (typeof OBSERVABILITY_RELEASE_ORDER)[number], pin: { name: string, version: string, sha256: string, appVersion: string }, chartPath: string, valuesPaths: string[], helmValueArgs: string[], expectedImage: { containerName: string, renderedReference: string, canonicalReference: string } }[]} */
   const releasePlans = [];
 
   for (const release of OBSERVABILITY_RELEASE_ORDER) {
     const pin = pins[release.role];
-    if (!pin?.name || !pin.version || !pin.sha256) {
+    if (
+      typeof pin?.name !== 'string' ||
+      pin.name.length === 0 ||
+      typeof pin.version !== 'string' ||
+      pin.version.length === 0 ||
+      typeof pin.appVersion !== 'string' ||
+      pin.appVersion.length === 0 ||
+      typeof pin.sha256 !== 'string' ||
+      pin.sha256.length === 0
+    ) {
       throwArtifactInvalid(`missing pin for ${release.role}`);
     }
     const archiveName = `${pin.name}-${pin.version}.tgz`;
@@ -521,9 +541,15 @@ export function loadArtifacts(profileId, deps = {}) {
         throwArtifactInvalid(`archive sha256 mismatch for ${archiveName}`);
       }
     }
-    const valuesPath = join(specimensRoot, release.specFile);
+    const valuesPaths = [join(valuesRoot, release.valuesFile)];
+    let valuesText;
     try {
-      parseYaml(readFileSync(valuesPath, 'utf8'));
+      valuesText = readFileSync(valuesPaths[0], 'utf8');
+    } catch {
+      throwArtifactInvalid('missing values yaml');
+    }
+    try {
+      parseYaml(valuesText);
     } catch {
       throwArtifactInvalid('malformed values yaml');
     }
@@ -544,7 +570,7 @@ export function loadArtifacts(profileId, deps = {}) {
       release,
       pin,
       chartPath,
-      valuesPath,
+      valuesPaths,
       helmValueArgs,
       expectedImage: {
         containerName: expectedImage.containerName,
@@ -566,9 +592,7 @@ export function loadArtifacts(profileId, deps = {}) {
       plan.chartPath,
       '--namespace',
       namespace,
-      '-f',
-      plan.valuesPath,
-      ...plan.helmValueArgs,
+      ...helmValuesArgv(plan),
     ];
     const rendered = run('helm', helmArgs, { timeoutMs: HELM_TIMEOUT_MS });
     if (!rendered.ok || rendered.timedOut || rendered.missing) {
@@ -591,9 +615,11 @@ export function loadArtifacts(profileId, deps = {}) {
       name: plan.release.name,
       role: plan.release.role,
       chartPath: plan.chartPath,
+      chartName: plan.pin.name,
       chartVersion: plan.pin.version,
+      appVersion: plan.pin.appVersion,
       sha256: plan.pin.sha256,
-      valuesPath: plan.valuesPath,
+      valuesPaths: plan.valuesPaths,
       helmValueArgs: plan.helmValueArgs,
       expectedImage: plan.expectedImage,
       documents: releaseDocs,

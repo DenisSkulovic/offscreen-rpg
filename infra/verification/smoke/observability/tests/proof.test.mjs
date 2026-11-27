@@ -163,7 +163,10 @@ function fakePartialInstallPlans(identity) {
     name: 'obs-prometheus',
     role: 'prometheus',
     chartPath: '/charts/prometheus-31.0.0.tgz',
-    valuesPath: '/specimens/prometheus.yaml',
+    chartName: 'prometheus',
+    chartVersion: '31.0.0',
+    appVersion: 'v3.16.0',
+    valuesPaths: ['/values/prometheus.yaml'],
     sha256: '26d67031afc5585c7e54edf6601a67f38ad515e75fdcd35be86a636690ec62bc',
     helmValueArgs: [
       '--set-string',
@@ -174,7 +177,10 @@ function fakePartialInstallPlans(identity) {
     name: 'obs-loki',
     role: 'loki',
     chartPath: '/charts/loki-21.6.0.tgz',
-    valuesPath: '/specimens/loki.yaml',
+    chartName: 'loki',
+    chartVersion: '21.6.0',
+    appVersion: '3.7.10',
+    valuesPaths: ['/values/loki.yaml'],
     sha256: 'ae5aa1c2039636e94f89b6149c3cd2f5a2f9e1749d9600de51f94da3160ee6b2',
     helmValueArgs: [
       '--set-string',

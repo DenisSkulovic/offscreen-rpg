@@ -8,7 +8,7 @@ import { performance } from 'node:perf_hooks';
 
 import { readPlatformProfile } from '../common/profile.mjs';
 import { runPlatformCommand } from '../common/commands.mjs';
-import { loadArtifacts } from './artifacts.mjs';
+import { helmValuesArgv, loadArtifacts } from './artifacts.mjs';
 import { acquireCustody, readPending, runMutation } from './custody.mjs';
 import {
   captureIdentity,
@@ -252,9 +252,7 @@ export function helmInstallArgv(identity, release) {
     identity.contextName,
     '--namespace',
     identity.namespace,
-    '-f',
-    release.valuesPath,
-    ...release.helmValueArgs,
+    ...helmValuesArgv(release),
     '--wait',
     '--timeout',
     HELM_WAIT_TIMEOUT,
@@ -596,14 +594,23 @@ export async function runObservabilityEnsure(
       }
       if (phaseId === 'namespace') {
         const uid = after.namespace?.uid;
-        if (identity.tuple.targetNamespaceUid !== null ||
-            typeof uid !== 'string' || uid.length === 0 ||
-            after.namespace?.object?.metadata?.name !== identity.namespace) {
+        if (
+          identity.tuple.targetNamespaceUid !== null ||
+          typeof uid !== 'string' ||
+          uid.length === 0 ||
+          after.namespace?.object?.metadata?.name !== identity.namespace
+        ) {
           throw new Error('identity-changed');
         }
-        const bound = { ...identity, tuple: { ...identity.tuple, targetNamespaceUid: uid } };
+        const bound = {
+          ...identity,
+          tuple: { ...identity.tuple, targetNamespaceUid: uid },
+        };
         const check = (deps.recheckIdentity ?? recheckIdentity)(bound, {
-          run, now, deadline: workerDeadline, expectedNamespaceUid: uid,
+          run,
+          now,
+          deadline: workerDeadline,
+          expectedNamespaceUid: uid,
         });
         if (!check.ok) throw new Error('identity-changed');
         identity = bound;

@@ -9,6 +9,7 @@ import { parse as parseYaml } from 'yaml';
 import { readPlatformProfile } from '../../common/profile.mjs';
 import { runPlatformCommand } from '../../common/commands.mjs';
 import {
+  helmValuesArgv,
   loadArtifacts,
   lintObservability,
   OBSERVABILITY_RELEASE_ORDER,
@@ -16,9 +17,10 @@ import {
 } from '../artifacts.mjs';
 
 const observabilityRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const specimensRoot = join(observabilityRoot, 'specimens');
+const valuesRoot = join(observabilityRoot, 'values');
+const locksRoot = join(observabilityRoot, 'locks');
 const vendorRoot = join(observabilityRoot, 'vendor');
-const LOCK_PATH = join(specimensRoot, 'image-lock-candidate.tsv');
+const LOCK_PATH = join(locksRoot, 'images.tsv');
 
 const IMAGE_LOCK = readFileSync(LOCK_PATH, 'utf8');
 
@@ -98,6 +100,18 @@ function assertReleaseDescriptor(release, profileId) {
     );
   }
   assert.deepEqual(release.helmValueArgs, expectedArgs, `${release.role} argv`);
+  assert.equal(release.valuesPaths.length, 1);
+  assert.equal(
+    release.valuesPaths[0],
+    join(valuesRoot, `${release.role}.yaml`),
+  );
+  assert.equal(release.valuesPath, undefined);
+  const pins = parseYaml(
+    readFileSync(join(locksRoot, 'charts.yaml'), 'utf8'),
+  ).charts;
+  assert.equal(release.chartName, pins[release.role].name);
+  assert.equal(release.chartVersion, pins[release.role].version);
+  assert.equal(release.appVersion, pins[release.role].appVersion);
   assert.equal(
     release.expectedImage.canonicalReference,
     LOCK_BY_ROLE[release.role].canonical,
@@ -164,7 +178,7 @@ test('renderObservabilityDocuments and lintObservability succeed for both profil
 
 test('vendor archives match pins.yaml sha256', () => {
   const pins = parseYaml(
-    readFileSync(join(specimensRoot, 'pins.yaml'), 'utf8'),
+    readFileSync(join(locksRoot, 'charts.yaml'), 'utf8'),
   ).charts;
   for (const release of OBSERVABILITY_RELEASE_ORDER) {
     const pin = pins[release.role];
@@ -194,7 +208,7 @@ spec:
 
 test('negative: tampered first archive hash causes zero helm invocations', () => {
   const pins = parseYaml(
-    readFileSync(join(specimensRoot, 'pins.yaml'), 'utf8'),
+    readFileSync(join(locksRoot, 'charts.yaml'), 'utf8'),
   ).charts;
   const corruptPins = structuredClone(pins);
   corruptPins.prometheus = {
@@ -215,7 +229,7 @@ test('negative: tampered first archive hash causes zero helm invocations', () =>
 
 test('negative: tampered final archive hash causes zero helm invocations', () => {
   const pins = parseYaml(
-    readFileSync(join(specimensRoot, 'pins.yaml'), 'utf8'),
+    readFileSync(join(locksRoot, 'charts.yaml'), 'utf8'),
   ).charts;
   const corruptPins = structuredClone(pins);
   corruptPins.grafana = {
@@ -548,9 +562,29 @@ spec:
   );
 });
 
+test('template argv contains the shared values helper slice', () => {
+  /** @type {string[][]} */
+  const recorded = [];
+  const recordingRun = (command, args, options) => {
+    if (command === 'helm' && args[0] === 'template') recorded.push(args);
+    return helmRun(command, args, options);
+  };
+  const bundle = loadArtifacts('dev', { run: recordingRun });
+  assert.equal(recorded.length, bundle.releases.length);
+  for (const [index, release] of bundle.releases.entries()) {
+    const slice = helmValuesArgv(release);
+    const start = recorded[index].indexOf('-f');
+    assert.deepEqual(
+      recorded[index].slice(start, start + slice.length),
+      slice,
+      release.role,
+    );
+  }
+});
+
 test('negative: malformed values yaml is refused', () => {
   const tempDir = mkdtempSync(join(tmpdir(), 'obs-artifact-yaml-'));
-  const valuesBackup = join(specimensRoot, 'collector.yaml');
+  const valuesBackup = join(valuesRoot, 'collector.yaml');
   const backup = readFileSync(valuesBackup);
   try {
     writeFileSync(
@@ -565,6 +599,64 @@ test('negative: malformed values yaml is refused', () => {
     writeFileSync(valuesBackup, backup);
     rmSync(tempDir, { recursive: true, force: true });
   }
+});
+
+test('negative: missing final grafana values refuses before any template', () => {
+  const valuesPath = join(valuesRoot, 'grafana.yaml');
+  const backup = readFileSync(valuesPath);
+  let helmCalls = 0;
+  const countingRun = (command, args, options) => {
+    if (command === 'helm') helmCalls += 1;
+    return helmRun(command, args, options);
+  };
+  try {
+    rmSync(valuesPath);
+    assert.throws(
+      () => loadArtifacts('dev', { run: countingRun }),
+      /artifact-invalid/,
+    );
+    assert.equal(helmCalls, 0);
+  } finally {
+    writeFileSync(valuesPath, backup);
+  }
+});
+
+test('negative: malformed final grafana values refuses before any template', () => {
+  const valuesPath = join(valuesRoot, 'grafana.yaml');
+  const backup = readFileSync(valuesPath);
+  let helmCalls = 0;
+  const countingRun = (command, args, options) => {
+    if (command === 'helm') helmCalls += 1;
+    return helmRun(command, args, options);
+  };
+  try {
+    writeFileSync(valuesPath, 'metadata:\n  name: [unterminated\n');
+    assert.throws(
+      () => loadArtifacts('dev', { run: countingRun }),
+      /artifact-invalid/,
+    );
+    assert.equal(helmCalls, 0);
+  } finally {
+    writeFileSync(valuesPath, backup);
+  }
+});
+
+test('negative: missing appVersion pin causes zero templates', () => {
+  const pins = parseYaml(
+    readFileSync(join(locksRoot, 'charts.yaml'), 'utf8'),
+  ).charts;
+  const corruptPins = structuredClone(pins);
+  delete corruptPins.grafana.appVersion;
+  let helmCalls = 0;
+  const countingRun = (command, args, options) => {
+    if (command === 'helm') helmCalls += 1;
+    return helmRun(command, args, options);
+  };
+  assert.throws(
+    () => loadArtifacts('dev', { run: countingRun, pins: corruptPins }),
+    /artifact-invalid/,
+  );
+  assert.equal(helmCalls, 0);
 });
 
 test('negative: unexpected helm hook is refused', () => {

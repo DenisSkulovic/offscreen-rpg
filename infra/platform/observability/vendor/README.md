@@ -1,6 +1,6 @@
 # Vendored observability Helm archives
 
-Source inputs only; bytes locked in `../specimens/pins.yaml`.
+Source inputs only; bytes locked in `../locks/charts.yaml`.
 
 | Archive | SHA256 |
 | --- | --- |
