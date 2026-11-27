@@ -4,6 +4,9 @@ Owner: human owner + ChatGPT planner. Open investigation, 2026-11-27. Baseline m
 
 [Proposed Change](../../../changes/open/2026-11-27--observability-developer/CHANGE.md). Existing OBSERVABILITY-NATIVE remains open, with incomplete acceptance; no concurrent edits to its owned source. Existing canonical authority: [native infrastructure](../../../../docs/technical/platform/observability-native-infrastructure.md). This dossier does not supersede it until defended and promoted.
 
+## R3 review entry
+[TARGET.md](TARGET.md) is the consolidated candidate and supersedes conflicting exploratory choices below; [source map](SOURCE-MAP.md), [acceptance matrix](ACCEPTANCE.md), [designer self-defense](SELF-DEFENSE.md), [concrete developer configuration generator](experiments/build-developer-values.py). Overall EVIDENCE-GATED: actual application policy validation/processing, metric identity, exact upgrade projection and session cancellation still required. Next review on owner experiment receipt. No formal committee submission yet.
+
 ## Target and posture
 Evolutionary, not clean-slate. One shared five-release development stack; preserve pinned charts/images, three retained claims, Grafana credentials, explicit service selection, bounded observation and mutation custody. Make real application-shaped operational telemetry available to WSL experiments and subsequently in-cluster development workers. Telemetry is optional, bounded, and never part of business transaction correctness. No new cluster for ordinary development acceptance.
 
