@@ -41,3 +41,5 @@ Repair18: close selected external process containment semantics, correct plan-on
 
 
 Recovery19: consolidated PROOF.md into one selected deadline candidate, preserving previous schedules at 6b6d909c8c91464c027a530d6837479d78002923. Recomputed all seven gate sums and ensure phase total; removed obsolete active alternatives, retained cleanup/fault predicates, D1–D4 and owner route. Inspected current identity/inventory/proof-host deadline anchors; no source edits or proof execution. This is document reconciliation, not closure of F08, independent ratification or readiness. All dispatch held.
+
+Recovery20: reordered INTERFACES.md into T01–T05 ownership order, consolidated their original summaries into detailed contracts, removed superseded T05 public ownedPending bypass and Secret-field rename, retained dataKeys and compare-owned finalization, corrected exact plan-only external runner recognition and obsolete proof heading links. Actual artifacts.mjs and custody.mjs exports/paths inspected. Historical text retained at 337b5bf28ffe727814d6f3c0197a6dd54a022139. T06–T12 amendments still require substantive reconciliation; no readiness or source execution claim.
