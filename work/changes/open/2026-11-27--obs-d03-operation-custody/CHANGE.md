@@ -1,6 +1,6 @@
 # OBS-D03 | Bounded operation custody
 
-**State:** OWNER-RELEASED — OFFLINE SOURCE ONLY (dependency-gated); independent readiness verdict not yet PASS. **Kind:** CONTRACT (source implementation). **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `implementation/observability-developer`. Branch `change/obs-d03-operation-custody` from current `implementation/observability-developer` in a dedicated linked worktree, then merge it back into `implementation/observability-developer`. Human integration custodian; ChatGPT planner.
+**State:** OWNER-RELEASED — OFFLINE SOURCE ONLY (dependency-gated); independent readiness verdict not yet PASS. **Kind:** CONTRACT (source implementation). **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `implementation/observability-developer`. The OBS-D03 source branch is already merged there. Do not recreate `integration/observability-developer`. The planner owns the packet.
 
 ## Outcome
 Cooperative observability writers share a stable lock and durable pending intent; failed, cancelled or ambiguous owned process cannot authorize later writes or clear another record.
@@ -14,9 +14,9 @@ Own P/custody.mjs, P/forward.mjs owned primitive only, P/exec-owned.py, P/instal
 
 Stable lock/record compare, inherited FD/parent death and cancellation tests; stop if a write can proceed after uncertainty or foreign ownership can clear a record.
 
-Owner directed immediate release of this frozen candidate for reversible offline implementation despite outstanding independent review. This is not a READY verdict or canonical ratification. Prior G0 rejection and unreviewed G1–G7 remain visible; no architecture choice delegated. Parent checks predecessor receipt, local ownership and named anchors, runs focused positive/negative tests, and reports actual blockers with exact source evidence. No broad review or repeated approval before dispatch. Candidate-only source joins; no live activation, main merge, archive or Done. All original A/V gates remain.
+Owner directed immediate release of this frozen candidate for reversible offline implementation despite outstanding independent review. This is not a READY verdict or canonical ratification. Prior G0 rejection and unreviewed G1–G7 remain visible; no architecture choice delegated. Parent checks predecessor receipt, local ownership and named anchors, runs focused positive/negative tests, and reports actual blockers with exact source evidence. No broad review or repeated approval before dispatch. When this Change's own source gate passes, archive its packet on the implementation branch and record the joint A1–A12/V01–V12 obligations on the Design. Do not mark those joint gates passed. No live activation or main merge.
 
-[TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). Parent owns exact diff, tests and commit; custodian serializes candidate joins. ChatGPT/owner own substantial acceptance. Each parent stops at its own receipt.
+[TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). The implementation coordinator owns the diff, focused proof, archival, commit, serialized source join and clean worktree retirement when the Change-level gate passes. The acceptance lead and owner own joint A1–A12/V01–V12 proof. Pending joint acceptance does not mark the Change Done, does not keep its packet in open, and does not retain the worktree after the permitted source join.
 
 ## Planned specification and implementation delta | planned-impact.v1
 
@@ -29,4 +29,4 @@ Owner directed immediate release of this frozen candidate for reversible offline
 
 ## First dispatch — owner-released
 
-Prerequisite: OBS-D02 tested source receipt merged into implementation/observability-developer; confirm all packet-specific predecessor API postconditions. Branch `change/obs-d03-operation-custody` from current `implementation/observability-developer` in a dedicated linked worktree. Run `node scripts/repo-tools/change-branch-guard.mjs --change OBS-D03 --target implementation/observability-developer`. Dispatch T01 and continue own serial tasks; no new owner approval required. Only offline renders, local process tests and injected fixtures. No actual cluster commands, Docker experiments, paid calls or deployment. Commit the exact source receipt, then merge that Change branch back into `implementation/observability-developer` only after the required cheap tests pass. No auto-next by individual parent; the named bundle schedule unlocks successors. A concrete material contradiction stops affected work; no ceremonial re-review.
+Prerequisite: OBS-D02 is already on `implementation/observability-developer`. OBS-D03 is already merged there too. Do not start it again from the retired integration ref. Design-level A1–A12/V01–V12 acceptance remains pending. Do not join main. Do not start another Change.

@@ -1,6 +1,6 @@
 # OBS-D01 | Normalize native observability artifacts
 
-**State:** OWNER-RELEASED — OFFLINE SOURCE ONLY; independent readiness verdict not yet PASS. **Kind:** PATCH, behavior-preserving source migration. **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `integration/observability-developer`; branch `change/obs-d01-native-artifacts`, dedicated linked worktree. Human integration custodian; ChatGPT planner.
+**State:** OWNER-RELEASED — OFFLINE SOURCE ONLY; independent readiness verdict not yet PASS. **Kind:** PATCH, behavior-preserving source migration. **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `implementation/observability-developer`. The OBS-D01 source branch is already merged there. Do not recreate `integration/observability-developer`. The planner owns the packet.
 
 ## Outcome
 
@@ -13,7 +13,7 @@ Authority: [accepted artifact ownership](././././docs/technical/platform/observa
 [TASKS](TASKS.md): two serial assignments; [SOURCE-MAP](SOURCE-MAP.md): exact move/caller map; [PROOF](PROOF.md): before/after parsed parity, focused normal and negative tests, cleanup. Parent captures baseline before edits, dispatches T01 then T02, runs combined proof and reviews exact diff. Estimated active implementation 8–12 minutes excluding Helm test time, subject to independent review. No new join child.
 
 ## Closure
-Retain all offline parity and regression predicates in PROOF, including exact full installer argv parity across five roles × two profiles, normalized only moved values paths. Before edits verify local full tracked operational census and worktree ownership; no unlisted nonmechanical caller or collision. Parent commits and custodian joins the tested source only to the offline integration reference. The defended D01 main exception is not exercised. No main merge, live claim, archive or Done before joint certification.
+Retain all offline parity and regression predicates in PROOF, including exact full installer argv parity across five roles × two profiles, normalized only moved values paths. Before edits verify local full tracked operational census and worktree ownership; no unlisted nonmechanical caller or collision. The tested source is already joined to `implementation/observability-developer`. The defended D01 main exception is not exercised. Pending joint certification does not block that source join. No main merge or live claim. Joint certification stays on the Design. This packet archives on the implementation branch once its own source gate has passed.
 
 ## Planned specification and implementation delta | planned-impact.v1
 
@@ -26,4 +26,4 @@ Retain all offline parity and regression predicates in PROOF, including exact fu
 
 ## First dispatch — owner-released
 
-Prerequisite: None; first local census and offline baseline. Use `change/obs-d01-native-artifacts` in dedicated linked worktree from verified `integration/observability-developer`. Run `node scripts/repo-tools/change-branch-guard.mjs --change OBS-D01 --target integration/observability-developer`. Dispatch T01 and continue own serial tasks; no new owner approval required. Only offline renders, local process tests and injected fixtures. No actual cluster commands, Docker experiments, paid calls or deployment. Commit exact source receipt; custodian joins only after required cheap tests pass. No auto-next by individual parent; the named bundle schedule unlocks successors. A concrete material contradiction stops affected work; no ceremonial re-review.
+Prerequisite: none. OBS-D01 is already merged into `implementation/observability-developer`. Do not start it again from the retired integration ref. Design-level A1–A12/V01–V12 acceptance remains pending. Do not join main. Do not start another Change.

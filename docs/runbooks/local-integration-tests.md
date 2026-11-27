@@ -77,7 +77,7 @@ Sessions live in PostgreSQL for seven days and are eligible for renewal after on
 
 Auth rate limits use the database. A server-written client-IP header prevents callers supplying their own rate-limit key; behind the current local Next proxy, requests share the proxy's address. Before public hosting, configure trusted ingress/client-IP forwarding, request size/time limits and an operational log destination. Library error logging remains disabled to avoid leaking credentials. API/worker lifecycle incidents use stable JSON events with curated error classification; retryable outbox failures also carry notice, operation and topic correlation. Arbitrary exception messages, SQL, provider payloads and player prose are deliberately excluded. Invitations, SSE authorization and story membership are not implemented by this identity slice.
 
-Use [implementation overview](../../STATUS.md) for the next slice rather than inferring priority from this setup guide. Decisions listed in [open questions](../../work/designs/open/product-open-questions.md) remain open until the affected behavior needs them.
+Use [implementation overview](../../STATUS.md) for the next slice rather than inferring priority from this setup guide. Unsettled product choices stay with their [deferred designs](../../work/designs/backlog/README.md), [domain research](../../research/product-reality/DOMAIN-COVERAGE-2026-11-18.md) and the [design ledger](../../work/designs/ledger/2026-11.md) until the affected behavior needs them.
 
 ## Storyteller integration suite
 

@@ -1,6 +1,6 @@
 # OBS-D02 | Frozen target identity
 
-**State:** IMPLEMENTED — ACCEPTANCE PENDING (offline source receipt merged to `implementation/observability-developer`; independent readiness verdict not yet PASS; no live claim). **Kind:** CONTRACT (source implementation). **Inspected source:** integration/observability-developer `176237508c6a` (OBS-D01 joined). **Integration:** `implementation/observability-developer`. Human integration custodian; ChatGPT planner.
+**State:** OWNER-RELEASED — OFFLINE SOURCE ONLY (dependency-gated); independent readiness verdict not yet PASS. **Kind:** CONTRACT (source implementation). **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `implementation/observability-developer`. The OBS-D02 source branch is already merged there. Do not recreate `integration/observability-developer`. The planner owns the packet.
 
 ## Outcome
 Every admitted observability operation binds to the verified local Kind target and actual created namespace UID; mismatch or uncertain read cannot authorize the next write.
@@ -14,9 +14,9 @@ Own P/identity.mjs, scoped read defaults in P/artifacts.mjs and P/install.mjs, c
 
 Exact frozen identity shape/UID and bounded read tests; stop on incompatible caller or inability to bind actual UID.
 
-Owner directed immediate release of this frozen candidate for reversible offline implementation despite outstanding independent review. This is not a READY verdict or canonical ratification. Prior G0 rejection and unreviewed G1–G7 remain visible; no architecture choice delegated. Parent checks predecessor receipt, local ownership and named anchors, runs focused positive/negative tests, and reports actual blockers with exact source evidence. No broad review or repeated approval before dispatch. Candidate-only source joins; no live activation, main merge, archive or Done. All original A/V gates remain.
+Owner directed immediate release of this frozen candidate for reversible offline implementation despite outstanding independent review. This is not a READY verdict or canonical ratification. Prior G0 rejection and unreviewed G1–G7 remain visible; no architecture choice delegated. Parent checks predecessor receipt, local ownership and named anchors, runs focused positive/negative tests, and reports actual blockers with exact source evidence. No broad review or repeated approval before dispatch. When this Change's own source gate passes, archive its packet on the implementation branch and record the joint A1–A12/V01–V12 obligations on the Design. Do not mark those joint gates passed. No live activation or main merge.
 
-[TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). Parent owns exact diff, tests and commit; custodian serializes candidate joins. ChatGPT/owner own substantial acceptance. Each parent stops at its own receipt.
+[TASKS](TASKS.md) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). The implementation coordinator owns the diff, focused proof, archival, commit, serialized source join and clean worktree retirement when the Change-level gate passes. The acceptance lead and owner own joint A1–A12/V01–V12 proof. Pending joint acceptance does not mark the Change Done, does not keep its packet in open, and does not retain the worktree after the permitted source join.
 
 ## Planned specification and implementation delta | planned-impact.v1
 
@@ -29,4 +29,4 @@ Owner directed immediate release of this frozen candidate for reversible offline
 
 ## First dispatch — owner-released
 
-Prerequisite: OBS-D01 tested source receipt joined to integration/observability-developer; confirm all packet-specific predecessor API postconditions. Use `change/obs-d02-target-identity` in dedicated linked worktree from verified `integration/observability-developer`. Run `node scripts/repo-tools/change-branch-guard.mjs --change OBS-D02 --target integration/observability-developer`. Dispatch T01 and continue own serial tasks; no new owner approval required. Only offline renders, local process tests and injected fixtures. No actual cluster commands, Docker experiments, paid calls or deployment. Commit exact source receipt; custodian joins only after required cheap tests pass. No auto-next by individual parent; the named bundle schedule unlocks successors. A concrete material contradiction stops affected work; no ceremonial re-review.
+Prerequisite: OBS-D01 is already on `implementation/observability-developer`. OBS-D02 is already merged there too. Do not start it again from the retired integration ref. Design-level A1–A12/V01–V12 acceptance remains pending. Do not join main. Do not start another Change.

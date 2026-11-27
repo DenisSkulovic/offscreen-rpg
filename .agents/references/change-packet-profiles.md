@@ -23,7 +23,7 @@ Apply multiple lenses if necessary, not extra packet layers. INTEGRATE is a coor
 
 ### The executor's real unit is a microtask
 
-Use [Composer task format](composer-first-execution.md#tasksmd-format). One narrow decided T-ID, at most seven actual assignments per Change. One parent per Change. A tiny direct edit may need only CHANGE.md. Large STATE/RELEASE scopes require safe repartition, not larger models.
+Use [Composer task format](composer-first-execution.md#tasksmd-format). One narrow decided T-ID. Seven actual assignments per Change is a strong default, with the exception in the submission standard. One parent per Change. A tiny direct edit may need only CHANGE.md. A large STATE or RELEASE scope is repartitioned when its size prevents reliable execution, not by switching to a larger model.
 
 ## Files and ownership
 
@@ -33,7 +33,7 @@ No empty companions or duplicate source maps. Refresh stale facts or mark explic
 
 ## Role division and stop rules
 
-[Planner investigation](planner-investigation-standard.md) owns source mapping and frozen decisions; [packet design](packet-design-manual.md) owns task DAG and dispatch construction; [readiness review](packet-readiness-review.md) owns independent admission. [Parent procedure](bounded-parent-orchestration.md) owns implementation, cheap proof and acceptance handoff. ChatGPT/owner own heavy proof. Source contradiction returns to planner; targeted mechanical debugging stays local.
+[Planner investigation](planner-investigation-standard.md) owns source mapping and frozen decisions; [packet design](packet-design-manual.md) owns task DAG and dispatch construction; [readiness review](packet-readiness-review.md) owns independent admission. [Parent procedure](bounded-parent-orchestration.md) owns implementation, cheap proof and acceptance handoff. The acceptance lead and owner own heavy proof. Source contradiction returns to planner; targeted mechanical debugging stays local.
 
 ## Route card format (pasteable; adapt, don't pad)
 

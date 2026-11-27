@@ -80,6 +80,8 @@
     "repo:retirement:test": "node --test scripts/repo-tools/retirement-health.test.mjs",
     "repo:change-branch": "node scripts/repo-tools/change-branch-guard.mjs",
     "repo:change-branch:test": "node --test scripts/repo-tools/change-branch-guard.test.mjs",
+    "repo:change-lifecycle": "node scripts/repo-tools/change-lifecycle.mjs",
+    "repo:change-lifecycle:test": "node --test scripts/repo-tools/change-lifecycle.test.mjs",
     "repo:code-quality:changed": "node scripts/repo-tools/changed-code-quality.mjs",
     "repo:code-quality:changed:test": "node --test scripts/repo-tools/changed-code-quality.test.mjs",
     "repo:affected": "node scripts/repo-tools/affected-check.mjs",

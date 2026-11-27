@@ -153,7 +153,7 @@ Finished stories remain readable; presentation-only work such as a recap or fina
 
 Deleting first removes access and fences writes in PostgreSQL, then reliably requests workflow shutdown and cleanup. Generation/media Activities recheck the deletion fence before attaching artifacts; orphaned objects are cleaned up. Keep a minimal deletion marker/operation identity long enough to prevent delayed work from recreating removed data. Do not delete the only record needed to reconcile an outstanding external charge.
 
-The presentation of finished stories, player departure rule, owner-deletion policy and automatic recovery preference remain product decisions in [open questions](../../../work/designs/open/product-open-questions.md). The technical contracts above ensure those choices can be implemented without guessing or losing state.
+The presentation of finished stories, player departure rule, owner-deletion policy and automatic recovery preference remain unsettled product decisions with [player data lifecycle](../../../work/designs/backlog/player-data-lifecycle/README.md). The technical contracts above ensure those choices can be implemented without guessing or losing state.
 
 ## Workflow replay compatibility
 

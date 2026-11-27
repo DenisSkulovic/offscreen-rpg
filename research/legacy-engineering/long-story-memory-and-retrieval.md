@@ -1,6 +1,6 @@
 # Long-story memory, navigation and synthesis
 
-**Historical engineering note.** Moved out of the DOC01 snapshot because live indexes still cite it. It is not a product or technical owner and it does not authorize a hosted model. Current memory contracts live in [memory and continuity](../../docs/product/storyteller/memory-and-continuity.md) and [context and memory](../../docs/technical/storyteller/context-and-memory.md). The parked initiative register is [PARKED-2026-11-15](../../work/designs/open/legacy-initiatives-index/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall).
+**Historical engineering note.** Moved out of the DOC01 snapshot because live indexes still cite it. It is not a product or technical owner and it does not authorize a hosted model. Current memory contracts live in [memory and continuity](../../docs/product/storyteller/memory-and-continuity.md) and [context and memory](../../docs/technical/storyteller/context-and-memory.md). The parked initiative register is [PARKED-2026-11-15](../../work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#storyteller-memory-and-situated-recall).
 
 Research refreshed: **2026-09-21**. Recheck current primary sources, model behavior, licenses, hardware fit and pricing before selecting a semantic model or hosted service.
 

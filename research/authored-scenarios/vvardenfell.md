@@ -48,7 +48,7 @@ At world tick 210, 150 route units are earned. The player stops to investigate s
 
 No roll is required for every step on an assured road. A navigation difficulty, pace attempt or hazard can introduce specific checks at meaningful boundaries. Conversely, calling all movement a fixed wait fails once changing position has consequences. Arrival is a state transition requiring traversal authority, not a sentence in a consequence task.
 
-The next POC need not choose a map grid to prove this. A small route edge plus distance/waypoint representation may suffice for the selected proof; the [space question](../../work/designs/open/product-open-questions.md) remains open for broader movement.
+The next POC need not choose a map grid to prove this. A small route edge plus distance/waypoint representation may suffice for the selected proof; the [spatial play](../../work/designs/backlog/spatial-play/README.md) decisions remain open for broader movement.
 
 ## VV-05: five days, with concrete earned history
 

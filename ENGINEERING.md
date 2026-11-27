@@ -33,7 +33,7 @@ A technical target may describe a system that doesn't exist yet. That's not auto
 
 **Trace an example:** The principle that beginning a shift does not award wages belongs in [time and autonomy](docs/product/gameplay/time-and-autonomy.md); [chronology and activities](docs/technical/engine/chronology-and-activities.md) define state/time semantics; [application activity settlement](packages/application/src/campaign/activities.ts) and [integration checks](tools/api-integration/test/storyteller.integration.ts) show the implementation and test cases. The historical warehouse-shift observation is not general proof of future recall.
 
-The Temporal infrastructure renewal demonstrated this distinction in practice: independent target design, upstream Helm research, concrete rendered specimens, repeated review, then direct implementation with owner-operated terminal experiments. The clean development install succeeded in 66 seconds and subsequent ensure in 2 seconds; release and cold-cluster proof remain open. The [design-led engineering rule](.agents/rules/target-driven-renewal.md) governs this method; Cursor is one execution option, not an architectural prerequisite.
+The Temporal infrastructure renewal demonstrated this distinction in practice: independent target design, upstream Helm research, concrete rendered specimens, repeated review, then direct implementation with owner-operated terminal experiments. The clean development install succeeded in 66 seconds and subsequent ensure in 2 seconds; release and cold-cluster proof remain open. That program was a material platform renewal. The [design-led engineering rule](.agents/rules/target-driven-renewal.md) chooses depth from risk and novelty. An evolutionary change reuses accepted architecture and does not repeat that ceremony merely because it touches infrastructure. Cursor is one execution option, not an architectural prerequisite.
 
 ## 2. Make a “Change” a bounded, falsifiable implementation unit
 
@@ -67,9 +67,9 @@ Read the [wiki operating design](https://github.com/DenisSkulovic/offscreen-rpg/
 
 ## 4. Separate responsibilities from models and tools
 
-The [role catalog](.agents/roles/README.md) distinguishes **responsibility** (architect, implementer, verifier), **specialization** (React, persistence, security), **execution surface** (ChatGPT, Cursor, Claude Code), and **permissions**.
+The [role catalog](.agents/roles/README.md) distinguishes **responsibility** (designer, planner, independent reviewer, implementer, acceptance lead, custodian), **specialization** (React, persistence, security), **execution surface** (whichever client is selected), and **permissions**.
 
-The present workflow often uses **ChatGPT for open-ended investigation/design and Cursor for bounded implementation**. Claude Code has a minimal [adapter](CLAUDE.md) that imports the same [AGENTS entry](AGENTS.md). None of those client choices is a rule of product architecture. An independent review or specialist agent is optional when it can change the judgment, not mandatory expensive choreography.
+The same generic procedure works for any capable client. The owner's current setup uses a read-only ChatGPT planner and a local write-authorized implementer. Claude Code has a minimal [adapter](CLAUDE.md) that imports the same [AGENTS entry](AGENTS.md). None of those client choices is a rule of product architecture. An independent review context is required where independence matters. A specialist agent is optional when it can change the judgment.
 
 The [layer-zero harness](.agents/HARNESS.md) and [context economics](.agents/references/context-economics.md) emphasize smallest useful evidence, avoiding giant always-on prompts and preserving decisions across sessions. A handoff should pass named authority headings, a few source anchors, known traps, negative tests and unresolved decisions, **not a transcript dump**.
 

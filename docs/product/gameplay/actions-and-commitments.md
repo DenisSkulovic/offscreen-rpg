@@ -64,4 +64,4 @@ Prepare a short stretch after an intention is selected rather than generating ev
 
 ## Open / deferred product policy
 
-Agency between offered decisions (free-intent paths, changing course mid-activity, GM07-style delegated decisions) remains explicitly unsettled where not accepted elsewhere. Do not treat program drafts as silent acceptance.
+Agency between offered decisions (free-intent paths, changing course mid-activity, GM07-style delegated decisions) remains explicitly unsettled where not accepted elsewhere. Free-form intention admission stays deferred future design ([historical free-intent study](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/designs/open/free-intent/free-intent-future.md)); predictive preparation must not become causal world change without an accepted fence ([historical prediction-fence study](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/designs/open/prediction-fences/prediction-dependency-fences.md)). Do not treat program drafts as silent acceptance.
