@@ -47,3 +47,9 @@ INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execut
 - [VER08 SQL-origin cache and Story snapshot acceptance](2026-11-25--ver08-cache-sql-origin-programme/CHANGE.md): deferred; all security/correctness proof retained, no current commission. VER07 source prerequisite and current consumer/resource refresh required before owner-selected promotion.
 
 - [K8S10 distributed fault and load harness](2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md): deferred; existing implementation and receipts retained; fresh TURN03 PASS, current release ownership and owner-selected refreshed plan required. No commission or live mutation permission.
+
+## Developer observability recovery (proposed)
+
+- [OBS-D02 Frozen target identity](2026-11-27--obs-d02-target-identity/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
+- [OBS-D03 Bounded operation custody](2026-11-27--obs-d03-operation-custody/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
+- [OBS-D04 Developer topology and exact classifier](2026-11-27--obs-d04-collector-topology/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
