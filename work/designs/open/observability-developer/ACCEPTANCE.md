@@ -50,6 +50,7 @@ Original native R30/OBS-03 revision1-only is amended only for exact dev Collecto
 | Change | Source disposition | Joint obligations retained (NOT marked passed) |
 | --- | --- | --- |
 | OBS-D04 | Done source on `implementation/observability-developer`; packet archived at [OBS-D04](../../../changes/archive/2026-11/observability/2026-11-27--obs-d04-collector-topology/CHANGE.md); focused offline 237/237 PASS at `67b0bf4fabfcb12647dd17a82adee2275e7457d9` | Remaining Design A1–A12 / V01–V12, including OD-05–07 live/isolated gates that depend on D04 topology/classifier; no live activation or main merge |
+| OBS-D05 | Source on `implementation/observability-developer`; packet archived at [OBS-D05](../../../changes/archive/2026-11/observability/2026-11-27--obs-d05-foreground-connection/CHANGE.md); focused offline forward and custody tests 29/29 PASS | Remaining Design A1–A12 / V01–V12, including live WSL HTTP, Grafana and query forwards; no live activation or main merge |
 
 ## Owner-released offline source assembly (not certification)
 
