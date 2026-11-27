@@ -2,10 +2,11 @@
 
 Creative profiles and authored guidance shape writing; they do not own game authority. Prepared experiences may expose optional customization, while custom Story Prompts provide verbatim player intent. When two sources genuinely conflict, the effective experience must resolve that conflict explicitly rather than relying on prompt ordering as hidden policy.
 
-**Owns:** creative controls a player may set. The former settings essay's unique clauses live in this file.  
+**Owns:** creative controls a player may set, their meanings, and the consent semantics of changing or locking them. The former settings essay's unique clauses live in this file. Sections below are the product contract; [Current implementation boundary](#current-implementation-boundary) is the only section that describes dated realization.
+
 **Companions:** [behavior and quality](behavior-and-quality.md), [story settings technical](../../technical/storyteller/versioned-settings.md), [usage policy](../../technical/platform/spending-and-entitlements.md).
 
-Implemented for profiled solo stories, with offline rehearsal limits described below. A storyteller is an editable preset over shared DM capabilities. The owner can change it during a continuing solo story: spend a real week earning, trading and studying, invite more adventure, then return to quiet life. A melancholic fishing evening can acquire comic possibilities without replacing its fisherman, undoing debts or forcing an immediate joke.
+Selected product contract; realized so far only for profiled solo stories, with the narrow, dated realization and offline rehearsal limits recorded in [Current implementation boundary](#current-implementation-boundary). A storyteller is an editable preset over shared DM capabilities. The owner can change it during a continuing solo story: spend a real week earning, trading and studying, invite more adventure, then return to quiet life. A melancholic fishing evening can acquire comic possibilities without replacing its fisherman, undoing debts or forcing an immediate joke.
 
 Shared application behavior is creatively neutral. It provides the same bounded narrative and mechanical capabilities to radically different profiles but does not supply a fallback taste for excitement, restraint, humor, option density or pace. Effective creative direction is the resolved combination of the selected profile, campaign direction, opening and established fiction. Evaluation must first ask whether a result fulfilled those captured commitments; reviewer enjoyment is a separate observation and cannot silently redefine the engine's defaults.
 
@@ -78,7 +79,7 @@ Settings can be saved while an activity runs, but cannot undo its outcomes or re
 
 ## Free and locked campaigns
 
-At creation, distinguish editable play from a campaign whose declared settings are locked. The lock records exactly which fields are fixed: rule version, risk, storyteller customization and allowed speed controls. Accessibility, sound and private notification preferences remain personal. POC lock is enforced server-side, cannot be silently disabled, and does not imply anti-cheat certification or an implemented permadeath system. A future fork into an editable campaign must be visibly a new continuation, not a rewritten locked record.
+At creation, distinguish editable play from a campaign whose declared settings are locked. The lock records exactly which fields are fixed: rule version, risk, storyteller customization and allowed speed controls. Accessibility, sound and private notification preferences remain personal. In the recorded POC realization the lock is enforced server-side and cannot be silently disabled; that is a narrow realization claim and does not imply anti-cheat certification or an implemented permadeath system. A settings lock is not anti-cheat and not permadeath. A future fork into an editable campaign must be visibly a new continuation, not a rewritten locked record.
 
 Ironman may eventually bundle permadeath and other commitments; do not equate a settings lock with that entire mode. For the initial feature, label it **Locked settings**, with a visible summary before Start.
 
@@ -86,7 +87,7 @@ See [game rules](../gameplay/rules.md) and [settings execution](../../technical/
 
 ## Current implementation boundary
 
-The live-story editor supports catalogue presets, private saved presets, emphasis, encounter frequency, up to 16 custom narrative tags and four guidance snippets. Settings history exposes the latest 20 revisions. Existing profiled stories project their original settings until the first explicit update persists revisions. New stories can lock creative and speed settings before Start; pause remains available.
+This section is a dated realization record, not product contract; its recipient is [versioned settings: Current adapters](../../technical/storyteller/versioned-settings.md#current-adapters). The live-story editor supports catalogue presets, private saved presets, emphasis, encounter frequency, up to 16 custom narrative tags and four guidance snippets. Settings history exposes the latest 20 revisions. Existing profiled stories project their original settings until the first explicit update persists revisions. New stories can lock creative and speed settings before Start; pause remains available.
 
 The offline source does not improvise from arbitrary text: creative configuration is stored and included in bounded generated-task context, including the mechanical consequence task. Its offline narrator repeats saved outcomes; it has no special profile voice or absurd-comedy tag branch. Unknown custom tags carry no mechanical effect. Mechanical modifiers and event thresholds belong to captured action content; a world-tag editor is not implemented. Mid-activity pace changes are separate controls.
 

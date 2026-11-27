@@ -1,11 +1,16 @@
 # Storyteller memory and continuity
 
-The durable memory substrate is the versioned **Library plus admitted historical state**, not an immortal provider conversation. A fresh Storyteller mission reconstructs what it needs from the exact branch/scene root, source identity and bounded indexes; model context is disposable.
+The Storyteller's knowledge is **scoped to one campaign branch**. The durable memory substrate is the versioned **Library plus admitted historical state**, not an immortal provider conversation. A fresh mission reconstructs what it needs from the exact branch/scene root, source identity and bounded indexes; model context is disposable. Within that scope the writer is given the **current canon** (what is true now) and can inspect the **past** (earlier passages and document versions) without mistaking it for current truth. Durable continuity is kept sparse by **promotion** of subjects that matter and bounded **attachment** to the active scene.
 
 **Owns:** what the Storyteller must remember, retrieve and promote so a life stays coherent.  
-**Accepted product expectation** for current-versus-history and sparse promotion. Retrieval routes and creative exploration below are the **selected Storyteller target** (2026-11-14), not a claim that every route is implemented. Durable files are not continuity quality. Optional creative exploration is not the live default for ordinary tasks. One stored identity does not prove recall across months. The developer-agent Cognee trial is not this game's memory trial, and its findings do not prove game recall impossible. Bounded lexical retrieval described by the technical companion remains a real selected route. The unratified cost notes are [product-reality economics](../../../research/product-reality/ECONOMICS-2026-11-18.md). They authorize no spend.  
 **Does not own:** mechanical receipts and time ([gameplay continuity](../gameplay/continuity.md), [rules](../gameplay/rules.md)).  
 **Technical companion:** [context and memory](../../technical/storyteller/context-and-memory.md).
+
+**Status of this page.**
+- *Accepted product expectation:* current-versus-history and sparse promotion.
+- *Selected Storyteller target (2026-11-14):* the retrieval routes and creative exploration below. This is not a claim that every route is implemented. Bounded lexical retrieval described by the technical companion remains a real selected route. Optional creative exploration is not the live default for ordinary tasks.
+- *Evidence limits:* durable files are not continuity quality. One stored identity does not prove recall across months. The developer-agent Cognee trial is not this game's memory trial, and its findings do not prove game recall impossible.
+- *Cost:* the unratified cost notes are [product-reality economics](../../../research/product-reality/ECONOMICS-2026-11-18.md). They authorize no spend.
 
 ## Branch-scoped knowledge | selected long-term invariant (2026-11-19)
 
@@ -31,7 +36,7 @@ A restarted situation may attach an already-existing record from the exact campa
 
 ## Selected retrieval routes
 
-Unanticipated returns require discovery rather than permanent prompt inclusion. The Storyteller may ask campaign memory one or two ordinary-language questions and optionally open exact returned handles. It should not need to understand indexes or ranking controls. The application translates that need into permitted retrieval over the captured story's current canonical records.
+These routes describe the writer-facing capability the selected target owes, not a guaranteed search ranking or a completed agent. Unanticipated returns require discovery rather than permanent prompt inclusion. The Storyteller may ask campaign memory one or two ordinary-language questions and optionally open exact returned handles. It should not need to understand indexes or ranking controls. The application translates that need into permitted retrieval over the captured story's current canonical records.
 
 Different questions deserve different work, sharing canon and provenance but not necessarily cost:
 
@@ -49,8 +54,8 @@ A richer tier may investigate more leads. It cannot receive a more favorable or 
 
 ## Creative exploration is not retrieval
 
-For a turn that merits deeper authorship, the Storyteller may search through bounded lenses—echo, contrast, consequence, relationship, dormant thread, setting affordance or controlled serendipity—then inspect exact sources and compare a few private directions before composing one result. Evidence remains evidence. An inferred connection remains interpretation. A proposed direction remains noncanonical until ordinary publication admits what the turn establishes.
+Exploration may propose permitted new lore; it never backfills truth into the past or into a recalled source. For a turn that merits deeper authorship, the Storyteller may search through bounded lenses—echo, contrast, consequence, relationship, dormant thread, setting affordance or controlled serendipity—then inspect exact sources and compare a few private directions before composing one result. Evidence remains evidence. An inferred connection remains interpretation. A proposed direction remains noncanonical until ordinary publication admits what the turn establishes.
 
 This work is optional and costed. Disabling it must still produce a grounded turn. An explicit no-grand-narrative campaign cannot acquire a secret arc merely because a surprising candidate exists. The application stores inspectable queries, sources and concise direction artifacts, not private chain-of-thought.
 
-**Negative:** paying for a stronger model improves interpretation. It does not purchase a better chance of success, a secret future disclosed as fact, or permission to treat model memory of a franchise setting as supplied canon. A multi-day reading of this retrieval is the [Proposed/Blocked evaluation family](behavior-and-quality.md#multi-day-evaluation-family), not ratified acceptance. A discarded narrative plan is not committed truth. Idle minutes do not authorize a provider charge.
+**Negative:** invention is not recall. A proposed direction or newly invented lore is labelled as such and is never presented as something the history already established; source handles stay task-local and private plans stay private. Paying for a stronger model improves interpretation. It does not purchase a better chance of success, a secret future disclosed as fact, or permission to treat model memory of a franchise setting as supplied canon. A multi-day reading of this retrieval is the [Proposed/Blocked evaluation family](behavior-and-quality.md#multi-day-evaluation-family), not ratified acceptance. A discarded narrative plan is not committed truth. Idle minutes do not authorize a provider charge.
