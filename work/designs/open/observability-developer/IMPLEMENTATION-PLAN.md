@@ -1,6 +1,6 @@
 # Implementation recovery roadmap
 
-**Status:** All eleven current-sprint packets are owner-released for reversible offline candidate implementation. They are not independently READY or certified. Grandfathered integration reference `integration/observability-developer`: do not rename or recreate it, and do not touch its in-flight worktrees. Each Change's implementation coordinator owns that Change's serialized source join. No global queue change. [Acceptance boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
+**Status:** All eleven current-sprint packets are owner-released for reversible offline candidate implementation. They are not independently READY or certified. Implementation branch `implementation/observability-developer`. OBS-D01 and OBS-D02 are already merged there. Each remaining Change's coordinator owns that Change's serialized source join back into the same branch. The in-flight OBS-D03 worktree is preserved. No global queue change. [Acceptance boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 ## Finish line and method
 
@@ -12,7 +12,7 @@ Write coherent replacements in large authoring batches, then compare against the
 
 ## Release and execution
 
-All eleven packets are commissioned for offline candidate source work under the scoped owner exception. D01 starts after local census, worktree ownership and baseline snapshot. Later packets release when their own source-join edges hold, not on another owner approval and not in one D01-through-D11 line. No constituent Change joins main. Joins to the grandfathered reference are serialized by the Change lifecycle lock. Preserve all existing focused normal and negative tests. Stop only for an actual contradiction, an ownership conflict, or a failed required Change-level proof. Independent readiness remains unverified. Independent review of the amended authority and implementation, plus the actual A1–A12 and V01–V12 evidence, remain mandatory before live use or main integration.
+All eleven packets are commissioned for offline candidate source work under the scoped owner exception. OBS-D01 and OBS-D02 are already merged into `implementation/observability-developer`. Later packets release when their own source-join edges hold, not on another owner approval and not in one D03-through-D11 line. No constituent Change joins main. Joins to that implementation branch are serialized by the Change lifecycle lock. Preserve all existing focused normal and negative tests. Stop only for an actual contradiction, an ownership conflict, or a failed required Change-level proof. Independent readiness remains unverified. Independent review of the amended authority and implementation, plus the actual A1–A12 and V01–V12 evidence, remain mandatory before live use or main integration.
 
 The archived [owner preflight](https://github.com/DenisSkulovic/offscreen-rpg/blob/a82a79ed7d75926166c12154c030b5a1a98faa06/work/changes/archive/2026-11/observability/2026-11-27--observability-developer/original/preflight-evidence.sh) preserves the local census, offline render and optional isolated Docker experiment. D01 local census and pinned offline renders are executable cheap checks; actual D08/D11 mechanism feasibility is deferred to owner/ChatGPT before activation, not silently waived. No Docker/cluster experiments by Cursor.
 
@@ -37,7 +37,7 @@ Identifiers retained. D01–D11 are open and owner-released for offline source i
 
 ## Source-join schedule
 
-Inspected 2026-11-27. `integration/observability-developer` remains the design implementation branch. The linked worktrees for `change/obs-d01-native-artifacts` and `change/obs-d02-target-identity` stay as they are. The remote ref is behind the local branch. Do not rename, recreate, or reset either. This correction does not implement an OBS Change. Where the table above and this schedule disagree, this schedule is the execution order.
+Re-inspected after main `7e5f3b83`. The recorded branch is `implementation/observability-developer`. OBS-D01 and OBS-D02 are already merged there. `change/obs-d03-operation-custody` has a linked worktree at that tip and stays. The old `integration/observability-developer` ref is absent locally; do not recreate it. This correction does not implement an OBS Change. Where the table above and this schedule disagree, this schedule is the execution order.
 
 - D01 has no source predecessor.
 - D02 waits for D01's normalized descriptor and values paths. Both write `artifacts.mjs` and `install.mjs`.
@@ -90,4 +90,4 @@ Known canonical/catalog/predecessor links repaired. Remote search returned zero 
 
 **Independent disposition:** [Pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/114cc39cf4e1477ac34e24d4a26684ad9f91b8c3/work/designs/open/observability-developer/committee/pass-03.md) DEFENDED D01-only staged integration, REVISE AND RE-DEFEND broader staging (OD-05 activation/functional proof dependency; OD-06 legacy public mutation and cleanup paths; OD-07 cross-worktree lock/fence compatibility or owner-controlled exclusion). Existing joint rule remains selected except after owner accepts a defended slice. Drafting successors does not ratify these unresolved boundaries. D04/D06 activation must use safe coordinated candidate proof, not rely on unsafe already-merged changed default; settle exact entrypoint and cross-revision mechanism before affected commission.
 
-**Immediate next action:** an owner instruction such as "Do OBS-D01" runs that Change's routine lifecycle on the grandfathered reference. Successors start when their own edges above hold, without another commission. Joint A1–A12/V01–V12 acceptance still precedes any main merge or Done. No constituent Change joins main.
+**Immediate next action:** OBS-D01 and OBS-D02 are already on `implementation/observability-developer`. An owner instruction such as "Do OBS-D03" runs that Change's routine lifecycle on that branch. Other successors start when their own edges above hold, without another commission. Joint A1–A12/V01–V12 acceptance still precedes any main merge or Done. No constituent Change joins main.

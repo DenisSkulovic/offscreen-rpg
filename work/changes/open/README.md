@@ -2,7 +2,7 @@
 
 ## Developer observability | current sprint (2026-11-27)
 
-All eleven Changes are owner-released for isolated offline source implementation. Grandfathered integration reference `integration/observability-developer`. Execution follows the [source-join schedule](../../designs/open/observability-developer/IMPLEMENTATION-PLAN.md#source-join-schedule), not a total D01-through-D11 order. Independent readiness and changed-authority review remain outstanding. No real cluster or paid operations, constituent main merge, Done, or live certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
+All eleven Changes are owner-released for isolated offline source implementation. Implementation branch `implementation/observability-developer` already holds OBS-D01 and OBS-D02. OBS-D03 through OBS-D11 branch from that branch and merge back into it on the [source-join schedule](../../designs/open/observability-developer/IMPLEMENTATION-PLAN.md#source-join-schedule), not a total order. Independent readiness and changed-authority review remain outstanding. No real cluster or paid operations, constituent main merge, Done, or live certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 | Change | Current readiness |
 | --- | --- |
