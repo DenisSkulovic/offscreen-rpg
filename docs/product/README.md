@@ -2,7 +2,7 @@
 
 What players and staff must be able to rely on. Technical guarantees are [technical](../technical/README.md). What is built is [STATUS](../../STATUS.md). Unaccepted drafts are [work/designs](../../work/designs/README.md).
 
-A selected experience target is a product preference, not a demonstration that the experience is playable, coherent, or affordable. [STATUS](../../STATUS.md) records what has been shown. The unratified [product-reality claim register](../../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md) records which ambitions still lack that evidence. It adds no rule. Shared play named on a selected page is not delivered and not implemented. Consent, authoritative dice, and no duplicate effects stay binding.
+A selected experience target is a product preference, not a demonstration that the experience is playable, coherent, or affordable. [STATUS](../../STATUS.md) records what has been shown. The dated historical [product-reality claim register](../../research/product-reality/CLAIM-REGISTER-2026-11-18.md) records which ambitions lacked that evidence at the November 18 baseline; recheck current STATUS and owners. It adds no rule. Shared play named on a selected page is not delivered and not implemented. Consent, authoritative dice, and no duplicate effects stay binding.
 
 ## The player loop, before the infrastructure
 
@@ -21,7 +21,7 @@ This describes product intent. It does **not** assert that every loop, arbitrary
 
 | Question | Owner |
 | --- | --- |
-| Is a selected target already feasible? | [STATUS](../../STATUS.md) · [product-reality claims](../../work/designs/open/product-reality-reconciliation/CLAIM-REGISTER.md). Selection is not proof |
+| Is a selected target already feasible? | [STATUS](../../STATUS.md) · [product-reality claims](../../research/product-reality/CLAIM-REGISTER-2026-11-18.md). Selection is not proof |
 | What persistent life are we building? | [Vision](foundations/vision.md) |
 | How does creation work now? | [Prepared Play / Story Prompt](experience/entry-and-onboarding.md#creation-information-architecture) |
 | What is the Storyteller as a writer? | [Investigative writing, revision and delegation](storyteller/behavior-and-quality.md#investigative-writing-revision-and-delegation) |

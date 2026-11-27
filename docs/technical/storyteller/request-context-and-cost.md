@@ -211,7 +211,7 @@ Bound consecutive immediate autonomous transitions as well as provider calls. Ev
 
 ## Prompts and experiments
 
-One pinned Sol call settled at 23,294 microusd. That figure is one observation. It does not prove a month of play, and it does not include every repair, retrieval round, or discarded branch. Measure cost per accepted playable turn, including those extras. Scripted runs prove accounting only. A tiny live quality evaluation still needs a separate spend authorization. The unratified arithmetic lives in [product-reality economics](../../../work/designs/open/product-reality-reconciliation/ECONOMICS.md). Adding a vector index does not replace source truth.
+One pinned Sol call settled at 23,294 microusd. That figure is one observation. It does not prove a month of play, and it does not include every repair, retrieval round, or discarded branch. Measure cost per accepted playable turn, including those extras. Scripted runs prove accounting only. A tiny live quality evaluation still needs a separate spend authorization. The unratified arithmetic lives in [product-reality economics](../../../research/product-reality/ECONOMICS-2026-11-18.md). Adding a vector index does not replace source truth.
 
 Keep prompts and small reusable fragments in `packages/storyteller`, reviewed with code and exercised against fixtures. Compose only fragments with a clear responsibility: behavior, output schema, storyteller preferences, contextual material. Record the resulting prompt version/hash and source versions for each attempt. Do not create a general prompt CMS or dozens of database snippets just because composition is possible.
 
