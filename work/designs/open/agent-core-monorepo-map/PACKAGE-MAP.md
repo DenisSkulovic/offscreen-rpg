@@ -1,4 +1,4 @@
-# Preliminary monorepo package map | R3
+# Monorepo package map | R9 foundation candidate
 
 All names below are provisional. **Direction** means an owner-stated separation; **candidate** means a planner hypothesis, not approved package creation. A row may represent a module rather than a separate workspace after review. No implied dependency edges.
 
@@ -83,6 +83,24 @@ packages:
 ```
 
 Current main `1bf121b488b798f57d1f9f0d738d0f6ba0ce4f11` still has `packages/*` in pnpm-workspace.yaml. No migration is commissioned. Before moving existing packages, inspect workspace discovery, Turbo task graph, TypeScript project references and exports, lockfile, Docker/build contexts, verification and repo-maintenance scripts, CI, documentation links and any fixed paths. Preserve package identities and behavior unless a separately reviewed change selects a rename or retirement. README-only placeholders should use the intended grouped paths, with no manifests until actual workspace activation is authorized. If a flat historical workspace has the same prospective identity, do not create a second active package. Official reference points for later tooling verification: [Turborepo repository structure](https://turborepo.com/docs/crafting-your-repository/structuring-a-repository), [pnpm workspace configuration](https://pnpm.io/pnpm-workspace_yaml), [npm scopes](https://docs.npmjs.com/cli/using-npm/scope). No migration/build proof claimed.
+
+## E1 workspace decision (R9 candidate)
+
+Keep all 23 existing flat workspaces in place; activate only `packages/ai/agent-core` as the new grouped workspace. Retain `packages/*` and add explicit `packages/<family>/*` globs for the five selected families in pnpm-workspace.yaml. Family folders are not packages. No duplicate manifest/name; existing `@offscreen/*` names and relative path contracts stay untouched. Create README-only placeholders only for clear absent responsibilities (ai/inference, ai/model-routing, ai/ai-providers, domain/library, foundation/document-versioning); distinguish planned ownership from existing `documents`, `usage-policy`, and Storyteller implementations. No fake dependencies or source for placeholders. Record other candidates in the map rather than create a forest of empty directories.
+
+Observed flat manifest inventory at main 32bab60387d4aadc728158e0b4fe94f864d8f77d (placement candidates, not relocation orders):
+
+| Family | Existing flat packages |
+| --- | --- |
+| domain | admin, admin-interface, content-packages, game, game-authority-protocol, story-engine, story-interface, story-persistence, storyteller |
+| ai | none yet; Agent Core new |
+| commerce | usage-policy |
+| platform | identity-interface, identity-persistence, lab-interface, lab-support, outbox, runtime-logging, workflows |
+| foundation | cache, cache-port, config, db, documents, object-storage |
+
+Rationale: `infra/images/common/workspace-graph.mjs` loadWorkspaceIndex scans only one level; `infra/images/development/sync-plan.mjs` workspaceDirForPath and manifest/tsconfig checks assume one level. `scripts/repo-tools/module-graph.mjs` loadPackages already reads explicit globs and should recognize the additional families. Dev Dockerfile copies all packages; release image uses Turbo prune and `production-workspace-closure.mjs` delegates to common workspace graph. Dev migrations (`tools/dev-environments/src/adapters/dev-slot-migrate.mjs`, `src/application/dev-slot-startup.mjs`) and module graph story-engine rules use existing fixed paths. Keep them unchanged, not a global migration. Adapt common workspace discovery to explicit flat + family leaf layout (including duplicate-name rejection), and dev sync classification to resolve actual leaf manifest ownership; preserve old behavior and exclude README placeholders. Check other consumers of workspace paths, including release/dev build fingerprinting, selection, source packaging and repository tooling during the focused gap audit. No agent-core production app dependency; existing app runtime and build closures must be unchanged; no new dev/release workload or deployment. A focused workspace/tooling acceptance is sufficient; no unrelated migration or full cluster lifecycle proof unless an actual affected contract requires it.
+
+The full physical relocation, package splits/renames and eventual canonical owner changes are subsequent evolutions, not E1 requirements. A README-only future boundary is not a workspace. Any later move requires path/dependency/cutover audit and explicit acceptance.
 
 ## Apps are composition roots, not package boundaries
 Existing api, web, worker, game-authority app manifests are factual baseline only. Candidate host responsibilities: HTTP/session boundary, UI, computation/orchestration, authoritative game operations. A package does not require its own Pod or network service.
