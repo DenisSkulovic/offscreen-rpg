@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-[OBSERVABILITY-NATIVE](open/2026-11-26--observability-native/CHANGE.md) — Ready with explicit limits; source-only commissioned, T01 artifact gate first, heavy acceptance owner-operated.
+[OBSERVABILITY-DEVELOPER](open/2026-11-27--observability-developer/CHANGE.md) — R5 accepted; T01 source-only commissioned with local guard. [OBSERVABILITY-NATIVE](archive/2026-11/observability/2026-11-26--observability-native/CHANGE.md) superseded; outstanding proof transferred.
 
 [RABBITMQ-NATIVE](open/2026-11-26--rabbitmq-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and fresh release separately gated.
 
