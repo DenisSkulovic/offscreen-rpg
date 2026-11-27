@@ -16,6 +16,7 @@ import {
   refuseProofInvocation,
   runProofOperationSession,
 } from './proof-host.mjs';
+import { runDeveloperProof } from './developer.mjs';
 import { runSignalsProof } from './signals.mjs';
 import { runOutageProof, runPersistenceProof } from './disruptions.mjs';
 import {
@@ -89,6 +90,9 @@ async function runLiveProof(parsed, sessionDeps = {}) {
       ((session) => defaultDatasourceHealth(session)),
     repeatObservation:
       sessionDeps.repeatObservation ?? ((session) => defaultObserve(session)),
+    runDeveloper:
+      sessionDeps.runDeveloper ??
+      ((session) => runDeveloperProof(session, sessionDeps.developerDeps)),
     runSignals:
       sessionDeps.runSignals ??
       ((session) => runSignalsProof(session, sessionDeps.signalsDeps)),
@@ -116,7 +120,7 @@ export async function main(argv = process.argv, env = process.env) {
   const parsed = parseProofCli(argv);
   if (!parsed.ok) {
     console.error(
-      'usage: node proof.mjs <health|signals|persistence|outage|resources|partial-install> dev kind-offscreen-dev',
+      'usage: node proof.mjs <health|signals|persistence|outage|resources|partial-install|developer> dev kind-offscreen-dev',
     );
     return 2;
   }

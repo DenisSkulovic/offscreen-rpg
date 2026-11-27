@@ -357,7 +357,7 @@ test('unimplemented gate is recognized without live session', () => {
   assert.equal(gateImplemented('health'), false);
   assert.equal(gateImplemented('resources'), false);
   assert.equal(gateImplemented('outage'), false);
-  assert.equal(gateImplemented('developer'), false);
+  assert.equal(gateImplemented('developer'), true);
 });
 
 test('persistence proof does not resubmit OTLP after first positive', async () => {
@@ -886,4 +886,105 @@ test('repeat ensure issues no write', async () => {
   });
   assert.equal(result.ok, false);
   assert.equal(result.reasonCode, 'repeat-ensure-wrote');
+});
+
+test('developer gate refuses a missing proof lock before forwards', async () => {
+  const { runDeveloperProof } = await import('../developer.mjs');
+  const result = await runDeveloperProof({
+    identity: createFakeIdentity(),
+    clock: { now: () => 0 },
+    remainingWorkMs: () => 600_000,
+    custody: null,
+    proofCustody: null,
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'wrong-lock');
+});
+
+test('developer gate reports malformed child output and forward failure', async () => {
+  const { runDeveloperProof, developerProbeArgs } = await import('../developer.mjs');
+  const argv = developerProbeArgs(
+    {
+      developerHttp: 14318,
+      diagnosticHttp: 4318,
+      prometheus: 19090,
+      loki: 13100,
+      tempo: 13200,
+    },
+    '/tmp/proof-locks',
+    600_000,
+  );
+  assert.equal(argv.args[0].endsWith('developer-probe.py'), true);
+  assert.deepEqual(argv.args.slice(1, 5), [
+    '--developer-http-port',
+    '14318',
+    '--diagnostic-http-port',
+    '4318',
+  ]);
+  const session = {
+    identity: createFakeIdentity(),
+    clock: { now: () => 1_000 },
+    remainingWorkMs: () => 600_000,
+    custody: { fd: 3 },
+    proofCustody: { fd: 4, lockDirectory: '/tmp/proof-locks' },
+  };
+  const malformed = await runDeveloperProof(session, {
+    openForwards: async () => ({
+      ports: {
+        developerHttp: 14318,
+        diagnosticHttp: 9,
+        prometheus: 19090,
+        loki: 13100,
+        tempo: 13200,
+      },
+      close: async () => {},
+    }),
+    startOwnedChild: () => ({
+      outcome: Promise.resolve({ ok: true, stdout: 'not-json' }),
+    }),
+  });
+  assert.equal(malformed.reasonCode, 'malformed-result');
+  const failedChild = await runDeveloperProof(session, {
+    openForwards: async () => ({
+      ports: {
+        developerHttp: 14318,
+        diagnosticHttp: 9,
+        prometheus: 19090,
+        loki: 13100,
+        tempo: 13200,
+      },
+      close: async () => {},
+    }),
+    startOwnedChild: () => ({
+      outcome: Promise.resolve({ ok: false, stdout: '' }),
+    }),
+  });
+  assert.equal(failedChild.reasonCode, 'developer-child-failed');
+  const failedForward = await runDeveloperProof(session, {
+    openForwards: async () => {
+      throw new Error('forward-down');
+    },
+  });
+  assert.equal(failedForward.reasonCode, 'forward-failed');
+});
+
+test('developer session accepts an injected runner', async () => {
+  const result = await runLiveProof(
+    { gate: 'developer', profile: 'dev', context: CANONICAL_DEV_CONTEXT },
+    {
+      readSourceSha: () => SOURCE_SHA,
+      captureIdentity: () => createFakeIdentity(),
+      recheckIdentity: () => ({ ok: true }),
+      verifyCleanCheckout: () => ({ ok: true }),
+      env: AUTH_ENV,
+      custody: { fd: 3 },
+      proofCustody: { fd: 4, lockDirectory: '/tmp/proof-locks' },
+      runDeveloper: async (session) => {
+        assert.equal(session.proofCustody.fd, 4);
+        return { ok: true, cleanup: true };
+      },
+    },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(result.phase, 'developer-complete');
 });
