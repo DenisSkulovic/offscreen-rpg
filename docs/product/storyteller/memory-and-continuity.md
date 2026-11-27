@@ -1,16 +1,12 @@
 # Storyteller memory and continuity
 
-The Storyteller's knowledge is **scoped to one campaign branch**. The durable memory substrate is the versioned **Library plus admitted historical state**, not an immortal provider conversation. A fresh mission reconstructs what it needs from the exact branch/scene root, source identity and bounded indexes; model context is disposable. Within that scope the writer is given the **current canon** (what is true now) and can inspect the **past** (earlier passages and document versions) without mistaking it for current truth. Durable continuity is kept sparse by **promotion** of subjects that matter and bounded **attachment** to the active scene.
+The Storyteller works from the truth of **one campaign branch**, and that scope shapes everything below. The durable memory substrate is the versioned **Library plus admitted historical state**, not an immortal provider conversation. A fresh mission reconstructs what it needs from the exact branch and scene root, source identity and bounded indexes; model context is disposable. Within that scope the writer is given the **current canon**, what is true now, and can inspect the **past**, earlier passages and document versions, without mistaking it for current truth. Durable continuity stays sparse: subjects that matter are **promoted** into canonical records, and the few relevant to the present situation are attached to the **active scene**, bounded and deliberately.
 
 **Owns:** what the Storyteller must remember, retrieve and promote so a life stays coherent.  
 **Does not own:** mechanical receipts and time ([gameplay continuity](../gameplay/continuity.md), [rules](../gameplay/rules.md)).  
 **Technical companion:** [context and memory](../../technical/storyteller/context-and-memory.md).
 
-**Status of this page.**
-- *Accepted product expectation:* current-versus-history and sparse promotion.
-- *Selected Storyteller target (2026-11-14):* the retrieval routes and creative exploration below. This is not a claim that every route is implemented. Bounded lexical retrieval described by the technical companion remains a real selected route. Optional creative exploration is not the live default for ordinary tasks.
-- *Evidence limits:* durable files are not continuity quality. One stored identity does not prove recall across months. The developer-agent Cognee trial is not this game's memory trial, and its findings do not prove game recall impossible.
-- *Cost:* the unratified cost notes are [product-reality economics](../../../research/product-reality/ECONOMICS-2026-11-18.md). They authorize no spend.
+Current-versus-history and sparse promotion are accepted product expectations. The retrieval routes and creative exploration further down are the selected Storyteller target (2026-11-14), not a claim that every route is implemented: bounded lexical retrieval described by the technical companion is a real selected route, and optional creative exploration is not the live default for ordinary tasks. Durable files are not continuity quality, and one stored identity does not prove recall across months. The developer-agent Cognee trial is not this game's memory trial, and its findings do not prove game recall impossible. The unratified cost notes are [product-reality economics](../../../research/product-reality/ECONOMICS-2026-11-18.md); they authorize no spend.
 
 ## Branch-scoped knowledge | selected long-term invariant (2026-11-19)
 
@@ -18,7 +14,7 @@ The Storyteller must work from **the campaign branch's own truth at the exact ad
 
 The Storyteller may propose bounded changes to lore, identity, relationships and narrative threads, linked to the scene and source evidence that established them. The engine admits mechanical effects separately. Derived summaries, search results, private plans and the model's conversational recollection can suggest what to inspect but cannot grant truth or write through to a campaign. The Storyteller's remembered information must distinguish what is **true in this branch now**, what a character **knows or believes**, what is **historically evidenced**, and what is merely **possible**.
 
-The exact storage format, reconstruction strategy, indexing engine and amount of historical context to retrieve remain technical design decisions. This selected product guarantee is stronger than today's one-shot recall and current-only fork support. [Scene checkpoints](../foundations/vision.md#scene-history-and-alternate-continuities) establish the product requirement; [canonical documents](../../technical/storyteller/canonical-documents-and-packages.md) and [context selection](../../technical/storyteller/context-selection-and-recall.md) own technical realization. Do not claim that retaining immutable files alone proves the DM can recall an old detail correctly.
+The exact storage format, reconstruction strategy, indexing engine and amount of historical context to retrieve remain technical design decisions. This selected product guarantee is stronger than today's one-shot recall and current-only fork support. [Scene checkpoints](../foundations/vision.md#scene-history-and-alternate-continuities) establish the product requirement; [canonical documents](../../technical/storyteller/canonical-documents-and-packages.md) and [context selection](../../technical/storyteller/context-selection-and-recall.md) own technical realization. Retaining immutable files alone does not prove the DM recalls an old detail correctly.
 
 ## Current truth versus inspectable history
 
