@@ -65,3 +65,5 @@ Recovery29: reused recorded baseline census, compared complete Git trees (4035/4
 
 
 Recovery30: cold-read source/task cross-check repaired explicit classifier operation/revision, owned prefix and Tempo-down adapter ownership, intermediate gate migration, D4 total HTTP deadline and signed timestamp guard. Found unresolved cross-session queued ingestion with clock rollback; planner must resolve, not delegate or assert freshness. No source changes/tests/live, independent review held. Prior d025978d269d1029c5e21cac8abf26023843ae80.
+
+Recovery31: resolved cross-session freshness decision with a selected minimal write-ahead proof timestamp watermark; exact file/ownership/FD/argv/atomic persistence, failure/rollback and lifecycle, T09/T12 test and doc scope, 573+22+5=600. Actual asynchronous Collector queue and custody source inspected; amendment explicitly subject to independent ratification, no runtime tests or live authorization. Prior 2f16459219e0db87acd63ad3c307d32607b056c6.

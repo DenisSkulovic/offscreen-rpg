@@ -17,7 +17,7 @@ Enable safe application-shaped traces/logs/metrics from WSL into the existing de
 - Product: no player-facing change.
 - Technical: [native observability](../../../../docs/technical/platform/observability-native-infrastructure.md), existing [OBSERVABILITY-NATIVE](../../archive/2026-11/observability/2026-11-26--observability-native/CHANGE.md). Selected R5 canonical; implementation pending.
 - Evidence: see design dossier for actual observed health, installation, image identity, transport failure, admitted OTLP and broken query/harness paths.
-- R5 selects producer vocabulary, topology, session API, revision identity and failure semantics. Actual implementation/live acceptance NOT RUN; actual POC instrumentation excluded.
+- R5 selects producer vocabulary, topology, session API, revision identity and failure semantics. Recovery31 D4.1 selects a proof-local durable timestamp allocation amendment for independent ratification/canonical promotion before commission; no change to producer labels, application or platform lifecycle. Actual implementation/live acceptance NOT RUN; actual POC instrumentation excluded.
 
 ## Candidate scope
 - Owner-required retirement of executable specimens terminology: values/, locks/, root expected-inventory.json, unchanged vendor/; no behavioral delta in naming slice.
