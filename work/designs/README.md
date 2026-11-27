@@ -19,7 +19,6 @@ Existing classifications below are historical starting points, not fresh disposi
 | Item | Status |
 | --- | --- |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
-| [livelihood-economy/](open/livelihood-economy/README.md) | **Proposed, not selected.** Unratified livelihood and exchange questions. No universal currency or profession |
 | [player-data-lifecycle/](open/player-data-lifecycle/README.md) | **Proposed, not selected.** Unratified access, export, and deletion matrix. No jurisdiction, retention period, export API, or raw-prompt grant |
 | [spatial-play/](open/spatial-play/README.md) | **Proposed, not selected.** Unratified location and travel questions. No coordinate schema and no route-planning engine |
 | [content-provenance-and-rights/](open/content-provenance-and-rights/README.md) | **Proposed, not selected.** Inventory of SRD attribution and the Vvardenfell sample. No license, takedown policy, or hosting promise |

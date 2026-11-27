@@ -95,7 +95,7 @@ A short descriptive inventory can cover many needs. Add quantities when decision
 
 An accepted exchange must consistently update what was given and received. Repeated submission cannot purchase twice or restore spent resources. Gifts, favors and promises can matter without being forced into a universal monetary value.
 
-The initial product needs meaningful possession continuity, not equipment slots, carrying-capacity calculations or simulated merchant inventories. The exact extent of counted resources is still to be chosen. That open extent, including a world where money and work do not apply, stays Proposed in [livelihood and economy](../../../work/designs/open/livelihood-economy/README.md). The link adds no currency, wage, or profession.
+The initial product needs meaningful possession continuity, not equipment slots, carrying-capacity calculations or simulated merchant inventories. The exact extent of counted resources is still to be chosen. That open extent, including a world where money and work do not apply, stays Proposed in [livelihood and economy](../../../work/designs/backlog/livelihood-economy/README.md). The link adds no currency, wage, or profession.
 
 ## Knowledge and perspective
 
