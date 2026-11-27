@@ -47,3 +47,14 @@ When separately Ready and commissioned, use one linked worktree from verified `i
 - Long-life: added "How to read a benchmark" (authored oracle, durations illustrative, licensed setting not required) and Expected outcome / Forbidden shortcut blocks for Vvardenfell, space, small or abstract, routine-to-scene and chained journey; benchmark questions and causal-order section unchanged.
 - Semantic negatives: authored scenario not PASS, per route/status statement under `Acceptance scenarios` opening and the harbor `Stage/Missing/Failure` line. Legacy deadline not general consent, per "5. Respond or miss the window" and "3. Meet the goblin" scope paragraph. Duration or licensed setting not compulsory, per `Long-life benchmark playthroughs` "How to read a benchmark". Harbor rejects duplicate credits and auto-resume (harbor table, H4 and B-then-A rows). Preview not mandatory ("1. Arrive and create"). Scene 137 fork cannot see 138 (fork narrative, unchanged). Cargo pay only on delivery, no forced narration, hypothetical itinerary not geography (space and chained-journey Forbidden shortcut).
 - Findings: Low, the long-life page still repeats the Proposed/Blocked fallback disclaimer in three places because each is a local counterexample; destination group register (custodian).
+
+## Reconstruction pass (R2)
+
+- Why: the first pass was annotative and left the shared-play disclaimer repeated at the top, mechanical "Provider shape (illustrative)" labels and duplicate paragraphs.
+- Page commit: 47147a5a4 (`docs/product/gameplay/acceptance-scenarios.md`).
+- T01 Algorithm now executed: opening rewritten into a route plus Status, one shared-play statement (goblin-deadline and long-life repeats removed; local counterexamples kept in sections 3 and 5), one statement that model-work notes are illustrative reading aids; section 1-6 provider labels turned into prose; section 1 duplicate first-playable and aspiration sentences merged; obligation list split into three short paragraphs with duplicate links removed. All five narratives, harbor rows, GM07 scope paragraph, headings and anchors untouched.
+- T02: `long-life-benchmark-playthroughs.md` spot-checked (cuirass, captain, wages, Expected outcome and Forbidden shortcut blocks present); no edit needed.
+- Survival check: every fact in the inventory (old page copy) survives; removed text was duplicate (goblin deadline sentence survives in section 3, shared-play status in the opening).
+- Checks: `git diff --check` clean; check_docs 96 problems = baseline; docs-health no new violations.
+- Semantics: harbor duplicate credits/auto-resume rejected (Harbor table, tick 25 and H4); wizard timeout cannot invent consent (section 5); preview not mandatory (section 1); scene 137 fork cannot see 138 (Fork during an unfinished journey).
+- Deferred Low: sections 2-6 remain long; none blocking.
