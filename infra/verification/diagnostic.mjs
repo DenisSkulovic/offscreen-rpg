@@ -163,7 +163,10 @@ export function evaluateObservabilityDiagnosticResult(
     };
   }
   const allowAbsent = profile === 'release' && !explicitObservability;
-  const mapped = evaluateObservationReceipt(result, { allowAbsent });
+  const mapped = evaluateObservationReceipt(result, {
+    allowAbsent,
+    expectedProfile: profile,
+  });
   return {
     status: mapped.status,
     reason: diagnosticExcerpt(mapped.reason),

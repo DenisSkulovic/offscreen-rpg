@@ -8,7 +8,7 @@
 
 ## Developer observability | current sprint (2026-11-27)
 
-The eleven owner-released offline Changes are the [observability-developer group](observability-developer/README.md). That index owns the dependency graph and execution status. Independent readiness and changed-authority review remain outstanding. No real cluster or paid operations, constituent main merge, or live certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
+The owner-released offline Changes are the [observability-developer group](observability-developer/README.md). That index owns the dependency graph and execution status. Independent readiness and changed-authority review remain outstanding. No real cluster or paid operations, constituent main merge, or live certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 
 [RABBITMQ-NATIVE](2026-11-26--rabbitmq-native/CHANGE.md): owner-accepted R10, source-only commission; live acceptance and join held.

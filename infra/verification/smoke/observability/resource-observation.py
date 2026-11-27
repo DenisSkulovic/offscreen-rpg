@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 import pathlib
 import statistics
 import subprocess
@@ -16,7 +15,7 @@ EXPECTED_ROLES = frozenset(
     {"obs-collector", "obs-prometheus", "obs-loki", "obs-tempo", "obs-grafana"}
 )
 SAMPLE_COUNT = 12
-SAMPLE_INTERVAL_S = float(os.environ.get("RESOURCE_SAMPLE_INTERVAL_S", "10"))
+SAMPLE_INTERVAL_S = 10.0
 
 
 def kub(kubeconfig: str, ctx: str, *args: str, timeout: int = 25) -> object:
@@ -91,14 +90,15 @@ def cycle_sample_from_nodes(
             "--raw",
             f"/api/v1/nodes/{node}/proxy/stats/summary",
         )
-        (out / f"summary-{node}-{index:02}.json").write_text(json.dumps(summary))
         for pod in summary.get("pods", []):
             ref = pod["podRef"]
             if ref.get("namespace") != NS:
                 continue
             role = uid_to_role.get(ref.get("uid"))
-            if role is None or role in cycle:
+            if role is None:
                 continue
+            if role in cycle:
+                raise RuntimeError("duplicate platform pod sample: " + role)
             container_name = inventory_map[role]["container"]
             container = next(
                 (c for c in pod.get("containers", []) if c["name"] == container_name),
@@ -122,25 +122,42 @@ def main(argv: list[str] | None = None) -> int:
     out = pathlib.Path(argv[1])
     out.mkdir(parents=True, exist_ok=True)
     kubeconfig, ctx, prom_port = argv[2], argv[3], argv[4]
-    nodes = argv[5:] if len(argv) > 5 else []
-    if not nodes:
-        nodes = (
-            kub(kubeconfig, ctx, "get", "nodes", "-o", "jsonpath={.items[*].metadata.name}")
-            .strip()
-            .split()
-        )
+    if prom_port in ("", "0"):
+        raise RuntimeError("prometheus port is required")
+    if len(argv) != 9:
+        raise RuntimeError("expected exactly two admitted nodes")
+    nodes = [argv[5], argv[7]]
+    node_uids = {argv[5]: argv[6], argv[7]: argv[8]}
+    if len(set(nodes)) != 2 or len(set(node_uids.values())) != 2:
+        raise RuntimeError("admitted node set is not exact")
 
     before = inventory(kubeconfig, ctx)
     (out / "inventory-before.json").write_text(json.dumps(before, indent=2))
     samples: dict[str, list[dict]] = {role: [] for role in before}
 
+    started = time.monotonic()
+    previous = started
     for index in range(SAMPLE_COUNT):
+        now = time.monotonic()
+        if index > 0 and now - previous < SAMPLE_INTERVAL_S:
+            raise RuntimeError("sample cadence collapsed")
+        previous = now
         cycle = cycle_sample_from_nodes(kubeconfig, ctx, nodes, before, index, out)
         for role in before:
             assert role in cycle, "missing platform pod sample: " + role
-            samples[role].append(cycle[role])
+            point = cycle[role]
+            if before[role]["node"] not in node_uids:
+                raise RuntimeError("sample arrived from a foreign node")
+            samples[role].append(
+                {
+                    "workingSetBytes": point["workingSetBytes"],
+                    "memoryTime": point["memoryTime"],
+                    "cpuNanoCores": point["cpuNanoCores"],
+                    "cpuTime": point["cpuTime"],
+                }
+            )
         print(f"Sample {index + 1} / {SAMPLE_COUNT}", flush=True)
-        if index < SAMPLE_COUNT - 1 and SAMPLE_INTERVAL_S > 0:
+        if index < SAMPLE_COUNT - 1:
             time.sleep(SAMPLE_INTERVAL_S)
 
     after = inventory(kubeconfig, ctx)
@@ -179,69 +196,64 @@ def main(argv: list[str] | None = None) -> int:
         with opener.open(url, timeout=15) as response:
             return json.load(response)
 
-    if prom_port and prom_port != "0":
-        targets = api("/api/v1/targets", {"state": "active"})
-        (out / "targets.json").write_text(json.dumps(targets))
-        assert targets["status"] == "success"
-        selected = [
-            target
-            for target in targets["data"]["activeTargets"]
-            if target["scrapeUrl"] == "http://obs-collector:8888/metrics"
-        ]
-        assert len(selected) == 1, "expected exactly one Collector scrape target"
-        target = selected[0]
-        assert target["health"] == "up"
-        names = api("/api/v1/label/__name__/values", {"match[]": '{__name__=~"otelcol_.*"}'})
-        (out / "collector-metric-names.json").write_text(json.dumps(names))
-        assert names["status"] == "success" and names["data"]
-        interesting = [
-            name
-            for name in names["data"]
-            if any(
-                token in name
-                for token in (
-                    "accepted",
-                    "refused",
-                    "sent",
-                    "failed",
-                    "queue",
-                    "enqueue",
-                    "memory",
-                    "uptime",
-                )
-            )
-        ]
-        missing = [
-            token
-            for token in (
-                "accepted",
-                "refused",
-                "sent",
-                "failed",
-                "queue",
-                "enqueue",
-                "memory",
-                "uptime",
-            )
-            if not any(token in name for name in interesting)
-        ]
-        (out / "collector-missing-families.json").write_text(
-            json.dumps({"notObserved": missing})
-        )
-        if interesting:
-            query = (
-                '{__name__=~"'
-                + "|".join(interesting)
-                + '",job="'
-                + target["labels"]["job"]
-                + '",instance="'
-                + target["labels"]["instance"]
-                + '"}'
-            )
-            metrics = api("/api/v1/query", {"query": query})
-            (out / "collector-metrics.json").write_text(json.dumps(metrics))
-            assert metrics["status"] == "success" and metrics["data"]["result"]
-
+    elapsed_ms = int((time.monotonic() - started) * 1000)
+    targets = api("/api/v1/targets", {"state": "active"})
+    selected = [
+        target
+        for target in targets["data"]["activeTargets"]
+        if target["scrapeUrl"] == "http://obs-collector:8888/metrics"
+    ]
+    assert targets["status"] == "success"
+    assert len(selected) == 1, "expected exactly one Collector scrape target"
+    target = selected[0]
+    assert target["health"] == "up"
+    names = api("/api/v1/label/__name__/values", {"match[]": '{__name__=~"otelcol_.*"}'})
+    assert names["status"] == "success" and names["data"]
+    family_tokens = (
+        "accepted",
+        "refused",
+        "sent",
+        "failed",
+        "queue",
+        "enqueue",
+        "memory",
+        "uptime",
+    )
+    interesting = [
+        name
+        for name in names["data"]
+        if any(token in name for token in family_tokens)
+    ]
+    missing = [
+        token
+        for token in family_tokens
+        if not any(token in name for name in interesting)
+    ]
+    observed_families = sorted({token for token in family_tokens if token not in missing})
+    if not interesting:
+        raise RuntimeError("collector self-metrics were not observed")
+    query = (
+        '{__name__=~"'
+        + "|".join(interesting)
+        + '",job="'
+        + target["labels"]["job"]
+        + '",instance="'
+        + target["labels"]["instance"]
+        + '"}'
+    )
+    metrics = api("/api/v1/query", {"query": query})
+    assert metrics["status"] == "success" and metrics["data"]["result"]
+    result = {
+        "schema": 1,
+        "ok": True,
+        "roles": sorted(before),
+        "sampleCount": SAMPLE_COUNT,
+        "elapsedMs": elapsed_ms,
+        "collectorTargetUp": True,
+        "observedFamilies": observed_families,
+        "missingFamilies": missing,
+    }
+    (out / "result.json").write_text(json.dumps(result, indent=2))
     print("OBSERVABILITY RESOURCE OBSERVATION COMPLETE (not a capacity verdict)")
     return 0
 

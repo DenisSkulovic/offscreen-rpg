@@ -19,7 +19,23 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath, URL } from 'node:url';
 import test from 'node:test';
 
-import { ownedChildEnv, startOwnedChild } from '../forward.mjs';
+import { createServer } from 'node:net';
+
+import {
+  formatConnectFailure,
+  parseConnectArgs,
+  runObservabilityConnect,
+  superviseObservabilityConnect,
+} from '../connect.mjs';
+import { PREFLIGHT_BUDGET_MS } from '../identity.mjs';
+import {
+  FORWARD_ALLOWLIST,
+  ownedChildEnv,
+  openForwards,
+  probeForwardTransport,
+  readGrafanaAdmin,
+  startOwnedChild,
+} from '../forward.mjs';
 
 const WRAPPER = fileURLToPath(new URL('../exec-owned.py', import.meta.url));
 
@@ -290,4 +306,510 @@ test('inherited descriptor keeps the lock until the owned child closes', async (
   });
   assert.equal(freeStatus, 0);
   rmSync(root, { recursive: true, force: true });
+});
+
+const identity = {
+  snapshotPath: '/tmp/kubeconfig',
+  tuple: { contextName: 'dev', targetNamespace: 'offscreen-dev-observability' },
+};
+
+function fakeChild(lines, { exit = { ok: true, closeUnconfirmed: false } } = {}) {
+  const listeners = [];
+  let resolveClosed;
+  const closed = new Promise((resolve) => {
+    resolveClosed = resolve;
+  });
+  return {
+    pid: 1,
+    closed,
+    outcome: Promise.resolve(exit),
+    stop() {
+      resolveClosed(exit);
+      return Promise.resolve(exit);
+    },
+    onOutput(listener) {
+      listeners.push(listener);
+    },
+    emit() {
+      for (const line of lines) {
+        for (const listener of listeners) {
+          listener(`${line}\n`);
+        }
+      }
+    },
+  };
+}
+
+test('openForwards accepts the fixed loopback lines and refuses a foreign port', async () => {
+  assert.equal(FORWARD_ALLOWLIST.grafana.remote, 80);
+  assert.equal(FORWARD_ALLOWLIST.grafana.targetPort, 3000);
+  const occupied = createServer();
+  await new Promise((resolve) => occupied.listen(14318, '127.0.0.1', resolve));
+  await assert.rejects(
+    () =>
+      openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+        bindings: [{ key: 'developerHttp' }],
+        deadline: performance.now() + 1000,
+        now: () => performance.now(),
+        startChild() {
+          throw new Error('kubectl must not start when the port is taken');
+        },
+      }),
+    /not free/,
+  );
+  occupied.close();
+
+  const child = fakeChild(['Forwarding from 127.0.0.1:14318 -> 4328']);
+  const opened = openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 1000,
+    now: () => performance.now(),
+    startChild() {
+      queueMicrotask(() => child.emit());
+      return child;
+    },
+  });
+  const session = await opened;
+  assert.equal(session.ports.developerHttp, 14318);
+  const closed = await session.close();
+  assert.equal(closed.ok, true);
+});
+
+test('openForwards keeps kubectl connection notices and fails closed afterwards', async () => {
+  const script = [
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    "process.stdout.write('Handling connection for 14318\\n'.repeat(40000));",
+    "process.stdout.write('Handling connection for 14318\\n');",
+    'setInterval(() => {}, 1000);',
+  ].join('');
+  const opened = openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 5_000,
+    now: () => performance.now(),
+    startChild() {
+      return startOwnedChild(process.execPath, ['-e', script], {
+        foreground: true,
+        fds: [],
+        deadline: null,
+      });
+    },
+  });
+  const session = await opened;
+  assert.equal(session.ports.developerHttp, 14318);
+  let reason = null;
+  session.failure.then((value) => {
+    reason = value;
+  });
+  await delay(100);
+  assert.equal(reason, null);
+  const closed = await session.close();
+  assert.equal(closed.ok, true);
+
+  const wrong = [
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    "process.stdout.write('Handling connection for 14318\\n');",
+    "process.stdout.write('Handling connection for 14318\\n');",
+    "process.stdout.write('Handling connection for 9\\n');",
+    'setInterval(() => {}, 1000);',
+  ].join('');
+  const wrongSession = await openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 5_000,
+    now: () => performance.now(),
+    startChild() {
+      return startOwnedChild(process.execPath, ['-e', wrong], {
+        foreground: true,
+        fds: [],
+        deadline: null,
+      });
+    },
+  });
+  assert.equal(await wrongSession.failure, 'local-port');
+  assert.equal(wrongSession.detail.endpoint, 'developerHttp');
+  await wrongSession.close();
+
+  const exited = [
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    "process.stdout.write('Handling connection for 14318\\n');",
+    'process.exit(0);',
+  ].join('');
+  const exitSession = await openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 5_000,
+    now: () => performance.now(),
+    startChild() {
+      return startOwnedChild(process.execPath, ['-e', exited], {
+        foreground: true,
+        fds: [],
+        deadline: null,
+      });
+    },
+  });
+  assert.equal(await exitSession.failure, 'child-exit');
+  const exitClosed = await exitSession.close();
+  assert.equal(exitClosed.ok, true);
+
+  const unexpected = [
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    'setInterval(() => {}, 1000);',
+  ].join('');
+  const announced = await openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 5_000,
+    now: () => performance.now(),
+    startChild() {
+      return startOwnedChild(process.execPath, ['-e', unexpected], {
+        foreground: true,
+        fds: [],
+        deadline: null,
+      });
+    },
+  });
+  assert.equal(await announced.failure, 'unexpected-announcement');
+  await announced.close();
+
+  const rejections = [];
+  const onRejection = (error) => rejections.push(error);
+  process.on('unhandledRejection', onRejection);
+  const quiet = fakeChild(['Forwarding from 127.0.0.1:14318 -> 4328']);
+  const timed = await openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 30,
+    now: () => performance.now(),
+    startChild() {
+      queueMicrotask(() => quiet.emit());
+      return quiet;
+    },
+  });
+  await timed.close();
+  await delay(60);
+  process.off('unhandledRejection', onRejection);
+  assert.equal(rejections.length, 0);
+});
+
+test('openForwards rejects a bad line, a second exit and a diagnostic bind without a proof lock', async () => {
+  const bad = fakeChild(['Forwarding from 0.0.0.0:14318 -> 4328']);
+  await assert.rejects(
+    () =>
+      openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+        bindings: [{ key: 'developerHttp' }],
+        deadline: performance.now() + 1000,
+        now: () => performance.now(),
+        startChild() {
+          queueMicrotask(() => bad.emit());
+          return bad;
+        },
+      }),
+    /invalid/,
+  );
+  await assert.rejects(
+    () =>
+      openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+        bindings: [{ key: 'diagnosticHttp', localPort: 0 }],
+        startChild() {
+          throw new Error('must not spawn');
+        },
+      }),
+    /proof lock/,
+  );
+});
+
+test('probeForwardTransport checks loopback HTTP and refuses a failed Grafana health', async () => {
+  const ok = await probeForwardTransport(
+    { developerHttp: 9 },
+    {
+      fetch: async () => ({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => Buffer.from('{}'),
+      }),
+      connect: async () => {},
+    },
+  );
+  assert.equal(ok.ok, true);
+  const grafana = await probeForwardTransport(
+    { grafana: 9 },
+    {
+      grafanaAuth: { user: 'admin', password: 'secret' },
+      fetch: async () => ({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => Buffer.from('{"database":"failing"}'),
+      }),
+    },
+  );
+  assert.equal(grafana.reasonCode, 'grafana');
+});
+
+test('connect failures name the condition and omit credentials', async () => {
+  assert.equal(formatConnectFailure({ reasonCode: 'identity' }), 'refused: identity');
+  assert.equal(
+    formatConnectFailure({ reasonCode: 'pending', endpoint: 'grafana' }),
+    'refused: grafana pending',
+  );
+  assert.equal(
+    formatConnectFailure({ reasonCode: 'cleanup', endpoint: 'developerHttp' }),
+    'refused: developerHttp cleanup',
+  );
+  assert.equal(
+    formatConnectFailure({
+      reasonCode: 'secret-value /tmp/kubeconfig token',
+      endpoint: '../snapshot',
+    }),
+    'refused: connect',
+  );
+  const lines = [];
+  const write = process.stderr.write;
+  process.stderr.write = (chunk, encoding, callback) => {
+    lines.push(String(chunk));
+    if (typeof encoding === 'function') {
+      encoding();
+    } else if (typeof callback === 'function') {
+      callback();
+    }
+    return true;
+  };
+  try {
+    const code = await superviseObservabilityConnect(
+      {
+        ok: true,
+        failure: Promise.resolve('child-exit'),
+        failureReason: { reason: 'child-exit', endpoint: 'loki' },
+        cleanup: async () => ({ ok: true }),
+        held: { close() {} },
+        identity: { cleanup() { return { ok: true }; } },
+        profileContext: 'dev',
+      },
+      {
+        intervalMs: 60_000,
+        readPending: () => ({ pending: false, valid: true }),
+        recheckIdentity: () => ({ ok: true }),
+      },
+    );
+    assert.equal(code, 1);
+    assert.equal(lines.join(''), 'refused: loki child-exit\n');
+  } finally {
+    process.stderr.write = write;
+  }
+});
+
+test('connect accepts only empty argv or --queries and refuses a predecessor', async () => {
+  assert.deepEqual(parseConnectArgs([]), { queries: false });
+  assert.deepEqual(parseConnectArgs(['--queries']), { queries: true });
+  assert.throws(() => parseConnectArgs(['--queries', '--queries']), /invalid/);
+  const refused = await runObservabilityConnect({
+    argv: [],
+    readPlatformProfile: () => ({ contextName: 'dev' }),
+    acquireCustody: async () => ({ fd: 3, close() {} }),
+    captureIdentity: () => identity,
+    loadObservabilityVariants: () => ({ desired: {}, predecessor: {} }),
+    collectInventory: async () => ({ pending: false }),
+    classifyInventory: () => ({ state: 'not-ready', reasonCode: 'upgrade-required', pending: false }),
+  });
+  assert.equal(refused.reasonCode, 'upgrade-required');
+  assert.equal(refused.exitCode, 1);
+});
+
+test('grafana credentials stay in memory and tcp uses loopback', async () => {
+  const encoded = Buffer.from('secret-value').toString('base64');
+  const secret = {
+    kind: 'Secret',
+    type: 'Opaque',
+    metadata: { name: 'obs-grafana-admin', uid: 'uid-grafana' },
+    data: {
+      'admin-user': Buffer.from('admin').toString('base64'),
+      'admin-password': encoded,
+    },
+  };
+  let leaked = '';
+  const write = process.stdout.write;
+  process.stdout.write = (chunk, encoding, callback) => {
+    leaked += String(chunk);
+    return write.call(process.stdout, chunk, encoding, callback);
+  };
+  try {
+    const auth = await readGrafanaAdmin(
+      { snapshotPath: '/tmp/kubeconfig', contextName: 'dev', namespace: 'obs' },
+      'uid-grafana',
+      { run: async () => ({ ok: true, stdout: JSON.stringify(secret) }) },
+    );
+    assert.equal(auth.password, 'secret-value');
+    assert.equal(leaked.includes('secret-value'), false);
+    await assert.rejects(
+      () =>
+        readGrafanaAdmin(
+          { snapshotPath: '/tmp/kubeconfig', contextName: 'dev', namespace: 'obs' },
+          'other-uid',
+          { run: async () => ({ ok: true, stdout: JSON.stringify(secret) }) },
+        ),
+      /does not match/,
+    );
+  } finally {
+    process.stdout.write = write;
+  }
+
+  const server = createServer();
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const port = server.address().port;
+  const transport = await probeForwardTransport({ developerGrpc: port });
+  server.close();
+  assert.equal(transport.ok, true);
+});
+
+test('connect supervision stops on a premature child and on SIGINT', async () => {
+  let cleaned = false;
+  const failed = await superviseObservabilityConnect(
+    {
+      ok: true,
+      failure: Promise.resolve('child-exit'),
+      cleanup: async () => {
+        cleaned = true;
+        return { ok: true };
+      },
+      held: { close() {} },
+      identity,
+      profileContext: 'dev',
+    },
+    {
+      intervalMs: 60_000,
+      readPending: () => ({ pending: false, valid: true }),
+      recheckIdentity: () => ({ ok: true }),
+    },
+  );
+  assert.equal(failed, 1);
+  assert.equal(cleaned, true);
+
+  const controller = new AbortController();
+  controller.abort();
+  const interrupted = await superviseObservabilityConnect(
+    {
+      ok: true,
+      failure: new Promise(() => {}),
+      cleanup: async () => ({ ok: true }),
+      held: { async close() {} },
+      identity,
+      profileContext: 'dev',
+    },
+    {
+      signal: controller.signal,
+      stopReason: 'SIGINT',
+      intervalMs: 60_000,
+      readPending: () => ({ pending: false, valid: true }),
+      recheckIdentity: () => ({ ok: true }),
+    },
+  );
+  assert.equal(interrupted, 0);
+
+  let bindings = null;
+  const connected = await runObservabilityConnect({
+    argv: [],
+    readPlatformProfile: () => ({ contextName: 'dev' }),
+    acquireCustody: async () => ({ fd: 3, mode: 'shared', close() {} }),
+    captureIdentity: () => identity,
+    recheckIdentity: () => ({ ok: true }),
+    loadObservabilityVariants: () => ({ desired: { releases: [] }, predecessor: null }),
+    collectInventory: async () => ({
+      pending: false,
+      objects: { 'Secret/obs-grafana-admin': { metadata: { uid: 'uid-grafana' } } },
+    }),
+    classifyInventory: () => ({ state: 'ready', reasonCode: 'ready', pending: false }),
+    openForwards: async (_identity, _held, options) => {
+      bindings = options.bindings;
+      return {
+        ports: { developerHttp: 14318, developerGrpc: 14317, grafana: 13000 },
+        failure: new Promise(() => {}),
+        close: async () => ({ ok: true }),
+      };
+    },
+    readGrafanaAdmin: async (_identity, uid) => {
+      assert.equal(uid, 'uid-grafana');
+      return { user: 'admin', password: 'secret-value' };
+    },
+    probeForwardTransport: async (ports, options) => {
+      assert.equal(ports.grafana, 13000);
+      assert.equal(options.grafanaAuth.password, 'secret-value');
+      return { ok: true, reasonCode: 'transport' };
+    },
+  });
+  assert.equal(connected.ok, true);
+  assert.deepEqual(
+    bindings.map((row) => row.key),
+    ['developerHttp', 'developerGrpc', 'grafana'],
+  );
+});
+
+test('session recheck calls now and credential failure releases children', async () => {
+  let deadline = null;
+  const checked = await superviseObservabilityConnect(
+    {
+      ok: true,
+      failure: new Promise(() => {}),
+      cleanup: async () => ({ ok: true }),
+      held: { close() {} },
+      identity,
+      profileContext: 'dev',
+    },
+    {
+      intervalMs: 1,
+      now: () => 5_000,
+      readPending: () => ({ pending: false, valid: true }),
+      recheckIdentity: (_identity, deps) => {
+        deadline = deps.deadline;
+        return { ok: false };
+      },
+    },
+  );
+  assert.equal(checked, 1);
+  assert.equal(deadline, 5_000 + PREFLIGHT_BUDGET_MS);
+
+  let closed = false;
+  let cleaned = false;
+  let heldClosed = false;
+  const order = [];
+  const failed = await runObservabilityConnect({
+    argv: [],
+    readPlatformProfile: () => ({ contextName: 'dev' }),
+    acquireCustody: async () => ({
+      fd: 3,
+      mode: 'shared',
+      close() {
+        heldClosed = true;
+        order.push('custody');
+      },
+    }),
+    captureIdentity: () => ({
+      ...identity,
+      cleanup() {
+        cleaned = true;
+        order.push('snapshot');
+        return { ok: true };
+      },
+    }),
+    recheckIdentity: () => ({ ok: true }),
+    loadObservabilityVariants: () => ({ desired: { releases: [] }, predecessor: null }),
+    collectInventory: async () => ({
+      pending: false,
+      objects: { 'Secret/obs-grafana-admin': { metadata: { uid: 'uid-grafana' } } },
+    }),
+    classifyInventory: () => ({ state: 'ready', reasonCode: 'ready', pending: false }),
+    openForwards: async () => ({
+      ports: { developerHttp: 1, developerGrpc: 2, grafana: 3 },
+      failure: new Promise(() => {}),
+      close: async () => {
+        closed = true;
+        order.push('children');
+        return { ok: true };
+      },
+    }),
+    readGrafanaAdmin: async () => {
+      throw Object.assign(new Error('credential'), { reasonCode: 'credential' });
+    },
+  });
+  assert.equal(failed.ok, false);
+  assert.equal(failed.reasonCode, 'credential');
+  assert.equal(closed, true);
+  assert.equal(cleaned, true);
+  assert.equal(heldClosed, true);
+  assert.deepEqual(order, ['children', 'snapshot', 'custody']);
 });

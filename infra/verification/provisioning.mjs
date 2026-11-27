@@ -11,11 +11,13 @@ import {
   diagnosticExcerpt,
 } from './diagnostic-engine.mjs';
 import { OBSERVABILITY_SUPERVISOR_MS } from './diagnostic-live.mjs';
+import { OBSERVABILITY_ENSURE_SUPERVISOR_MS } from '../platform/observability/identity.mjs';
 import { evaluateObservationReceipt } from '../platform/observability/receipt.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const RABBITMQ_PROVISIONING_GROUP_MS = 1_050_000;
-export const OBSERVABILITY_PROVISIONING_ENSURE_MS = 1_800_000;
+export const OBSERVABILITY_PROVISIONING_ENSURE_MS =
+  OBSERVABILITY_ENSURE_SUPERVISOR_MS;
 const DEFAULT_ENSURE_MS = 900_000;
 
 const baseServices = {
@@ -23,7 +25,7 @@ const baseServices = {
   release: ['postgres', 'object-storage', 'temporal', 'gateway', 'redis'],
 };
 
-function observeOutcome(result, { observability = false } = {}) {
+function observeOutcome(result, { observability = false, profile } = {}) {
   if (result.reason === 'timeout') {
     return {
       status: 'FAIL',
@@ -36,7 +38,10 @@ function observeOutcome(result, { observability = false } = {}) {
     return outcome;
   }
   if (observability) {
-    const mapped = evaluateObservationReceipt(result, { allowAbsent: false });
+    const mapped = evaluateObservationReceipt(result, {
+      allowAbsent: false,
+      expectedProfile: profile,
+    });
     return mapped.status === 'PASS'
       ? { status: 'PASS' }
       : {
@@ -283,6 +288,7 @@ export function buildProvisioningChecks(
         });
         return observeOutcome(output, {
           observability: service === 'observability',
+          profile,
         });
       },
     });
