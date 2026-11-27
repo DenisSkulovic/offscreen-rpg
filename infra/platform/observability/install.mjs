@@ -594,6 +594,23 @@ export async function runObservabilityEnsure(
       if (!verify.ok) {
         throw new Error(`phase-verify-${verify.detail ?? 'failed'}`);
       }
+      if (phaseId === 'namespace') {
+        const uid = after.namespace?.uid;
+        if (identity.tuple.targetNamespaceUid !== null ||
+            typeof uid !== 'string' || uid.length === 0 ||
+            after.namespace?.object?.metadata?.name !== identity.namespace) {
+          throw new Error('identity-changed');
+        }
+        const bound = { ...identity, tuple: { ...identity.tuple, targetNamespaceUid: uid } };
+        const check = (deps.recheckIdentity ?? recheckIdentity)(bound, {
+          run, now, deadline: workerDeadline, expectedNamespaceUid: uid,
+        });
+        if (!check.ok) throw new Error('identity-changed');
+        identity = bound;
+        custody.advance({ phase: phaseId, tuple: identity.tuple });
+      } else if (after.namespace?.uid !== identity.tuple.targetNamespaceUid) {
+        throw new Error('identity-changed');
+      }
       return after;
     };
 
@@ -617,7 +634,7 @@ export async function runObservabilityEnsure(
             identity.snapshotPath,
             '--context',
             identity.contextName,
-            'apply',
+            'create',
             '-f',
             manifestPath,
           ]);
@@ -643,7 +660,7 @@ export async function runObservabilityEnsure(
             identity.snapshotPath,
             '--context',
             identity.contextName,
-            'apply',
+            'create',
             '-f',
             manifestPath,
           ]);
