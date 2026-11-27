@@ -1,6 +1,6 @@
 # Developer observability
 
-**Status:** Accepted architecture (R5, independent defense pass 02); implementation pending. The Change packet is not commissioned.
+**Status:** Accepted architecture (R5, independent defense pass 02); implementation pending. The oversized Change fails submission admission and remains uncommissioned. [Recovery roadmap](IMPLEMENTATION-PLAN.md) owns the replacement sequence and first-dispatch priority; it does not amend accepted architecture or grant commission.
 
 ## Objective
 
@@ -14,6 +14,10 @@ Make the existing optional development observability stack useful for local appl
 - Repair functional signal, datasource and resource proofs and retain all outstanding native infrastructure acceptance obligations.
 
 No actual application instrumentation, public exposure, generic upgrade engine, release changes, paid calls or destructive operations are authorized.
+
+## Recovery
+
+Follow the [implementation recovery roadmap](IMPLEMENTATION-PLAN.md): write coherent replacements, reconcile all obligations, retire the monolithic packet, and prioritize the first independently reviewable Change. The existing certification boundary remains binding until its proposed staged replacement is reviewed and accepted.
 
 ## Specification
 
