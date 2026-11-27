@@ -1,13 +1,12 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import {
-  chmodSync,
-  closeSync,
-  constants,
   existsSync,
+  fstatSync,
   mkdirSync,
   mkdtempSync,
-  openSync,
+  readFileSync,
+  renameSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -24,6 +23,7 @@ import { readKindProfile } from '../../../clusters/kind/manager/config.mjs';
 import { readPlatformProfile } from '../../common/profile.mjs';
 import {
   acquireCustody,
+  acquireProofCustody,
   custodyPaths,
   readPending,
   resolveProductionStateRoot,
@@ -50,18 +50,39 @@ function flockContender(lockPath, options = {}) {
   return spawnSync('flock', args, { encoding: 'utf8' });
 }
 
-/** @param {string} directory @param {string} name @param {string} body */
-function makeStubCommand(directory, name, body) {
-  const command = join(directory, name);
-  writeFileSync(command, `#!/usr/bin/env bash\n${body}\n`, { mode: 0o700 });
-  return command;
-}
-
 /** @param {string} stateRoot */
 function prepareState(stateRoot, contextName = devKind.contextName) {
   const paths = custodyPaths(stateRoot, contextName);
   mkdirSync(paths.lockDirectory, { recursive: true, mode: 0o700 });
   return paths;
+}
+
+/**
+ * @param {string} [phase]
+ * @param {string | null} [targetNamespaceUid]
+ */
+function ensureRequest(phase = 'namespace', targetNamespaceUid = null) {
+  return {
+    phase,
+    operation: 'ensure',
+    details: {},
+    tuple: {
+      profileId: 'dev',
+      contextName: devKind.contextName,
+      clusterName: devKind.clusterName,
+      port: 24443,
+      dockerContext: 'default',
+      dockerControlPlaneId: '0123456789abcdef',
+      dockerEndpointHost: 'unix:///var/run/docker.sock',
+      caSha256: 'ab'.repeat(32),
+      kubeSystemUid: 'kube-system-uid',
+      baselineUid: 'baseline-uid',
+      targetNamespaceUid:
+        phase === 'namespace'
+          ? targetNamespaceUid
+          : (targetNamespaceUid ?? 'namespace-uid'),
+    },
+  };
 }
 
 test('readPending missing file is absent and valid without creating paths', () => {
@@ -121,7 +142,7 @@ test('concurrent holders contend on the same context lock', async () => {
   });
   const blocked = flockContender(paths.lockPath);
   assert.equal(blocked.status, 1);
-  first.begin({ phase: 'namespace', tuple: { port: 24443 } });
+  first.begin(ensureRequest());
   first.close();
   const after = flockContender(paths.lockPath);
   assert.equal(after.status, 0);
@@ -183,20 +204,14 @@ test('runMutation TERM then KILL for ignore-TERM child and keeps pending', async
     stateRoot,
     lockWaitSec: 5,
   });
-  custody.begin({ phase: 'namespace', tuple: { port: 24443 } });
-  const now = (() => {
-    let clock = 0;
-    return () => {
-      clock += 40;
-      return clock;
-    };
-  })();
+  custody.begin(ensureRequest());
+  const started = performance.now();
   const result = await runMutation(process.execPath, [slowPath], {
     custody,
-    now,
-    deadline: 10_000,
-    timeoutMs: 80,
-    killGraceMs: 120,
+    now: () => performance.now(),
+    deadline: started + 5_000,
+    timeoutMs: 1_000,
+    killGraceMs: 300,
   });
   assert.equal(result.ok, false);
   assert.equal(result.timedOut, true);
@@ -214,7 +229,7 @@ test('cancellation latch prevents any later spawn', async () => {
     stateRoot,
     lockWaitSec: 5,
   });
-  custody.begin({ phase: 'secret', tuple: { port: 24443 } });
+  custody.begin(ensureRequest('secret'));
   custody.cancel();
   const result = await runMutation(process.execPath, ['-e', '0'], {
     custody,
@@ -232,7 +247,7 @@ test('close alone retains pending and blocks later acquisition', async () => {
     stateRoot,
     lockWaitSec: 5,
   });
-  retained.begin({ phase: 'obs-prometheus', tuple: { port: 24443 } });
+  retained.begin(ensureRequest('obs-prometheus'));
   retained.close();
   assert.equal(existsSync(paths.pendingPath), true);
   await assert.rejects(
@@ -249,7 +264,7 @@ test('held custody clear removes durable pending', async () => {
     stateRoot,
     lockWaitSec: 5,
   });
-  custody.begin({ phase: 'namespace', tuple: { port: 24443 } });
+  custody.begin(ensureRequest());
   custody.clear();
   assert.equal(existsSync(paths.pendingPath), false);
   custody.close();
@@ -281,4 +296,196 @@ test('release profile uses the same service-specific lock basename', () => {
   const paths = custodyPaths(stateRoot, release.contextName);
   assert.match(paths.lockPath, /-observability\.lock$/);
   rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('unknown schema and replaced records stay fences', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-fence-'));
+  const paths = prepareState(stateRoot);
+  writeFileSync(paths.pendingPath, '{"schema":9}\n', { mode: 0o600 });
+  assert.deepEqual(readPending(devKind.contextName, { stateRoot }), {
+    pending: true,
+    valid: false,
+  });
+  await assert.rejects(
+    () => acquireCustody(devKind.contextName, { stateRoot, lockWaitSec: 1 }),
+    /invalid receipt/,
+  );
+  rmSync(paths.pendingPath);
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  custody.begin(ensureRequest());
+  writeFileSync(paths.pendingPath, '{', { mode: 0o600 });
+  assert.throws(() => custody.assertOwnPending(), /changed/);
+  assert.equal(existsSync(paths.pendingPath), true);
+  assert.throws(() => custody.clear(), /authority failed|changed/);
+  assert.equal(existsSync(paths.lockPath), true);
+  custody.close();
+  rmSync(paths.pendingPath);
+  const replaced = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  replaced.begin(ensureRequest());
+  const body = readFileSync(paths.pendingPath);
+  const copy = `${paths.pendingPath}.copy`;
+  writeFileSync(copy, body, { mode: 0o600 });
+  renameSync(copy, paths.pendingPath);
+  assert.throws(() => replaced.assertOwnPending(), /changed/);
+  assert.equal(existsSync(paths.pendingPath), true);
+  replaced.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('shared custody has no mutation methods and proof lock is separate', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-shared-'));
+  prepareState(stateRoot);
+  const shared = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    mode: 'shared',
+    lockWaitSec: 5,
+  });
+  const second = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    mode: 'shared',
+    lockWaitSec: 5,
+  });
+  assert.equal(shared.mode, 'shared');
+  assert.equal('begin' in shared, false);
+  assert.equal('clear' in shared, false);
+  const proof = await acquireProofCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  assert.equal(proof.mode, 'proof');
+  assert.equal('begin' in proof, false);
+  assert.match(String(proof.fd), /^[0-9]+$/);
+  await assert.rejects(
+    () =>
+      runMutation(process.execPath, ['-e', 'process.exit(0)'], {
+        custody: shared,
+        timeoutMs: 1_000,
+      }),
+    /exclusive/,
+  );
+  proof.close();
+  second.close();
+  shared.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('compare advance binds namespace once and cancellation refuses clear', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-advance-'));
+  const paths = prepareState(stateRoot);
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+    fault: 'rename',
+  });
+  custody.begin(ensureRequest());
+  assert.throws(
+    () => custody.advance(ensureRequest('namespace', 'bound-uid')),
+    /rename failed/,
+  );
+  assert.equal(existsSync(paths.pendingPath), true);
+  custody.close();
+  await assert.rejects(
+    () => acquireCustody(devKind.contextName, { stateRoot, lockWaitSec: 1 }),
+    /pending/,
+  );
+  rmSync(paths.pendingPath);
+  const next = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  next.begin(ensureRequest());
+  next.advance(ensureRequest('namespace', 'bound-uid'));
+  assert.throws(
+    () => next.advance(ensureRequest('namespace', 'other-uid')),
+    /binding changed/,
+  );
+  next.cancel();
+  assert.throws(() => next.clear(), /cancelled/);
+  assert.equal(existsSync(paths.pendingPath), true);
+  assert.equal(existsSync(paths.lockPath), true);
+  next.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('fsync failure keeps the pending fence and a traversed context is refused', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-fsync-'));
+  prepareState(stateRoot);
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+    fault: 'fsync',
+  });
+  assert.throws(() => custody.begin(ensureRequest()), /fsync failed/);
+  custody.close();
+  await assert.rejects(
+    () =>
+      acquireCustody(`../${devKind.contextName}`, {
+        stateRoot,
+        lockWaitSec: 1,
+      }),
+    /profile context/,
+  );
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('aborted lock request does not leave the lock held', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-abort-'));
+  const paths = prepareState(stateRoot);
+  const signal = globalThis.AbortSignal.abort();
+  await assert.rejects(
+    () =>
+      acquireCustody(devKind.contextName, {
+        stateRoot,
+        lockWaitSec: 5,
+        signal,
+      }),
+    /lock/,
+  );
+  const after = flockContender(paths.lockPath);
+  assert.equal(after.status, 0);
+  assert.equal(existsSync(paths.lockPath), true);
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('close-unconfirmed mutation retains the lock fd and pending record', async (t) => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-unconfirmed-'));
+  const paths = prepareState(stateRoot);
+  const script = mkdtempSync(join(tmpdir(), 'obs-unconfirmed-'));
+  const slowPath = join(script, 'slow.mjs');
+  writeFileSync(slowPath, 'setTimeout(() => {}, 60_000);\n');
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  custody.begin(ensureRequest());
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    const started = performance.now();
+    const pending = runMutation(process.execPath, [slowPath], {
+      custody,
+      now: () => performance.now(),
+      deadline: started + 30_000,
+      timeoutMs: 10_000,
+      killGraceMs: 2_000,
+    });
+    t.mock.timers.tick(20_000);
+    const result = await pending;
+    assert.equal(result.ok, false);
+    assert.equal(result.closeUnconfirmed, true);
+    assert.equal(result.attempted, true);
+    assert.doesNotThrow(() => fstatSync(custody.fd));
+    assert.throws(() => custody.clear(), /authority failed|changed|cancelled/);
+    assert.equal(existsSync(paths.pendingPath), true);
+    assert.throws(() => custody.close(), /still active/);
+  } finally {
+    t.mock.timers.reset();
+    rmSync(script, { recursive: true, force: true });
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
 });

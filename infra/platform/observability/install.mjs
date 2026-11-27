@@ -42,6 +42,8 @@ export const PHASE_TIMEOUT_MS = Object.freeze({
   'obs-tempo': 210_000,
   'obs-collector': 210_000,
   'obs-grafana': 210_000,
+  upgrade: 240_000,
+  disruption: 30_000,
 });
 
 /**
@@ -464,8 +466,8 @@ export async function runObservabilityEnsure(
   let completedPhases = [];
   let mutationAttempted = false;
   let pendingBegun = false;
-  /** @type {string | null} */
-  let adminPassword = null;
+  /** @type {string | null | undefined} */
+  let adminPassword;
   const now = deps.now ?? (() => performance.now());
   const started = now();
   const workerDeadline = started + WORKER_BUDGET_MS;
@@ -617,14 +619,31 @@ export async function runObservabilityEnsure(
         throw new Error(`phase-prefix-${prefixCheck.detail ?? 'failed'}`);
       }
 
+      if (custody.cancelled || custody.mode !== 'exclusive') {
+        throw new Error('phase-failed');
+      }
       if (!pendingBegun) {
-        custody.begin({ phase: phaseId, tuple: identity.tuple });
+        custody.begin({
+          phase: phaseId,
+          tuple: identity.tuple,
+          operation: 'ensure',
+          details: {},
+        });
         pendingBegun = true;
       } else {
-        custody.advance({ phase: phaseId, tuple: identity.tuple });
+        custody.advance({
+          phase: phaseId,
+          tuple: identity.tuple,
+          details: {},
+        });
       }
+      custody.assertOwnPending();
 
       const timeoutMs = PHASE_TIMEOUT_MS[phaseId];
+      const phaseStart = now();
+      if (workerDeadline - phaseStart < timeoutMs) {
+        throw new Error('deadline');
+      }
       mutationAttempted = true;
       const result = await (deps.runMutation ?? runMutation)(command, args, {
         custody,
@@ -633,6 +652,9 @@ export async function runObservabilityEnsure(
         timeoutMs,
         signal: deps.signal,
       });
+      if (result.closeUnconfirmed) {
+        throw new Error('close-unconfirmed');
+      }
 
       if (phaseId === 'namespace') {
         const createdUid = parseNamespaceCreateResponse(
@@ -711,7 +733,10 @@ export async function runObservabilityEnsure(
       if (message.includes('identity-changed')) {
         return 'identity-changed';
       }
-      if (message.includes('custody-advance-failed')) {
+      if (
+        message.includes('custody-advance-failed') ||
+        message.includes('close-unconfirmed')
+      ) {
         return 'phase-failed';
       }
       if (message.includes('deadline')) {
@@ -720,15 +745,8 @@ export async function runObservabilityEnsure(
       return 'phase-failed';
     };
 
-    const mutationForPhaseFailure = (error) => {
-      const message = error instanceof Error ? error.message : String(error);
-      if (message.includes('namespace-response-invalid')) {
-        return /** @type {MutationState} */ ('possible');
-      }
-      return mutationAttempted
-        ? /** @type {MutationState} */ ('confirmed')
-        : 'none';
-    };
+    const mutationForPhaseFailure = () =>
+      mutationAttempted ? /** @type {MutationState} */ ('possible') : 'none';
 
     try {
       await withPrivateManifest(
@@ -775,7 +793,12 @@ export async function runObservabilityEnsure(
       );
     } catch (error) {
       adminPassword = null;
-      return fail('not-ready', phaseFailureReason(error), 'confirmed', true);
+      return fail(
+        'not-ready',
+        phaseFailureReason(error),
+        mutationForPhaseFailure(),
+        mutationAttempted,
+      );
     } finally {
       adminPassword = null;
     }
@@ -788,7 +811,12 @@ export async function runObservabilityEnsure(
           helmInstallArgv(identity, release),
         );
       } catch (error) {
-        return fail('partial', phaseFailureReason(error), 'confirmed', true);
+        return fail(
+          'partial',
+          phaseFailureReason(error),
+          mutationForPhaseFailure(),
+          true,
+        );
       }
     }
 
@@ -867,6 +895,7 @@ export async function runObservabilityEnsure(
     });
   } finally {
     adminPassword = null;
+    void adminPassword;
     if (identity?.cleanup) {
       identity.cleanup();
     }
