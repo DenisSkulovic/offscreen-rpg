@@ -202,19 +202,19 @@ These were not established in the files read for this page.
 
 ## Evidence read
 
-Read at `b3113814`, and not re-executed:
+Read at `b3113814`, and not re-executed (the `packages/story-engine/src` links below are the current owners of what `b3113814` read under the since-removed `packages/application`):
 
 - [identity.ts](../../../apps/api/src/modules/auth/identity.ts)
 - [stories route map](../../../apps/api/src/modules/stories/README.md)
 - [drafts controller](../../../apps/api/src/modules/drafts/controller.ts)
 - [openings controller](../../../apps/api/src/modules/drafts/openings-controller.ts)
 - [story-update hub](../../../apps/api/src/modules/stories/story-update-hub.ts)
-- [resolution admission](../../../packages/application/src/storyteller/admission.ts)
-- [opening request and retry](../../../packages/application/src/storyteller/openings.ts)
-- [generation insert](../../../packages/application/src/generations/service.ts)
-- [scripted opening busy check](../../../packages/application/src/generations/openings.ts)
-- [draft save](../../../packages/application/src/drafts/index.ts)
-- [receipt reader](../../../packages/application/src/stories/resolution-receipt.ts)
+- [resolution admission](../../../packages/story-engine/src/storyteller/admission.ts)
+- [opening request and retry](../../../packages/story-engine/src/storyteller/openings.ts)
+- [generation insert](../../../packages/story-engine/src/generations/service.ts)
+- [scripted opening busy check](../../../packages/story-engine/src/generations/openings.ts)
+- [draft save](../../../packages/story-engine/src/drafts/index.ts)
+- [receipt reader](../../../packages/story-engine/src/stories/resolution-receipt.ts)
 - [story wire shapes](../../../packages/story-interface/src/stories.ts)
 - [opening wire shapes](../../../packages/story-interface/src/openings.ts)
 - [interaction wire shapes](../../../packages/story-interface/src/interactions.ts)

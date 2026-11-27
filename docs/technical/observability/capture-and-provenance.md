@@ -1,5 +1,7 @@
 # Committed transition capture V1 | One real mechanic, one atomic forensic source
 
+**Status:** proposed first capture writer; not approved, and no writer, code, schema or test is authorized.
+
 **Authority:** this page owns the proposed first capture writer: one committed finite-action settlement or interrupt path that would record exact causal state and a per-story historical frontier in the same SQL transaction as the mechanic. It is a proposal. It selects no writer and authorizes no code, schema or test, and it does not require full event sourcing or a function-level log. It lives under `docs/technical` because the documentation architecture names this path.
 
 **Current realization (source-inspected on this branch):** the mechanic exists and the capture does not. `settleActionExecution` in `packages/story-engine/src/campaign/action-executions.ts` settles one admitted finite action under the story lock, inserts `gameActionExecutionEvent` and `gameActionReceipt` rows, and is idempotent on the terminal execution row. No `GameCommitEvidenceV1`, `story_evidence_cursor` or evidence table exists in `packages/`, `apps/` or migrations. Migration `0016_obs00_current_authority.sql` adds only the Storyteller current platform-policy and owner-grant tables; it is not capture. [STATUS](../../../STATUS.md) lists OBS04 E0 as an open gap. The function's existence is therefore not evidence that capture is implemented.
