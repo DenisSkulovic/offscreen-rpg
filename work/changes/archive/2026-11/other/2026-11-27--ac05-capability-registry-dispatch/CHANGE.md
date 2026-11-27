@@ -1,6 +1,6 @@
 # AC05 | Explicit capability registry and guarded tool wrappers
 
-**State:** READY (dependency-gated); owner-commissioned
+**State:** Done — source gate passed; AC08 joint acceptance not passed
 
 **Kind:** implementation
 
@@ -35,6 +35,6 @@ Owner-commissioned: linked Change worktree from latest verified `implementation/
 
 | Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
 | --- | --- | --- | --- | --- | --- | --- |
-| docs/technical/platform/agent-core.md#concrete-mission-contract | technical | unchanged selected contract; source realizes assigned portion | pending implementation receipt | NOT RUN | assigned in PROOF | named durable owner at closure |
-| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain changes authorized | pending diff inspection | no production exposure | no product change |
-| packages/README.md / affected README | related | reconcile actual source and proof standing only | pending implementation receipt | NOT RUN | no unsupported claims | closure receipt |
+| docs/technical/platform/agent-core.md#concrete-mission-contract | technical | unchanged selected contract; source adds registry and SDK wrappers only | source-inspected; package build and registry test NOT RUN | source-inspected | unknown, duplicate, oversize, and non-JSON cases are in the unrun registry test | package README records the tool fence |
+| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain files in the diff | source-inspected | no production exposure | no product change |
+| packages/README.md / affected README | related | package README records registry/dispatch source and unrun package tests | README updated with this source | source-inspected | no success claim for build/test/qualify | group register updated at archive |
