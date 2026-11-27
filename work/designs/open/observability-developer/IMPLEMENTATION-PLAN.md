@@ -6,7 +6,7 @@
 
 Make the existing native development observability infrastructure maintainable and usable with the accepted pinned five-release topology, three retained claims, separate dev telemetry, foreground access, explicit known-predecessor upgrade and meaningful functional verification. No clean-slate rewrite, release mutation, application SDK enrollment, destructive cleanup or paid traffic.
 
-The [submission standard](../../../../.agents/references/planning-artifact-quality.md) is the governing admission gate. The old [Change](../../../changes/open/2026-11-27--observability-developer/CHANGE.md) has 22 tracked files, 19 child assignments plus parent closure and approximately 219 KiB of planning text including mixed repair history (recursive inventory at baseline). It fails admission; do not dispatch or add another repair layer.
+The [submission standard](../../../../.agents/references/planning-artifact-quality.md) is the governing admission gate. The archived [predecessor](../../../changes/archive/2026-11/observability/2026-11-27--observability-developer/CHANGE.md) has 22 tracked files, 19 child assignments plus parent closure and approximately 219 KiB of planning text including mixed repair history (recursive inventory at baseline). It failed admission and is superseded; no dispatch.
 
 Write coherent replacements in large authoring batches, then compare against the original at its immutable SHA. Preserve unique evidence and safeguards, not redundant wording. No serial approval for each document, no new audit diary. Only material authority, safety, source or evidence blockers justify stopping. Keep one current design route; use Git and existing evidence locations for superseded text.
 
@@ -16,7 +16,7 @@ Write coherent replacements in large authoring batches, then compare against the
 | --- | --- | --- |
 | 0 — inventory (complete) | Read rules, inspect both recursive inventories, source entrypoints and major contracts; identify hard failure | Old packet held; audit baseline recorded |
 | 1 — coherent replacement (first candidate written) | Draft replacement README, TARGET, SOURCE-MAP, ACCEPTANCE and this implementation map together. Reconcile unique lifecycle/geography/proof/certification clauses into owning current sections or canonical contract. Separate genuine experiments and committee history. Inspect pending deadline/ownership, metric freshness and A9 fault decisions; isolate only affected successors. In the same batch prepare D01 from current source and callers. | One readable target, explicit unknowns and acceptance ownership; D01 has a bounded candidate packet |
-| 2 — reconcile and cut over | Compare current contracts, all 19 child cards, all A/V predicates and committee findings against replacements. Preserve historical evidence and full SHA/path, resolve inbound links, catalog/ledger and source-vs-target statements. Retire monolithic Change only after successor mapping is complete; remove redundant active instructions after preservation. Review any material architecture or integration-boundary change under the required independent design procedure and owner acceptance. | No lost obligation, conflicting authority or stale dispatch route; first successor submission passes admission |
+| 2 — reconcile and cut over (archive/crosswalk complete; review pending) | Compare current contracts, all 19 child cards, all A/V predicates and committee findings against replacements. Preserve historical evidence and full SHA/path, resolve inbound links, catalog/ledger and source-vs-target statements. Retire monolithic Change only after successor mapping is complete; remove redundant active instructions after preservation. Review any material architecture or integration-boundary change under the required independent design procedure and owner acceptance. | No lost obligation, conflicting authority or stale dispatch route; first successor submission passes admission |
 | 3 — first dispatch | Source-ground D01 at current HEAD; independently review G0–G7 and child contexts, verify branch/worktree collision state and commission; deliver one concise Cursor launch contract. | First safe Change dispatched; no requirement to finish every downstream packet |
 | 4 — rolling delivery | Prepare and independently review D02/D03 and D04 next; prepare later packets at predecessor receipts/current source, while authorized Cursor work runs. Name shared write locks and one integration custodian. Repartition any packet exceeding the ceiling instead of nesting cards. | Each selected Change satisfies its own measurable outcome, proof and close gates |
 | 5 — platform certification | Run all outstanding applicable native and developer gates on the final integrated candidate with exact evidence; rerun impacted gates after source drift. Reconcile permanent docs/status and retire remaining work only at its correct closure boundary. | No unrun mandatory gate represented as PASS or Done |
@@ -50,6 +50,31 @@ Program-level owners: A6 fresh desired-revision installation is owner-operated o
 - Keep accepted identity, data/credential preservation, diagnostic isolation, bounded metric dimensions, pending fences and UID cleanup. Evaluate simpler implementations of unratified metric timestamp allocation, deadline/cancellation allocations and A9 fault injection using the pinned evidence and existing contracts. Do not let one unresolved downstream proof mechanism block preparation of unrelated safe work.
 - Confirm local worktree/resource ownership before commission. Bundle indispensable owner evidence requests; no local cluster mutation without permission. No invented PASS, no optional ceremony, no blanket live authorization.
 - Every delegated Change: one lasting outcome, normally 1–5 tasks, maximum seven including nested assignments; target standard 8–20 KiB planning prose and 5–10 minutes active Cursor effort as estimates, not timers. Prefer compact packets and direct exact anchors. G0–G7 independent readiness and required child simulations remain mandatory. Cursor runs focused cheap tests, ChatGPT/owner own substantial acceptance.
-- Archive original packet with immutable provenance at [audited SHA](https://github.com/DenisSkulovic/offscreen-rpg/tree/270a3b6e323872e4735f8d5ceac4a71027433ffd/work/changes/open/2026-11-27--observability-developer) and preserve unique historical findings. No destructive Git rewrite or blind deletion. Repair canon and references in the same cutover; no parallel active execution plans.
+- Original packet archived with immutable provenance at [audited SHA](https://github.com/DenisSkulovic/offscreen-rpg/tree/270a3b6e323872e4735f8d5ceac4a71027433ffd/work/changes/open/2026-11-27--observability-developer) and preserve unique historical findings. No destructive Git rewrite or blind deletion. Known canon/catalog references repaired; full local backlink census remains pending. No parallel active execution plans.
 
-**Immediate next action:** batch 2: reconcile original detailed task/proof obligations against this current route, resolve D01 census and staged certification review, submit [D01](../../../changes/open/2026-11-27--obs-d01-native-artifacts/CHANGE.md) for independent readiness. Old packet is held until retirement crosswalk and references are safe; do not dispatch either packet prematurely.
+## Original contract disposition (planner lookup)
+
+All 22 predecessor files are preserved byte-for-byte in the [archived packet](../../../changes/archive/2026-11/observability/2026-11-27--observability-developer/CHANGE.md) and [immutable original](https://github.com/DenisSkulovic/offscreen-rpg/tree/8acf432dcdbfea6f99a02dbd6abf547d917e6a78/work/changes/open/2026-11-27--observability-developer); no old task may dispatch.
+
+| Original | Successor / obligation |
+| --- | --- |
+| artifacts.md | D01 path/descriptor/argv parity; D04 overlay generator, variant and render |
+| identity.md | D02 frozen snapshot/CA/endpoint/Docker/UID and bounded reads; D04 callers |
+| custody.md | D03 lock/pending/cancellation; D05 forwarding |
+| classification.md | D04 inventory, Secret/revision/config projection, prefix, receipts and fixtures |
+| observation-callers.md | D04 public ensure/status/diagnostics; D02–04 deadline candidate |
+| connection.md | D05 loopback, owned failure/refusal |
+| upgrade.md | D06 exact predecessor, no-op, preservation and pending |
+| proof-ownership.md | D07 durable UID ledger, scoped cleanup, terminal receipt |
+| signal-queries.md | D07 synthetic normal/privacy; D08 developer fixture/raw timestamp/watermark candidate |
+| health-resources.md | D09 auth, forwarding, scoped cadence and identity |
+| disruptions.md | D10 persistence, outage, bounded restoration and retained identities |
+| partial-install.md | D11 real public failure, isolated fault candidate, retained pending and repeat refusal |
+| integration.md | Normal closure in each successor, no separate join task |
+| TASKS/INTERFACES/SOURCE-MAP | all 19 child cards and closure mapped above; historical source anchors reverify before commission |
+| PROOF/READINESS/REVIEW-REPAIR | A/V predicates retained; deadline/cancellation, D4/D4.1 and A9 remain unratified; precise commands and finding history archived |
+| preflight-evidence.sh/a9-admission-fault.yaml | historical specimens; owner evidence D04/D05/D08/D09/D11; no permission to execute |
+
+Known canonical/catalog/predecessor links repaired. Remote search returned zero even for known references; full tracked backlink scan remains outstanding. Later successors are proposals, not dispatchable packets.
+
+**Immediate next action:** independent staged certification defense, owner acceptance, D01 independent readiness and local collision/census, then commission. Do not wait for downstream experiments or every future packet after D01 applicable gates settle.

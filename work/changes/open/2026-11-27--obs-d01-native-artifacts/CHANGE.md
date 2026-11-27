@@ -6,7 +6,7 @@
 
 Five native Helm releases use maintained values/, locks/ and root expected-inventory.json; render and install share ordered values argv. Both profiles render exactly the same parsed documents, inventory and image pins as before. No old runtime path or descriptor alias remains.
 
-Authority: [accepted artifact ownership](../../../../docs/technical/platform/observability-native-infrastructure.md#artifact-ownership), [design](../../../designs/open/observability-developer/README.md). Extracts only T01 from held OBSERVABILITY-DEVELOPER. D04 later owns overlay/predecessor variants. No new values, chart/image updates, network pulls, cluster reads/writes, application instrumentation or unrelated refactor. Preserve original checks, chart order, storage arguments and install-only semantics.
+Authority: [accepted artifact ownership](../../../../docs/technical/platform/observability-native-infrastructure.md#artifact-ownership), [design](../../../designs/open/observability-developer/README.md). Extracts T01 from [archived OBSERVABILITY-DEVELOPER](../../archive/2026-11/observability/2026-11-27--observability-developer/CHANGE.md). D04 later owns overlay/predecessor variants. No new values, chart/image updates, network pulls, cluster reads/writes, application instrumentation or unrelated refactor. Preserve original checks, chart order, storage arguments and install-only semantics.
 
 ## Execution and proof
 
@@ -14,4 +14,4 @@ Authority: [accepted artifact ownership](../../../../docs/technical/platform/obs
 
 ## Closure
 
-Require exact parity, all eight moves, five unchanged chart archives, unchanged lock semantics, zero template calls for corrupt final archive/missing or malformed final YAML, exact install argv and passing affected suites. Reconcile infra README and canonical realization only after proof. No live acceptance claim. Existing R5 joint certification remains binding until staged boundary is independently defended and owner accepted; no merge by this packet alone. Local worktree collision and independent G0–G7 review remain outstanding; global queue unchanged.
+Require exact parity, all eight moves, five unchanged chart archives, unchanged lock semantics, zero template calls for corrupt final archive/missing or malformed final YAML, exact install argv and passing affected suites. Reconcile infra README and canonical realization only after proof. No live acceptance claim. Existing R5 joint certification remains binding until the [staged boundary](../../../designs/open/observability-developer/ACCEPTANCE.md#proposed-staged-certification-boundary-candidate-not-accepted) is independently defended and owner accepted; no merge by this packet alone. Local worktree collision and independent G0–G7 review remain outstanding; global queue unchanged.

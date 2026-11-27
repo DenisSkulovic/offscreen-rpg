@@ -4,26 +4,27 @@ All commands from repository root in dedicated worktree, offline Helm already in
 
 ## Render parity
 
-Parent captures baseline before T01 and reuses same private directory and Helm version after T02. Run following shell block once with STAGE=before and again with STAGE=after, keeping PROOF exported in parent shell. On failure retain private directory for diagnosis; remove only this owned directory after receipt.
+Parent captures baseline before T01 and reuses same private directory and Helm version after T02. Export STAGE=before then run snapshot block. After edits export STAGE=after and rerun the same block, keeping PROOF exported in parent shell. Use set -euo pipefail; do not overwrite snapshots. On failure retain private directory for diagnosis; remove only this owned directory after receipt.
 
 ```bash
 PROOF=$(mktemp -d)
 chmod 700 "$PROOF"
 export PROOF
 helm version --short
+export STAGE=before
 ```
 
 ```bash
-# First STAGE=before; second STAGE=after
-STAGE=before node --input-type=module <<'JS'
+node --input-type=module <<'JS'
 import {loadArtifacts} from './infra/platform/observability/artifacts.mjs';
 import {writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 for(const profile of ['dev','release']){
+ if (!['before','after'].includes(process.env.STAGE)) throw Error('bad STAGE');
  const b=loadArtifacts(profile);
  const docs=b.documents.map(d=>[JSON.stringify([d.apiVersion,d.kind,d.metadata.namespace??b.profile.namespaces.observability,d.metadata.name]),d]).sort((a,b)=>a[0].localeCompare(b[0]));
  if(new Set(docs.map(x=>x[0])).size!==docs.length)throw Error('duplicate document');
- writeFileSync(join(process.env.PROOF,process.env.STAGE+'-'+profile+'.json'),JSON.stringify({docs,inventory:b.expectedInventory,locks:b.imageLocks,pins:b.releases.map(x=>[x.name,x.chartVersion,x.sha256,x.expectedImage])}),{mode:0o600});
+ writeFileSync(join(process.env.PROOF,process.env.STAGE+'-'+profile+'.json'),JSON.stringify({docs,inventory:b.expectedInventory,locks:b.imageLocks,pins:b.releases.map(x=>[x.name,x.chartVersion,x.sha256,x.expectedImage])}),{mode:0o600,flag:'wx'});
 }
 JS
 ```
@@ -37,7 +38,7 @@ for(const p of ['dev','release'])assert.deepStrictEqual(...['before','after'].ma
 JS
 ```
 
-Require parsed exact equality (no ignored fields), five unchanged archive hashes/images and inventory, no old input paths. No overlay, port or policy change. Record Helm version and parity exit. Snapshot baseline is private, not committed.
+After T02 export STAGE=after and rerun snapshot before comparison. Require parsed exact equality (no ignored fields), five unchanged archive hashes/images and inventory, no old input paths. No overlay, port or policy change. Record Helm version and parity exit. Snapshot baseline is private, not committed.
 
 ## Focused source checks
 
@@ -47,6 +48,7 @@ Require parsed exact equality (no ignored fields), five unchanged archive hashes
 - T01/T02 combined after edits:
 ```bash
 node --test --test-concurrency=1 infra/platform/observability/tests/{render,readiness,install}.test.mjs infra/verification/smoke/observability/tests/proof.test.mjs scripts/repo-tools/{check-lab-manifests,infra-layout}.test.mjs
+node --test --test-concurrency=1 infra/platform/observability/tests/{diagnostic-worker,receipt}.test.mjs
 git diff --check
 git status --short
 git diff --name-status
