@@ -84,26 +84,45 @@ Owner evidence route (exact executable batch below): first recover captured stdo
 
 No source or live tests run by this consolidation. Independent ratification of candidate deadlines, exact caller/subprocess feasibility, D4 pinned query execution evidence, pinned developer metric label evidence and isolated target availability remain open. All tasks held. No acceptance predicates retired.
 
-## D3/D4 | owner-operated isolated pinned evidence batch (not executed)
+## Workstation evidence batch | census, render, D3/D4 (not executed)
 
 Prior R3.2 stdout was not recovered in tracked files or accessible prior terminal context. The recorded successful private evidence directory was /tmp/offscreen-obs-data-plane.ruUJDGpb; if exact full row stdout is available, return only the application rows and TARGET_INFO line. The old experiment did not exercise D4 full-domain queries, so a new isolated run remains required for that evidence.
 
-Run the following from the current main worktree with no implementation changes, only after owner explicitly approves this local Docker-only experiment and verifies local Docker context/daemon, available memory and preexisting pinned images. No Kubernetes requests, host mounts, published ports, image pulls, external network or application stores. This reuses the accepted experiment bytes, injecting a bounded query receipt into a private temporary copy, not editing tracked design scripts. Stop on any failed prerequisite, query, label or cleanup. No broad Docker removal. Existing script cleans only the containers it creates; label-based postcheck detects retained experiment containers (do not automatically remove them). Do not run on an unverified remote daemon.
+Run the single batch below from the clean main worktree on this committed packet (read-only census and offline render first). Only OFFSCREEN_OBSERVABILITY_EVIDENCE=authorized opts into the named isolated Docker experiment; without it the batch stops after the read-only phase with D3/D4 NOT RUN. Verify local Docker daemon and owner capacity before opt-in. The separate target availability questions below do not authorize bootstrap/reset. No Kubernetes requests, host mounts, published ports, image pulls, external network or application stores. This reuses the accepted experiment bytes, injecting a bounded query receipt into a private temporary copy, not editing tracked design scripts. Stop on any failed prerequisite, query, label or cleanup. No broad Docker removal. Existing script cleans only the containers it creates; label-based postcheck detects retained experiment containers (do not automatically remove them). Do not run on an unverified remote daemon.
 
 ```bash
 (
 set -euo pipefail
 umask 077
-test "${OFFSCREEN_OBSERVABILITY_EVIDENCE:-}" = authorized
-test -z "${DOCKER_HOST:-}${DOCKER_CONTEXT:-}${DOCKER_TLS:-}${DOCKER_TLS_VERIFY:-}${DOCKER_CERT_PATH:-}"
-test -z "$(git status --porcelain)"
-CTX=$(docker context show)
-HOST=$(docker context inspect "$CTX" --format '{{.Endpoints.docker.Host}}')
-case "$HOST" in unix://*) ;; *) echo "REFUSE nonlocal Docker endpoint"; exit 2;; esac
-docker info --format '{{.Name}} {{.MemTotal}}'
+test "$(git branch --show-current)" = main
+STATUS=$(git status --porcelain)
+test -z "$STATUS" || { echo "REFUSE dirty checkout; preserve existing work"; exit 2; }
+SOURCE_BASE=edb0a12af7d9c389b36ccbe341bc473c4a9e6e68
+git diff --quiet "$SOURCE_BASE" HEAD -- infra scripts package.json work/designs/open/observability-developer/experiments || { echo "REFUSE changed evidence source; planner recheck"; exit 2; }
 W=$(mktemp -d /tmp/offscreen-obs-evidence.XXXXXXXX)
 export W
 echo "PRIVATE EVIDENCE: $W"
+echo "EVIDENCE_HEAD=$(git rev-parse HEAD)"
+echo "SOURCE_BASE=$SOURCE_BASE"
+echo "=== WORKTREE / BRANCH CENSUS ==="
+git worktree list --porcelain > "$W/worktrees.txt"
+git branch --list 'change/observability-developer' 'change/observability-native*'
+git branch --remotes --list 'origin/change/observability-developer' 'origin/change/observability-native*'
+grep -E '^(worktree |branch |HEAD )' "$W/worktrees.txt"
+echo "=== TRACKED REFERENCE CENSUS ==="
+RX='specimen(sRoot)?|specFile|image-lock-candidate\.tsv|observability/(chart|install\.sh)|obs:connect|obs:upgrade'
+git --no-pager grep -nI -i -E "$RX" -- . > "$W/references.txt"
+git --no-pager grep -lI -i -E "$RX" -- . > "$W/reference-files.txt"
+echo "MATCHED_FILES=$(wc -l < "$W/reference-files.txt") MATCHED_LINES=$(wc -l < "$W/references.txt")"
+cat "$W/reference-files.txt"
+echo "=== OPERATIONAL MATCHES ==="
+grep -E '^(infra/|scripts/|docs/technical/platform/observability-native-infrastructure.md:|docs/runbooks/kubernetes-observability.md:|package.json:)' "$W/references.txt" || test "$?" = 1
+echo "=== TRACKED OBSERVABILITY FILES ==="
+git ls-files infra/platform/observability infra/verification/smoke/observability
+echo "=== OFFLINE RENDER ==="
+helm version --short
+node --version
+python3 --version
 D=work/designs/open/observability-developer/experiments
 BASE=06306ace3717841f36ad0952cf7664afbd6fcd4a
 for f in build-developer-values.py data-plane.py run-data-plane.sh; do
@@ -113,13 +132,27 @@ test "$(git hash-object "$W/build-developer-values.py")" = 9a9a6a724891caba1146a
 test "$(git hash-object "$W/data-plane.py")" = d003d533c1a8e170730a25fb4fb3a9a9ded75266
 test "$(git hash-object "$W/run-data-plane.sh")" = b834b169052d3121f267d774807b6358964071d1
 python3 "$W/build-developer-values.py" infra/platform/observability/specimens/collector.yaml "$W/overlay.yaml"
-node --input-type=module <<'JS'
+timeout --signal=KILL 390s node --input-type=module <<'JS'
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {writeFileSync} from 'node:fs';
 import {parse,parseAllDocuments} from 'yaml';
 import {loadArtifacts} from './infra/platform/observability/artifacts.mjs';
 const b=loadArtifacts('dev');
+const g=b.releases.find(x=>x.role==='grafana');
+assert(g);
+const svc=g.documents.filter(x=>x.kind==='Service'&&x.metadata.name==='obs-grafana');
+assert.equal(svc.length,1);
+assert.equal(svc[0].spec.type??'ClusterIP','ClusterIP');
+const ports=svc[0].spec.ports;
+assert.equal(ports.length,1);
+const port=ports[0];
+const workload=g.documents.filter(x=>x.kind==='Deployment'&&x.metadata.name==='obs-grafana');
+assert.equal(workload.length,1);
+const containerPorts=workload[0].spec.template.spec.containers.flatMap(x=>x.ports??[]);
+const resolved=typeof port.targetPort==='string'?containerPorts.filter(x=>x.name===port.targetPort).map(x=>x.containerPort):[port.targetPort??port.port];
+console.log('GRAFANA_PORT_RECEIPT',JSON.stringify({service:svc[0].metadata.name,port:port.port,targetPort:port.targetPort??port.port,resolved,containerPorts}));
+assert.equal(port.port,80);assert.deepEqual(resolved,[3000]);
 const c=b.releases.find(x=>x.role==='collector');
 const prom=b.releases.find(x=>x.role==='prometheus');
 assert(c && prom);
@@ -134,7 +167,7 @@ assert.equal(config.otlp?.convert_histograms_to_nhcb??false,false);
 assert.equal(config.otlp?.promote_all_resource_attributes??false,false);
 assert.equal((config.remote_read??[]).length,0);
 assert.equal((config.remote_write??[]).length,0);
-const rr=spawnSync('helm',['template',c.name,c.chartPath,'--namespace',b.profile.namespaces.observability,'-f',c.valuesPath,'-f',process.env.W+'/overlay.yaml',...c.helmValueArgs],{encoding:'utf8',timeout:60000,maxBuffer:8*1024*1024});
+const rr=spawnSync('helm',['template',c.name,c.chartPath,'--namespace',b.profile.namespaces.observability,'-f',c.valuesPath,'-f',process.env.W+'/overlay.yaml',...c.helmValueArgs],{encoding:'utf8',timeout:60000,killSignal:'SIGKILL',maxBuffer:8*1024*1024});
 assert.equal(rr.status,0);
 const docs=parseAllDocuments(rr.stdout).map(x=>{assert.equal(x.errors.length,0);return x.toJSON()});
 const cm=docs.filter(x=>x?.kind==='ConfigMap'&&x.metadata.name==='obs-collector');
@@ -143,7 +176,25 @@ assert.equal(typeof cm[0].data.relay,'string');
 writeFileSync(process.env.W+'/relay.yaml',cm[0].data.relay,{mode:0o600});
 console.log('PINNED RENDER AND OTLP CONFIG CHECK PASS');
 JS
-# The following modifies only the private copy, after verifying the original blob.
+echo "READ_ONLY_EVIDENCE_COMPLETE"
+if [[ "${OFFSCREEN_OBSERVABILITY_EVIDENCE:-}" != authorized ]]; then
+  echo "D3_D4_NOT_RUN: explicit isolated experiment opt-in required"
+  exit 0
+fi
+test -z "${DOCKER_HOST:-}${DOCKER_CONTEXT:-}${DOCKER_TLS:-}${DOCKER_TLS_VERIFY:-}${DOCKER_CERT_PATH:-}"
+CTX=$(timeout -s KILL 10s docker context show)
+HOST=$(timeout -s KILL 10s docker context inspect "$CTX" --format '{{.Endpoints.docker.Host}}')
+case "$HOST" in unix://*) ;; *) echo "REFUSE nonlocal Docker endpoint"; exit 2;; esac
+timeout -s KILL 10s docker info --format '{{.Name}} {{.MemTotal}}'
+awk '/^MemAvailable:/ { found=1; if ($2 < 4194304) exit 1 } END { if (!found) exit 1 }' /proc/meminfo
+# Modify only verified private copies. Record exact producer timestamp from its own clock.
+python3 - "$W/data-plane.py" <<'PY'
+from pathlib import Path
+import sys
+p=Path(sys.argv[1]);s=p.read_text();marker='now = time.time_ns()'
+assert s.count(marker)==1
+p.write_text(s.replace(marker,marker+'\nprint("EVIDENCE_METRIC_MS",now//1000000,flush=True)'))
+PY
 python3 - "$W/run-data-plane.sh" <<'PY'
 from pathlib import Path
 import sys
@@ -154,7 +205,7 @@ injection=r'''
 from datetime import datetime,timezone,timedelta
 from decimal import Decimal
 from urllib.parse import urlencode
-import time
+import time,os
 job="offscreen/offscreen-developer-proof"
 base={"job":job,"deployment_environment_name":"development","service_namespace":"offscreen","service_name":"offscreen-developer-proof","offscreen_candidate":"probe"}
 expected={}
@@ -200,9 +251,14 @@ for lo,hi in windows:
     assert count<=16384
     results.append({"lo":lo,"hi":hi,"elapsedMs":round(elapsed*1000),"bytes":len(raw),"series":len(window_series)})
 assert set(seen)==set(expected) and len(set(seen.values()))==1
+assert set(seen.values())=={Decimal(os.environ['EVIDENCE_METRIC_MS'])}
 print("D3_D4_RECEIPT",json.dumps({"application":[{"metric":dict(k),"value":str(expected[k]),"rawTimestampMs":int(seen[k])} for k in sorted(seen)],"targetInfo":meta[0],"windows":results,"sampleCount":count},sort_keys=True))
 '''
 s=s.replace(marker,injection+'\n'+marker)
+query_run='timeout 45s docker run --rm -i '
+assert s.count(query_run)==1
+s=s.replace(query_run,'''EVIDENCE_METRIC_MS=$(awk '$1=="EVIDENCE_METRIC_MS" && NF==2 && $2 ~ /^[0-9]+$/ { print $2; n++ } END { if(n!=1) exit 1 }' "$OUT/submissions.txt")
+'''+query_run+'-e "EVIDENCE_METRIC_MS=$EVIDENCE_METRIC_MS" ')
 # Tag all created containers so cleanup can be independently checked without touching other containers.
 needle='COMMON=(--pull=never --cap-drop ALL --security-opt no-new-privileges)'
 assert s.count(needle)==1
@@ -210,11 +266,13 @@ s=s.replace(needle,'COMMON=(--label "offscreen.evidence=${EVIDENCE_ID:?}" --pull
 p.write_text(s)
 PY
 export EVIDENCE_ID="$(basename "$W")"
-test -z "$(docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID")"
+PRE=$(timeout -s KILL 10s docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID")
+test -z "$PRE"
 rc=0
 timeout --signal=TERM --kill-after=30s 300s bash "$W/run-data-plane.sh" "$W/relay.yaml" > "$W/full-private.log" 2>&1 || rc=$?
 echo "EXPERIMENT_EXIT=$rc"
-test -z "$(docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID")" || { echo "FAIL retained owned experiment containers; preserve evidence, report IDs"; docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID"; exit 1; }
+POST=$(timeout -s KILL 10s docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID") || { echo "FAIL Docker cleanup observation unavailable; retain private evidence"; exit 1; }
+test -z "$POST" || { echo "FAIL retained owned experiment containers; preserve evidence, report IDs"; printf '%s\n' "$POST"; exit 1; }
 test "$rc" = 0
 test "$(grep -c '^D3_D4_RECEIPT ' "$W/full-private.log")" = 1
 grep '^D3_D4_RECEIPT ' "$W/full-private.log"
@@ -223,7 +281,7 @@ git rev-parse HEAD
 )
 ```
 
-Set the authorization variable only for this named experiment (not proof/upgrade/disruption flags). Return the receipt line, render check, exit status, cleanup result and SHA only. On failure return exit status and sanitized error lines from the private log, not full Collector debug output. The batch validates exact labels and three queries on newly retained synthetic data; it does not demonstrate production retained-store scale or future-boundary sample ingestion, and does not replace two live developer runs. No test was executed by the planner in preparing this command.
+Set the authorization variable only for this named experiment (not proof/upgrade/disruption flags). Return the compact workstation output (reference file list and operational matches, worktree census, Grafana receipt, render check, experiment receipt, exit status, cleanup result and SHA). Keep private full logs local; if output clipped attach the compact output as a text file. For isolated A6/A8/A9, separately state whether the existing isolated acceptance VM is available for sequential fresh normal-dev targets, whether it holds unrelated data, and whether a separate reset can later be authorized. Actual VM/cluster UID and occupancy checks are mandatory before any eventual live proof; do not boot/reset/delete a cluster in this batch. Current implementation is not yet written: full successor inventory/cancellation timing and A9 actual wrapper feasibility cannot be established by this experiment; those remain focused source and owner acceptance proof, not retroactive preflight PASS. On failure return exit status and sanitized error lines from the private log, not full Collector debug output. The batch validates exact labels and three queries on newly retained synthetic data; it does not demonstrate production retained-store scale or future-boundary sample ingestion, and does not replace two live developer runs. No test was executed by the planner in preparing this command.
 
 ## Owner execution route (after implementation and separately authorized)
 From dedicated implementation worktree root, clean tracked tree, exact tested SHA, current source guard; capture git rev-parse HEAD and git status --porcelain; no other platform writer/connection. Owner confirms target by independent Kind/Docker/cluster UID evidence, normal profile and available isolated target(s); no cluster creation or deletion implied.

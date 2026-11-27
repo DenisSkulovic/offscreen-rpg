@@ -40,7 +40,7 @@ Human owner commissions the exact reviewed candidate and supplies local worktree
 
 ## Remaining planner-owned work (not another generic rewrite)
 
-1. Complete owner-local tracked census and actual Helm-rendered Grafana Service mapping. D3/D4 isolated evidence batch in PROOF.md needs execution and receipt, not a guessed fixture.
+1. Complete owner-local tracked census and actual Helm-rendered Grafana Service mapping. Combined workstation evidence batch in PROOF.md needs owner execution and receipt, not a guessed fixture; census/render run first, D3/D4 isolated Docker portion explicit opt-in.
 2. Reconcile recovery26 selected restoration/runner/deadline contracts against all affected consumers and independent review; review recovery27 ten bounded subcards individually (not milestone summaries).
 3. Confirm isolated A6/A8/A9 availability, exact targets/identity and permission boundaries. No destructive authorization assumed.
 4. Re-audit all G0–G7 and each individual child after changes; submit exact candidate to independent committee, no commission before verdict.
@@ -50,3 +50,5 @@ Historical author status (not current authority) preserved at [prior READINESS.m
 Recovery26: B01–B07 selected contract corrections committed in INTERFACES/TASKS/PROOF. No claim of full G2/G3 closure; exact new contract must be re-audited and tested. Workstation evidence and independent approval outstanding. All dispatch held.
 
 Recovery27: T05 and T11 decomposed into four and six child subcards, respectively; 19 Composer dispatches plus T12 parent closure (20 execution cards), still one Change and twelve milestone IDs. Exact focused test filters/commands, allowed paths, deferred intermediate consumer migration, and milestone join conditions selected. Read-only source and test anchor verification on fcb09f136d58c69c6dd93f0ff3da4af8ae7089ce; full independent cold simulation of ten new cards not yet performed. All dispatch held.
+
+Recovery28: one combined owner batch prepared (current tracked census, local branch/worktree census, exact rendered Grafana Service/targetPort and pinned OTLP config, optionally immutable Docker-only D3/D4 experiment with producer timestamp comparison). No live Kubernetes or destructive operations. Owner target availability remains a separate response/verification; successor runtime timings remain NOT RUN. No local access from planner; command not executed.

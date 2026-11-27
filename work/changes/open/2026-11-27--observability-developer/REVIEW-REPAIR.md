@@ -58,3 +58,5 @@ Recovery26: replaced generic restoration command/authorization with closed outag
 
 
 Recovery27: decomposed oversized T05/T11 into ten executable child subcards, preserving existing milestone IDs, architecture, one Change and serial branch. Frozen exact write/test boundaries, predecessor outputs, narrow intermediate migration deferral, mandatory full joins, no live or new dispatch. Actual symbols/test cases inspected; cold simulation of new subcards still pending. Previous packet fcb09f136d58c69c6dd93f0ff3da4af8ae7089ce.
+
+Recovery28: prepared combined workstation evidence batch, inspected actual pinned experiment scripts/loader, added exact source diff fence, read-only reference/worktree census and Grafana targetPort receipt, optional explicit Docker admission and exact producer raw timestamp comparison, fail-closed cleanup observation. No runtime edits or live actions; no measured evidence claimed. Source baseline edb0a12af7d9c389b36ccbe341bc473c4a9e6e68.
