@@ -33,7 +33,7 @@ For significant work, the person or coordinating chat first identifies **the sma
 
 ## Optional native subagents: start with only two
 
-The role catalog is conceptual; it is not the native roster. Claude defines two optional read-only critics, design-challenger and test-strategist. Cursor additionally defines scoped implementation, evidence, utility and review roles; [actual model roster](../references/cursor-model-budget-policy.md) owns use. Inherit critics are not approved for automatic dispatch. Check client metadata/permissions and explicit owner/model gate. Native critics supply bounded consultation, never replace the mandatory fresh-chat committed architecture committee. Do not add an agent for every job title.
+The role catalog is conceptual; it is not the native roster. Claude defines two optional read-only critics, design-challenger and test-strategist. Cursor additionally defines scoped implementation, evidence, utility and review roles; [actual model roster](../references/cursor-model-budget-policy.md) owns use. Inherit critics are not approved for automatic dispatch. Check client metadata, permissions and the explicit owner or model gate. Native critics supply bounded consultation. They do not replace the fresh-chat independent committee when material new architecture requires one, and they do not replace a persisted SHA-bound verdict. Do not add an agent for every job title.
 
 ## Three service levels
 

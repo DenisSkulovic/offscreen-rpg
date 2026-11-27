@@ -1,6 +1,6 @@
 # Bounded Cursor parent orchestration | integration batches, truthful closure, economical Git
 
-**Purpose:** implement one commissioned, predesigned Change with minimum parent context and safe ownership. [AGENTS.md](../../AGENTS.md) owns permissions, current integration target and the implementation/acceptance split. [Submission standard](planning-artifact-quality.md) owns scale: one outcome, normally 5–10 minutes active implementation and 1–5 tasks, at most seven actual assignments. This procedure does not select work or grant live-resource permission.
+**Purpose:** implement one commissioned, predesigned Change with minimum parent context and safe ownership. [AGENTS.md](../../AGENTS.md) owns permissions, current integration target, severity and the implementation/acceptance split. [Submission standard](planning-artifact-quality.md) owns scale: one preferred outcome, normally 5–10 minutes of active implementation and 1–5 tasks. Seven actual assignments is a strong default. This procedure does not select work or grant live-resource permission. When the owner commissions a named batch, each Change keeps its own parent, branch and worktree. Eligible Changes proceed without a fresh owner confirmation at each task or routine checkpoint. A blocked sibling is not this parent's stop condition.
 
 ## Dependency readiness is not a planner blocker
 
@@ -18,17 +18,17 @@ Undertaking custodian reconciles accepted receipt, STATUS and technical ledger w
 
 ## 0a. Budget-first Composer dispatcher contract (2026-11-21)
 
-Read CHANGE.md, TASKS dispatch index (if present), current branch/worktree and first ready T-ID's named anchors. Check [submission scale](planning-artifact-quality.md#4-submission-scale-and-measurement); reject new malformed/unbounded commission. Do not audit architecture, preload all source/contract files, enumerate callers or design tests from scratch. Consult precise linked sections as needed.
+Read CHANGE.md, the TASKS dispatch index when present, the current branch and worktree, and the first ready T-ID's named anchors. Check [submission scale](planning-artifact-quality.md#4-submission-scale-and-measurement). Return a newly commissioned packet that is incoherent, unsafe or forces architectural invention, and name the exact gap. A count or size signal alone is not that return. Do not audit architecture, preload every source and contract file, enumerate callers or design tests from scratch. Consult the precise linked sections as needed.
 
 **Default:** Composer Standard parent and implementer child. For multiple substantive PATCH tasks, delegate the first substantive task and continue bounded dispatch. Direct parent edits only for truly mechanical, locally understood changes cheaper than delegation; one file can still contain substantive authorization, transaction or state work. Record brief reason for direct edit. No delegation ritual for routine Git/closure, pure VERIFY or tiny single edit. If runtime lacks subagents, disclose; direct bounded path only if cost/correctness justify it.
 
-One child at a time normally. Up to two disjoint ready children when planner's frozen dependency/ownership matrix proves independence including generated files, test fixtures, resources and Git index. No wider concurrency without explicit collision-free schedule. Combining adjacent tiny tasks requires same frozen contract/write ownership and shared proof; count actual assignments under seven-task ceiling, never hide larger scope in subcards.
+One child at a time normally. Up to two disjoint ready children when the planner's frozen dependency and ownership matrix proves independence, including generated files, test fixtures, resources and the Git index. No wider concurrency without an explicit collision-free schedule. Combining adjacent tiny tasks requires the same frozen contract and write ownership and a shared proof. Count actual assignments. The seven-task default is a planning boundary, not a reason to hide scope in subcards.
 
 Parent validates receipts/diffs, integrates dependency results, then selects next ready task. Child cannot spawn children. No alternate implementations, broad quality sweeps, model comparisons, excessive tuning or unapproved expensive-model escalation. [Model budget](cursor-model-budget-policy.md) · [Task format](composer-first-execution.md).
 
 ## 0. Dedicated Change commission owner shorthand
 
-"Do DXK01" or equivalent unambiguous named assignment authorizes that Change for its parent even if [QUEUE](../../work/QUEUE.md) selects another item. It does not authorize siblings, new architecture, spending or unassigned heavy/live proof. Continue all commissioned implementation tasks across internal checkpoints; no owner prompt for unchanged authorized next T-ID. Never auto-start a successor.
+"Do DXK01" or an equivalent unambiguous named assignment authorizes that Change for its parent even if [QUEUE](../../work/QUEUE.md) selects another item. A named batch authorizes each listed Change under the same rule. It does not authorize an unlisted sibling, new architecture, spending or unassigned heavy or live proof. Continue all commissioned implementation tasks across internal checkpoints. Do not ask the owner to approve the next unchanged authorized T-ID. Never auto-start a successor that was not commissioned.
 
 ### Finish-to-reference-branch responsibility
 
@@ -48,7 +48,7 @@ One parent delivers a coherent source diff, focused proof and recoverable commit
 
 ## 1. Declare a finite batch before dispatch
 
-A batch is only an internal scheduling/checkpoint envelope within one Change, not another folder, selector or approval. Keep in chat: Change/T-IDs, HEAD, outcome, write/resource owners, allowed checks and stop conditions. Checkpoint after at most five dispatches or one risky join, then continue remaining authorized tasks (seven total maximum) without repeated approval. Never expand to unrelated ready work.
+A batch is only an internal scheduling envelope within one Change, not another folder, selector or approval. Keep in chat: Change and T-IDs, HEAD, outcome, write and resource owners, allowed checks and stop conditions. Checkpoint after at most five dispatches or one risky join, then continue the remaining authorized tasks without another approval. Never expand into unrelated uncommissioned work.
 
 ### Context-isolation delegation: use Auto for boring-but-bulky missions
 

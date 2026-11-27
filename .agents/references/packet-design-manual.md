@@ -12,11 +12,11 @@ Imagine parent does branch guard, reads front door/index and dispatches; child o
 
 ## 2. Complete the expensive source investigation against the accepted target
 
-Follow [planner source investigation](planner-investigation-standard.md#before-authoring-settle-design-then-map-the-current-repo). Material design must have passed [design gate](../rules/target-driven-renewal.md) before implementation planning. Record verified source/authority, actual impact map, exact algorithm and normal/negative semantics, migration/composition map and drift conditions. Keep facts, contracts and proof in their respective owners; no duplicate source transcript.
+Follow [planner source investigation](planner-investigation-standard.md#before-authoring-settle-design-then-map-the-current-repo) at the [selected depth](../../AGENTS.md#investigation-depth). Material new architecture must pass the [design gate](../rules/target-driven-renewal.md) before implementation planning. Evolutionary work reuses the accepted architecture and does not wait for a full committee. Record verified source and authority, the actual impact map, the exact algorithm and normal and negative semantics, the migration or composition map, and drift conditions. Keep facts, contracts and proof in their respective owners. Do not paste a duplicate source transcript.
 
 ## 3. Design the execution DAG before writing T-IDs
 
-Apply [Change scale](planning-artifact-quality.md#4-submission-scale-and-measurement) first: one measurable outcome, normal 5–10 minutes active implementation, at most seven actual executor assignments including nested subcards. If the DAG exceeds this ceiling, return to scope design; do not rename a many-task campaign as one Change.
+Apply [Change scale](planning-artifact-quality.md#4-submission-scale-and-measurement) first: one preferred measurable outcome, normally 5–10 minutes of active implementation. Seven actual executor assignments, including nested subcards, is a strong default. Exceeding it requires the narrow justification in that standard. Do not rename a many-task campaign as one Change, and do not split an atomic correctness boundary to satisfy the count.
 
 Draw a DAG of *edits and validations*, not just document sections. Each node has: contract/input prerequisites, exact write ownership, allowed reads, expected proof and a result needed by downstream nodes. Put interface/types/schema first if later edits depend on them. Different tasks are parallel candidates only when they do **not** share write paths, build/generated outputs, mutable fixtures/database/schema, runtime ports, exclusive local services, or a dependency on another task's unlanded result. Merely naming two tasks T01/T02 does not make them independent.
 

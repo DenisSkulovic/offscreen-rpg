@@ -7,7 +7,7 @@ alwaysApply: true
 
 Root [AGENTS.md](../../AGENTS.md) owns permissions, Git, quality and implementation/acceptance split. Read selected CHANGE.md, TASKS dispatch index and [parent policy](../../.agents/references/bounded-parent-orchestration.md), not all planner files.
 
-**Commission:** one Change, one measurable outcome, maximum seven actual tasks including nested assignments, target 5–10 minutes active implementation. [Submission standard](../../.agents/references/planning-artifact-quality.md). Reject newly commissioned malformed/unbounded packets and return exact gap to ChatGPT; no autonomous split/replan or auto-next.
+**Commission:** one Change and one preferred measurable outcome. Seven actual tasks, including nested assignments, is a strong default. Target 5–10 minutes of active implementation. [Submission standard](../../.agents/references/planning-artifact-quality.md) and [severity](../../AGENTS.md#finding-severity-and-blocking). Return a newly commissioned packet that is incoherent, unsafe or forces architectural invention, and name the exact gap. A count or size signal alone is not that return. No autonomous split, replan or auto-next. An already commissioned batch proceeds through its tasks without another owner confirmation at each routine checkpoint.
 
 **Branch guard:** dedicated Change branch/worktree; never switch primary checkout. Run `node scripts/repo-tools/change-branch-guard.mjs --change <ID> --target <reference-branch>` there before edits.
 

@@ -27,7 +27,7 @@ The task's **type** can be CODE, TEST, WIRING, DOCUMENT or VERIFY. These are tas
 
 ## Mechanical task readiness audit
 
-Before commission simulate **every** T-ID using only its actual required card/anchors/sections; apply [G3 and G4](packet-readiness-review.md#audit-sequence-stop-early-for-hard-gates). Fail for open-ended caller discovery, authorization composition, export/schema choice, migration or fixture invention. Require exact extraction and composition mappings from planner. PATCH is decided edit; VERIFY is specified evidence; INVESTIGATE is tightly bounded factual question, not delegated design. Stop at precise material contradiction.
+Before commission, simulate every actual T-ID using only its required card, anchors and sections. Scale the depth to task risk and reuse shared facts. Apply the [child and parent checks](packet-readiness-review.md#audit-sequence). Fail the affected task for open-ended caller discovery, authorization composition, export or schema choice, or migration or fixture invention. Require exact extraction and composition mappings from the planner. PATCH is a decided edit. VERIFY is specified evidence. INVESTIGATE is a tightly bounded factual question, not delegated design. On a correction pass, repeat the affected simulations. A precise material contradiction blocks the affected scope and does not discard unaffected tasks.
 
 ## TASKS.md format
 
@@ -67,7 +67,7 @@ Reject "add saga with correct retries, get it working in Kubernetes": no owner, 
 
 ## Token and tool guidance (soft targets, not enforceable context-window settings)
 
-[Submission budgets](planning-artifact-quality.md#4-submission-scale-and-measurement): 150–350 words per card normally, >500 reconsider; child mandatory packet-authored route below 1,000 words by default. One Change, maximum seven actual tasks. Initial reads 2–5 direct anchors, additional focused reads for necessary facts. No arbitrary prohibition on debugging or safety verification. Parent normally one child, up to two with proven isolation, no nested swarms. No model upgrade without approval. Focused normal/negative per task, assigned cheap join once; heavy proof by ChatGPT/owner.
+[Submission budgets](planning-artifact-quality.md#4-submission-scale-and-measurement): 150–350 words per card normally; above 500, reconsider. The child mandatory packet-authored route stays below 1,000 words by default. One Change prefers one outcome. Seven actual tasks is a strong default. Initial reads are 2–5 direct anchors, plus focused reads for necessary facts. Do not prohibit debugging or safety verification. The parent normally uses one child, and up to two with proven isolation. No nested swarms. No model upgrade without approval. Focused normal and negative checks per task, one assigned cheap join, and heavy proof by ChatGPT and the owner.
 
 ## QA economics: cost per accepted correct change
 

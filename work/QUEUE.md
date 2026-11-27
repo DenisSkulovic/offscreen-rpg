@@ -28,7 +28,7 @@ Use exactly one `Current work:` line near the top. Valid values are `none`, a Ma
 
 ## Cursor dispatch
 
-**Finite parent control:** a named user-authorized batch is a temporary schedule, not another selector or permission to drain all Ready Changes. Checkpoint after 2–5 T-IDs; a **full dedicated Change commission continues within the same Change**, while a batch-only commission stops at its agreed boundary. Follow [parent policy](../.agents/references/bounded-parent-orchestration.md). A Done T-ID leaves its parent Change open until the Change's actual acceptance is proved; completed Changes should be archived in the same batch window, not forgotten.
+**Finite parent control:** a named user-authorized batch is a temporary schedule, not another selector or permission to drain every Ready Change. Checkpoint after 2–5 T-IDs, then continue. A full dedicated Change commission continues within the same Change. A batch commission stops at its agreed boundary. A routine checkpoint does not require another owner confirmation of an already commissioned task. Follow [parent policy](../.agents/references/bounded-parent-orchestration.md). A Done T-ID leaves its parent Change open until the Change's actual acceptance is proved; completed Changes should be archived in the same batch window, not forgotten.
 
 Start with this pointer, then the selected packet, then **one** T-ID when the selection is a Change. Composer Standard remains the normal parent/child model. An unresolved technical decision goes back to ChatGPT for source-backed investigation; do not turn it into a paid Grok investigation by default. [Economical work rule](../.agents/references/composer-first-execution.md) · [current backlog handoff](changes/CURSOR-OPEN-BACKLOG-HANDOFF-2026-11-20.md).
 

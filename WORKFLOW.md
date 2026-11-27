@@ -2,7 +2,7 @@
 
 This is the human and agent navigation map for the sequence of engineering work. [AGENTS.md](AGENTS.md) owns shared permissions and role entrypoints; [repository structure](REPOSITORY-STRUCTURE.md) owns placement and retention; [engineering tour](ENGINEERING.md) explains the system. Follow detailed standards by decision point, not as universal preload.
 
-**Principle:** decide what must be true, ratify it in canonical documentation, plan against actual source, implement the smallest sufficient delta, verify and retire temporary work. Proposed, selected, implemented and proven are distinct.
+**Principle:** decide what must be true, ratify it in canonical documentation, plan against actual source, implement the smallest sufficient delta, verify and retire temporary work. Proposed, selected, implemented and proven are distinct. Design, planning, documentation and review exist to accelerate correct, safe and maintainable software. [AGENTS.md](AGENTS.md#delivery-over-procedure-owner-decision-2026-11-27) owns that principle, finding severity and investigation depth.
 
 ## Dependency readiness is not a planner blocker
 
@@ -13,32 +13,34 @@ Follow [the shared readiness rule](AGENTS.md#dependency-readiness-is-not-a-plann
 ```mermaid
 flowchart TD
   Intent["Goal / request"] --> Classify["Classify work; group into Undertaking if useful"]
-  Classify --> Unknown{"Material design decisions unresolved?"}
-  Unknown -->|Yes| Design["Design workshop: research, specimens, experiments"]
-  Design --> Defense{"Self-defense and independent committee pass?"}
+  Classify --> Depth{"What confidence is actually missing?"}
+  Depth -->|Settled contract| Plan["Inspect source; choose bounded outcome and proof"]
+  Depth -->|Evolutionary subsystem| Evo["Proportionate design and review of consequential boundaries"]
+  Depth -->|Material new architecture| Design["Deep design, specimens, experiments"]
+  Design --> Defense{"Self-defense and committee: no open Critical or High?"}
   Defense -->|No| Design
-  Defense -->|Yes| Owner{"Owner accepts?"}
-  Owner -->|No| Hold["Keep Proposed, revise or retire"]
+  Defense -->|Yes| Owner{"Owner accepts the affected scope?"}
+  Owner -->|No| Hold["Keep the affected scope Proposed"]
   Owner -->|Yes| Canon["Promote accepted guarantees to canonical owners"]
-  Unknown -->|No| Canon
   Canon --> Route{"Implementation needed?"}
+  Evo --> Route
   Route -->|No| Other["Record decision, evidence or operational receipt"]
-  Route -->|Yes| Plan["Inspect source; choose bounded outcome and proof"]
+  Route -->|Yes| Plan
   Plan --> Exec{"Direct, delegated or hybrid?"}
-  Exec -->|Delegated| Ready{"Packet review passed and commissioned?"}
-  Ready -->|No| Hold
-  Ready -->|Yes| Work["Dedicated Change branch and bounded tasks"]
+  Exec -->|Delegated| Ready{"No open Critical or High, and commissioned?"}
+  Ready -->|Affected scope blocked| Hold
+  Ready -->|Eligible scope| Work["Dedicated Change branch and bounded tasks"]
   Exec -->|Direct / hybrid| Work
   Work --> Focus["Focused checks and committed implementation"]
   Focus --> Accept{"Required acceptance passes?"}
   Accept -->|Heavy proof pending| Heavy["ChatGPT + owner acceptance"]
   Heavy --> Accept
   Accept -->|Implementation defect| Work
-  Accept -->|Design defect| Design
+  Accept -->|Design defect| Depth
   Accept -->|Yes| Close["Reconcile, integrate to recorded target, retire"]
 ```
 
-An Undertaking is optional and does not imply a separate integration branch. Already-settled small fixes need neither a Design nor a manufactured rewrite of canonical docs. Pure evaluation or operational work follows its own evidence/Task route.
+An Undertaking is optional and does not imply a separate integration branch. Settled-contract fixes need neither a Design nor a manufactured rewrite of canonical docs. Evolutionary work does not take the material-architecture ceremony merely because it touches infrastructure. A blocked scope does not stop unrelated eligible work. Pure evaluation or operational work follows its own evidence/Task route.
 
 ### Roles and read budgets
 
@@ -48,7 +50,7 @@ An Undertaking is optional and does not imply a separate integration branch. Alr
 | Designer/planner | [CHATGPT](CHATGPT.md), [design method](.agents/rules/target-driven-renewal.md), [source investigation](.agents/references/planner-investigation-standard.md); settle expensive decisions |
 | Cursor parent | Selected CHANGE + TASKS index, [parent procedure](.agents/references/bounded-parent-orchestration.md); one commissioned Change |
 | Composer child | One T-ID, exact anchors, [task format](.agents/references/composer-first-execution.md); focused edit and checks |
-| Reviewer | [Design committee](.agents/rules/target-driven-renewal.md#mandatory-independent-design-committee) or [packet readiness](.agents/references/packet-readiness-review.md), actual evidence; no self-certification |
+| Reviewer | [Design committee](.agents/rules/target-driven-renewal.md#mandatory-independent-design-committee) when the depth requires it, or [packet readiness](.agents/references/packet-readiness-review.md); [severity](AGENTS.md#finding-severity-and-blocking); no self-certification |
 | Acceptance owner | ChatGPT + human for substantial proof; exact tested revision, actual result and limitations |
 
 ## 2. What kind of work is this?
@@ -76,7 +78,9 @@ When selected integrated outcome passes, provide final before/after overview, re
 
 ## 4. Design first; documentation before implementation
 
-For substantial design, follow [adaptive workshop](.agents/rules/target-driven-renewal.md), including posture, real source/upstream research, alternatives, specimens, feasible proof and self-defense. Apply [submission-quality gate](.agents/references/planning-artifact-quality.md), then independent committee on exact candidate. Every completed committee verdict is committed and verified. Only passed defense plus separate owner acceptance permits promotion of the selected scope. Decisive missing evidence gates affected scope. No packet wave as a substitute for Design.
+Choose [investigation depth](AGENTS.md#investigation-depth) from risk, novelty, uncertainty, blast radius and cost of failure. Focused work under settled contracts cites the accepted contract and proceeds to a compact Change or direct implementation. Evolutionary subsystem work investigates the affected subsystem, preserves relevant behavior and uses proportionate review of consequential boundaries. Material new architecture follows the [adaptive workshop](.agents/rules/target-driven-renewal.md): posture, real source and upstream research, alternatives, specimens, feasible proof, self-defense and an independent committee on the exact candidate.
+
+Apply [submission quality](.agents/references/planning-artifact-quality.md) through the severity policy. Only Critical and High findings block the affected scope. The reviewer delivers a SHA-bound verdict; the reviewing session or the local custodian persists it, and promotion waits until that verdict is in the repository and matched to the reviewed candidate. Passed defense plus separate owner acceptance permits promotion of the selected scope. Indispensable missing evidence gates the affected scope. No packet wave as a substitute for an unresolved material architecture. Medium and Low findings do not start another design iteration.
 
 [Product docs](docs/product/README.md) own intent; [technical docs](docs/technical/README.md) own guarantees (including authority, identity, transactions, retry/failure and compatibility). Source, tests, STATUS and evidence show realization. Promote newly accepted behavior/architecture to canonical owners before commissioning implementation. Existing accepted small-fix contracts need only citation. Reconcile realized claims after code and proof; no premature implemented claim or silent product rewrite to match code.
 
@@ -84,7 +88,7 @@ For substantial design, follow [adaptive workshop](.agents/rules/target-driven-r
 
 ## 5. Plan Changes for genuine parallel execution
 
-Planner selects independently useful outcomes, freezes common contracts and maps dependency order, disjoint write/resource ownership and join proof. Prefer real parallelism across separate authorized Change parents; serialize shared migrations, package exports, lockfiles, canonical headings, clusters and data. Do not split atomic safety boundaries or manufacture concurrency.
+The planner prepares the complete authorized batch: independently useful outcomes, frozen common contracts, dependency order, disjoint write and resource ownership, and join proof. Release each Change when it is independently ready. Do not wait for an unrelated Change, and do not move current-sprint work to backlog because it cannot be dispatched today. Prefer real parallelism across separate authorized Change parents; serialize shared migrations, package exports, lockfiles, canonical headings, clusters and data. Do not split atomic safety boundaries or manufacture concurrency. An owner commission of a named batch authorizes eligible Changes to proceed without a fresh confirmation at each routine checkpoint.
 
 ```mermaid
 flowchart TD
@@ -101,7 +105,7 @@ One custodian serializes joins and shared ledgers. [Parallel scheduling standard
 
 Choose direct planner work, bounded Cursor implementation or hybrid by actual access, scope, cost and proof needs. All routes retain Git ownership, permission and acceptance. Batch necessary owner-terminal checks; no hidden manual prerequisites or invented execution results.
 
-For delegation, apply [source investigation](.agents/references/planner-investigation-standard.md), [packet construction](.agents/references/packet-design-manual.md), [task format](.agents/references/composer-first-execution.md), then [independent readiness](.agents/references/packet-readiness-review.md). One Change is one measurable outcome, normally 5–10 minutes active Cursor work and 1–5 tasks, at most seven actual assignments. [Submission standard](.agents/references/planning-artifact-quality.md) owns folder roles, scale, actual mandatory context, measurements and rejection. Tiny work needs no empty companions. Repartition excessive scope safely; do not delegate missing architecture.
+For delegation, apply [source investigation](.agents/references/planner-investigation-standard.md), [packet construction](.agents/references/packet-design-manual.md), [task format](.agents/references/composer-first-execution.md), then [independent readiness](.agents/references/packet-readiness-review.md). One Change prefers one measurable outcome, normally 5–10 minutes of active Cursor work and 1–5 tasks. Seven actual assignments is a strong default, with the narrow exception in [AGENTS.md](AGENTS.md#submission-shape). [Submission standard](.agents/references/planning-artifact-quality.md) owns folder roles, scale signals and mandatory context. Tiny work needs no empty companions. Repartition work whose size prevents reliable execution. Do not delegate missing architecture, and do not split a coherent bounded Change merely to satisfy a count.
 
 A ready packet supplies selected algorithm, authority, exact source owners, prerequisites, task-specific anchors, focused normal/negative checks and acceptance owner. Ready is not commission.
 
@@ -125,7 +129,7 @@ Local mechanical diagnosis is allowed; material source/authority contradiction r
 
 At each bounded checkpoint: inspect changed files, test affected normal and negative contracts, confirm source/branch custody and document **what actually ran**. Tests are proportionate to risk; security, transaction correctness, privacy, idempotency and financial fences are non-negotiable. For material Changes use the frozen [acceptance matrix](.agents/rules/target-driven-renewal.md#design-verification-with-the-system), recording actual evidence tier, result, tested revision and outstanding limits. Distinguish NOT RUN from FAIL and inherited baseline failures from regressions.
 
-**Integration versus outcome closure:** normally integrate and close once required acceptance passes. If essential safety, functional and affected compatibility gates pass, a specifically owner-accepted deferral of extended assurance may permit integration while its unresolved proof remains visible in the open Change or a linked, owned follow-up. Record integrated SHA, exact deferred scenario, rationale, risk, next proof and owner; do not mark unverified claims PASS or the unresolved outcome Done. Known material defects, failed mandatory gates or missing indispensable safety/correctness evidence block integration. New concrete findings may reopen a gate; do not add ornamental checks after the agreed acceptance passes. No deferral grants live mutation permission.
+**Integration versus outcome closure:** normally integrate and close once required acceptance passes. If essential safety, functional and affected compatibility gates pass, a specifically owner-accepted deferral of extended assurance may permit integration while its unresolved proof remains visible in the open Change or a linked, owned follow-up. Record integrated SHA, exact deferred scenario, rationale, risk, next proof and owner; do not mark unverified claims PASS or the unresolved outcome Done. Known Critical or High defects, failed required safety gates, or missing indispensable safety or correctness evidence block the affected integration. Deferred Medium and Low assurance does not. New concrete findings may reopen a gate when their consequence is Critical or High; do not add ornamental checks after the agreed acceptance passes. No deferral grants live mutation permission. Integrating individual Changes does not certify the whole system.
 
 At a full Change close: demonstrate its accepted Goal; reconcile the Change's product/technical/code/related ledgers; update canonical docs as needed; update `STATUS.md` and evidence without overstating implementation; run applicable link/maintenance/close guards; archive and record the terminal disposition; integrate into the reference branch. **For Changes inside an Undertaking, the integration custodian also refreshes its `OVERVIEW.md` and checks/updates its required rough percentages when the completed outcome materially changes the human big picture; otherwise records that it remains accurate.** A passing subagent task alone is **not** a completed Change.
 

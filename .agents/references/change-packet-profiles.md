@@ -23,7 +23,7 @@ Apply multiple lenses if necessary, not extra packet layers. INTEGRATE is a coor
 
 ### The executor's real unit is a microtask
 
-Use [Composer task format](composer-first-execution.md#tasksmd-format). One narrow decided T-ID, at most seven actual assignments per Change. One parent per Change. A tiny direct edit may need only CHANGE.md. Large STATE/RELEASE scopes require safe repartition, not larger models.
+Use [Composer task format](composer-first-execution.md#tasksmd-format). One narrow decided T-ID. Seven actual assignments per Change is a strong default, with the exception in the submission standard. One parent per Change. A tiny direct edit may need only CHANGE.md. A large STATE or RELEASE scope is repartitioned when its size prevents reliable execution, not by switching to a larger model.
 
 ## Files and ownership
 
