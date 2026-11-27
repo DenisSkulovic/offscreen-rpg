@@ -2,10 +2,11 @@ import { isDeepStrictEqual } from 'node:util';
 import { runPlatformCommand } from '../common/commands.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
 import {
-  CLEANUP_BUDGET_MS,
   captureIdentity,
   recheckIdentity,
   INVENTORY_BUDGET_MS,
+  OBSERVABILITY_ARTIFACT_BUDGET_MS,
+  OBSERVABILITY_OBSERVATION_WORKER_MS,
   PREFLIGHT_BUDGET_MS,
 } from './identity.mjs';
 import {
@@ -15,7 +16,8 @@ import {
   EXPECTED_HELM_RELEASES,
 } from './inventory.mjs';
 import { readPending } from './custody.mjs';
-import { loadArtifacts } from './artifacts.mjs';
+import { loadArtifacts, loadObservabilityVariants } from './artifacts.mjs';
+import { isValidPhasePrefix } from './receipt.mjs';
 
 const IGNORED_OBJECT_KEYS = new Set([
   'Event',
@@ -271,6 +273,234 @@ function readExpectedInventory(artifacts) {
     return artifacts.expectedInventory;
   }
   return profileId ? artifacts.expectedInventory?.[profileId] : null;
+}
+
+/**
+ * @param {object} doc
+ */
+function documentIdentity(doc) {
+  return `${doc.apiVersion}|${doc.kind}|${doc.metadata?.namespace ?? ''}|${doc.metadata?.name}`;
+}
+
+/**
+ * @param {object[]} left
+ * @param {object[]} right
+ */
+function collectorDocumentsEqual(left, right) {
+  if (left.length !== right.length) {
+    return false;
+  }
+  const rightById = new Map(right.map((doc) => [documentIdentity(doc), doc]));
+  for (const doc of left) {
+    const peer = rightById.get(documentIdentity(doc));
+    if (!peer || !isDeepStrictEqual(doc, peer)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @param {object[]} documents
+ */
+function manifestIdentitySet(documents) {
+  return new Set(documents.map((doc) => documentIdentity(doc)));
+}
+
+/**
+ * @param {object | undefined} snapshot
+ */
+function pendingAdmitsPublicReadyOrAbsent(snapshot) {
+  return snapshot?.pending === false && snapshot?.pendingValid === true;
+}
+
+/**
+ * @param {object | undefined} snapshot
+ */
+function pendingBlocksPublicReady(snapshot) {
+  if (snapshot?.pending === true) {
+    return true;
+  }
+  if (snapshot?.pendingValid === false) {
+    return true;
+  }
+  if (snapshot?.pendingValid !== true) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @param {ReturnType<typeof loadArtifacts>['releases'][number]} release
+ */
+function expectedHelmChartRef(release) {
+  return `${release.chartName}-${release.chartVersion}`;
+}
+
+/**
+ * @param {object} snapshot
+ * @param {ReturnType<typeof loadArtifacts>} artifacts
+ */
+function verifyHelmStorageBijection(snapshot, artifacts) {
+  const namespace = artifacts.profile?.namespaces?.observability;
+  const expected = new Map();
+  for (const row of snapshot.helmReleases ?? []) {
+    const revision = Number.parseInt(String(row.revision), 10);
+    if (!Number.isFinite(revision) || revision < 1) {
+      return { ok: false, detail: 'helm-storage-revision' };
+    }
+    expected.set(row.name, `sh.helm.release.v1.${row.name}.v${revision}`);
+  }
+  const observed = new Set();
+  for (const object of Object.values(snapshot.objects ?? {})) {
+    if (object.kind !== 'Secret') {
+      continue;
+    }
+    const name = object.metadata?.name ?? '';
+    const isCandidate =
+      name.startsWith('sh.helm.release.v1.') ||
+      object.type === 'helm.sh/release.v1' ||
+      object.metadata?.labels?.owner === 'helm';
+    if (!isCandidate) {
+      continue;
+    }
+    if (object.metadata?.namespace !== namespace) {
+      return { ok: false, detail: 'helm-storage-namespace' };
+    }
+    if (isTerminating(object.metadata)) {
+      return { ok: false, detail: 'helm-storage-terminating' };
+    }
+    if (!(object.dataKeys ?? []).includes('release')) {
+      return { ok: false, detail: 'helm-storage-data-keys' };
+    }
+    observed.add(name);
+  }
+  for (const [release, secretName] of expected) {
+    if (!observed.has(secretName)) {
+      return { ok: false, detail: `helm-storage-missing-${release}` };
+    }
+  }
+  for (const name of observed) {
+    if (![...expected.values()].includes(name)) {
+      return { ok: false, detail: 'helm-storage-extra' };
+    }
+  }
+  return { ok: true };
+}
+
+/**
+ * @param {object} snapshot
+ * @param {ReturnType<typeof loadArtifacts>} artifacts
+ * @param {{ collectorVariant?: 'desired' | 'predecessor' | 'upgraded', predecessorArtifacts?: ReturnType<typeof loadArtifacts> | null }} [variant]
+ */
+function verifyHelmRevisionMatrix(snapshot, artifacts, variant = {}) {
+  const collectorVariant = variant.collectorVariant ?? 'desired';
+  const predecessorArtifacts = variant.predecessorArtifacts ?? null;
+  const releases = snapshot.helmReleases ?? [];
+  const history = snapshot.helmHistory ?? {};
+  const manifests = snapshot.helmManifests ?? {};
+  const seen = new Set();
+  for (const row of releases) {
+    if (seen.has(row.name)) {
+      return { ok: false, detail: 'extra-helm-revision' };
+    }
+    seen.add(row.name);
+  }
+  if (releases.length !== EXPECTED_HELM_RELEASES.length) {
+    return { ok: false, detail: 'helm-release-count' };
+  }
+  for (const row of releases) {
+    const descriptor = artifacts.releases.find(
+      (entry) => entry.name === row.name,
+    );
+    if (!descriptor) {
+      return { ok: false, detail: `helm-unknown-release-${row.name}` };
+    }
+    if (row.status !== 'deployed') {
+      return { ok: false, detail: `helm-status-${row.name}` };
+    }
+    const expectedChart = expectedHelmChartRef(descriptor);
+    if (
+      row.chart !== expectedChart ||
+      row.appVersion !== descriptor.appVersion
+    ) {
+      return { ok: false, detail: `helm-pin-${row.name}` };
+    }
+    const rows = history[row.name];
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return { ok: false, detail: `helm-history-missing-${row.name}` };
+    }
+    const latestHistory = rows[rows.length - 1];
+    if (
+      String(latestHistory.revision) !== String(row.revision) ||
+      latestHistory.status !== row.status ||
+      latestHistory.chart !== row.chart ||
+      latestHistory.appVersion !== row.appVersion
+    ) {
+      return { ok: false, detail: `helm-history-list-mismatch-${row.name}` };
+    }
+    for (const entry of rows) {
+      if (!['deployed', 'superseded'].includes(entry.status)) {
+        return { ok: false, detail: `helm-history-status-${row.name}` };
+      }
+      if (
+        entry.chart !== expectedChart ||
+        entry.appVersion !== descriptor.appVersion
+      ) {
+        return { ok: false, detail: `helm-history-pin-${row.name}` };
+      }
+    }
+    const manifest = manifests[row.name];
+    if (!manifest || !Array.isArray(manifest.documents)) {
+      return { ok: false, detail: `helm-manifest-missing-${row.name}` };
+    }
+    if (String(manifest.revision) !== String(row.revision)) {
+      return { ok: false, detail: `helm-manifest-revision-${row.name}` };
+    }
+
+    const role = descriptor.role;
+    if (role === 'collector') {
+      const revision = Number.parseInt(String(row.revision), 10);
+      const collectorDescriptor =
+        collectorVariant === 'predecessor'
+          ? artifacts.releases.find((entry) => entry.role === 'collector')
+          : descriptor;
+      const expectedDocs = collectorDescriptor?.documents ?? [];
+      if (!collectorDocumentsEqual(manifest.documents, expectedDocs)) {
+        return { ok: false, detail: 'collector-manifest' };
+      }
+      if (revision === 2) {
+        if (!Array.isArray(manifest.previousDocuments)) {
+          return { ok: false, detail: 'collector-previous-manifest' };
+        }
+        const base =
+          predecessorArtifacts?.releases.find(
+            (entry) => entry.role === 'collector',
+          ) ?? artifacts.releases.find((entry) => entry.role === 'collector');
+        if (!base) {
+          return { ok: false, detail: 'collector-base-missing' };
+        }
+        if (
+          !collectorDocumentsEqual(manifest.previousDocuments, base.documents)
+        ) {
+          return { ok: false, detail: 'collector-previous-manifest' };
+        }
+        if (rows.length !== 2 || rows[0].status !== 'superseded') {
+          return { ok: false, detail: 'collector-history-shape' };
+        }
+      } else if (rows.length !== 1) {
+        return { ok: false, detail: `helm-history-length-${row.name}` };
+      }
+    } else if (
+      !isDeepStrictEqual(
+        manifestIdentitySet(manifest.documents),
+        manifestIdentitySet(descriptor.documents),
+      )
+    ) {
+      return { ok: false, detail: `manifest-identity-${row.name}` };
+    }
+  }
+  return { ok: true };
 }
 
 function assessDirectInventory(snapshot, artifacts) {
@@ -605,8 +835,9 @@ function findUnknownEnumerated(objects, artifacts) {
 /**
  * @param {object} snapshot
  * @param {ReturnType<typeof loadArtifacts>} artifacts
+ * @param {{ collectorVariant?: 'desired' | 'predecessor' | 'upgraded', predecessorArtifacts?: ReturnType<typeof loadArtifacts> | null }} [options]
  */
-function structuralReady(snapshot, artifacts) {
+function assessShape(snapshot, artifacts, options = {}) {
   if (snapshot.namespace?.absent) {
     return {
       ok: false,
@@ -615,17 +846,45 @@ function structuralReady(snapshot, artifacts) {
       detail: 'empty-namespace-present',
     };
   }
-  const direct = assessDirectInventory(snapshot, artifacts);
-  if (!direct.ok) {
-    return direct;
-  }
-  const helmCheck = verifyHelmRevisions(snapshot.helmReleases ?? []);
-  if (!helmCheck.ok) {
+  const profile = artifacts.profile ?? snapshot.artifactsProfile;
+  const ownerLabel = profile?.ownerLabel;
+  const ownerValue = profile?.ownerValue;
+  if (
+    ownerLabel &&
+    ownerValue &&
+    snapshot.namespace?.object?.metadata?.labels?.[ownerLabel] !== ownerValue
+  ) {
     return {
       ok: false,
       state: 'not-ready',
       reasonCode: 'not-ready',
-      detail: helmCheck.detail,
+      detail: 'namespace-owner-label',
+    };
+  }
+
+  const direct = assessDirectInventory(snapshot, artifacts);
+  if (!direct.ok) {
+    return direct;
+  }
+  const helmRevision = verifyHelmRevisionMatrix(snapshot, artifacts, {
+    collectorVariant: options.collectorVariant,
+    predecessorArtifacts: options.predecessorArtifacts,
+  });
+  if (!helmRevision.ok) {
+    return {
+      ok: false,
+      state: 'not-ready',
+      reasonCode: 'not-ready',
+      detail: helmRevision.detail,
+    };
+  }
+  const helmStorage = verifyHelmStorageBijection(snapshot, artifacts);
+  if (!helmStorage.ok) {
+    return {
+      ok: false,
+      state: 'not-ready',
+      reasonCode: 'not-ready',
+      detail: helmStorage.detail,
     };
   }
   const headless = verifyHeadlessServices(snapshot.objects ?? {}, artifacts);
@@ -712,8 +971,15 @@ function detectLegacyOrphans(snapshot) {
   return null;
 }
 
-export function classifyInventory(snapshot, artifacts) {
+/**
+ * @param {object} snapshot
+ * @param {ReturnType<typeof loadArtifacts>} desired
+ * @param {{ predecessorArtifacts?: ReturnType<typeof loadArtifacts> | null }} [options]
+ */
+export function classifyInventory(snapshot, desired, options = {}) {
+  const predecessorArtifacts = options.predecessorArtifacts ?? null;
   const pendingFlag = snapshot.pending === true;
+
   if (Array.isArray(snapshot.legacy) && snapshot.legacy.length > 0) {
     return {
       state: 'legacy',
@@ -724,19 +990,32 @@ export function classifyInventory(snapshot, artifacts) {
   }
 
   if (snapshot.namespace?.absent === true) {
-    if (snapshot.pending === false) {
+    if (!pendingAdmitsPublicReadyOrAbsent(snapshot)) {
       return {
-        state: 'absent',
-        reasonCode: 'absent',
+        state: 'not-ready',
+        reasonCode: 'pending',
+        pending: pendingBlocksPublicReady(snapshot) ? true : pendingFlag,
+        detail: 'pending-blocks-absent',
+      };
+    }
+    const foreignPv = (snapshot.persistentVolumes ?? []).some(
+      (pv) =>
+        pv?.spec?.claimRef?.namespace ===
+        desired.profile?.namespaces?.observability,
+    );
+    if (foreignPv || (snapshot.helmReleases ?? []).length > 0) {
+      return {
+        state: 'not-ready',
+        reasonCode: 'not-ready',
         pending: false,
-        detail: 'clean-absent',
+        detail: 'absent-not-clean',
       };
     }
     return {
-      state: 'not-ready',
-      reasonCode: 'pending',
-      pending: snapshot.pending !== false,
-      detail: 'pending-blocks-absent',
+      state: 'absent',
+      reasonCode: 'absent',
+      pending: false,
+      detail: 'clean-absent',
     };
   }
 
@@ -758,7 +1037,31 @@ export function classifyInventory(snapshot, artifacts) {
     };
   }
 
-  const ready = structuralReady(snapshot, artifacts);
+  let ready = assessShape(snapshot, desired, {
+    collectorVariant: 'desired',
+    predecessorArtifacts,
+  });
+  if (
+    !ready.ok &&
+    predecessorArtifacts &&
+    desired.profile?.id === 'dev' &&
+    (ready.detail?.startsWith('collector') ||
+      ready.detail?.includes('obs-collector'))
+  ) {
+    const predecessorShape = assessShape(snapshot, predecessorArtifacts, {
+      collectorVariant: 'predecessor',
+      predecessorArtifacts,
+    });
+    if (predecessorShape.ok) {
+      return {
+        state: 'not-ready',
+        reasonCode: 'upgrade-required',
+        pending: pendingFlag,
+        detail: 'upgrade-required',
+      };
+    }
+  }
+
   if (!ready.ok) {
     return {
       state: ready.state ?? 'not-ready',
@@ -768,9 +1071,9 @@ export function classifyInventory(snapshot, artifacts) {
     };
   }
 
-  if (pendingFlag) {
+  if (pendingBlocksPublicReady(snapshot)) {
     return {
-      state: 'ready',
+      state: 'not-ready',
       reasonCode: 'pending',
       pending: true,
       detail: 'pending-complete',
@@ -786,48 +1089,278 @@ export function classifyInventory(snapshot, artifacts) {
 }
 
 /**
+ * @param {object | null | undefined} snapshot
+ * @param {ReturnType<typeof loadArtifacts>} desired
+ * @param {{
+ *   identity: { tuple?: { targetNamespaceUid?: string | null } },
+ *   custody: { assertOwnPending: () => object },
+ *   predecessorArtifacts?: ReturnType<typeof loadArtifacts> | null,
+ *   expectedOperation: 'ensure' | 'upgrade' | 'persistence' | 'outage',
+ *   expectedRevision: number,
+ * }} params
+ */
+export function verifyOwnedFinalShape(snapshot, desired, params) {
+  if (snapshot == null) {
+    return { ok: false, configRevision: null, detail: 'missing-snapshot' };
+  }
+  if (typeof params.custody?.assertOwnPending !== 'function') {
+    return { ok: false, configRevision: null, detail: 'missing-custody' };
+  }
+  params.custody.assertOwnPending();
+  if (snapshot.pending !== true || snapshot.pendingValid !== true) {
+    return {
+      ok: false,
+      configRevision: null,
+      detail: 'owned-pending-required',
+    };
+  }
+  const namespaceUid = params.identity?.tuple?.targetNamespaceUid;
+  if (
+    namespaceUid != null &&
+    snapshot.namespace?.uid != null &&
+    snapshot.namespace.uid !== namespaceUid
+  ) {
+    return {
+      ok: false,
+      configRevision: null,
+      detail: 'namespace-uid-mismatch',
+    };
+  }
+  const variant =
+    params.expectedOperation === 'upgrade' || params.expectedRevision === 2
+      ? 'upgraded'
+      : 'desired';
+  const shape = assessShape(snapshot, desired, { collectorVariant: variant });
+  if (!shape.ok) {
+    return {
+      ok: false,
+      configRevision: null,
+      detail: shape.detail ?? 'shape-refused',
+    };
+  }
+  const collector = snapshot.helmReleases?.find(
+    (row) => row.name === 'obs-collector',
+  );
+  const revision = collector
+    ? Number.parseInt(String(collector.revision), 10)
+    : null;
+  if (revision !== params.expectedRevision) {
+    return {
+      ok: false,
+      configRevision: revision,
+      detail: 'revision-mismatch',
+    };
+  }
+  return { ok: true, configRevision: revision, detail: 'owned-final-shape' };
+}
+
+/**
+ * @param {object} snapshot
+ * @param {ReturnType<typeof loadArtifacts>} desired
+ * @param {{
+ *   identity: { tuple?: { targetNamespaceUid?: string | null } },
+ *   custody: { assertOwnPending: () => object },
+ *   completedPhases: string[],
+ * }} params
+ */
+export function verifyOwnedEnsurePrefix(snapshot, desired, params) {
+  if (typeof params.custody?.assertOwnPending !== 'function') {
+    return { ok: false, detail: 'missing-custody' };
+  }
+  params.custody.assertOwnPending();
+  if (!isValidPhasePrefix(params.completedPhases)) {
+    return { ok: false, detail: 'invalid-phase-prefix' };
+  }
+  if (snapshot.pending !== true || snapshot.pendingValid !== true) {
+    return { ok: false, detail: 'owned-pending-required' };
+  }
+  const profile = desired.profile;
+  const completedReleasePhases = params.completedPhases.filter((phase) =>
+    phase.startsWith('obs-'),
+  );
+  if (params.completedPhases.includes('namespace')) {
+    if (snapshot.namespace?.absent) {
+      return { ok: false, detail: 'namespace-absent' };
+    }
+    if (
+      profile?.ownerLabel &&
+      snapshot.namespace?.object?.metadata?.labels?.[profile.ownerLabel] !==
+        profile.ownerValue
+    ) {
+      return { ok: false, detail: 'namespace-owner-label' };
+    }
+  }
+  for (const release of desired.releases) {
+    const secretName = `sh.helm.release.v1.${release.name}.v1`;
+    const key = `Secret/${secretName}`;
+    const allowed = completedReleasePhases.includes(release.name);
+    if (allowed) {
+      if (!snapshot.objects?.[key]) {
+        return { ok: false, detail: `missing-helm-${release.name}` };
+      }
+    } else if (snapshot.objects?.[key]) {
+      return { ok: false, detail: `unexpected-helm-${release.name}` };
+    }
+  }
+  if (completedReleasePhases.length === EXPECTED_HELM_RELEASES.length) {
+    const subset = assessShape(snapshot, desired, {
+      collectorVariant: 'desired',
+    });
+    if (!subset.ok) {
+      return { ok: false, detail: subset.detail ?? 'shape-refused' };
+    }
+  }
+  return { ok: true, detail: 'owned-ensure-prefix' };
+}
+
+/**
+ * @param {object} snapshot
+ * @param {ReturnType<typeof loadArtifacts>} desired
+ * @param {{
+ *   identity: { tuple?: { targetNamespaceUid?: string | null } },
+ *   custody: { assertOwnPending: () => object },
+ *   predecessorArtifacts?: ReturnType<typeof loadArtifacts> | null,
+ *   expectedRevision: number,
+ *   baseline: { tempoUid: string, generation: number },
+ * }} params
+ */
+export function verifyOwnedTempoDown(snapshot, desired, params) {
+  if (typeof params.custody?.assertOwnPending !== 'function') {
+    return { ok: false, configRevision: null, detail: 'missing-custody' };
+  }
+  params.custody.assertOwnPending();
+  if (
+    !pendingAdmitsPublicReadyOrAbsent(snapshot) ||
+    snapshot.pending !== true
+  ) {
+    return {
+      ok: false,
+      configRevision: null,
+      detail: 'owned-pending-required',
+    };
+  }
+  const tempo = snapshot.objects?.['StatefulSet/obs-tempo'];
+  if (!tempo || tempo.metadata?.uid !== params.baseline.tempoUid) {
+    return { ok: false, configRevision: null, detail: 'tempo-uid' };
+  }
+  if (tempo.metadata?.generation !== params.baseline.generation + 1) {
+    return { ok: false, configRevision: null, detail: 'tempo-generation' };
+  }
+  if (tempo.spec?.replicas !== 0) {
+    return { ok: false, configRevision: null, detail: 'tempo-replicas' };
+  }
+  const observed = tempo.status?.observedGeneration;
+  if (
+    observed == null ||
+    Number(observed) < Number(tempo.metadata.generation)
+  ) {
+    return {
+      ok: false,
+      configRevision: null,
+      detail: 'tempo-observed-generation',
+    };
+  }
+  for (const object of Object.values(snapshot.objects ?? {})) {
+    if (
+      object.kind === 'Pod' &&
+      object.metadata?.ownerReferences?.some(
+        (ref) => ref.kind === 'StatefulSet' && ref.name === 'obs-tempo',
+      ) &&
+      !isTerminating(object.metadata)
+    ) {
+      return { ok: false, configRevision: null, detail: 'tempo-pod-active' };
+    }
+  }
+  const collector = snapshot.helmReleases?.find(
+    (row) => row.name === 'obs-collector',
+  );
+  const revision = collector
+    ? Number.parseInt(String(collector.revision), 10)
+    : null;
+  if (revision !== params.expectedRevision) {
+    return { ok: false, configRevision: revision, detail: 'revision-mismatch' };
+  }
+  return { ok: true, configRevision: revision, detail: 'owned-tempo-down' };
+}
+
+const OBSERVATION_START_BUDGET_MS =
+  OBSERVABILITY_ARTIFACT_BUDGET_MS + PREFLIGHT_BUDGET_MS + 10_000 + 30_000;
+
+/**
  * @param {'dev' | 'release'} profileId
  * @param {{
  *   identity?: ReturnType<typeof captureIdentity>,
  *   artifacts?: ReturnType<typeof loadArtifacts>,
+ *   predecessorArtifacts?: ReturnType<typeof loadArtifacts> | null,
  *   run?: typeof runPlatformCommand,
  *   now?: () => number,
  *   deadline?: number,
  *   readPending?: (contextName: string) => { pending: boolean, valid: boolean },
  *   verifyArchive?: boolean,
  *   onIdentityCaptured?: (identity: ReturnType<typeof captureIdentity>) => void,
+ *   stateRoot?: string,
  * }} [deps]
  */
 export function observeObservability(profileId, deps = {}) {
   const run = deps.run ?? runPlatformCommand;
   const now = deps.now ?? (() => Date.now());
   const started = now();
+  const absoluteCap = started + OBSERVABILITY_OBSERVATION_WORKER_MS;
+  const effectiveDeadline = Math.min(deps.deadline ?? absoluteCap, absoluteCap);
   const ownsIdentity = deps.identity == null;
   let identity = deps.identity;
 
+  /** @param {string} detail */
+  const unreadable = (detail) => ({
+    state: 'unreadable',
+    reasonCode: 'unreadable',
+    pending: false,
+    detail,
+  });
+
+  if (effectiveDeadline <= started) {
+    return unreadable('deadline');
+  }
+
   try {
     const profile = readPlatformProfile(profileId);
-    const artifacts =
-      deps.artifacts ??
-      loadArtifacts(profileId, {
+    let artifacts = deps.artifacts;
+    let predecessorArtifacts = deps.predecessorArtifacts ?? null;
+
+    if (artifacts == null) {
+      if (now() + OBSERVABILITY_ARTIFACT_BUDGET_MS > effectiveDeadline) {
+        throw new Error('unreadable: deadline');
+      }
+      const variants = loadObservabilityVariants(profileId, {
         run,
         verifyArchive: deps.verifyArchive !== false,
       });
+      artifacts = variants.desired;
+      predecessorArtifacts = variants.predecessor;
+    }
 
     if (ownsIdentity) {
-      const preflightDeadline = started + PREFLIGHT_BUDGET_MS;
+      const identityDeadline = Math.min(
+        started + OBSERVATION_START_BUDGET_MS,
+        effectiveDeadline,
+      );
+      if (identityDeadline <= now()) {
+        throw new Error('unreadable: deadline');
+      }
       identity = captureIdentity(profileId, profile.contextName, {
         run,
         now,
-        deadline: preflightDeadline,
+        deadline: identityDeadline,
       });
       if (typeof deps.onIdentityCaptured === 'function') {
         deps.onIdentityCaptured(identity);
       }
     }
 
-    const inventoryDeadline =
-      deps.deadline ?? started + PREFLIGHT_BUDGET_MS + INVENTORY_BUDGET_MS;
+    const inventoryDeadline = Math.min(
+      started + OBSERVATION_START_BUDGET_MS + INVENTORY_BUDGET_MS,
+      effectiveDeadline,
+    );
     if (inventoryDeadline <= now()) {
       throw new Error('unreadable: deadline');
     }
@@ -844,26 +1377,38 @@ export function observeObservability(profileId, deps = {}) {
     });
     snapshot.profileId = profileId;
 
+    const recheckDeadline = Math.min(
+      inventoryDeadline + PREFLIGHT_BUDGET_MS,
+      effectiveDeadline,
+    );
+    if (recheckDeadline <= now()) {
+      throw new Error('unreadable: deadline');
+    }
+
     const recheck = recheckIdentity(identity, {
       run,
       now,
-      deadline: inventoryDeadline,
+      deadline: recheckDeadline,
       expectedNamespaceUid: identity.tuple.targetNamespaceUid,
     });
     if (!recheck.ok) {
       throw new Error(`unreadable: ${recheck.reason ?? 'identity-changed'}`);
     }
 
-    const classified = classifyInventory(snapshot, artifacts);
+    const classified = classifyInventory(snapshot, artifacts, {
+      predecessorArtifacts,
+    });
 
     if (ownsIdentity) {
-      const cleanupDeadline = inventoryDeadline + CLEANUP_BUDGET_MS;
-      if (now() > cleanupDeadline) {
-        throw new Error('unreadable: cleanup-deadline');
+      if (now() >= effectiveDeadline) {
+        throw new Error('unreadable: deadline');
       }
       const cleanup = identity.cleanup();
       if (!cleanup.ok) {
         throw new Error('unreadable: cleanup-failed');
+      }
+      if (now() > effectiveDeadline) {
+        throw new Error('unreadable: deadline');
       }
     }
 
@@ -878,18 +1423,8 @@ export function observeObservability(profileId, deps = {}) {
     }
     const message = error instanceof Error ? error.message : String(error);
     if (message.startsWith('unreadable:')) {
-      return {
-        state: 'unreadable',
-        reasonCode: 'unreadable',
-        pending: false,
-        detail: message.replace(/^unreadable:\s*/, ''),
-      };
+      return unreadable(message.replace(/^unreadable:\s*/, ''));
     }
-    return {
-      state: 'unreadable',
-      reasonCode: 'unreadable',
-      pending: false,
-      detail: message,
-    };
+    return unreadable(message);
   }
 }

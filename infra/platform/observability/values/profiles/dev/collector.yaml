@@ -1,0 +1,139 @@
+ports:
+  dev-otlp:
+    enabled: true
+    containerPort: 4327
+    servicePort: 4327
+    protocol: TCP
+    appProtocol: grpc
+  dev-otlp-http:
+    enabled: true
+    containerPort: 4328
+    servicePort: 4328
+    protocol: TCP
+alternateConfig:
+  receivers:
+    otlp/developer:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4327
+        http:
+          endpoint: 0.0.0.0:4328
+  processors:
+    filter/developer:
+      error_mode: propagate
+      trace_conditions:
+      - resource.attributes["service.name"] != "offscreen-agent-poc" and resource.attributes["service.name"]
+        != "offscreen-developer-proof"
+      - resource.attributes["service.namespace"] != "offscreen"
+      - resource.attributes["deployment.environment.name"] != "development"
+      - scope.name != "offscreen.operational.v1"
+      - not IsMatch(span.name, "^[a-z][a-z0-9_.]{0,95}$")
+      - span.attributes["offscreen.run"] != nil and (not IsString(span.attributes["offscreen.run"])
+        or not IsMatch(span.attributes["offscreen.run"], "^[0-9a-f]{16}$"))
+      - span.attributes["offscreen.candidate"] != nil and (span.attributes["offscreen.candidate"]
+        != "vercel" and span.attributes["offscreen.candidate"] != "strands" and span.attributes["offscreen.candidate"]
+        != "openai" and span.attributes["offscreen.candidate"] != "probe")
+      - span.attributes["offscreen.outcome"] != nil and (span.attributes["offscreen.outcome"]
+        != "ok" and span.attributes["offscreen.outcome"] != "error" and span.attributes["offscreen.outcome"]
+        != "cancelled")
+      - span.attributes["offscreen.retry"] != nil and (not IsInt(span.attributes["offscreen.retry"])
+        or span.attributes["offscreen.retry"] < 0 or span.attributes["offscreen.retry"]
+        > 32)
+      log_conditions:
+      - resource.attributes["service.name"] != "offscreen-agent-poc" and resource.attributes["service.name"]
+        != "offscreen-developer-proof"
+      - resource.attributes["service.namespace"] != "offscreen"
+      - resource.attributes["deployment.environment.name"] != "development"
+      - scope.name != "offscreen.operational.v1"
+      - not IsString(log.body)
+      - not IsMatch(log.body, "^[a-z][a-z0-9_.]{0,95}$")
+      - log.attributes["offscreen.run"] != nil and (not IsString(log.attributes["offscreen.run"])
+        or not IsMatch(log.attributes["offscreen.run"], "^[0-9a-f]{16}$"))
+      - log.attributes["offscreen.candidate"] != nil and (log.attributes["offscreen.candidate"]
+        != "vercel" and log.attributes["offscreen.candidate"] != "strands" and log.attributes["offscreen.candidate"]
+        != "openai" and log.attributes["offscreen.candidate"] != "probe")
+      - log.attributes["offscreen.outcome"] != nil and (log.attributes["offscreen.outcome"]
+        != "ok" and log.attributes["offscreen.outcome"] != "error" and log.attributes["offscreen.outcome"]
+        != "cancelled")
+      - log.attributes["offscreen.retry"] != nil and (not IsInt(log.attributes["offscreen.retry"])
+        or log.attributes["offscreen.retry"] < 0 or log.attributes["offscreen.retry"]
+        > 32)
+      metric_conditions:
+      - resource.attributes["service.name"] != "offscreen-agent-poc" and resource.attributes["service.name"]
+        != "offscreen-developer-proof"
+      - resource.attributes["service.namespace"] != "offscreen"
+      - resource.attributes["deployment.environment.name"] != "development"
+      - scope.name != "offscreen.operational.v1"
+      - metric.name != "offscreen.agent.runs" and metric.name != "offscreen.agent.active"
+        and metric.name != "offscreen.agent.duration"
+      - metric.name == "offscreen.agent.runs" and (metric.type != METRIC_DATA_TYPE_SUM
+        or metric.aggregation_temporality != AGGREGATION_TEMPORALITY_CUMULATIVE or
+        metric.is_monotonic != true or metric.unit != "1")
+      - metric.name == "offscreen.agent.active" and (metric.type != METRIC_DATA_TYPE_GAUGE
+        or metric.unit != "1")
+      - metric.name == "offscreen.agent.duration" and (metric.type != METRIC_DATA_TYPE_HISTOGRAM
+        or metric.aggregation_temporality != AGGREGATION_TEMPORALITY_CUMULATIVE or
+        metric.unit != "s")
+      - Len(datapoint.attributes) != 1
+      - datapoint.attributes["offscreen.candidate"] != "vercel" and datapoint.attributes["offscreen.candidate"]
+        != "strands" and datapoint.attributes["offscreen.candidate"] != "openai" and
+        datapoint.attributes["offscreen.candidate"] != "probe"
+    transform/developer:
+      error_mode: propagate
+      trace_statements:
+      - keep_keys(resource.attributes, ["service.name", "service.namespace", "deployment.environment.name"])
+      - keep_keys(scope.attributes, [])
+      - set(scope.version, "")
+      - keep_keys(span.attributes, ["offscreen.run", "offscreen.candidate", "offscreen.outcome",
+        "offscreen.retry"])
+      - set(span.status.message, "")
+      - set(span.events, nil)
+      - set(span.links, nil)
+      - set(span.trace_state, "")
+      log_statements:
+      - keep_keys(resource.attributes, ["service.name", "service.namespace", "deployment.environment.name"])
+      - keep_keys(scope.attributes, [])
+      - set(scope.version, "")
+      - keep_keys(log.attributes, ["offscreen.run", "offscreen.candidate", "offscreen.outcome",
+        "offscreen.retry"])
+      - set(log.event_name, "")
+      - set(log.severity_text, "")
+      metric_statements:
+      - keep_keys(resource.attributes, ["service.name", "service.namespace", "deployment.environment.name"])
+      - keep_keys(scope.attributes, [])
+      - set(scope.version, "")
+      - set(metric.description, "")
+      - keep_keys(metric.metadata, [])
+      - set(datapoint.exemplars, nil)
+  service:
+    pipelines:
+      traces/developer:
+        receivers:
+        - otlp/developer
+        processors:
+        - memory_limiter
+        - filter/developer
+        - transform/developer
+        - batch
+        exporters:
+        - otlp_grpc/tempo
+      logs/developer:
+        receivers:
+        - otlp/developer
+        processors:
+        - memory_limiter
+        - filter/developer
+        - transform/developer
+        - batch
+        exporters:
+        - otlp_http/loki
+      metrics/developer:
+        receivers:
+        - otlp/developer
+        processors:
+        - memory_limiter
+        - filter/developer
+        - transform/developer
+        - batch
+        exporters:
+        - otlp_http/prometheus

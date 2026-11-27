@@ -2073,7 +2073,6 @@ test('observeSelectedServiceState routes observability on both profiles', () => 
   for (const profileId of ['dev', 'release']) {
     const observed = observeSelectedServiceState(profileId, 'observability', {
       run: () => ({ ok: false, stdout: '', stderr: 'missing target' }),
-      observability: { verifyArchive: false },
     });
     assert.notEqual(observed.state, 'unsupported');
     assert.equal(observed.state, 'unreadable');

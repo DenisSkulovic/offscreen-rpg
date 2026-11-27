@@ -16,17 +16,25 @@ import { observeSelectedServiceState } from '../environments/infra-cli.mjs';
 import { parsePlatformServiceSelection } from '../environments/platform-plan.mjs';
 import {
   INVENTORY_BUDGET_MS,
-  OBSERVATION_BUDGET_MS,
+  OBSERVABILITY_ARTIFACT_BUDGET_MS,
+  OBSERVABILITY_OBSERVATION_SUPERVISOR_MS,
+  OBSERVABILITY_OBSERVATION_WORKER_MS,
   PREFLIGHT_BUDGET_MS,
 } from '../platform/observability/identity.mjs';
 import { observeObservability } from '../platform/observability/readiness.mjs';
 import { buildWorkerReceipt } from '../platform/observability/install.mjs';
+import { evaluateObservationReceipt } from '../platform/observability/receipt.mjs';
 import { runCommand } from './diagnostic-engine.mjs';
 
-export const OBSERVABILITY_SUPERVISOR_MS = 360_000;
-export const OBSERVABILITY_WORKER_BUDGET_MS = OBSERVATION_BUDGET_MS;
+export const OBSERVABILITY_SUPERVISOR_MS =
+  OBSERVABILITY_OBSERVATION_SUPERVISOR_MS;
+export const OBSERVABILITY_WORKER_BUDGET_MS =
+  OBSERVABILITY_OBSERVATION_WORKER_MS;
 export const PREFLIGHT_COMMAND_CAP_MS = 15_000;
 export const INVENTORY_COMMAND_CAP_MS = 10_000;
+
+const OBSERVATION_START_BUDGET_MS =
+  OBSERVABILITY_ARTIFACT_BUDGET_MS + PREFLIGHT_BUDGET_MS + 10_000 + 30_000;
 
 /**
  * @param {number} remainingMs
@@ -51,8 +59,9 @@ export function createObservabilityDiagnosticBudget(deps = {}) {
   const now = deps.now ?? (() => performance.now());
   const started = now();
   const workerDeadline = started + OBSERVABILITY_WORKER_BUDGET_MS;
-  const preflightDeadline = started + PREFLIGHT_BUDGET_MS;
-  const inventoryDeadline = started + PREFLIGHT_BUDGET_MS + INVENTORY_BUDGET_MS;
+  const preflightDeadline = started + OBSERVATION_START_BUDGET_MS;
+  const inventoryDeadline =
+    started + OBSERVATION_START_BUDGET_MS + INVENTORY_BUDGET_MS;
   const remainingAbsolute = () => Math.max(0, workerDeadline - now());
   const remainingPreflight = () => Math.max(0, preflightDeadline - now());
   const remainingInventory = () => Math.max(0, inventoryDeadline - now());
@@ -91,6 +100,7 @@ export function createObservabilityDiagnosticBudget(deps = {}) {
  *   readPending?: (contextName: string) => { pending: boolean, valid: boolean },
  *   stateRoot?: string,
  *   observe?: typeof observeObservability,
+ *   deadline?: number,
  * }} [deps]
  */
 export function runObservabilityDiagnosticWorker(
@@ -103,6 +113,9 @@ export function runObservabilityDiagnosticWorker(
   }
   const budget = createObservabilityDiagnosticBudget(deps);
   const observe = deps.observe ?? observeObservability;
+  const absoluteCap = budget.started + OBSERVABILITY_WORKER_BUDGET_MS;
+  const observeDeadline =
+    deps.deadline == null ? absoluteCap : Math.min(deps.deadline, absoluteCap);
   const observation =
     budget.remainingAbsolute() <= 0
       ? {
@@ -114,13 +127,9 @@ export function runObservabilityDiagnosticWorker(
       : observe(profileId, {
           run: deps.run,
           now: budget.now,
-          verifyArchive: false,
           readPending: deps.readPending,
           stateRoot: deps.stateRoot,
-          deadline: Math.min(
-            budget.inventoryDeadline,
-            budget.started + OBSERVABILITY_WORKER_BUDGET_MS,
-          ),
+          deadline: observeDeadline,
         });
   const receipt = buildWorkerReceipt({
     ok: observation.state !== 'unreadable',
@@ -136,8 +145,7 @@ export function runObservabilityDiagnosticWorker(
   if (options.onStdout) {
     options.onStdout(line);
   }
-  const exitCode =
-    observation.state === 'unreadable' || observation.pending === true ? 1 : 0;
+  const exitCode = observation.state === 'unreadable' ? 1 : 0;
   return {
     receipt,
     exitCode,
@@ -262,9 +270,19 @@ export function observe(argv, deps = {}) {
       { allowAbsent },
       deps,
     );
+    const mapped = evaluateObservationReceipt(
+      {
+        code: worker.exitCode,
+        stdout: `${JSON.stringify(worker.receipt)}\n`,
+        stderr: '',
+        reason: null,
+        signal: null,
+      },
+      { allowAbsent, expectedProfile: profile },
+    );
     return {
-      status: worker.receipt.ok ? 'PASS' : 'FAIL',
-      reason: worker.receipt.reasonCode,
+      status: mapped.status,
+      reason: mapped.reason,
       receipt: worker.receipt,
     };
   }
@@ -285,12 +303,17 @@ export function runObservabilityDiagnosticSubprocess(
   argv,
   options = {},
 ) {
+  const cap = OBSERVABILITY_SUPERVISOR_MS;
+  const timeoutMs = options.timeoutMs ?? cap;
+  if (timeoutMs > cap) {
+    throw new Error('observability supervisor timeout exceeds shared cap');
+  }
   return runCommand(
     process.execPath,
     ['infra/verification/diagnostic-live.mjs', ...argv],
     {
       cwd: repoRoot,
-      timeoutMs: options.timeoutMs ?? OBSERVABILITY_SUPERVISOR_MS,
+      timeoutMs,
       env: options.env ?? process.env,
     },
   );
