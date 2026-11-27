@@ -75,7 +75,7 @@ The detailed classification lives in [work taxonomy](work/WORK-TAXONOMY.md). The
 
 | Subtree | Admission / active contents | Exit / terminal lifecycle |
 | --- | --- | --- |
-| [`work/undertakings/`](work/undertakings/README.md) | Real multi-Change transformation with named outcome; **required human-first `OVERVIEW.md` plus technical `UNDERTAKING.md`**, scoped Changes and `undertaking/<slug>` integration branch | **Active → Landing → Closed**; integrate accepted result, reconcile, record compact disposition, retire temporary dossier/branch |
+| [`work/undertakings/`](work/undertakings/README.md) | Real multi-Change transformation with named outcome; **required human-first `OVERVIEW.md` plus technical `UNDERTAKING.md`**, scoped Changes and recorded integration target (main by default) | **Active → Landing → Closed**; integrate accepted result, reconcile, record compact disposition, retire temporary dossier/branch |
 | [`work/designs/open/`](work/designs/README.md) | Active unresolved decision, owner, next choice and review trigger | Promote accepted meaning to canon; move terminal dossiers to archive or worthwhile deferred investigations to backlog with ledger and link reconciliation |
 | [`work/designs/backlog/`](work/designs/backlog/README.md) | Deferred worthwhile design, unratified or unresolved, with reactivation trigger | Owner selects and refreshes before returning to open; terminal disposition to archive |
 | [`work/designs/archive/`](work/designs/archive/README.md) | Terminal design review cache, not canon | Record full-SHA provenance, preserve unique evidence, repair links; review after seven days and prune only when authorized |
@@ -93,7 +93,7 @@ The detailed classification lives in [work taxonomy](work/WORK-TAXONOMY.md). The
 
 **Every backlog folder needs a reason to exist:** one desired outcome, explicit remaining prerequisite/decision and domain index. Avoid stale duplicates; review deferred work when its dependency changes. **Every open folder needs an exit.** “Blocked” still belongs in open while the desired outcome is active; do not hide it to clear backlog. Conversely, a Design whose choice has been ratified can retire even while a *separate code Change* remains unfinished. Its selected behavior has moved to the wiki; implementation work has moved to the Change.
 
-**Temporary Git branches are not work folders.** A commissioned implementation Change uses a dedicated short-lived `change/<id>-<slug>` branch from the actual reference branch (usually its Undertaking). Parent/children work there; parent squash-integrates accepted work back and deletes the branch. No per-T-ID branches. See the [branch procedure](WORKFLOW.md#7-git-one-integration-branch-one-temporary-branch-per-commissioned-implementation-change).
+**Temporary Git branches are not work folders.** A commissioned implementation Change uses a dedicated short-lived `change/<id>-<slug>` branch from the actual recorded reference branch (main is current trunk). Parent/children work there; parent squash-integrates accepted work back and deletes the branch. No per-T-ID branches. See the [branch procedure](WORKFLOW.md#7-git-one-integration-branch-one-temporary-branch-per-commissioned-implementation-change).
 
 ## 5. Durable history, evidence, and concluded research
 

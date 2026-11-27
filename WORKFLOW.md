@@ -98,11 +98,11 @@ flowchart TD
 
 Create an Undertaking **only when several Changes/Designs genuinely share a transformation and should land as one reviewed program**. Name the *outcome* (`Storyteller Workshop`, not `phase-2-consolidated`). Create `work/undertakings/<slug>/UNDERTAKING.md` with purpose, included/excluded work, known dependencies, status and exit/acceptance conditions. **At the same time create `OVERVIEW.md`** from [the Undertaking overview template](work/undertakings/OVERVIEW-TEMPLATE.md). It is the **first read for a human supervisor** and a required ChatGPT cold-start read; the technical dossier remains the evidence/acceptance owner. Link both bidirectionally and from the Undertakings index. Track `Active → Landing → Closed`.
 
-Branch from the chosen actual integration base, usually `main`, as `undertaking/<slug>`. Record base SHA. **Do the program's ratified documentation and planned Change packets on the Undertaking branch.** Do not send Change implementations straight to `main`. Multiple simultaneous Undertakings are exceptional, not prohibited by physics.
+Record the integration target and base SHA. `main` is the current trunk; an Undertaking is a coordination dossier and does not automatically create a branch. A different dedicated integration branch requires explicit owner authorization. Ratified planning and accepted Changes join the recorded target; each implementation Change uses its own branch/worktree.
 
 **Human-progress loop:** At kickoff, after a material Change integration, changed scope/roadmap, major milestone, next-wave planning handoff and before landing, refresh the undertaking `OVERVIEW.md` from current integrated code/receipts + `STATUS.md` + the technical `UNDERTAKING.md` ledger. Show achieved, active, remaining, blockers and a human-observable next milestone in plain language. **Always maintain a 5%-rounded overall completion/remaining percentage, plus major-track estimates, visual bars, uncertainty and reasons** under the [required overview template](work/undertakings/OVERVIEW-TEMPLATE.md). Treat these as subjective engineering-effort/risk judgments, never as a fraction of completed Changes; revise downward when new integration work appears. **Proactively give the owner a concise accessible overview, including numeric progress estimates and a link,** at meaningful checkpoints; not after every T-ID. Assign a named integration custodian to serialize shared overview edits while Change parents submit factual receipts. Keep the overview visual and short, without a shadow queue or false Done claims. A standalone new ChatGPT planning session must read the current overview before setting the next wave.
 
-When all selected child outcomes are complete, review the integrated docs, source, tests, evidence, queue/status and permissions on the undertaking branch. Then merge the coherent undertaking into its documented upstream (usually `main`), verify and retire the temporary branch and dossier with concise historical disposition. This is **not** the end of every individual Change.
+When all selected child outcomes are complete, review integrated docs, source, tests, evidence, queue/status and permissions on the recorded target. If a separately authorized Undertaking branch exists, merge it after accepted proof and safe reconciliation. Retire the dossier with concise historical disposition; no extra branch promotion when Changes already joined main. This is **not** the end of every individual Change.
 
 [Undertaking lifecycle owner](work/undertakings/README.md) · [current example](work/undertakings/storyteller-workshop/UNDERTAKING.md).
 
@@ -172,14 +172,13 @@ A usable T-ID gives: **specific source SHA and affected functions, 2–5 read an
 ## 7. Git: one integration branch, one temporary branch per commissioned implementation Change
 
 ```text
-main
-  └── undertaking/storyteller-workshop       # integration + docs/planning, later lands to main
-        ├── change/wr02-library             # executes WR02; squash-joins back; retired
-        ├── change/wr03-workdesk            # created later, from then-current undertaking HEAD
-        └── ...                             # separate authorized parallel Changes only
+main                              # current integration trunk
+  ├── change/<id>-<slug>           # one commissioned Change, dedicated worktree
+  ├── change/<other-id>-<slug>     # separately authorized, disjoint ownership
+  └── ...                          # accepted Changes join main, then retire
 ```
 
-1. Parent identifies **actual reference branch** from the Change/Undertaking. No assumption that it is `main`. For an ordinary stand-alone Change outside an undertaking, the selected reference may be `main`.
+1. Parent verifies **actual recorded reference branch** and HEAD; current trunk is main, with another target only if explicitly authorized.
 2. **Before the first implementation edit**, create `change/<id>-<slug>` from that reference branch's current HEAD; record base SHA and target. The Change branch is **mandatory**. A dedicated linked Git worktree is **mandatory for every commissioned Cursor Change**, including when it is the only active chat. The primary checkout stays on its existing integration branch. Never `git switch` it to the Change branch.
 3. The Cursor parent and its bounded children work on the **same Change branch**. No per-T-ID branches, no child commit ceremony. Parent commits coherent batch milestones.
 4. On actual accepted Change completion, parent refreshes the reference branch, reconciles changed shared ownership, runs proportionate join checks, **squash-integrates into that same reference branch** by default, records final SHA, closes/retires packet and deletes the temporary branch/worktree.
