@@ -5,4 +5,5 @@ Deferred worthwhile investigations, not selected designs or implementation commi
 | Dossier | Deferred reason | Reactivation trigger | Owner / provenance |
 | --- | --- | --- | --- |
 
-No dossiers classified yet. Individual owner-approved reviews will populate this index.
+| [Product documentation renewal](product-documentation-renewal/README.md) | Owner deferred product editorial design | Explicit owner selection and current HEAD refresh | Human owner + ChatGPT; baseline `59693e9d86f9cfcdc3227669257d89dab5aaaf11`, docs/product/ |
+| [Technical documentation renewal](technical-documentation-renewal/README.md) | Owner deferred technical contract review | Explicit owner selection and current HEAD refresh | Human owner + ChatGPT; baseline `59693e9d86f9cfcdc3227669257d89dab5aaaf11`, docs/technical/ |
