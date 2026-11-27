@@ -236,8 +236,11 @@ function barrelExportNames(text) {
   return names;
 }
 
+const PACKAGE_LEAF =
+  'packages/(?:[^/]+|(?:domain|ai|commerce|platform|foundation)/[^/]+)';
+
 function classifyPackageExport(name, text) {
-  if (/^packages\/[^/]+\/package\.json$/.test(name)) {
+  if (new RegExp(`^${PACKAGE_LEAF}/package\\.json$`).test(name)) {
     try {
       const keys = packageExportNames(JSON.parse(text).exports);
       if (keys.length === 0) return null;
@@ -249,7 +252,7 @@ function classifyPackageExport(name, text) {
       return null;
     }
   }
-  if (!/^packages\/[^/]+\/src\/index\.[cm]?[jt]s$/.test(name)) return null;
+  if (!new RegExp(`^${PACKAGE_LEAF}/src/index\\.[cm]?[jt]s$`).test(name)) return null;
   const names = barrelExportNames(text);
   if (names.length === 0) return null;
   return {
@@ -310,7 +313,7 @@ function classifyContentPackageKind(name, text) {
 }
 
 function classifyCommandAuthority(name, text) {
-  if (!/^packages\/[^/]+\/src\/.+\.ts$/.test(name)) return null;
+  if (!new RegExp(`^${PACKAGE_LEAF}/src/.+\\.ts$`).test(name)) return null;
   const commands = [...text.matchAll(COMMAND_SCHEMA)].map((match) => match[1]);
   if (commands.length === 0) return null;
   return {
