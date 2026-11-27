@@ -372,7 +372,7 @@ Deleting a story first prevents further actions, invalidates pending work and re
 
 Temporal history may retain Activity arguments and results after application data is deleted. Pass compact references and minimal control metadata; never credentials or full prompts. Define namespace history retention and payload protection before hosting real stories. Operational history and the player's chronology are different records with different retention needs.
 
-Who may use these stores for access, export, correction, revoke, or deletion is unratified in [Player data lifecycle](../../../work/designs/backlog/player-data-lifecycle/README.md#rights-matrix). This section does not set a retention period.
+Who may use these stores for access, export, correction, revoke, or deletion is unratified in [Player data lifecycle](../../../work/designs/backlog/player-data-lifecycle/README.md#eight-unresolved-decisions). This section does not set a retention period.
 
 ## Profiled storyteller storage
 

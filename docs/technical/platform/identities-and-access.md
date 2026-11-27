@@ -39,7 +39,7 @@ Preserve a safe internal return destination through sign-in: a pending invitatio
 
 An expired session during a choice sends the user through sign-in and back to the current scene. Never automatically submit the old choice after login; its deadline or meaning may have changed. Keep unsent text as a local draft only where appropriate. Clearing an expired session is different from leaving the shared story.
 
-Apply account and IP rate limits to account entry, story creation and expensive commands, with stronger per-story/funding limits before inference. Bound submitted text and payload size. OAuth proves a provider identity; it does not make unlimited free generation safe to fund. The demo needs a global allowance even before commercial tiers exist. Membership checks on this page are not a privacy export and not a right to another person's data. The unratified request matrix is [Player data lifecycle](../../../work/designs/backlog/player-data-lifecycle/README.md#rights-matrix).
+Apply account and IP rate limits to account entry, story creation and expensive commands, with stronger per-story/funding limits before inference. Bound submitted text and payload size. OAuth proves a provider identity; it does not make unlimited free generation safe to fund. The demo needs a global allowance even before commercial tiers exist. Membership checks on this page are not a privacy export and not a right to another person's data. The unratified request matrix is [Player data lifecycle](../../../work/designs/backlog/player-data-lifecycle/README.md#eight-unresolved-decisions).
 
 ## Boundaries that stay next door
 
