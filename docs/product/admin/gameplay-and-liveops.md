@@ -4,11 +4,9 @@
 
 **Does not own:** commercial refunds, provider billing implementation, or the engine's meaning of an accepted action ([selected engine](../../technical/engine/selected-architecture.md)).
 
-**Status:** proposed product target, 2026-11-14. Owner review still required.
+**Status:** proposed product target, 2026-11-14. Owner review still required. This page is the proposal, not an accepted production kill-switch and not an implemented LiveOps console ([illustrative examples](README.md#what-this-section-establishes-and-what-it-does-not)).
 
-**Selected intent.** A change to future behavior is released by named version to a chosen audience under an explicit adoption policy. Publishing a catalogue or approving a proposal changes no active world until adoption activates it, and emergency controls limit only future eligibility.
-
-**Current realization.** This page is the proposal. It is not an accepted production kill-switch and not an implemented LiveOps console. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.
+A change to future behavior is released by named version to a chosen audience under an explicit adoption policy. Publishing a catalogue or approving a proposal changes no active world until adoption activates it, and emergency controls limit only future eligibility.
 
 ## The question
 
