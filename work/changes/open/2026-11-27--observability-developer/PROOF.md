@@ -1,12 +1,78 @@
-# Acceptance ownership
-Single successor owns all V01–V12 and transferred A1–A12. Original predicates frozen at 5f5750eca2f31d92fac6bfa478d1cae7203e1815:work/changes/open/2026-11-26--observability-native/{PROOF,OWNER-ACCEPTANCE}.md. R5-CERTIFICATION.md and ACCEPTANCE.md in design dossier map each original obligation. No old proof upgraded to PASS. Cursor source only; owner/ChatGPT heavy acceptance. A6/A8/A9 isolated environment availability still to confirm before full commission; no live authorization. T01 source-only first slice does not require live target. T01 actual Helm offline render and focused tests per TASKS. Remaining gates NOT RUN on successor. No merge until required successor proof; no separate predecessor certification or joint closure.
+# Verification and acceptance
 
-## Unified successor ledger
-A1–A5, A11 source, A12: source proof NOT RUN on successor. A6 fresh install, A7 strict signal/privacy, A8 isolated persistence/outage, A9 isolated quota failure, A10 resources: owner proof NOT RUN on successor. A11 live conditional read-only. V01–V12 remain mandatory per accepted matrix, historical feasibility not implementation acceptance. Archived native [PROOF](../../archive/2026-11/observability/2026-11-26--observability-native/PROOF.md) and [owner route](../../archive/2026-11/observability/2026-11-26--observability-native/OWNER-ACCEPTANCE.md) are predicate history, not active commissions; R5 overrides conflicting mechanisms. No separate native closure.
+**Status:** all successor gates NOT RUN. The accepted architecture and outstanding A1–A12 obligations remain binding; no live or implementation authorization.
 
-## F08 | single selected deadline candidate (independent ratification pending)
+## 1. Acceptance routes
 
-Owner approved this candidate for independent review in repair15. Defended R5 remains architecture authority until the amendment passes review. No runtime authorization or dispatch. Earlier repair10/11 alternatives and original infeasible phase schedules are historical only: [pre-consolidation PROOF.md](https://github.com/DenisSkulovic/offscreen-rpg/blob/6b6d909c8c91464c027a530d6837479d78002923/work/changes/open/2026-11-27--observability-developer/PROOF.md). Do not implement those alternatives.
+The [design acceptance matrix](../../../designs/open/observability-developer/ACCEPTANCE.md) defines V01–V12. The [certification mapping](../../../designs/open/observability-developer/R5-CERTIFICATION.md) transfers every original A1–A12 predicate to this single successor. The archived native [proof](../../archive/2026-11/observability/2026-11-26--observability-native/PROOF.md) and [owner route](../../archive/2026-11/observability/2026-11-26--observability-native/OWNER-ACCEPTANCE.md) retain the original predicates, not active commission. Prior evidence is valid only for its actual tested SHA and scope.
+
+| Route | Executor | Required proof |
+| --- | --- | --- |
+| Precommission evidence | ChatGPT + owner | Local worktree census, offline render, pinned D3/D4 experiment, amendment ratification, isolated target availability |
+| Implementation | Cursor | A1–A5, A11 source, A12 and focused V01–V12 cases in TASKS.md; actual offline Helm parity and local subprocess tests |
+| Existing dev qualification | ChatGPT + owner | V06–V10; A7/A10 may reuse the same receipts when all original criteria hold |
+| Isolated infrastructure certification | ChatGPT + owner | A6 fresh install, A8 persistence/outage, A9 real quota failure |
+| Conditional release preview | ChatGPT + owner | A11 read-only if available; never mutate release |
+
+Cursor commits exact tested SHA, owned paths, commands/results and remaining heavy proofs, then stops at IMPLEMENTED — ACCEPTANCE PENDING. The integration custodian joins only after all mandatory gates pass on the successor candidate and affected main drift is reconciled. No separate predecessor certification.
+
+## 2. Precommission evidence
+
+[READINESS.md](READINESS.md) is the single current blocker ledger. F08 deadlines and D4/D4.1 query freshness remain candidates requiring independent ratification.
+
+Run the following from a clean main worktree:
+
+```bash
+bash work/changes/open/2026-11-27--observability-developer/preflight-evidence.sh
+```
+
+This read-only route verifies source baseline, worktree/branch census, references, pinned Grafana Service port 80 → container port 3000, Prometheus OTLP config and Collector render. Operational reference census is already reconciled remotely in SOURCE-MAP.md; no need to repeat research at unchanged source.
+
+For the separately approved pinned D3/D4 experiment only:
+
+```bash
+OFFSCREEN_OBSERVABILITY_EVIDENCE=authorized bash work/changes/open/2026-11-27--observability-developer/preflight-evidence.sh
+```
+
+Preconditions: verified local Docker daemon, sufficient capacity, pinned images already present; no Kubernetes requests, host mounts, published ports, image pulls, external network or application stores. The script verifies immutable experiment source blobs before modifying private copies. It labels owned containers, checks they are absent after completion, and refuses unsafe prerequisites. Never automatically remove retained containers.
+
+Prior experiment stdout, if available, can supply exact application metric rows and TARGET_INFO from /tmp/offscreen-obs-data-plane.ruUJDGpb. It cannot establish the D4 full-domain query behavior. The new experiment checks exact labels, actual producer timestamps and bounded raw query windows on newly retained synthetic data; it does not establish production retention scale, future-boundary ingestion or successor acceptance.
+
+Return compact census/render receipts, D3_D4_RECEIPT, exit status, cleanup observation and SHA. Keep raw logs private; on failure return sanitized error and exact blocker. Separately confirm isolated A6/A8/A9 target availability, no unrelated data and authorization boundaries. No boot/reset/delete in preflight.
+
+## 3. Existing development qualification (owner)
+
+After implementation and explicit authorization, use the dedicated clean implementation worktree. Record exact HEAD/status, source guard, independent Kind/Docker/cluster UID, memory/admission, current configuration and identity projection. No other platform writer or connection.
+
+For the occupied known predecessor:
+1. `pnpm infra:status --env dev --services observability --json`: require upgrade-required and clear pending.
+2. `OFFSCREEN_OBSERVABILITY_UPGRADE=authorized pnpm obs:upgrade`: exactly one Collector revision transition, preservation and clear pending. Repeat: mutation none, no selected UID/RV change. Failure stops; no automatic retry or rollback.
+3. `pnpm obs:connect --queries`: fixed loopback ports, authenticated Grafana health, Ctrl+C and owned listener cleanup. Do not leave connection running during proof/upgrade.
+4. Execute the following sequentially and stop on first failure:
+
+```bash
+export OFFSCREEN_OBSERVABILITY_PROOF=authorized
+node infra/verification/smoke/observability/proof.mjs health dev kind-offscreen-dev
+node infra/verification/smoke/observability/proof.mjs developer dev kind-offscreen-dev
+node infra/verification/smoke/observability/proof.mjs developer dev kind-offscreen-dev
+node infra/verification/smoke/observability/proof.mjs signals dev kind-offscreen-dev
+node infra/verification/smoke/observability/proof.mjs resources dev kind-offscreen-dev
+```
+
+Retain stores between the two developer runs. Require exact fresh sample timestamps and trace/log IDs, valid controls, prohibited canary exclusion, exact metric labels and complete negative query windows. No stale credit, no actual application enrollment. Preserve stable identities, authenticated datasource health and scoped resource evidence. Existing retained obs-proof-90039b35 namespace is separate cleanup debt; no routine namespace deletion.
+
+## 4. Isolated infrastructure certification (owner)
+
+- A6: separately approved fresh normal dev target. Public plan, public ensure (`pnpm infra:up --env dev --services observability --json`), status, health, repeat ensure. Desired rev1, five pinned ready workloads, three bound claims, exact Grafana auth, repeat no mutation/identity change. Not equivalent to occupied V06 upgrade.
+- A8: approved isolated target after A6, with `OFFSCREEN_OBSERVABILITY_PROOF=authorized` and `OFFSCREEN_OBSERVABILITY_DISRUPTION=authorized`. Run persistence then outage via proof.mjs with exact dev profile/context. Require query-only replay, preserved identities and fresh recovery. No automatic retry or destructive cleanup.
+- A9: separate fresh isolated target or separately approved fresh bootstrap. Add `OFFSCREEN_OBSERVABILITY_ISOLATED_PROOF=authorized` and `OFFSCREEN_OBSERVABILITY_EXPECTED_CLUSTER_UID` from independent target evidence. Run partial-install via proof.mjs; require real quota rejection, retained data/pending and typed repeat refusal. Never clear pending or delete failed platform as part of proof.
+- A11: conditional approved read-only release preview, no release ensure.
+
+All commands depend on exact target identity, available capacity, verified implementation candidate and applicable authority. Collect sanitized receipts under .offscreen/verification. No raw credentials or broad node output.
+
+## 5. Shared deadline contract (F08 candidate)
+
+Pending independent ratification. These are hard upper bounds, not expected runtime. Accepted R5 remains authoritative until ratification; no alternate timeout mode or hidden proof bypass.
 
 All values below are seconds; export shared runtime constants in milliseconds in identity.mjs (T03), wire external callers in T05, and consume the same constants in T07–T11. No copied divergent totals. Exact recognition and process containment remain specified in the [external supervisor](contracts/observation-callers.md) and [external process cancellation](contracts/partial-install.md) contracts. No hidden proof mode. A phase may start only if its full allocation fits its work deadline; clamp nested operations and termination grace to remaining monotonic time, check before and after, never convert exhausted time into a 1ms command. Work deadline = absolute deadline minus emergency reserve, once only. Emergency reserve is exclusively for failure/interruption restoration and cleanup, not further acceptance work. A cancelled run cannot pass. No sleep-to-budget. Unused allocation is not an obligation to wait. All mutation timeoutMs values inclusive: 30s patch/create, 240s upgrade, 510s Helm; default5s termination/close inside each (TERM at D-5, KILL at D-1, outcome at D). No further write or cleanup on close-unconfirmed; retain fence, actual inherited lock and snapshot. Direct trusted synchronous reads use SIGKILL timeout as specified in T03; no hard real-time claim for uninterruptible OS I/O.
 
@@ -29,7 +95,7 @@ All values below are seconds; export shared runtime constants in milliseconds in
 | Delete Pod / CM | 360 each | UID preconditions, consumer census for CM, bounded typed absence, ledger |
 | Normal / privacy Pod cycle | 1155 / 1335 | 285+300+150/330+60+360 |
 
-Preserve existing sequential inventory, complete 19-kind raw endpoint census, bounded pagination (100/page, 500 aggregate items as existing), Helm list/history/manifests, PV and legacy-name reads. Refuse extra/unexpected releases before arbitrary history/manifest reads. No partial classified result, no fallback ambient listing, no concurrency redesign. The 120s aggregate is fail-closed, not a reservation of each call's maximum. Empirical complete-inventory viability remains unverified. Preload verified artifacts once per operation; don't re-render between observations. Inventory includes no implicit full identity recheck. Actual source at baseline: inventory.mjs::collectInventory/remainingMs currently permits minimum 1ms and adds cleanup to default budget; T05 must enforce exact bounded semantics. identity.mjs::recheckIdentity currently defaults to per-command cap; T03 must implement full selected tuple/budget, not merely rename constants.
+Preserve existing sequential inventory, complete 19-kind raw endpoint census, bounded pagination (100/page, 500 aggregate items as existing), Helm list/history/manifests, PV and legacy-name reads. Refuse extra/unexpected releases before arbitrary history/manifest reads. No partial classified result, no fallback ambient listing, no concurrency redesign. The 120s aggregate is fail-closed, not a reservation of each call's maximum. Empirical complete-inventory viability remains unverified. Preload verified artifacts once per operation; don't re-render between observations. Inventory includes no implicit full identity recheck. T03 implements the full identity budget; T05 enforces the aggregate inventory deadline.
 
 ### Installer, observation, upgrade and connect
 
@@ -41,7 +107,7 @@ Preserve existing sequential inventory, complete 19-kind raw endpoint census, bo
 
 ### Proof gate allocations
 
-Components are ordered as described below and in INTERFACES; total includes emergency reserve; slack is unallocated.
+Components follow the operation contracts in [INTERFACES.md](INTERFACES.md); total includes emergency reserve; slack is unallocated.
 | Gate | Work component arithmetic | Work sum | Reserve | Total | Slack |
 |---|---|---:|---:|---:|---:|
 | health | 640+120+90+15+120+210+30 | 1225 | 120 | 1380 | 35 |
@@ -54,7 +120,7 @@ Components are ordered as described below and in INTERFACES; total includes emer
 
 Health order start, inventory, Grafana query, close, repeat inventory, final identity, receipt. Developer start, inventory, forward, Python600 positive/negative/positive with durable D4.1 allocations (573 work +22 slack +5 termination), evidence60, close, identity, receipt. Resources start, inventory, forward, sampling/report300, close, repeat inventory, identity, receipt. Signals start, inventory, proxy, namespace, CM, separate normal and privacy Pod cycles, CM delete, identity, close, receipt. No Pod reuse between modes.
 
-Resources: Python currently writes broad node summaries, loops node reads sequentially with 25s timeout, sleeps after each cycle; use per-cycle concurrent reads of exactly the two nodes with 8s request cap, schedule next cycle no earlier than 10s from prior cycle start (if overrun, fail, no burst catch-up); all 12 cycles fit 120s plus setup/final/Prom queries within 300s. Fixed production interval 10; fake clock only in tests. Use actual allocated Prom port (never 0), no env override to zero, no fallback ambient node listing, exact observed roles. Preserve original memoryTime/workingSetBytes keys internally; map to INTERFACES report schema at boundary. No raw node summaries on disk.
+Resources: use per-cycle concurrent reads of exactly the two nodes with 8s request cap, schedule next cycle no earlier than 10s from prior cycle start (if overrun, fail, no burst catch-up); all 12 cycles fit 120s plus setup/final/Prom queries within 300s. Fixed production interval 10; fake clock only in tests. Use actual allocated Prom port (never 0), no env override to zero, no fallback ambient node listing, exact observed roles. Preserve original memoryTime/workingSetBytes keys internally; map to the [health/resource contract](contracts/health-resources.md) at the boundary. No raw node summaries on disk.
 
 Persistence: start640, inventory120, proxy90, namespace270, CM285, baseline normal cycle1155, three rounds of restart730 + replay cycle1155, finish735. Restart730 = preinventory120+identity210+patch30+pending10+rollout240+postinventory120. Pending must be durable before patch. Finish735 = inventory120+CM delete360+identity210+proxy close15+compare-clear/receipt30. Clear before releasing custody.
 
@@ -64,234 +130,10 @@ Outage: start640, inventory120, proxy90, namespace270, CM285; baseline cycle, do
 
 Signals/persistence emergency reserve1020 covers known Pod cleanup360+CM cleanup360+identity210+proxy15+receipt30=975. Outage emergency reserve2040 covers restore820+same cleanup975=1795; restoration first, no new proof. If exact identity, ownership or available time is insufficient, retain pending/known ledger, refuse unsafe cleanup. Namespace deletion is not authorized.
 
-Partial-install: start640, absent inventory120, identity210, wrapper setup60, first public ensure7500, bound identity210, retained inventory120, repeat public refusal1100, retained inventory120, final identity210, receipt30. Outer supervisor owns no platform lock; real inner ensure owns custody. Read actual created namespace UID from the wrapper's private durable ensure-intent binding ledger, corroborated by exact retained pending tuple and frozen namespace GET; public ensure receipt deliberately has no UID. Require successful worker/outer receipt parsing for failure/refusal predicates independently; never invent a public UID field. A timeout never counts as refusal. Use exact wrapper argv and narrow read-only inherited-lock adapter in the [inherited-lock adapter](contracts/partial-install.md) and owned process group cancellation in the same contract; never infer API write cancellation from process death. Preserve failed platform and pending. No cleanup of failed platform. Emergency300 does not authorize restoration or deletion.
+Partial-install: start640, absent inventory120, identity210, wrapper setup60, first public ensure7500, bound identity210, retained inventory120, repeat public refusal1100, retained inventory120, final identity210, receipt30. Outer supervisor owns no platform lock; real inner ensure owns custody. Read actual created namespace UID from the wrapper's private durable ensure-intent binding ledger, corroborated by exact retained pending tuple and frozen namespace GET; public ensure receipt deliberately has no UID. Require successful worker/outer receipt parsing for failure/refusal predicates independently; never invent a public UID field. A timeout never counts as refusal. Use the [partial-install contract](contracts/partial-install.md) for exact wrapper argv, inherited-lock inspection and owned process-group cancellation; never infer API write cancellation from process death. Preserve failed platform and pending. No cleanup of failed platform. Emergency300 does not authorize restoration or deletion.
 
 Proof source tests: fake monotonic clock at each phase boundary (exact fit, one ms insufficient, command timeout despite exit0, cleanup failure after green operation, restoration reserve available after work expiry); assert no subsequent phase/child or successful receipt after failure. Existing proof-host early return/finally cannot make returned ok reflect cleanup failure: refactor to single terminal result after cleanup. Test actual public main return code and persisted receipt agree. Do not claim these budgets proven by arithmetic alone.
 
-## Open evidence and ratification gates
+D4/D4.1 details live in [signal-queries.md](contracts/signal-queries.md). The developer Python phase is 573s work (105 preflight +128 POST +180 positive query +120 negative query +5 initial watermark read +35 allocations), 22s slack, 5s termination/close = 600s. Proof-local watermark persists across cleanup. Actual pinned query and timing evidence remain outstanding.
 
-D1 (owner approved candidate for independent review): approve the selected numerical amendment for independent review (not live authorization). Alternative: retain defended bounds and return to design for substantially different custody/inventory/proof composition. Do not commission packet with mutually contradictory budgets. Recommend approval of amended bounds, subject to actual timing evidence and independent review; maxima not operational target times.
-
-D2 (planning approved; availability unverified): confirm availability of two owner-assigned fresh isolated normal-profile dev targets (or sequential separately approved fresh bootstrap), with exact cluster identity and no unrelated data/workloads, for A6/A8 and A9. No automatic cluster creation, destruction or recovery. Source implementation itself need not use these targets; original precommission availability requirement remains.
-
-D3 (planning approved; evidence unverified): recover original data-plane output (only application rows and TARGET_INFO, source SHA/pins) or explicitly authorize a separately reviewed isolated disposable experiment to establish exact labels. Do not run experiment against current application stores or assume existing local Docker authority. No secrets, raw logs or user telemetry requested. Source-derived candidate includes three promoted resource attributes; actual fixture remains unverified.
-
-D4 timestamp bound: selected full signed OTLP application timestamp domain, three bounded raw matrix queries before every metric-bearing submission, specified in [the signal query contract](contracts/signal-queries.md). Verified pinned converter, duration parser and raw query source; practical pinned query evidence and exact labels remain open. Candidate Python phase subtotal573s (105 preflight +128 POST +180 positive query +120 negative query +5 initial watermark read +35 durable allocations), within 595s forward window and 5s termination/close reserve, 22s slack. D4.1 is a selected proof-local state amendment awaiting independent ratification; retain across all proof runs/cleanup, no new proof authority.
-
-Cross-task corrections: T08/09 uses separate normal and privacy Pods (repair11 arithmetic), not both modes in one 900s Pod. T08 resource creation CM/Pod includes typed absence in285s, not270. T06 internal diagnosticHttp4318 proof-only binding; public bindings unchanged. T06 requires exact expectedSecretUid from classified inventory and resolved artifact Service targetPort (not identity tuple); pass both as explicit arguments, no ambient secret discovery. T10 uses actual five scoped roles and two normal nodes; fixed interval, no production env override. T11 exact wrapper builders in the partial-install contract override argv[0] classifier; no arbitrary read-only Helm commands. T11 restore adapter narrow, no generic cancellation bypass. These selections supersede contradictory earlier prose but do not constitute effective deadline authorization.
-
-Owner evidence route (exact executable batch below): first recover captured stdout of the previously accepted immutable data-plane experiment, specifically the JSON after "=== PROMETHEUS SERIES AND VALUES ===" and line "TARGET_INFO". No Collector debug log needed. If unavailable, reproduce using accepted design experiment only on verified isolated local Docker host, pinned already-present images, private directory, no host mounts/ports and no Kubernetes writes. Before execution planner must provide exact rendered relay source and preflight/cleanup instructions. Do not run against application stores. For A6/A8/A9 isolated VM reuse, require actual VM/cluster identity, target occupancy and separately authorized fresh reset before any destructive action. Approval of planning is not evidence those prerequisites are met.
-
-No source or live tests run by this consolidation. Independent ratification of candidate deadlines, exact caller/subprocess feasibility, D4 pinned query execution evidence, pinned developer metric label evidence and isolated target availability remain open. All tasks held. No acceptance predicates retired.
-
-## Workstation evidence batch | census, render, D3/D4 (not executed)
-
-Prior R3.2 stdout was not recovered in tracked files or accessible prior terminal context. The recorded successful private evidence directory was /tmp/offscreen-obs-data-plane.ruUJDGpb; if exact full row stdout is available, return only the application rows and TARGET_INFO line. The old experiment did not exercise D4 full-domain queries, so a new isolated run remains required for that evidence.
-
-SOURCE-MAP.md reconciles current operational reference census remotely; rerunning it is optional corroboration at this exact source baseline, not a reason to repeat previously demonstrated research. The retained combined batch below is still a valid reproducible owner route for missing local worktree/render and D3/D4 evidence. Run from the clean main worktree (read-only census and offline render first). Only OFFSCREEN_OBSERVABILITY_EVIDENCE=authorized opts into the named isolated Docker experiment; without it the batch stops after the read-only phase with D3/D4 NOT RUN. Verify local Docker daemon and owner capacity before opt-in. The separate target availability questions below do not authorize bootstrap/reset. No Kubernetes requests, host mounts, published ports, image pulls, external network or application stores. This reuses the accepted experiment bytes, injecting a bounded query receipt into a private temporary copy, not editing tracked design scripts. Stop on any failed prerequisite, query, label or cleanup. No broad Docker removal. Existing script cleans only the containers it creates; label-based postcheck detects retained experiment containers (do not automatically remove them). Do not run on an unverified remote daemon.
-
-```bash
-(
-set -euo pipefail
-umask 077
-test "$(git branch --show-current)" = main
-STATUS=$(git status --porcelain)
-test -z "$STATUS" || { echo "REFUSE dirty checkout; preserve existing work"; exit 2; }
-SOURCE_BASE=edb0a12af7d9c389b36ccbe341bc473c4a9e6e68
-git diff --quiet "$SOURCE_BASE" HEAD -- infra scripts package.json work/designs/open/observability-developer/experiments || { echo "REFUSE changed evidence source; planner recheck"; exit 2; }
-W=$(mktemp -d /tmp/offscreen-obs-evidence.XXXXXXXX)
-export W
-echo "PRIVATE EVIDENCE: $W"
-echo "EVIDENCE_HEAD=$(git rev-parse HEAD)"
-echo "SOURCE_BASE=$SOURCE_BASE"
-echo "=== WORKTREE / BRANCH CENSUS ==="
-git worktree list --porcelain > "$W/worktrees.txt"
-git branch --list 'change/observability-developer' 'change/observability-native*'
-git branch --remotes --list 'origin/change/observability-developer' 'origin/change/observability-native*'
-grep -E '^(worktree |branch |HEAD )' "$W/worktrees.txt"
-echo "=== TRACKED REFERENCE CENSUS ==="
-RX='specimen(sRoot)?|specFile|image-lock-candidate\.tsv|observability/(chart|install\.sh)|obs:connect|obs:upgrade'
-git --no-pager grep -nI -i -E "$RX" -- . > "$W/references.txt"
-git --no-pager grep -lI -i -E "$RX" -- . > "$W/reference-files.txt"
-echo "MATCHED_FILES=$(wc -l < "$W/reference-files.txt") MATCHED_LINES=$(wc -l < "$W/references.txt")"
-cat "$W/reference-files.txt"
-echo "=== OPERATIONAL MATCHES ==="
-grep -E '^(infra/|scripts/|docs/technical/platform/observability-native-infrastructure.md:|docs/runbooks/kubernetes-observability.md:|package.json:)' "$W/references.txt" || test "$?" = 1
-echo "=== TRACKED OBSERVABILITY FILES ==="
-git ls-files infra/platform/observability infra/verification/smoke/observability
-echo "=== OFFLINE RENDER ==="
-helm version --short
-node --version
-python3 --version
-D=work/designs/open/observability-developer/experiments
-BASE=06306ace3717841f36ad0952cf7664afbd6fcd4a
-for f in build-developer-values.py data-plane.py run-data-plane.sh; do
-  git show "$BASE:$D/$f" > "$W/$f"
-done
-test "$(git hash-object "$W/build-developer-values.py")" = 9a9a6a724891caba1146a82dc6434f3f9460e0eb
-test "$(git hash-object "$W/data-plane.py")" = d003d533c1a8e170730a25fb4fb3a9a9ded75266
-test "$(git hash-object "$W/run-data-plane.sh")" = b834b169052d3121f267d774807b6358964071d1
-python3 "$W/build-developer-values.py" infra/platform/observability/specimens/collector.yaml "$W/overlay.yaml"
-timeout --signal=KILL 390s node --input-type=module <<'JS'
-import assert from 'node:assert/strict';
-import {spawnSync} from 'node:child_process';
-import {writeFileSync} from 'node:fs';
-import {parse,parseAllDocuments} from 'yaml';
-import {loadArtifacts} from './infra/platform/observability/artifacts.mjs';
-const b=loadArtifacts('dev');
-const g=b.releases.find(x=>x.role==='grafana');
-assert(g);
-const svc=g.documents.filter(x=>x.kind==='Service'&&x.metadata.name==='obs-grafana');
-assert.equal(svc.length,1);
-assert.equal(svc[0].spec.type??'ClusterIP','ClusterIP');
-const ports=svc[0].spec.ports;
-assert.equal(ports.length,1);
-const port=ports[0];
-const workload=g.documents.filter(x=>x.kind==='Deployment'&&x.metadata.name==='obs-grafana');
-assert.equal(workload.length,1);
-const containerPorts=workload[0].spec.template.spec.containers.flatMap(x=>x.ports??[]);
-const resolved=typeof port.targetPort==='string'?containerPorts.filter(x=>x.name===port.targetPort).map(x=>x.containerPort):[port.targetPort??port.port];
-console.log('GRAFANA_PORT_RECEIPT',JSON.stringify({service:svc[0].metadata.name,port:port.port,targetPort:port.targetPort??port.port,resolved,containerPorts}));
-assert.equal(port.port,80);assert.deepEqual(resolved,[3000]);
-const c=b.releases.find(x=>x.role==='collector');
-const prom=b.releases.find(x=>x.role==='prometheus');
-assert(c && prom);
-const cfgs=prom.documents.filter(x=>x.kind==='ConfigMap' && typeof x.data?.['prometheus.yml']==='string');
-assert.equal(cfgs.length,1);
-const config=parse(cfgs[0].data['prometheus.yml']);
-assert.deepEqual(config.otlp?.promote_resource_attributes,['deployment.environment.name','service.namespace','service.name']);
-assert.equal(config.otlp?.keep_identifying_resource_attributes??false,false);
-assert.equal(config.otlp?.promote_scope_metadata??false,false);
-assert.equal(config.otlp?.translation_strategy??'UnderscoreEscapingWithSuffixes','UnderscoreEscapingWithSuffixes');
-assert.equal(config.otlp?.convert_histograms_to_nhcb??false,false);
-assert.equal(config.otlp?.promote_all_resource_attributes??false,false);
-assert.equal((config.remote_read??[]).length,0);
-assert.equal((config.remote_write??[]).length,0);
-const rr=spawnSync('helm',['template',c.name,c.chartPath,'--namespace',b.profile.namespaces.observability,'-f',c.valuesPath,'-f',process.env.W+'/overlay.yaml',...c.helmValueArgs],{encoding:'utf8',timeout:60000,killSignal:'SIGKILL',maxBuffer:8*1024*1024});
-assert.equal(rr.status,0);
-const docs=parseAllDocuments(rr.stdout).map(x=>{assert.equal(x.errors.length,0);return x.toJSON()});
-const cm=docs.filter(x=>x?.kind==='ConfigMap'&&x.metadata.name==='obs-collector');
-assert.equal(cm.length,1);
-assert.equal(typeof cm[0].data.relay,'string');
-writeFileSync(process.env.W+'/relay.yaml',cm[0].data.relay,{mode:0o600});
-console.log('PINNED RENDER AND OTLP CONFIG CHECK PASS');
-JS
-echo "READ_ONLY_EVIDENCE_COMPLETE"
-if [[ "${OFFSCREEN_OBSERVABILITY_EVIDENCE:-}" != authorized ]]; then
-  echo "D3_D4_NOT_RUN: explicit isolated experiment opt-in required"
-  exit 0
-fi
-test -z "${DOCKER_HOST:-}${DOCKER_CONTEXT:-}${DOCKER_TLS:-}${DOCKER_TLS_VERIFY:-}${DOCKER_CERT_PATH:-}"
-CTX=$(timeout -s KILL 10s docker context show)
-HOST=$(timeout -s KILL 10s docker context inspect "$CTX" --format '{{.Endpoints.docker.Host}}')
-case "$HOST" in unix://*) ;; *) echo "REFUSE nonlocal Docker endpoint"; exit 2;; esac
-timeout -s KILL 10s docker info --format '{{.Name}} {{.MemTotal}}'
-awk '/^MemAvailable:/ { found=1; if ($2 < 4194304) exit 1 } END { if (!found) exit 1 }' /proc/meminfo
-# Modify only verified private copies. Record exact producer timestamp from its own clock.
-python3 - "$W/data-plane.py" <<'PY'
-from pathlib import Path
-import sys
-p=Path(sys.argv[1]);s=p.read_text();marker='now = time.time_ns()'
-assert s.count(marker)==1
-p.write_text(s.replace(marker,marker+'\nprint("EVIDENCE_METRIC_MS",now//1000000,flush=True)'))
-PY
-python3 - "$W/run-data-plane.sh" <<'PY'
-from pathlib import Path
-import sys
-p=Path(sys.argv[1]);s=p.read_text()
-marker='print("PROMETHEUS SERIES CHECK PASS")'
-assert s.count(marker)==1
-injection=r'''
-from datetime import datetime,timezone,timedelta
-from decimal import Decimal
-from urllib.parse import urlencode
-import time,os
-job="offscreen/offscreen-developer-proof"
-base={"job":job,"deployment_environment_name":"development","service_namespace":"offscreen","service_name":"offscreen-developer-proof","offscreen_candidate":"probe"}
-expected={}
-def add(name,value,**extra):
-    expected[tuple(sorted(dict(base,__name__=name,**extra).items()))]=Decimal(str(value))
-add("offscreen_agent_runs_total",17)
-add("offscreen_agent_active_ratio",3)
-add("offscreen_agent_duration_seconds_sum","0.2")
-add("offscreen_agent_duration_seconds_count",1)
-for le,v in zip(("0.01","0.1","1","10","60","+Inf"),(0,0,1,1,1,1)):
-    add("offscreen_agent_duration_seconds_bucket",v,le=le)
-assert len(rows)==len(expected)
-assert {tuple(sorted(r["metric"].items())):Decimal(r["value"][1]) for r in rows}==expected
-meta=query('target_info{job="'+job+'"}')
-assert len(meta)==1 and meta[0]["metric"]=={"__name__":"target_info","job":job,"deployment_environment_name":"development"} and Decimal(meta[0]["value"][1])==1
-windows=((-9223372036854,-3000000000001),(-3000000000000,2999999999999),(3000000000000,9223372036854))
-seen={};results=[];count=0
-epoch=datetime(1970,1,1,tzinfo=timezone.utc)
-for lo,hi in windows:
-    params={"query":'{job="'+job+'"}['+str(hi-lo+1)+'ms]',"time":(epoch+timedelta(milliseconds=hi)).isoformat(timespec="milliseconds"),"timeout":"5s"}
-    start=time.monotonic()
-    with urllib.request.urlopen("http://127.0.0.1:9090/api/v1/query?"+urlencode(params),timeout=5) as response:
-        raw=response.read(1048577)
-    elapsed=time.monotonic()-start
-    assert len(raw)<=1048576 and elapsed<=5
-    body=json.loads(raw,parse_float=Decimal)
-    assert body["status"]=="success" and body["data"]["resultType"]=="matrix" and not body.get("warnings") and not body.get("infos")
-    window_series=set()
-    for row in body["data"]["result"]:
-        key=tuple(sorted(row["metric"].items()))
-        assert key not in window_series and row["metric"]["job"]==job and "histograms" not in row
-        window_series.add(key)
-        previous=None
-        for t,v in row["values"]:
-            ms=Decimal(t)*1000
-            assert ms==ms.to_integral_value() and lo<=ms<=hi and (previous is None or ms>previous)
-            previous=ms
-            count+=1
-            if row["metric"]["__name__"]!="target_info":
-                assert key in expected and Decimal(v)==expected[key]
-                seen[key]=max(seen.get(key,ms),ms)
-        assert previous is not None
-    assert count<=16384
-    results.append({"lo":lo,"hi":hi,"elapsedMs":round(elapsed*1000),"bytes":len(raw),"series":len(window_series)})
-assert set(seen)==set(expected) and len(set(seen.values()))==1
-assert set(seen.values())=={Decimal(os.environ['EVIDENCE_METRIC_MS'])}
-print("D3_D4_RECEIPT",json.dumps({"application":[{"metric":dict(k),"value":str(expected[k]),"rawTimestampMs":int(seen[k])} for k in sorted(seen)],"targetInfo":meta[0],"windows":results,"sampleCount":count},sort_keys=True))
-'''
-s=s.replace(marker,injection+'\n'+marker)
-query_run='timeout 45s docker run --rm -i '
-assert s.count(query_run)==1
-s=s.replace(query_run,'''EVIDENCE_METRIC_MS=$(awk '$1=="EVIDENCE_METRIC_MS" && NF==2 && $2 ~ /^[0-9]+$/ { print $2; n++ } END { if(n!=1) exit 1 }' "$OUT/submissions.txt")
-'''+query_run+'-e "EVIDENCE_METRIC_MS=$EVIDENCE_METRIC_MS" ')
-# Tag all created containers so cleanup can be independently checked without touching other containers.
-needle='COMMON=(--pull=never --cap-drop ALL --security-opt no-new-privileges)'
-assert s.count(needle)==1
-s=s.replace(needle,'COMMON=(--label "offscreen.evidence=${EVIDENCE_ID:?}" --pull=never --cap-drop ALL --security-opt no-new-privileges)')
-p.write_text(s)
-PY
-export EVIDENCE_ID="$(basename "$W")"
-PRE=$(timeout -s KILL 10s docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID")
-test -z "$PRE"
-rc=0
-timeout --signal=TERM --kill-after=30s 300s bash "$W/run-data-plane.sh" "$W/relay.yaml" > "$W/full-private.log" 2>&1 || rc=$?
-echo "EXPERIMENT_EXIT=$rc"
-POST=$(timeout -s KILL 10s docker ps -aq --filter "label=offscreen.evidence=$EVIDENCE_ID") || { echo "FAIL Docker cleanup observation unavailable; retain private evidence"; exit 1; }
-test -z "$POST" || { echo "FAIL retained owned experiment containers; preserve evidence, report IDs"; printf '%s\n' "$POST"; exit 1; }
-test "$rc" = 0
-test "$(grep -c '^D3_D4_RECEIPT ' "$W/full-private.log")" = 1
-grep '^D3_D4_RECEIPT ' "$W/full-private.log"
-echo "OWNED CONTAINERS ABSENT"
-git rev-parse HEAD
-)
-```
-
-Set the authorization variable only for this named experiment (not proof/upgrade/disruption flags). Return the compact workstation output (reference file list and operational matches, worktree census, Grafana receipt, render check, experiment receipt, exit status, cleanup result and SHA). Keep private full logs local; if output clipped attach the compact output as a text file. For isolated A6/A8/A9, separately state whether the existing isolated acceptance VM is available for sequential fresh normal-dev targets, whether it holds unrelated data, and whether a separate reset can later be authorized. Actual VM/cluster UID and occupancy checks are mandatory before any eventual live proof; do not boot/reset/delete a cluster in this batch. Current implementation is not yet written: full successor inventory/cancellation timing and A9 actual wrapper feasibility cannot be established by this experiment; those remain focused source and owner acceptance proof, not retroactive preflight PASS. On failure return exit status and sanitized error lines from the private log, not full Collector debug output. The batch validates exact labels and three queries on newly retained synthetic data; it does not demonstrate production retained-store scale or future-boundary sample ingestion, and does not replace two live developer runs. No test was executed by the planner in preparing this command.
-
-## Owner execution route (after implementation and separately authorized)
-From dedicated implementation worktree root, clean tracked tree, exact tested SHA, current source guard; capture git rev-parse HEAD and git status --porcelain; no other platform writer/connection. Owner confirms target by independent Kind/Docker/cluster UID evidence, normal profile and available isolated target(s); no cluster creation or deletion implied.
-Existing dev predecessor: pnpm infra:status --env dev --services observability --json; require upgrade-required and pending false. OFFSCREEN_OBSERVABILITY_UPGRADE=authorized pnpm obs:upgrade; require exactly one Collector revision transition, preserved identities and no pending. Repeat same command require mutation none and no selected UID/RV change. pnpm obs:connect --queries in owner foreground; verify fixed loopback ports, Grafana authenticated health, Ctrl+C and no owned listeners; do not leave running during upgrade/proof. Then run sequentially, stop at any failure:
-```bash
-export OFFSCREEN_OBSERVABILITY_PROOF=authorized
-node infra/verification/smoke/observability/proof.mjs health dev kind-offscreen-dev
-node infra/verification/smoke/observability/proof.mjs developer dev kind-offscreen-dev
-node infra/verification/smoke/observability/proof.mjs developer dev kind-offscreen-dev
-node infra/verification/smoke/observability/proof.mjs signals dev kind-offscreen-dev
-node infra/verification/smoke/observability/proof.mjs resources dev kind-offscreen-dev
-```
-Retain stores between developer runs; each receipt must prove fresh sample timestamps/IDs, no stale credit. A7/A10 may reuse these receipts only if original predicates fully met. A6 separate approved fresh normal-profile target: public plan then pnpm infra:up --env dev --services observability --json, public status, health, repeat ensure; revision1 desired, all five pinned ready, three bound claims, exact Grafana auth, repeat no mutation/identity change. A8 on approved isolated target only after A6, add OFFSCREEN_OBSERVABILITY_DISRUPTION=authorized and run persistence then outage (candidate deadlines must first pass independent review). A9 separately fresh isolated target, add OFFSCREEN_OBSERVABILITY_ISOLATED_PROOF=authorized and OFFSCREEN_OBSERVABILITY_EXPECTED_CLUSTER_UID from independent verified isolated target; run partial-install gate, expect deliberate real quota failure and retained pending, repeat public refusal; do not clear. A11 conditional approved read-only release preview; never ensure release. Collect sanitized receipts under .offscreen/verification, preserve exact source SHA and identity, no raw credentials. A/V status remains NOT RUN.
+All gates remain NOT RUN. Prior planning alternatives and exact original preflight block are in [Git history](https://github.com/DenisSkulovic/offscreen-rpg/blob/9c78b4b78e5acd6957a3f7f57a7f4c0bb4ae9c05/work/changes/open/2026-11-27--observability-developer/PROOF.md).
