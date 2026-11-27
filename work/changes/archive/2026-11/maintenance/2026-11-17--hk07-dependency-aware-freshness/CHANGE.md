@@ -1,6 +1,6 @@
 # HK07 | Git-backed dependency freshness and actionable review candidates
 
-**State: Done (2026-11-18).** **Authority:** [repository maintenance target](../../../../../designs/open/repository-housekeeping/PREVENTION-SYSTEM.md). **Baseline:** use HK06's full tracked inventory and parsed graph; no invented age/proof metrics. **One outcome:** when code or a cited document changes, maintainers get a bounded review candidate showing which owner may need revalidation, without pretending a timestamp can determine truth.
+**State: Done (2026-11-18).** **Authority:** [repository maintenance target](https://github.com/DenisSkulovic/offscreen-rpg/blob/59693e9d86f9cfcdc3227669257d89dab5aaaf11/work/designs/open/repository-housekeeping/PREVENTION-SYSTEM.md). **Baseline:** use HK06's full tracked inventory and parsed graph; no invented age/proof metrics. **One outcome:** when code or a cited document changes, maintainers get a bounded review candidate showing which owner may need revalidation, without pretending a timestamp can determine truth.
 
 ## Cursor first-screen brief
 

@@ -20,3 +20,5 @@ Historical coordination findings: [November 18 backlog convergence](agent-practi
 - [Product reality research](product-reality/README.md): dated audits, claim register, semantic materialization, coherence and cost methodology; non-normative.
 
 - [Documentation editorial audit](agent-practice/DOCUMENTATION-EDITORIAL-AUDIT-2026-11-18.md): concluded corpus audit, examples and unrun semantic-comprehension evaluation; current authority remains in existing documentation rules.
+
+- [Repository housekeeping audit](agent-practice/REPOSITORY-HOUSEKEEPING-2026-11-17.md): historical findings, prevention rationale and original proof limits; current maintenance authority stays in its existing reference.

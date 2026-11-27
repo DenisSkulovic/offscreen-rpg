@@ -1,6 +1,6 @@
 # HK05 | Remove two transitional Play import shims after UI composition settles
 
-**State: Done (2026-11-18).** UI03 is Done. Rechecked `main@dca79183`. Both one-line reexports were still present, and this change removes them. **Program:** [housekeeping audit](../../../../../designs/open/repository-housekeeping/AUDIT-2026-11-17.md). **Outcome:** Play source consumers import the actual owner modules rather than two obsolete one-line compatibility surfaces.
+**State: Done (2026-11-18).** UI03 is Done. Rechecked `main@dca79183`. Both one-line reexports were still present, and this change removes them. **Program:** [housekeeping audit](https://github.com/DenisSkulovic/offscreen-rpg/blob/59693e9d86f9cfcdc3227669257d89dab5aaaf11/work/designs/open/repository-housekeeping/AUDIT-2026-11-17.md). **Outcome:** Play source consumers import the actual owner modules rather than two obsolete one-line compatibility surfaces.
 
 ## Concrete evidence
 

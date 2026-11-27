@@ -21,3 +21,9 @@ Shallow or missing Git history is `unavailable`. That is not a zero-age freshnes
 ## CI
 
 `.github/workflows/maintenance.yml` runs the strict gate on pushes and pull requests that touch docs, work, research, evidence, status, or source. The weekly schedule and `workflow_dispatch` use full history so freshness candidates are in the artifact. The job does not install dependencies, call a model, or run the Chamber database. A docs-only or Change-only push still skips the code and integration jobs through `scripts/repo-tools/ci-change-scope.mjs`.
+
+## Interpretation and safe disposition
+
+Derive inventory from tracked Git files and existing path/ownership rules; reuse shared parsing rather than creating a shadow status registry. Keep structural errors distinct from semantic review candidates. Partial Done is not terminal. A changed cited dependency requires review, not an automatic contract rewrite; a stable old document may be correct. Exceptions must name exact path, owner, reason and review date; no wildcard or permanent baseline hiding. Surface the few highest-value findings in brief output and retain the full report separately. Findings need an owner/disposition, not a second execution queue.
+
+Before removing executable tooling, inspect actual imports, operational entrypoints, scripts, consumers and unique recovery capability; replace and verify required behavior first, including negative and authorization cases. For test extraction retain existing assertions, isolation and known failures; diagnostic shared sessions do not replace independent acceptance. Preserve migrations, active fixtures, thin adapters and unique evidence when consumers or authority still require them. See [repository geography and retirement](../../REPOSITORY-STRUCTURE.md). No warning authorizes mutation, deletion, provider spend or a weakened gate.

@@ -19,7 +19,6 @@ Existing classifications below are historical starting points, not fresh disposi
 | Item | Status |
 | --- | --- |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
-| [repository-housekeeping/](open/repository-housekeeping/README.md) | **2026-11-17 audit:** prevention track HK02/HK06/HK07/HK08 is Done. HK05 and HK04 are Done. HK01 is Ready replacement-first; HK03 is Ready for preserve-red test extraction |
 | [player-experience-refoundation/](open/player-experience-refoundation/README.md) | **Active Phase 3 visual-system program:** product/technical semantic roles prepared; [Phase 3](open/player-experience-refoundation/phase-3/README.md) maps 11 bounded UI/DIR Changes, all unselected. Full final art direction, V2 rich text and generation remain gated |
 | [gameplay-domain-coverage/](open/gameplay-domain-coverage/README.md) | **Proposed, not selected.** Unratified catalogue of economy, progression, space, relationships, collaboration, and content policy. It adds no universal mechanic |
 | [livelihood-economy/](open/livelihood-economy/README.md) | **Proposed, not selected.** Unratified livelihood and exchange questions. No universal currency or profession |

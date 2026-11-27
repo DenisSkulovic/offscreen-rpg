@@ -1,6 +1,6 @@
 # HK08 | Make hygiene visible on every repository transition
 
-**State: Done (2026-11-18).** **Authority:** [repository maintenance target](../../../../../designs/open/repository-housekeeping/PREVENTION-SYSTEM.md) and [Change standard](../../../../../../.agents/references/change-work-unit-standard.md). **One outcome:** objective maintenance violations cannot slip through an ordinary push or Change close, and active status stays concise and discoverable rather than becoming a second history archive.
+**State: Done (2026-11-18).** **Authority:** [repository maintenance target](https://github.com/DenisSkulovic/offscreen-rpg/blob/59693e9d86f9cfcdc3227669257d89dab5aaaf11/work/designs/open/repository-housekeeping/PREVENTION-SYSTEM.md) and [Change standard](../../../../../../.agents/references/change-work-unit-standard.md). **One outcome:** objective maintenance violations cannot slip through an ordinary push or Change close, and active status stays concise and discoverable rather than becoming a second history archive.
 
 ## Cursor first-screen brief
 

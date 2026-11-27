@@ -1,6 +1,6 @@
 # HK06 | Tracked-artifact inventory and lifecycle integrity guard
 
-**State: Done (2026-11-18).** **Authority:** [repository maintenance target](../../../../../designs/open/repository-housekeeping/PREVENTION-SYSTEM.md) and [Change standard](../../../../../../.agents/references/change-work-unit-standard.md). **Baseline:** inspected lean `4e42bd7`; compared GitHub `main@b876318` and current workflow/source; recheck HEAD and worktree before code. **One outcome:** an active documented object cannot be forgotten because it is missing from its owner router or stranded in the wrong lifecycle.
+**State: Done (2026-11-18).** **Authority:** [repository maintenance target](https://github.com/DenisSkulovic/offscreen-rpg/blob/59693e9d86f9cfcdc3227669257d89dab5aaaf11/work/designs/open/repository-housekeeping/PREVENTION-SYSTEM.md) and [Change standard](../../../../../../.agents/references/change-work-unit-standard.md). **Baseline:** inspected lean `4e42bd7`; compared GitHub `main@b876318` and current workflow/source; recheck HEAD and worktree before code. **One outcome:** an active documented object cannot be forgotten because it is missing from its owner router or stranded in the wrong lifecycle.
 
 ## Cursor first-screen brief
 

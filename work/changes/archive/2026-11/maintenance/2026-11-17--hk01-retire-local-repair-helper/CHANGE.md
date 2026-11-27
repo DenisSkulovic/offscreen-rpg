@@ -17,7 +17,7 @@ Inspect `scripts/repo-tools/reconcile-storyteller-response.mjs` in full and `pac
 1. Record `rg`/git search for complete path, basename, usage phrase, commands, imports and history on latest source. Enumerate legitimate uncertain-attempt recovery paths from real application/runbooks; distinguish persistent workflow vs historical emergency triage. If this CLI has a unique legitimate recovery guarantee that is still relied upon, **stop** and propose a replacement before removal.
 2. If unowned: delete `scripts/repo-tools/reconcile-storyteller-response.mjs` via Git; update any route or runbook that names it (none found in lean snapshot). Rely on Git history for historical source, not a second copy in `research/`.
 3. Capture a minimal negative proof: package scripts, TS import resolution and supported Storyteller recovery tests do not import/execute the removed script; no user-visible or runtime recovery behavior is silently dropped.
-4. Produce a dated disposition in [the audit](../../../designs/open/repository-housekeeping/AUDIT-2026-11-17.md), specifying confirmed caller search and safe alternative. Do not invent a new operational CLI for symmetry.
+4. Produce a dated disposition in [the audit](https://github.com/DenisSkulovic/offscreen-rpg/blob/59693e9d86f9cfcdc3227669257d89dab5aaaf11/work/designs/open/repository-housekeeping/AUDIT-2026-11-17.md), specifying confirmed caller search and safe alternative. Do not invent a new operational CLI for symmetry.
 
 ## Forbidden / safety
 

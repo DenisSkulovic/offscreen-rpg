@@ -138,7 +138,7 @@ Hold if the next idea is a new roll, a new generation id, or a provider send to 
 
 Use this branch only after the generation and the attempt are both already `uncertain`, and only on local story mode.
 
-[HK01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/maintenance/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) retired the old settlement CLI. [The housekeeping audit](../../work/designs/open/repository-housekeeping/AUDIT-2026-11-17.md) records the replacement. `node scripts/repo-tools/plan-storyteller-saved-repair.mjs` is the supported operator maintenance command for saved-evidence preview and guarded apply. This page does not run it.
+[HK01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/maintenance/2026-11-17--hk01-retire-local-repair-helper/CHANGE.md) retired the old settlement CLI. [The historical housekeeping audit](https://github.com/DenisSkulovic/offscreen-rpg/blob/59693e9d86f9cfcdc3227669257d89dab5aaaf11/work/designs/open/repository-housekeeping/AUDIT-2026-11-17.md) records the replacement. `node scripts/repo-tools/plan-storyteller-saved-repair.mjs` is the supported operator maintenance command for saved-evidence preview and guarded apply. This page does not run it.
 
 The command was read and was not run. Its gate, from that source, is all of the following:
 
