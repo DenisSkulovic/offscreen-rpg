@@ -257,7 +257,7 @@ export const CASES = [
     entrypoint: 'docs/README.md',
     owners: [
       { path: 'docs/product/experience/return-and-journal.md', headingText: 'Separation from staff forensics and replay product', role: 'mandatory', grade: 3, hopper: true },
-      { path: 'work/designs/open/player-replay/README.md', headingText: 'Player replay | open design', role: 'mandatory', grade: 3 },
+      { path: 'work/designs/backlog/player-replay/README.md', headingText: 'Player replay | deferred design', role: 'mandatory', grade: 3 },
       { path: 'docs/technical/observability/investigation-and-reconstruction.md', headingText: 'Reconstruction steps', role: 'companion', grade: 2 },
     ],
     prohibited: ['Player replay is the Support forensic tool'],

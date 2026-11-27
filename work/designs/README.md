@@ -20,7 +20,6 @@ Existing classifications below are historical starting points, not fresh disposi
 | --- | --- |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
 | [shared-play/](open/shared-play/) | **Proposed, not selected.** Group rules are not accepted. The consent and resolution matrix keeps invitation, control, deadlines, funding, and leave unratified |
-| [player-replay/](open/player-replay/) | Proposed player reread. Not the staff forensic capsule |
 | [legacy-initiatives-index/](open/legacy-initiatives-index/README.md) | **Retained historical reference**, not a current design authorization; canonical and research pages still cite unique legacy analyses. HK08 left this route in place |
 | [product-open-questions.md](open/product-open-questions.md) | Index of the gates above |
 | [repository-agent-workbench/](open/repository-agent-workbench/README.md) | **Mixed historical/remaining study:** HAR01–03/HAR06–08 are Done, HAR09 Cancelled, HAR10 Done, and HAR05 Done. No Cognee/semantic vendor adopted; this is not a current executable Change |

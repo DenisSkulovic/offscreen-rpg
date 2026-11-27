@@ -47,6 +47,6 @@ This describes product intent. It does **not** assert that every loop, arbitrary
 | How should memory behave? | [Memory](storyteller/memory-and-continuity.md) |
 | What may staff do, and what is still only proposed? | [Admin](admin/README.md) |
 
-Shared play and player-facing replay are proposed, not norms: [shared play](../../work/designs/open/shared-play/README.md), [player replay](../../work/designs/open/player-replay/README.md).
+Shared play and player-facing replay are proposed, not norms: [shared play](../../work/designs/open/shared-play/README.md), [player replay](../../work/designs/backlog/player-replay/README.md).
 
 Economy, progression, space, relationships, collaboration, and content policy that are not already selected stay Proposed in the [gameplay domain coverage catalogue](../../work/designs/open/gameplay-domain-coverage/README.md). That catalogue adds no rule.
