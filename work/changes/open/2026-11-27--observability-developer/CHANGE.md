@@ -11,7 +11,7 @@
 NOT DISPATCHABLE. Existing authority is native observability infrastructure, synthetic-only admission and install-only lifecycle. Proposed outcome is developer-accessible application-shaped telemetry without destructive reinstall. Do not reinterpret this proposal as permission to remove privacy filters, upgrade live Helm releases or enroll producers. Planner must resolve D1–D3 and finish source mapping, tests, defense and owner ratification first.
 
 ## Outcome and motivation
-Enable the three scripted Agent Core POCs to submit safe operational traces/logs/metrics from WSL into the existing dev platform, query them in Grafana/backends, and disconnect cleanly. Preserve the existing five services, three PVCs and Grafana credentials. Retain synthetic diagnostics and explicitly track the older acceptance debt rather than asserting it passed.
+Enable safe application-shaped traces/logs/metrics from WSL into the existing dev platform, query them in Grafana/backends, and disconnect cleanly. P0/P1 currently exports no telemetry by its own contract; do not change that dossier or block base runs on full observability certification. Preserve the existing five services, three PVCs and Grafana credentials. Retain synthetic diagnostics and explicitly track the older acceptance debt rather than asserting it passed.
 
 ## Authority and baseline
 - Product: no player-facing change.
@@ -20,6 +20,8 @@ Enable the three scripted Agent Core POCs to submit safe operational traces/logs
 - Unknowns: safe producer vocabulary, pipeline topology, session API, config revision identity, upgrade failure/rollback semantics, actual POC instrumentation compatibility.
 
 ## Candidate scope
+- Owner-required retirement of executable specimens terminology: values/, locks/, root expected-inventory.json, unchanged vendor/; no behavioral delta in naming slice.
+- Foreground owned WSL connection session rather than new daemon; dev-only explicit Collector configuration upgrade candidate.
 - Collector development receiver accessibility, explicit trusted local producer admission and sanitization; preserve release semantics.
 - Scoped WSL connections and deterministic cleanup.
 - Explicit owned dev Collector configuration evolution without PVC/credential deletion; no implicit upgrade during ensure.
@@ -39,4 +41,4 @@ Enable the three scripted Agent Core POCs to submit safe operational traces/logs
 Provisional gates in design dossier. Required: WSL actual application-shaped all-signal query and correlated trace, no secret content or high-cardinality labels, repeat no-op, preserve exact storage/credential identities, unauthorized/wrong target/foreign pending refusal, cleanup only owned session. Existing original gate debts remain open. Focused source tests Cursor; heavy acceptance ChatGPT/owner. No destructive or release permission.
  
 ## Planning checkpoint
-Resolve D1 producer contract first, then D2 access, D3 transition. Freeze precise source anchors/algorithm/ordered T-IDs and proof commands only after defense. No TASKS.md with speculative Ready work. Reconciliation ledger not yet applicable: no source edits, no acceptance claim.
+[R2 design checkpoint](../../../designs/open/observability-developer/DESIGN-R2.md) records narrowed producer scope, foreground access, occupied upgrade state machine and source gaps. Resolve chart-port/render and OTTL evidence, predecessor identity and exact history semantics before defense. Freeze precise source anchors/algorithm/ordered T-IDs and proof commands only after defense. No TASKS.md with speculative Ready work. Reconciliation ledger not yet applicable: no source edits, no acceptance claim.
