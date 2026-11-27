@@ -16,6 +16,7 @@ Existing classifications below are historical starting points, not fresh disposi
 
 | Item | Status |
 | --- | --- |
+| [Developer observability](open/observability-developer/README.md) | Open evolutionary design; owner + ChatGPT; next review 2026-11-27: producer contract, receiver topology and occupied transition; no implementation commission |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
 | [Code architecture health](open/code-architecture-health/README.md) | Unresolved code ownership/trust-boundary investigation; concrete CQ Change packets remain separate |
 | [Story creation and writer's workbench](open/story-creation-and-writers-workbench/README.md) | **Promoted to permanent wiki on integration branch:** Storyteller/Library/Play target now lives in `docs/product/` and `docs/technical/`. WR01/WRD02–WRD04 are archived Done; this research dossier is temporarily retained for source traceability pending owner review, then becomes a retirement candidate |
