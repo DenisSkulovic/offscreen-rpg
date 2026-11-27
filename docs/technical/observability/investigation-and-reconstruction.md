@@ -1,6 +1,10 @@
 # Forensic access and read contract V1 | Role-specific truth without a universal data leak
 
-**Status: proposed security/read architecture, 2026-11-15. No new staff grants or endpoints are implemented or authorized.** Product intent is [AI investigation](../../product/admin/ai-engineering-and-investigation.md). Staff grants that already exist are [Admin authority](../admin/topology-and-authorization.md) and [investigation boundaries](../admin/investigation-and-privacy.md). Audit is [commands and audit](../admin/commands-and-audit.md). The existing AD05 `ai.operation.read` means **redacted operation diagnostics**, not unrestricted private context and not S3 raw prompts. Production Support grants are absent. OBS06/07 Situation UI is synthetic.
+**Authority:** this page owns the proposed forensic read contract: five disclosure tiers (S0 to S4), the capability taxonomy, the server-side authorization algorithm, purpose-bound disclosure with read audit, read models, cache/SSR isolation, erasure boundaries and the reconstruction steps. It is a proposed security and read architecture (2026-11-15). It implements and authorizes no staff grant, endpoint or new read.
+
+**Current realization (source-inspected on this branch):** only a redacted diagnostic read exists. The AD05 capability `ai.operation.read` is in `packages/admin/src/registry.ts` and is checked by `apps/api/src/modules/admin/controllers/admin-evidence.ts`; it means **redacted operation diagnostics**, not unrestricted private context and not S3 raw prompts. No `forensics.*` grant exists in the registry, no raw-prompt capability exists, production Support grants are absent, and the OBS06/07 Situation UI is synthetic. The proposed S1 to S4 read models below are not routes today.
+
+**Neighbours.** Product intent is [AI investigation](../../product/admin/ai-engineering-and-investigation.md). Staff grants that already exist are [Admin authority](../admin/topology-and-authorization.md) and [investigation boundaries](../admin/investigation-and-privacy.md). Audit is [commands and audit](../admin/commands-and-audit.md).
 
 ## Owner map
 
@@ -12,11 +16,20 @@ Investigation and reconstruction stay on this page. Durable forensic evidence an
 | Capture and causal identity | [Committed transition capture](capture-and-provenance.md#owner-map) | Proposal. |
 | Investigation and reconstruction | This page | Proposed read. |
 | Retention and access | [Replay, retention and privacy](retention-and-access.md#owner-map) | Unratified where that page already says so. |
-| Telemetry | [Runtime telemetry](telemetry-and-diagnostics.md#owner-map) | Planned. A noninstalled observer stack stays planned. |
+| Telemetry | [Runtime telemetry](telemetry-and-diagnostics.md#owner-map) | Application enrollment proposed. The optional native stack is owned by [native observability](../platform/observability-native-infrastructure.md). |
 
 [Reconstruction steps](#reconstruction-steps) stay on this page. This page does not authorize a new forensic read.
 
-**Negative:** An analyst read does not grant forbidden prompts. Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy.
+### Product status received from the AI engineering workspace
+
+Received from the product page [AI engineering and investigation](../../product/admin/ai-engineering-and-investigation.md) (Status, proposed workspace dated 2026-11-14). The product text stays in place; this is the technical standing of the same fact, with no policy transfer.
+
+- Some redacted diagnostic reads exist from the Admin and observability slices (source route above: `ai.operation.read`).
+- Those reads are not the full proposed investigation workspace. Tiers S1 to S4, the read models in [section 5](#5-authoritative-read-models-not-raw-table-endpoints) and the case-bound exports are not built.
+- They are not a production grant to open raw prompts. No raw-prompt grant exists, and a metadata read never implies one (negative 1 in the [acceptance suite](#8-negative-acceptance-suite)).
+- No observability implementation, storage scheme, provider policy or alert threshold is selected by this fact. Illustrative Support, impersonation, raw-prompt, refund, export and LiveOps examples stay Proposed or Blocked in their product owners.
+
+**Negative:** A staff metadata read, including `ai.operation.read`, does not grant a prompt body. The current world never fills missing history. Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy.
 
 ## 1. Five increasingly sensitive disclosures
 
