@@ -14,3 +14,5 @@ Curated non-normative studies. Explicitly **not** product/technical authority.
 Coding-agent operating rules belong in `.agents/`, not here.
 
 Historical architecture investigation: [Code architecture health, MA/DO findings](agent-practice/CODE-ARCHITECTURE-HEALTH-2026-11.md) (dated evidence and reopen questions, not target topology).
+
+Historical coordination findings: [November 18 backlog convergence](agent-practice/BACKLOG-CONVERGENCE-2026-11-18.md), with retained safety decisions, experiment hypotheses and Change relationships; not a dispatch queue.

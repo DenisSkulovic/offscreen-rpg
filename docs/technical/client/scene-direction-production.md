@@ -42,7 +42,7 @@ This is a **target for phased exploration**, not evidence that the full pipeline
 
 ## 2026-11-18 deterministic writer
 
-DIR02 stores an optional server-validated scene on the same publication insert. The subset is a six-digit backdrop and one of four lighting values. The worker does not supply `internalAppearance`. A duplicate or stale generation still returns before that insert. [Writer blueprint](../../../work/designs/open/backlog-convergence-2026-11-18/DIR02-WRITER-BLUEPRINT.md). SQL publication of a row was not executed in this packet. The contract tests and the book fixture cover the subset.
+DIR02 stores an optional server-validated scene on the same publication insert. The subset is a six-digit backdrop and one of four lighting values. The worker does not supply `internalAppearance`. A duplicate or stale generation still returns before that insert. [Historical writer blueprint](https://github.com/DenisSkulovic/offscreen-rpg/blob/ce2248fd64fff53ed0a2801496786cd2e590abbc/work/designs/open/backlog-convergence-2026-11-18/DIR02-WRITER-BLUEPRINT.md) (superseded coordination; current contract on this page). SQL publication of a row was not executed in this packet. The contract tests and the book fixture cover the subset.
 
 ## 2026-11-19 optional suggestion
 

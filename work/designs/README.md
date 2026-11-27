@@ -17,7 +17,6 @@ Existing classifications below are historical starting points, not fresh disposi
 | Item | Status |
 | --- | --- |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
-| [backlog-convergence-2026-11-18/](open/backlog-convergence-2026-11-18/README.md) | **Accepted bounded execution decisions 2026-11-18:** 16-packet source audit, BOOK01, BOOK02, HAR05, DIR02, HK04, S3a, and QA-SF01 are Done. 9 packets remain Ready for safe work. [Cursor order](open/backlog-convergence-2026-11-18/CURSOR-HANDOFF.md); no paid dispatch grant |
 | [product-reality-reconciliation/](open/product-reality-reconciliation/README.md) | **Done 2026-11-18:** PVAL01–PVAL06 are archived. Solo is the first tested playability milestone. The small party stays a distant later aspiration. The audit itself is not a new mechanic |
 | [playability-reality/](open/playability-reality/README.md) | **Proposed 2026-11-18:** REAL01 first-solo acceptance, REAL02 semantic-canon integration fixtures, REAL03 value/cost protocol, REAL04 V0 and rights honesty. Three prepared Changes, none selected; no paid evaluations |
 | [documentation-editorial-audit/](open/documentation-editorial-audit/README.md) | **Proposed 2026-11-18:** source-grounded 70-page content-quality triage and 20 first-class DOC05–DOC24 editorial Change handoffs, all Proposed/unselected; no executable code Change selected |
