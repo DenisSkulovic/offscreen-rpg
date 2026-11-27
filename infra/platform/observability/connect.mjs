@@ -103,7 +103,7 @@ export async function runObservabilityConnect(deps = {}) {
       }
       opened = null;
     }
-    if (identity?.cleanup) {
+    if (cleanup.ok === true && identity?.cleanup) {
       try {
         const cleaned = identity.cleanup();
         if (cleaned?.ok === false) {
@@ -113,10 +113,12 @@ export async function runObservabilityConnect(deps = {}) {
         cleanup = { ok: false };
       }
     }
-    try {
-      await held.close?.();
-    } catch {
-      cleanup = { ok: false };
+    if (cleanup.ok === true) {
+      try {
+        await held.close?.();
+      } catch {
+        cleanup = { ok: false };
+      }
     }
     return cleanup;
   };
@@ -194,12 +196,15 @@ export async function runObservabilityConnect(deps = {}) {
       identity,
       profileContext: profile.contextName,
       failure: connected.failure,
+      endpoint: connected.detail?.endpoint ?? null,
+      failureReason: connected.detail ?? null,
     };
   } catch (error) {
     await releaseAttempt();
     return {
       ok: false,
       reasonCode: error.reasonCode ?? 'connect',
+      endpoint: error.endpoint ?? null,
       ports: null,
       cleanup: null,
       exitCode: error.exitCode ?? 1,
@@ -211,18 +216,26 @@ export async function runObservabilityConnect(deps = {}) {
  * @param {number} ms
  * @param {AbortSignal | undefined} signal
  */
-function waitInterval(ms, signal) {
-  return new Promise((resolve) => {
-    const timer = globalThis.setTimeout(resolve, ms);
-    signal?.addEventListener(
-      'abort',
-      () => {
-        globalThis.clearTimeout(timer);
-        resolve();
-      },
-      { once: true },
-    );
-  });
+const SAFE_REASON = /^[a-z][a-z0-9-]{0,40}$/;
+const SAFE_ENDPOINT = /^[A-Za-z][A-Za-z0-9]{0,40}$/;
+
+/**
+ * One stderr line. Drops paths, credentials and free-form child output.
+ *
+ * @param {{ reasonCode?: string, endpoint?: string | null }} result
+ */
+export function formatConnectFailure(result) {
+  const raw = String(result?.reasonCode ?? 'connect');
+  const reason = SAFE_REASON.test(raw) ? raw : 'connect';
+  const endpoint =
+    typeof result?.endpoint === 'string' && SAFE_ENDPOINT.test(result.endpoint)
+      ? result.endpoint
+      : null;
+  return endpoint == null ? `refused: ${reason}` : `refused: ${endpoint} ${reason}`;
+}
+
+function writeConnectFailure(result) {
+  process.stderr.write(`${formatConnectFailure(result)}\n`);
 }
 
 /**
@@ -273,31 +286,54 @@ export async function superviseObservabilityConnect(session, deps = {}) {
   const signal = deps.signal;
   /** @type {string | null} */
   let reason = null;
+  /** @type {{ reasonCode: string, endpoint?: string | null }} */
+  let reported = { reasonCode: 'connect' };
   while (reason == null) {
+    /** @type {(() => void) | undefined} */
+    let onAbort;
     const stop = new Promise((resolve) => {
       if (signal?.aborted) {
         resolve('stop');
         return;
       }
-      signal?.addEventListener('abort', () => resolve('stop'), { once: true });
+      onAbort = () => resolve('stop');
+      signal?.addEventListener('abort', onAbort);
+    });
+    /** @type {ReturnType<typeof globalThis.setTimeout> | undefined} */
+    let timer;
+    const tick = new Promise((resolve) => {
+      timer = globalThis.setTimeout(() => resolve('tick'), intervalMs);
     });
     const winner = await Promise.race([
       Promise.resolve(session.failure).then((value) => ({ kind: 'child', value })),
       stop.then(() => ({ kind: 'stop' })),
-      waitInterval(intervalMs, signal).then(() => ({ kind: 'tick' })),
+      tick.then(() => ({ kind: 'tick' })),
     ]);
+    if (timer !== undefined) {
+      globalThis.clearTimeout(timer);
+    }
+    if (onAbort) {
+      signal?.removeEventListener('abort', onAbort);
+    }
     if (winner.kind === 'child') {
       reason = 'child';
+      const detail = session.failureReason;
+      reported = {
+        reasonCode: detail?.reason ?? 'child-exit',
+        endpoint: detail?.endpoint ?? session.endpoint ?? null,
+      };
       break;
     }
     if (winner.kind === 'stop' || signal?.aborted) {
       const named = typeof deps.stopReason === 'function' ? deps.stopReason() : deps.stopReason;
       reason = named === 'SIGTERM' ? 'SIGTERM' : 'SIGINT';
+      reported = { reasonCode: reason === 'SIGTERM' ? 'sigterm' : 'sigint' };
       break;
     }
     const checked = await checkSession(session, deps);
     if (!checked.ok) {
       reason = checked.reasonCode ?? 'identity';
+      reported = { reasonCode: reason };
       break;
     }
   }
@@ -307,15 +343,32 @@ export async function superviseObservabilityConnect(session, deps = {}) {
   } catch {
     cleanup = { ok: false };
   }
-  try {
-    await session.held?.close?.();
-  } catch {
-    cleanup = { ok: false };
+  if (cleanup?.ok === true && typeof session.identity?.cleanup === 'function') {
+    try {
+      const cleaned = session.identity.cleanup();
+      if (cleaned?.ok === false) {
+        cleanup = { ok: false };
+      }
+    } catch {
+      cleanup = { ok: false };
+    }
+  }
+  if (cleanup?.ok === true) {
+    try {
+      await session.held?.close?.();
+    } catch {
+      cleanup = { ok: false };
+    }
   }
   if (cleanup?.ok === false) {
+    writeConnectFailure({ reasonCode: 'cleanup', endpoint: reported.endpoint });
     return 1;
   }
-  return reason === 'SIGINT' ? 0 : 1;
+  if (reason !== 'SIGINT') {
+    writeConnectFailure(reported);
+    return 1;
+  }
+  return 0;
 }
 
 /**
@@ -346,6 +399,7 @@ export async function main(argv = process.argv.slice(2), deps = {}) {
       }
     }
     if (!result.ok) {
+      writeConnectFailure(result);
       return result.exitCode ?? 1;
     }
     return superviseObservabilityConnect(result, {

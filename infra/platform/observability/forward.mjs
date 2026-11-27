@@ -352,19 +352,24 @@ export function startOwnedChild(command, args, options = {}) {
     const current = which === 'stdout' ? stdoutBuf : stderrBuf;
     const room = Math.max(0, limit - current.length);
     const next = Buffer.concat([current, bytes.subarray(0, room)]);
-    if (which === 'stdout') {
-      stdoutBuf = next;
-      partial += bytes.subarray(0, room).toString('utf8');
-      const lines = partial.split('\n');
-      partial = lines.pop() ?? '';
-      for (const line of lines) {
-        const text = `${line}\n`;
-        replay += text;
-        for (const listener of listeners) {
-          deliver(listener, text);
+      if (which === 'stdout') {
+        partial += bytes.subarray(0, room).toString('utf8');
+        const lines = partial.split('\n');
+        partial = lines.pop() ?? '';
+        // A foreground port-forward prints one line per connection for as long
+        // as the session lives. Keep the announcement for a late listener and
+        // the unfinished tail; do not retain every subsequent notice.
+        stdoutBuf = foreground ? Buffer.from(partial) : next;
+        for (const line of lines) {
+          const text = `${line}\n`;
+          if (!foreground || replay.length === 0) {
+            replay += text;
+          }
+          for (const listener of listeners) {
+            deliver(listener, text);
+          }
         }
-      }
-    } else {
+      } else {
       stderrBuf = next;
     }
     if (current.length + bytes.length > limit) {
@@ -531,6 +536,7 @@ export const FORWARD_ALLOWLIST = {
 };
 
 const FORWARD_LINE = /^Forwarding from 127\.0\.0\.1:(\d+) -> (\d+)$/;
+const HANDLING_LINE = /^Handling connection for (\d+)$/;
 
 function refuse(message) {
   const error = new Error(message);
@@ -639,15 +645,18 @@ export async function openForwards(identity, held, options) {
   const deadline = options.deadline ?? now() + 90_000;
   /** @type {{ key: string, child: ReturnType<typeof startOwnedChild>, targetPort: number, localPort: number, ready: Promise<number> }[]} */
   const children = [];
-  /** @type {(reason: string) => void} */
+  const detail = { reason: null, endpoint: null };
+  /** @type {(reason: string, endpoint?: string) => void} */
   let latchFailure = () => {};
   let latched = false;
   const failure = new Promise((resolve) => {
-    latchFailure = (reason) => {
+    latchFailure = (reason, endpoint) => {
       if (latched) {
         return;
       }
       latched = true;
+      detail.reason = reason;
+      detail.endpoint = endpoint ?? null;
       resolve(reason);
     };
   });
@@ -699,42 +708,60 @@ export async function openForwards(identity, held, options) {
         rejectReady = reject;
       });
       let announced = false;
+      let ownedLocal = item.localPort;
+      const failLine = (code) => {
+        latchFailure(code, item.key);
+        const error = new Error(`refused: ${item.key} ${code}`);
+        error.reasonCode = code;
+        error.endpoint = item.key;
+        rejectReady(error);
+      };
       child.onOutput((text) => {
         const line = text.replace(/\r?\n$/, '');
-        const match = FORWARD_LINE.exec(line);
-        if (!match) {
-          latchFailure('invalid-output');
-          rejectReady(new Error('refused: forward output is invalid'));
+        if (!announced) {
+          const match = FORWARD_LINE.exec(line);
+          if (!match) {
+            failLine('invalid-output');
+            return;
+          }
+          const local = Number(match[1]);
+          const remote = Number(match[2]);
+          if (remote !== item.targetPort) {
+            failLine('target-port');
+            return;
+          }
+          if (item.localPort !== 0 && local !== item.localPort) {
+            failLine('local-port');
+            return;
+          }
+          announced = true;
+          ownedLocal = local;
+          resolveReady(local);
           return;
         }
-        const local = Number(match[1]);
-        const remote = Number(match[2]);
-        if (remote !== item.targetPort) {
-          latchFailure('target-port');
-          rejectReady(new Error('refused: forward target port mismatch'));
+        const handling = HANDLING_LINE.exec(line);
+        if (handling) {
+          if (Number(handling[1]) !== ownedLocal) {
+            failLine('local-port');
+          }
           return;
         }
-        if (item.localPort !== 0 && local !== item.localPort) {
-          latchFailure('local-port');
-          rejectReady(new Error('refused: forward local port mismatch'));
+        if (FORWARD_LINE.test(line)) {
+          failLine('unexpected-announcement');
           return;
         }
-        if (announced) {
-          latchFailure('duplicate-output');
-          return;
-        }
-        announced = true;
-        resolveReady(local);
+        failLine('invalid-output');
       });
       child.outcome.then((result) => {
         if (closing) {
           return;
         }
-        if (!announced || result.ok !== true) {
-          latchFailure(result.cancelled ? 'cancelled' : 'child-exit');
-          if (!announced) {
-            rejectReady(new Error('refused: forward child closed before ready'));
-          }
+        latchFailure(result.cancelled ? 'cancelled' : 'child-exit', item.key);
+        if (!announced) {
+          const error = new Error(`refused: ${item.key} child-exit`);
+          error.reasonCode = 'child-exit';
+          error.endpoint = item.key;
+          rejectReady(error);
         }
       });
       children.push({ ...item, child, ready });
@@ -742,29 +769,51 @@ export async function openForwards(identity, held, options) {
 
     const ports = {};
     const readyAll = Promise.all(children.map((entry) => entry.ready));
+    /** @type {ReturnType<typeof globalThis.setTimeout> | undefined} */
+    let startupTimer;
     const expired = new Promise((_resolve, reject) => {
       const wait = Math.max(0, deadline - now());
-      globalThis.setTimeout(() => reject(new Error('refused: forward startup expired')), wait);
+      startupTimer = globalThis.setTimeout(() => {
+        const error = new Error('refused: forward startup expired');
+        error.reasonCode = 'startup-expired';
+        reject(error);
+      }, wait);
     });
-    const values = await Promise.race([
-      readyAll,
-      failure.then((reason) => Promise.reject(new Error(reason))),
-      expired,
-    ]);
-    children.forEach((entry, index) => {
-      ports[entry.key] = values[index];
+    const failed = failure.then((reason) => {
+      const error = new Error(`refused: ${detail.endpoint ?? 'forward'} ${reason}`);
+      error.reasonCode = reason;
+      error.endpoint = detail.endpoint;
+      return Promise.reject(error);
     });
-    return {
-      ports,
-      failure,
-      async close() {
-        const closed = await stopAll();
-        const ok = closed.every(
-          (result) => result?.closeUnconfirmed !== true && result?.timedOut !== true,
-        );
-        return { ok };
-      },
-    };
+    void readyAll.catch(() => {});
+    void failed.catch(() => {});
+    void expired.catch(() => {});
+    try {
+      const values = await Promise.race([
+        readyAll,
+        failed,
+        expired,
+      ]);
+      children.forEach((entry, index) => {
+        ports[entry.key] = values[index];
+      });
+      return {
+        ports,
+        failure,
+        detail,
+        async close() {
+          const closed = await stopAll();
+          const ok = closed.every(
+            (result) => result?.closeUnconfirmed !== true && result?.timedOut !== true,
+          );
+          return { ok };
+        },
+      };
+    } finally {
+      if (startupTimer !== undefined) {
+        globalThis.clearTimeout(startupTimer);
+      }
+    }
   } catch (error) {
     await stopAll();
     throw error;

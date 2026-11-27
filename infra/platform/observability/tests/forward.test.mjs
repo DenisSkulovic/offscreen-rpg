@@ -21,7 +21,12 @@ import test from 'node:test';
 
 import { createServer } from 'node:net';
 
-import { parseConnectArgs, runObservabilityConnect, superviseObservabilityConnect } from '../connect.mjs';
+import {
+  formatConnectFailure,
+  parseConnectArgs,
+  runObservabilityConnect,
+  superviseObservabilityConnect,
+} from '../connect.mjs';
 import { PREFLIGHT_BUDGET_MS } from '../identity.mjs';
 import {
   FORWARD_ALLOWLIST,
@@ -370,6 +375,119 @@ test('openForwards accepts the fixed loopback lines and refuses a foreign port',
   assert.equal(closed.ok, true);
 });
 
+test('openForwards keeps kubectl connection notices and fails closed afterwards', async () => {
+  const script = [
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    "process.stdout.write('Handling connection for 14318\\n'.repeat(40000));",
+    "process.stdout.write('Handling connection for 14318\\n');",
+    'setInterval(() => {}, 1000);',
+  ].join('');
+  const opened = openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 5_000,
+    now: () => performance.now(),
+    startChild() {
+      return startOwnedChild(process.execPath, ['-e', script], {
+        foreground: true,
+        fds: [],
+        deadline: null,
+      });
+    },
+  });
+  const session = await opened;
+  assert.equal(session.ports.developerHttp, 14318);
+  let reason = null;
+  session.failure.then((value) => {
+    reason = value;
+  });
+  await delay(100);
+  assert.equal(reason, null);
+  const closed = await session.close();
+  assert.equal(closed.ok, true);
+
+  const wrong = [
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    "process.stdout.write('Handling connection for 14318\\n');",
+    "process.stdout.write('Handling connection for 14318\\n');",
+    "process.stdout.write('Handling connection for 9\\n');",
+    'setInterval(() => {}, 1000);',
+  ].join('');
+  const wrongSession = await openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 5_000,
+    now: () => performance.now(),
+    startChild() {
+      return startOwnedChild(process.execPath, ['-e', wrong], {
+        foreground: true,
+        fds: [],
+        deadline: null,
+      });
+    },
+  });
+  assert.equal(await wrongSession.failure, 'local-port');
+  assert.equal(wrongSession.detail.endpoint, 'developerHttp');
+  await wrongSession.close();
+
+  const exited = [
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    "process.stdout.write('Handling connection for 14318\\n');",
+    'process.exit(0);',
+  ].join('');
+  const exitSession = await openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 5_000,
+    now: () => performance.now(),
+    startChild() {
+      return startOwnedChild(process.execPath, ['-e', exited], {
+        foreground: true,
+        fds: [],
+        deadline: null,
+      });
+    },
+  });
+  assert.equal(await exitSession.failure, 'child-exit');
+  const exitClosed = await exitSession.close();
+  assert.equal(exitClosed.ok, true);
+
+  const unexpected = [
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    "process.stdout.write('Forwarding from 127.0.0.1:14318 -> 4328\\n');",
+    'setInterval(() => {}, 1000);',
+  ].join('');
+  const announced = await openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 5_000,
+    now: () => performance.now(),
+    startChild() {
+      return startOwnedChild(process.execPath, ['-e', unexpected], {
+        foreground: true,
+        fds: [],
+        deadline: null,
+      });
+    },
+  });
+  assert.equal(await announced.failure, 'unexpected-announcement');
+  await announced.close();
+
+  const rejections = [];
+  const onRejection = (error) => rejections.push(error);
+  process.on('unhandledRejection', onRejection);
+  const quiet = fakeChild(['Forwarding from 127.0.0.1:14318 -> 4328']);
+  const timed = await openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 30,
+    now: () => performance.now(),
+    startChild() {
+      queueMicrotask(() => quiet.emit());
+      return quiet;
+    },
+  });
+  await timed.close();
+  await delay(60);
+  process.off('unhandledRejection', onRejection);
+  assert.equal(rejections.length, 0);
+});
+
 test('openForwards rejects a bad line, a second exit and a diagnostic bind without a proof lock', async () => {
   const bad = fakeChild(['Forwarding from 0.0.0.0:14318 -> 4328']);
   await assert.rejects(
@@ -422,6 +540,58 @@ test('probeForwardTransport checks loopback HTTP and refuses a failed Grafana he
     },
   );
   assert.equal(grafana.reasonCode, 'grafana');
+});
+
+test('connect failures name the condition and omit credentials', async () => {
+  assert.equal(formatConnectFailure({ reasonCode: 'identity' }), 'refused: identity');
+  assert.equal(
+    formatConnectFailure({ reasonCode: 'pending', endpoint: 'grafana' }),
+    'refused: grafana pending',
+  );
+  assert.equal(
+    formatConnectFailure({ reasonCode: 'cleanup', endpoint: 'developerHttp' }),
+    'refused: developerHttp cleanup',
+  );
+  assert.equal(
+    formatConnectFailure({
+      reasonCode: 'secret-value /tmp/kubeconfig token',
+      endpoint: '../snapshot',
+    }),
+    'refused: connect',
+  );
+  const lines = [];
+  const write = process.stderr.write;
+  process.stderr.write = (chunk, encoding, callback) => {
+    lines.push(String(chunk));
+    if (typeof encoding === 'function') {
+      encoding();
+    } else if (typeof callback === 'function') {
+      callback();
+    }
+    return true;
+  };
+  try {
+    const code = await superviseObservabilityConnect(
+      {
+        ok: true,
+        failure: Promise.resolve('child-exit'),
+        failureReason: { reason: 'child-exit', endpoint: 'loki' },
+        cleanup: async () => ({ ok: true }),
+        held: { close() {} },
+        identity: { cleanup() { return { ok: true }; } },
+        profileContext: 'dev',
+      },
+      {
+        intervalMs: 60_000,
+        readPending: () => ({ pending: false, valid: true }),
+        recheckIdentity: () => ({ ok: true }),
+      },
+    );
+    assert.equal(code, 1);
+    assert.equal(lines.join(''), 'refused: loki child-exit\n');
+  } finally {
+    process.stderr.write = write;
+  }
 });
 
 test('connect accepts only empty argv or --queries and refuses a predecessor', async () => {
@@ -596,6 +766,7 @@ test('session recheck calls now and credential failure releases children', async
   let closed = false;
   let cleaned = false;
   let heldClosed = false;
+  const order = [];
   const failed = await runObservabilityConnect({
     argv: [],
     readPlatformProfile: () => ({ contextName: 'dev' }),
@@ -604,12 +775,14 @@ test('session recheck calls now and credential failure releases children', async
       mode: 'shared',
       close() {
         heldClosed = true;
+        order.push('custody');
       },
     }),
     captureIdentity: () => ({
       ...identity,
       cleanup() {
         cleaned = true;
+        order.push('snapshot');
         return { ok: true };
       },
     }),
@@ -625,6 +798,7 @@ test('session recheck calls now and credential failure releases children', async
       failure: new Promise(() => {}),
       close: async () => {
         closed = true;
+        order.push('children');
         return { ok: true };
       },
     }),
@@ -637,4 +811,5 @@ test('session recheck calls now and credential failure releases children', async
   assert.equal(closed, true);
   assert.equal(cleaned, true);
   assert.equal(heldClosed, true);
+  assert.deepEqual(order, ['children', 'snapshot', 'custody']);
 });

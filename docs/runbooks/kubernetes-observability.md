@@ -45,7 +45,7 @@ The command prints those `key 127.0.0.1:port` lines and stays in the foreground 
 
 ```bash
 pnpm obs:connect
-pnpm obs:connect -- --queries
+pnpm obs:connect --queries
 ```
 
 ## Authorized synthetic proof (not default verification)
