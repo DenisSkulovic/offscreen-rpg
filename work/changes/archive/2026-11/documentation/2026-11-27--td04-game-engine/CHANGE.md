@@ -49,3 +49,12 @@ Transfers landed: PD02 rules to `mechanics-and-capabilities.md` (Supported mecha
 Semantic negatives (all answered from rewritten text): T01 authority-and-transitions Selected authority contract, Situation authorization, Commands recovery; concurrency Proof boundary and What C1 and C2 actually proved. T02 ticks-and-tags rehearsal adapter and header; chronology Permission to advance, Decisions with deadlines; calendars Shared settlement. T03 mechanics Supported mechanisms, Start eligibility is not ongoing validity, Persistence and known limits. T04 lifecycle Forked continuities, Start exactly the reviewed story, Workflow replay compatibility. T05 selected-architecture Package-boundary evolution criterion and Source-reality checkpoint; D-0001 Choice and Continuity.
 
 Findings: Medium, source routes under `packages/application` in older evidence text are annotated with current paths rather than rewritten (destination: the pages' own evidence paragraphs). Low, calendars and lifecycle bodies largely retained (group register, custodian). Medium, 8 stories/campaign to storyteller reverse imports remain MA09 debt (selected-architecture).
+
+## Reconciliation ledger
+
+| Affected claim/heading | Authority | Target delta | Source delta & SHA | Status/evidence tier | Negative proof | Map/link update |
+| --- | --- | --- | --- | --- | --- | --- |
+| `docs/technical/engine/*` (8 pages), D-0001, `packages/story-engine/README.md` | technical | changed: selected-vs-legacy splits, stale packages/application paths corrected, MA history condensed | page `f55b8e9de`; story-engine, outbox, tools/api-lab inspected | source-inspected docs diff | answered in Closure receipt | headings unchanged |
+| PD02 transfer rows → mechanics-and-capabilities, ticks-and-tags | technical | changed: frozen facts landed with provenance | `f55b8e9de` | source-inspected (20 s constant located) | answered | product copies stay until PD07 |
+| Deferred: lifecycle/calendars mostly reframed; equal-tick prose; offer-reuse/dormancy notes | technical | Medium/Low, destination these pages | n/a | n/a | n/a | group register |
+| Joint semantic acceptance and transfer completeness | technical | unchanged | none | NOT RUN (TD10 and Design) | n/a | group register |

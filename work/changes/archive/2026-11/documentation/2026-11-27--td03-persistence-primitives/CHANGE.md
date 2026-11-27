@@ -62,3 +62,12 @@ Checks: `git diff --check` clean; check_docs: only the two pre-existing data-and
 Semantic answers: a legacy format may not be dropped (Who owns the durable record, invariants table); a timer or signal never commits gameplay (Commands and durable delivery, contract line; Elapsed time); a retry returns the recorded outcome and an uncertain effect is not resent (Commands and durable delivery; Retry boundaries); the lab broker is not durable game history (Laboratory messaging broker).
 
 Deferred: Low, the packet lacks a `## Reconciliation ledger` heading that docs-health reports (first-pass omission; destination: custodian). Low, relay constants were verified in `packages/outbox/src/relay.ts`, not in the Worker package.
+
+## Reconciliation ledger
+
+| Affected claim/heading | Authority | Target delta | Source delta & SHA | Status/evidence tier | Negative proof | Map/link update |
+| --- | --- | --- | --- | --- | --- | --- |
+| `docs/technical/platform/data-and-persistence.md` | technical | changed: authority lead, invariants table, Implemented subsections as present contract + realization note; GM07 decision-deadline row retained | pages `92b46aaad`, R2 `32bf254ef`; migrations 0020/0021 and baseline 0000 inspected | source-inspected docs diff | answered in Closure receipt and R2 | headings unchanged |
+| `docs/technical/platform/persistence-and-caching.md` | technical | changed: Current state split into realization, candidates, evidence tiers | `92b46aaad` | source-inspected | answered | headings unchanged |
+| `docs/technical/platform/execution-and-delivery.md` | technical | changed: commands sections consolidated; workflow identity corrected (ALLOW_DUPLICATE_FAILED_ONLY, retry classes); GM07 solo-response row retained | R2 `32bf254ef`; apps/worker, packages/workflows, packages/outbox inspected | source-inspected | answered | headings unchanged |
+| Joint semantic acceptance and transfer completeness | technical | unchanged | none | NOT RUN (TD10 and Design) | n/a | group register |
