@@ -1,12 +1,12 @@
 # Cross-route HTTP identity, receipt, and client-read contract
 
-**Storyteller evolution routes:** direct prepared Play and one-Story-Prompt launch are durable operation commands. A 202/queued/running/uncertain response names that same operation; GET returns authoritative current status and eventual committed first scene. Retrying transport never means “start another story.” Historical fork commands similarly name one source scene and produce one child branch identity.
+**Selected contract for evolving routes:** direct prepared Play and one-Story-Prompt launch are durable operation commands. A 202, queued, running or uncertain response names that same operation. GET returns authoritative current status and the eventual committed first scene. Retrying transport never means "start another story". Historical fork commands similarly name one source scene and produce one child branch identity. This is the selected target for those routes. The headings below separate what was source-inspected at the cited revision from what is proposed.
 
 **Owns:** the HTTP rules that apply across player routes and that no single controller owns: authenticated actor scope, frozen operation identity, an accepted `202` versus a committed read, GET truth versus an SSE hint, error and uncertainty recovery, and private DTO projection. [Service calls are not player routes](#service-calls-are-not-player-routes) says a proposed service command is not one of those routes.
 
 **Does not own:** the route inventory ([API map](../../../apps/api/README.md), [story routes](../../../apps/api/src/modules/stories/README.md), [draft and opening routes](../../../apps/api/src/modules/drafts/README.md)), Zod shapes ([story-interface](../../../packages/story-interface/package.json) and sibling domain interface packages), session policy ([Authentication and sessions](identities-and-access.md#authentication-and-sessions)), client cache and reload UX ([Commands and hints](../client/state-and-server-boundary.md#commands-and-hints)), Temporal delivery ([Story execution with Temporal](execution-and-delivery.md)), service ownership ([Proposed service ownership](topology.md#proposed-service-ownership)), or staff grants ([Admin topology](../admin/topology-and-authorization.md)).
 
-**Status:** source-inspected at `b3113814` for the headings that describe handlers. Those statements are what those files do. [Service calls are not player routes](#service-calls-are-not-player-routes) records one internal command and still adds no player route. This page adds no player right and no retry. The named integration tests were read and were not re-run. No provider call was made.
+**Evidence tier.** Headings that describe handlers are source-inspected at `b3113814`: they state what those files do. The named integration tests were read and were not re-run. No provider call was made. This page adds no player right and no retry. [Service calls are not player routes](#service-calls-are-not-player-routes) records one implemented internal command and one proposed target, and adds no player route. The SSE committed-view hint is a hint channel only, never full push and never scene content.
 
 **Reader question:** What must a second client respect on every authenticated player route, even when the route list lives in a controller map?
 
@@ -60,7 +60,7 @@ The version field name is part of the frozen body. Resolution and draft save use
 
 **Normal:** the player chose option A under operation id `O` and revision 1. The response was lost. The client sends the same `PUT` with the same id, revision, and option A.
 
-**Negative:** retrying a paid operation must not be described as silently minting a fresh operation id. A 409 from a changed body, a second resolution id, or a busy opening is not permission to invent a new id.
+**Negative:** retrying a paid operation must not be described as silently minting a fresh operation id. This applies to every client of these routes, including the terminal presentation: a second client path has no exemption from the frozen id, the version fence or the conflict rule, and recovering from an ambiguous failure reuses the same operation. A 409 from a changed body, a second resolution id, or a busy opening is not permission to invent a new id.
 
 ## Accepted response versus committed world
 
@@ -131,7 +131,7 @@ An uncertain generation is reported on the receipt as `state: 'uncertain'` and `
 
 **Normal:** on 409 for a draft, GET `/api/drafts/:id`, keep the unsaved local edits, and submit again only against the revision that GET returned, with the same draft id.
 
-**Negative:** 401 is not a reason to retry as a new command. 404 must not be described as a way to infer another user's data. 409 must not be described as permission to overwrite a draft blindly.
+The three "must not mean" cells in the table above are this section's negatives.
 
 ## Private DTO projection
 

@@ -2,7 +2,7 @@
 
 **Owns:** engineering acceptance for operable controls, motion, and client-side cost of the player UI.  
 **Product obligations:** [settings and accessibility](../../product/experience/settings-and-accessibility.md). Visual atmosphere belongs to [presentation runtime](presentation-runtime.md).  
-**Status:** selected engineering bar from [architecture](architecture.md) F9 and F15. A static lint pass is not a WCAG claim.
+**Status (authority):** selected engineering bar from [architecture](architecture.md) F9 and F15. The thresholds and expected checks below are the target. Proof tiers are separate. A source test, a fixture pass or a static lint pass is not a human keyboard pass, and none of them is a WCAG conformance claim. No new browser testing is asserted by this page.
 
 ## Interaction acceptance
 
@@ -10,7 +10,7 @@ Use native labels and fields, keyboard operation, and focus restoration after er
 
 Error boundaries distinguish authentication, forbidden and transient failure. App Router `loading`, `error` and `not-found` cover the expected scope. Query error reset and Suspense are used only where that boundary is tested.
 
-Do not adopt a new component library merely to make controls accessible. The earlier **W-program markup preservation** rule is explicitly superseded for the later selected [Living Book POC](living-book-poc.md): the book may replace existing `StoryFrame` visual markup, but not the keyboard, focus, source and command safety requirements on this page.
+Do not adopt a new component library merely to make controls accessible. The earlier **W-program markup preservation** rule is explicitly superseded for the later selected [Living Book POC](living-book-poc.md): the book may replace existing `StoryFrame` visual markup, but not the keyboard, focus, source and command safety requirements on this page. The Book's human acceptance bar and its recorded gaps are in [POC test and human acceptance bar](living-book-poc.md#poc-test-and-human-acceptance-bar).
 
 ## Performance acceptance
 
