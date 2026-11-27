@@ -631,10 +631,6 @@ export async function dispatchHelmWrapperInvocation(
   };
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url) && process.argv[2]) {
-  const realHelmPath = process.argv[2];
-  const forwardedArgv = process.argv.slice(3);
-  dispatchHelmWrapperInvocation(realHelmPath, forwardedArgv)
-    .then((outcome) => process.exit(outcome.exitCode ?? (outcome.ok ? 0 : 1)))
-    .catch(() => process.exit(2));
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  process.exit(2);
 }

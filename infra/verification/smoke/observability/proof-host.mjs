@@ -30,14 +30,34 @@ export const PROOF_GATES = Object.freeze([
   'partial-install',
 ]);
 
-export const GATE_BUDGET_MS = Object.freeze({
-  health: 720_000,
-  signals: 1_440_000,
-  persistence: 3_600_000,
-  outage: 3_000_000,
-  resources: 900_000,
-  'partial-install': 3_900_000,
+export const GATE_WORK_MS = Object.freeze({
+  health: 1_225_000,
+  developer: 1_765_000,
+  resources: 1_525_000,
+  signals: 4_510_000,
+  persistence: 8_950_000,
+  outage: 6_915_000,
+  'partial-install': 8_940_000,
 });
+
+export const GATE_RESERVE_MS = Object.freeze({
+  health: 120_000,
+  developer: 120_000,
+  resources: 120_000,
+  signals: 1_020_000,
+  persistence: 1_020_000,
+  outage: 2_040_000,
+  'partial-install': 300_000,
+});
+
+export const GATE_BUDGET_MS = Object.freeze(
+  Object.fromEntries(
+    Object.keys(GATE_WORK_MS).map((gate) => [
+      gate,
+      GATE_WORK_MS[gate] + GATE_RESERVE_MS[gate],
+    ]),
+  ),
+);
 
 export const CLEANUP_RESERVE_MS = 120_000;
 export const RESTORATION_RESERVE_MS = 300_000;
@@ -143,23 +163,16 @@ export function refuseDisruptionInvocation({ gate, env = process.env }) {
  * @param {string} gate
  */
 export function reserveMsForGate(gate) {
-  return DISRUPTION_GATES.has(gate)
-    ? RESTORATION_RESERVE_MS
-    : CLEANUP_RESERVE_MS;
+  return GATE_RESERVE_MS[gate] ?? 0;
 }
 
 /**
  * @param {string} gate
  */
+const IMPLEMENTED_GATES = new Set(['signals']);
+
 export function gateImplemented(gate) {
-  return (
-    gate === 'health' ||
-    gate === 'signals' ||
-    gate === 'persistence' ||
-    gate === 'outage' ||
-    gate === 'resources' ||
-    gate === 'partial-install'
-  );
+  return IMPLEMENTED_GATES.has(gate);
 }
 
 /**
@@ -406,7 +419,10 @@ export function buildProofReceipt(input) {
   return {
     schema: PROOF_SCHEMA,
     gate: input.gate,
-    ok: input.completed === true && input.reasonCode == null,
+    ok:
+      input.completed === true &&
+      input.reasonCode == null &&
+      (input.cleanup === true || input.intentionalRetainedPlatform === true),
     profile: input.profile,
     context: input.context,
     sourceSha: input.sourceSha ?? null,
@@ -461,7 +477,22 @@ export async function runProofOperationSession(input) {
       ok: false,
       phase: 'not-implemented',
       reasonCode: 'gate-not-implemented',
+      completed: false,
+      cleanup: false,
     };
+  }
+
+  if (input.verifyCleanCheckout) {
+    const clean = input.verifyCleanCheckout();
+    if (!clean?.ok) {
+      return {
+        ok: false,
+        phase: 'source',
+        reasonCode: clean?.reasonCode ?? 'source-not-clean',
+        completed: false,
+        cleanup: false,
+      };
+    }
   }
 
   const clock = input.clock ?? { now: () => Date.now() };
