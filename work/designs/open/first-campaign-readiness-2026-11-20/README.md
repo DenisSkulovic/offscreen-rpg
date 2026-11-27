@@ -4,7 +4,7 @@
 
 **User outcome:** after Cursor has implemented and *proved* the specified repairs, launch the real app with an authenticated player, open a supported campaign, see the opening scene and offered options, select one, observe an actual background Storyteller continuation through the selected engine authority, then see the committed next scene through GET and the browser. A few successive scenes should work without manual per-button patches. Story history and fork correctness are the larger distributed-PoC acceptance, not a reason to block the first two-scene vertical run.
 
-**Read in order:** [one-page Cursor waves](CURSOR-EXECUTION.md) · [mechanism-by-mechanism proof matrix](MECHANISM-MATRIX.md) · [all currently open packets and dispositions](BACKLOG-RECONCILIATION.md). Existing ratified design: [D5 release/acceptance](../distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) and [TURN03 proof contract](../../../changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/PROOF.md). Those remain governing authority; this audit routes repairs, does not silently ratify new product features.
+**Read in order:** [one-page Cursor waves](CURSOR-EXECUTION.md) · [mechanism-by-mechanism proof matrix](MECHANISM-MATRIX.md) · [all currently open packets and dispositions](BACKLOG-RECONCILIATION.md). Existing ratified design: [D5 release/acceptance](../../archive/distributed-turn-poc/D5-RELEASE-AND-ACCEPTANCE.md) and [TURN03 proof contract](../../../changes/archive/2026-11/distributed/2026-11-19--turn03-full-distributed-forkable-turn-proof/PROOF.md). These are historical references following owner cancellation of TURN03 and supersession of DISTURN; neither authorizes dispatch or legacy acceptance.
 
 ## The central diagnosis
 
