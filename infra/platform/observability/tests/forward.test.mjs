@@ -19,7 +19,16 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath, URL } from 'node:url';
 import test from 'node:test';
 
-import { ownedChildEnv, startOwnedChild } from '../forward.mjs';
+import { createServer } from 'node:net';
+
+import { parseConnectArgs, runObservabilityConnect } from '../connect.mjs';
+import {
+  FORWARD_ALLOWLIST,
+  ownedChildEnv,
+  openForwards,
+  probeForwardTransport,
+  startOwnedChild,
+} from '../forward.mjs';
 
 const WRAPPER = fileURLToPath(new URL('../exec-owned.py', import.meta.url));
 
@@ -290,4 +299,142 @@ test('inherited descriptor keeps the lock until the owned child closes', async (
   });
   assert.equal(freeStatus, 0);
   rmSync(root, { recursive: true, force: true });
+});
+
+const identity = {
+  snapshotPath: '/tmp/kubeconfig',
+  tuple: { contextName: 'dev', targetNamespace: 'offscreen-dev-observability' },
+};
+
+function fakeChild(lines, { exit = { ok: true, closeUnconfirmed: false } } = {}) {
+  const listeners = [];
+  let resolveClosed;
+  const closed = new Promise((resolve) => {
+    resolveClosed = resolve;
+  });
+  return {
+    pid: 1,
+    closed,
+    outcome: Promise.resolve(exit),
+    stop() {
+      resolveClosed(exit);
+      return Promise.resolve(exit);
+    },
+    onOutput(listener) {
+      listeners.push(listener);
+    },
+    emit() {
+      for (const line of lines) {
+        for (const listener of listeners) {
+          listener(`${line}\n`);
+        }
+      }
+    },
+  };
+}
+
+test('openForwards accepts the fixed loopback lines and refuses a foreign port', async () => {
+  assert.equal(FORWARD_ALLOWLIST.grafana.remote, 80);
+  assert.equal(FORWARD_ALLOWLIST.grafana.targetPort, 3000);
+  const occupied = createServer();
+  await new Promise((resolve) => occupied.listen(14318, '127.0.0.1', resolve));
+  await assert.rejects(
+    () =>
+      openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+        bindings: [{ key: 'developerHttp' }],
+        deadline: performance.now() + 1000,
+        now: () => performance.now(),
+        startChild() {
+          throw new Error('kubectl must not start when the port is taken');
+        },
+      }),
+    /not free/,
+  );
+  occupied.close();
+
+  const child = fakeChild(['Forwarding from 127.0.0.1:14318 -> 4328']);
+  const opened = openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+    bindings: [{ key: 'developerHttp' }],
+    deadline: performance.now() + 1000,
+    now: () => performance.now(),
+    startChild() {
+      queueMicrotask(() => child.emit());
+      return child;
+    },
+  });
+  const session = await opened;
+  assert.equal(session.ports.developerHttp, 14318);
+  const closed = await session.close();
+  assert.equal(closed.ok, true);
+});
+
+test('openForwards rejects a bad line, a second exit and a diagnostic bind without a proof lock', async () => {
+  const bad = fakeChild(['Forwarding from 0.0.0.0:14318 -> 4328']);
+  await assert.rejects(
+    () =>
+      openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+        bindings: [{ key: 'developerHttp' }],
+        deadline: performance.now() + 1000,
+        now: () => performance.now(),
+        startChild() {
+          queueMicrotask(() => bad.emit());
+          return bad;
+        },
+      }),
+    /invalid/,
+  );
+  await assert.rejects(
+    () =>
+      openForwards(identity, { fd: 3, mode: 'shared', pending: false }, {
+        bindings: [{ key: 'diagnosticHttp', localPort: 0 }],
+        startChild() {
+          throw new Error('must not spawn');
+        },
+      }),
+    /proof lock/,
+  );
+});
+
+test('probeForwardTransport checks loopback HTTP and refuses a failed Grafana health', async () => {
+  const ok = await probeForwardTransport(
+    { developerHttp: 9 },
+    {
+      fetch: async () => ({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => Buffer.from('{}'),
+      }),
+      connect: async () => {},
+    },
+  );
+  assert.equal(ok.ok, true);
+  const grafana = await probeForwardTransport(
+    { grafana: 9 },
+    {
+      grafanaAuth: { user: 'admin', password: 'secret' },
+      fetch: async () => ({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => Buffer.from('{"database":"failing"}'),
+      }),
+    },
+  );
+  assert.equal(grafana.reasonCode, 'grafana');
+});
+
+test('connect accepts only empty argv or --queries and refuses a predecessor', async () => {
+  assert.deepEqual(parseConnectArgs([]), { queries: false });
+  assert.deepEqual(parseConnectArgs(['--queries']), { queries: true });
+  assert.throws(() => parseConnectArgs(['--queries', '--queries']), /invalid/);
+  const refused = await runObservabilityConnect({
+    argv: [],
+    readPlatformProfile: () => ({ contextName: 'dev' }),
+    acquireCustody: async () => ({ fd: 3, close() {} }),
+    captureIdentity: () => identity,
+    loadObservabilityVariants: () => ({ desired: {}, predecessor: {} }),
+    collectInventory: async () => ({ pending: false }),
+    classifyInventory: () => ({ state: 'not-ready', reasonCode: 'upgrade-required', pending: false }),
+  });
+  assert.equal(refused.reasonCode, 'upgrade-required');
+  assert.equal(refused.exitCode, 1);
 });
