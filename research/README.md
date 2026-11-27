@@ -18,3 +18,5 @@ Historical architecture investigation: [Code architecture health, MA/DO findings
 Historical coordination findings: [November 18 backlog convergence](agent-practice/BACKLOG-CONVERGENCE-2026-11-18.md), with retained safety decisions, experiment hypotheses and Change relationships; not a dispatch queue.
 
 - [Product reality research](product-reality/README.md): dated audits, claim register, semantic materialization, coherence and cost methodology; non-normative.
+
+- [Documentation editorial audit](agent-practice/DOCUMENTATION-EDITORIAL-AUDIT-2026-11-18.md): concluded corpus audit, examples and unrun semantic-comprehension evaluation; current authority remains in existing documentation rules.

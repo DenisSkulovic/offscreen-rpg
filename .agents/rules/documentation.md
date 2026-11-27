@@ -42,6 +42,12 @@ A cheap implementation agent should not have to read a 30-KB target, a 28-KB aud
 
 **Active planning artifacts:** [the design/Change submission standard](../references/planning-artifact-quality.md) governs folder structure, current-vs-history separation, retrieval budgets and mandatory committee rejection. Edit the owning current statement in place; do not append supersession instructions as a replacement for editing. Preserve genuine evidence and decisions with immutable provenance.
 
+## Editorial craft and semantic clarity
+
+When editing a permanent owner, make each paragraph add a distinct claim, rationale, exception, example or evidence. Use defined terms and unambiguous referents; remove generic slogans, repeated disclaimers and invented detail. State authority beside the affected heading or claim: must/must not express binding rules; may expresses a permitted choice, not production authorization; should is a recommendation. A modal edit that changes meaning needs owner ratification. Distinguish ratified quantities from illustrative numbers, proposed thresholds and measured results.
+
+Product prose explains the player's or operator's promise, agency, consequence and unacceptable surprise before implementation mechanisms. Technical prose explains the owned contract, why it exists (which failure or tradeoff), relevant units/identity/revision, and a concrete normal and discriminating negative trace when complexity warrants. Link the exact controlling heading and explain consequential dependencies; do not copy the upstream contract or force every section into a template. Define abbreviations on first use. Preserve essential complexity, not verbosity. Review whether a fresh reader could implement the wrong behavior from the section alone; link health cannot answer that question.
+
 ## One explanation, several useful levels
 
 Find the existing owner before adding a document. Put the full explanation there and link from higher levels. A summary is useful when it answers a different, broader question; copying a detailed contract into a plan or package README creates drift.
