@@ -31,7 +31,7 @@ One outcome and reason; accepted authority; verified baseline; exact affected ow
 
 Only create companions that serve a distinct reader or purpose. Use [packet design](packet-design-manual.md) and [independent readiness](packet-readiness-review.md) for delegated execution. Inspect code craftsmanship at closure, not just green tests; [code quality](../rules/code-quality.md) owns changed-file requirements.
 
-Create current packets under `work/changes/open/YYYY-MM-DD--slug/`. QUEUE has one global selection, catalog is not a selector. Retire Done/Cancelled after reconciliation to `archive/YYYY-MM/<program>/` (admin, chamber, eng, experience, observability, storyteller, web, other), repair links and preserve provenance. [Repository structure](../../REPOSITORY-STRUCTURE.md) owns backlog and retirement details.
+Create all current-sprint packets under `work/changes/open/YYYY-MM-DD--slug/`, including proposed, planner-blocked and dependency-gated work. Deferred work outside the owner-intended execution horizon belongs in backlog; placement is independent of readiness and commission. No cap on number of current-sprint Changes (per-Change size/task limits still apply). QUEUE has one global selection, catalog is not a selector. Retire Done/Cancelled after reconciliation to `archive/YYYY-MM/<program>/` (admin, chamber, eng, experience, observability, storyteller, web, other), repair links and preserve provenance. [Repository structure](../../REPOSITORY-STRUCTURE.md) owns backlog and retirement details.
 
 ## Batch execution and parallel Change orchestration (2026-11-19)
 

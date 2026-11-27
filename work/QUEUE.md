@@ -6,7 +6,7 @@ Current work: none
 
 **Reconciliation 2026-11-25:** INF49 composition source Done/archived (live install NOT-RUN); INF50 residual regression source Done/archived; INF47 historical CLI source Done/archived (live query NOT-RUN); INF52 lifecycle programmes source Done/archived (live NOT-RUN; capability catalog); INF38 deferred; no current commission. INF51 archived, INF29 superseded. [Consolidation](undertakings/storyteller-workshop/CONSOLIDATION.md). No change to selection pointer or live permission.
 
-Deferred proposals live in the [domain backlog](changes/backlog/README.md); actively commissioned or imminent packets live in [open](changes/README.md). Backlog placement never selects work or confers permission to spend or deploy.
+The [open Changes](changes/open/README.md) are the current sprint, including all current proposed, blocked and dependency-gated packets, not just the next dispatch. The [domain backlog](changes/backlog/README.md) holds genuinely deferred work outside that sprint (potentially weeks or months later). Neither location selects work or confers commission, spend or deploy permission. `Current work:` remains the one default selector.
 
 This is the **one active selection pointer** for independently tracked work. The current themed integration envelope, when one exists, is recorded separately under [Undertakings](undertakings/README.md) and never selects execution by itself. [Vocabulary and routing](WORK-TAXONOMY.md) · [Change catalog](changes/README.md) · [Standalone Task catalog](tasks/README.md) · [Open designs](designs/README.md).
 

@@ -1,4 +1,23 @@
-# Open Changes | current and near-term
+# Open Changes | current sprint / execution horizon
+
+## Developer observability | current sprint (2026-11-27)
+
+Owner intends all eleven bounded Changes to be completed in today's execution horizon, subject to actual readiness, dependencies, safety and acceptance. All belong in open. No implication of parallel dispatch, commission, live authorization or proof waiver. [Design and dependency map](../../designs/open/observability-developer/IMPLEMENTATION-PLAN.md) owns sequencing. The original monolithic Change is superseded.
+
+| Change | Current readiness |
+| --- | --- |
+| [OBS-D01 native artifact normalization](2026-11-27--obs-d01-native-artifacts/CHANGE.md) | Proposed; defended narrow integration exception pending owner acceptance and independent packet readiness |
+| [OBS-D02 target identity](2026-11-27--obs-d02-target-identity/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D03 operation custody](2026-11-27--obs-d03-operation-custody/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D04 collector topology](2026-11-27--obs-d04-collector-topology/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D05 foreground connection](2026-11-27--obs-d05-foreground-connection/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D06 collector upgrade](2026-11-27--obs-d06-collector-upgrade/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D07 synthetic proof](2026-11-27--obs-d07-synthetic-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D08 developer signal proof](2026-11-27--obs-d08-developer-signal-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D09 health resource proof](2026-11-27--obs-d09-health-resource-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D10 recovery proof](2026-11-27--obs-d10-recovery-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+| [OBS-D11 partial install proof](2026-11-27--obs-d11-partial-install-proof/CHANGE.md) | Proposed / PLANNER-BLOCKED; resolve named gates and review before commission |
+
 
 [RABBITMQ-NATIVE](2026-11-26--rabbitmq-native/CHANGE.md): owner-accepted R10, source-only commission; live acceptance and join held.
 
@@ -30,7 +49,7 @@
 | [DO06 Lab ownership](../archive/2026-11/platform-operations/2026-11-24--do06-lab-ownership/CHANGE.md) | DO03 + DO05 | Done / source-only |
 [Retirement program](../../designs/open/code-architecture-health/DOMAIN-OWNERSHIP-RETIREMENT.md) · [Parallel execution rules](../../designs/open/code-architecture-health/DO-PARALLEL-EXECUTION.md).
 
-**Purpose:** Keep this directory small. An entry is here only because it is being implemented, is intended for the next few days, or has already started and needs an honest completion/cancellation decision. **A folder in open is not necessarily Ready or automatically commissioned.** The one global default selector is [work/QUEUE.md](../../QUEUE.md); explicit owner commissions can exist separately.
+**Purpose:** All Changes intended for the current sprint belong here, including Proposed, planner-blocked, dependency-gated, Ready, commissioned, in-progress and acceptance-pending Changes. There is no arbitrary cap on the number of current Changes; keep each Change bounded. A folder in open is not necessarily Ready or automatically commissioned. The one global default selector is [work/QUEUE.md](../../QUEUE.md); explicit owner commissions can exist separately.
 
 [Backlog by domain](../backlog/README.md) · [Change catalog](../README.md) · [Terminal archive](../archive/README.md) · [Storyteller undertaking](../../undertakings/storyteller-workshop/OVERVIEW.md)
 
@@ -51,7 +70,7 @@
 | Change | Why NOT moved to backlog/archive blindly |
 | --- | --- |
 
-**Promotion:** a future [backlog](../backlog/README.md) Change moves here only after an actual near-term commission and updated source/dependency/readiness review. **Retirement:** only verified Done/Cancelled moves to [archive](../archive/README.md) with required evidence/ledger. Do not keep a permanent queue of speculative ideas here, and do not delete or auto-archive a partially executed folder just to make this page short.
+**Promotion:** move a deferred [backlog](../backlog/README.md) Change here as soon as the owner makes it part of the current execution horizon, even before source/readiness review or commission. Refresh source/dependencies and verify readiness before dispatch. **Retirement:** only verified Done/Cancelled moves to [archive](../archive/README.md) with evidence/ledger. Move unfinished work back to backlog only when genuinely deferred by owner decision, not simply because it is blocked or later in the current sprint.
 
 - [LIB08 bounded local object reads](../archive/2026-11/platform-operations/2026-11-24--lib08-local-object-bounded-read/CHANGE.md): Done, source-only.
 

@@ -1,6 +1,6 @@
 # OBS-D01 | Normalize native observability artifacts
 
-**State:** Proposed; independent readiness and explicit commission pending. **Kind:** PATCH, behavior-preserving source migration. **Baseline:** main `40b44b3909f0226e075dad70fe053aba55e37a88`. **Integration:** main; dedicated `change/obs-d01-native-artifacts` worktree after commission. Human integration custodian; ChatGPT planner.
+**State:** Proposed (current sprint); independent readiness and explicit commission pending. **Kind:** PATCH, behavior-preserving source migration. **Baseline:** main `40b44b3909f0226e075dad70fe053aba55e37a88`. **Integration:** main; dedicated `change/obs-d01-native-artifacts` worktree after commission. Human integration custodian; ChatGPT planner.
 
 ## Outcome
 

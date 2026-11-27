@@ -1,8 +1,8 @@
-# Change backlog | future, uncommissioned work
+# Change backlog | genuinely deferred work
 
-**Purpose:** Future independently bounded Changes that are not part of the next few days' execution. These packets preserve owner intent and architectural boundaries; they are **not** permission for Cursor to implement, spend provider money, modify cluster resources, or mutate customer data.
+**Purpose:** Independently bounded Changes outside the owner's current execution horizon, potentially revisited in weeks, months or later. Backlog is not a waiting room for current-sprint dependencies, readiness review or commission. No permission for implementation, spend, cluster mutation or customer-data changes.
 
-[Open / near-term Changes](../README.md) · [Completed archive](../archive/README.md) · [Owner minutes](../../sessions/2026-11-22.md) · [Undertaking overview](../../undertakings/storyteller-workshop/OVERVIEW.md)
+[Open / current sprint Changes](../README.md) · [Completed archive](../archive/README.md) · [Owner minutes](../../sessions/2026-11-22.md) · [Undertaking overview](../../undertakings/storyteller-workshop/OVERVIEW.md)
 
 **2026-11-23 newly recorded:** [SEM01 semantic-debt and architectural comprehensibility inventory](quality-evaluation/2026-11-23--sem01-semantic-debt-and-codebase-inventory/CHANGE.md) is proposed and **not** a Cursor refactor commission. Inspect current source and de-duplicate against existing code-health and INF plans before promotion.
 
@@ -12,13 +12,13 @@
 - [experience admin](experience-admin/README.md): 4 proposed Changes
 - [policy finance](policy-finance/README.md): 7 proposed Changes
 - [quality evaluation](quality-evaluation/README.md): 4 proposed Changes
-- [platform operations](platform-operations/README.md): 25 proposed Changes (including INF01–INF05)
+- [platform operations](platform-operations/README.md): see domain index
 
-**Lifecycle:** A proposal may stay here indefinitely if genuinely deferred, but must retain a domain owner, next prerequisite, and recognizable outcome. When the owner selects work for the upcoming execution window, ChatGPT rechecks the latest integration HEAD and dependencies, promotes the packet into `work/changes/open/`, repairs its links, and only then turns it into source-grounded executable Cursor tasks. Closed work goes via the established archive/ledger process. Avoid indefinitely parking an actually active blocker here; `open/` is for current/near-term effort.
+**Lifecycle:** Genuinely deferred work retains a domain owner, recognizable outcome and reactivation trigger. When the owner makes it current, move it into `work/changes/open/`, repair links and update catalogs even if its detailed plan is still blocked. Refresh latest integration HEAD, source/dependencies and independent readiness before commission. Placement is independent of commission. No current-sprint item belongs here merely because it is waiting for predecessors or review. Terminal work goes through archive/ledger.
 
 **2026-11-26:** DXK09 superseded and archived; INF38 deferred to platform operations, not commissioned.
 
-**Classification:** Deferred proposals remain uncommissioned until explicitly promoted. DXK08 was promoted back to `open/` on 2026-11-22 after current-source/readiness reconciliation and owner commission.
+**Classification:** Deferred proposals remain uncommissioned; making work current changes placement, not authorization. DXK08 was promoted back to `open/` on 2026-11-22 after current-source/readiness reconciliation and owner commission.
 
 
 **Deferred earlier packets (not counted among the 2026-11-22 gym proposals):** OBS04, TURN04, MA06 and MA09 remain unselected/deferred as of this classification. They are preserved in the corresponding category index and must undergo source review before promotion. Partial/in-flight DIST03, live-edge K8S11, and old WR05/WR09 umbrella reconciliation remain in `open/` until their true disposition is decided.

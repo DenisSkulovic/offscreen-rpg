@@ -2,7 +2,7 @@
 
 **Change scale:** one measurable outcome, normally 1–5 tasks and 5–10 minutes active Cursor work; seven actual tasks maximum including nested subcards. Above eight current documents or 35 KiB presumptively reject pending justified consolidation/repartition. **Mandatory packet admission:** [planning artifact quality](../../.agents/references/planning-artifact-quality.md) governs every new or repaired open packet and independent readiness review. No amendment diaries, contradictory current contracts or unbounded Cursor preload.
 
-[OBSERVABILITY-DEVELOPER](archive/2026-11/observability/2026-11-27--observability-developer/CHANGE.md) — superseded after submission failure, no execution; [recovery roadmap](../designs/open/observability-developer/IMPLEMENTATION-PLAN.md). [OBS-D01](open/2026-11-27--obs-d01-native-artifacts/CHANGE.md) — proposed first bounded replacement, independent review and commission pending. [OBSERVABILITY-NATIVE](archive/2026-11/observability/2026-11-26--observability-native/CHANGE.md) superseded; outstanding proof transferred. [D02–D11 prepared candidates](backlog/platform-operations/README.md#developer-observability-prepared-proposals); none commissioned.
+[OBSERVABILITY-DEVELOPER](archive/2026-11/observability/2026-11-27--observability-developer/CHANGE.md) — superseded after submission failure, no execution; [recovery roadmap](../designs/open/observability-developer/IMPLEMENTATION-PLAN.md). [OBS-D01](open/2026-11-27--obs-d01-native-artifacts/CHANGE.md) — proposed first bounded replacement, independent review and commission pending. [OBSERVABILITY-NATIVE](archive/2026-11/observability/2026-11-26--observability-native/CHANGE.md) superseded; outstanding proof transferred. [D01–D11 current sprint](open/README.md#developer-observability--current-sprint-2026-11-27); all eleven open, none commissioned.
 
 [RABBITMQ-NATIVE](open/2026-11-26--rabbitmq-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and fresh release separately gated.
 
@@ -54,9 +54,9 @@ Owner-selected near-term parallel program after Documents and DO01–DO07. [Froz
 
 **2026-11-23:** [DXK10-A registry-only reserve and explicit attach](archive/2026-11/infrastructure/2026-11-23--dxk10a-reserve-attach-foundation/CHANGE.md) is Done. No cluster startup or existing tenant takeover was performed. DXK10 parent cancelled/superseded; B absorbed into INF38, C retained as future capability in the local developer platform contract. HR02 independently owns Web source paths.
 
-**[Open](open/): 15 current/near-term or unresolved partially executed Changes.** This is where we keep actual implementation work and the next few days' commissions, not the future idea bank.
+**[Open](open/README.md): current sprint / execution horizon.** Includes all owner-intended current Changes, regardless of whether proposed, blocked, dependency-gated, Ready, commissioned, in progress or awaiting acceptance. No numerical cap or restriction to the next dispatch.
 
-**[Backlog](backlog/README.md): 32 deferred or future Changes in five domain groups.** DXK08 was promoted on 2026-11-22 after fresh source/readiness reconciliation. No backlog Change may be treated as Cursor-ready solely from a previous status label; promotion requires a fresh source/readiness check and explicit owner commission.
+**[Backlog](backlog/README.md): genuinely deferred Changes** outside the current sprint, potentially weeks/months away. Move into open when made current; refresh source and readiness before commission. Placement alone does not select or authorize work.
 
 **[Archive](archive/README.md): terminal Done/Cancelled Changes with evidence and ledger recovery.** Do not archive a packet merely because it was superseded without reconciliation.
 
