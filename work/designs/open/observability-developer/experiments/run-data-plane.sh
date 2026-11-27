@@ -38,9 +38,9 @@ cleanup() {
 trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
-CID="$(docker create "${COMMON[@]}" --network none --memory 256m --cpus 1 -e MY_POD_IP=127.0.0.1 "$IMAGE" --config=file:/tmp/relay.yaml)"
+CID="$(docker create "${COMMON[@]}" --network none --memory 256m --cpus 1 -e MY_POD_IP=127.0.0.1 "$IMAGE" --config=file:/experiment-relay.yaml)"
 chmod 644 "$OUT/relay.yaml"
-docker cp "$OUT/relay.yaml" "$CID:/tmp/relay.yaml"
+docker cp "$OUT/relay.yaml" "$CID:/experiment-relay.yaml"
 docker start "$CID" >/dev/null
 cat >"$OUT/prometheus.yaml" <<'YAML'
 global:
@@ -49,9 +49,9 @@ otlp:
   promote_resource_attributes: [deployment.environment.name, service.namespace, service.name]
 scrape_configs: []
 YAML
-PROM="$(docker create "${COMMON[@]}" --network "container:$CID" --memory 512m --cpus 1 "$PROMIMAGE" --config.file=/tmp/experiment-prometheus.yaml --storage.tsdb.path=/tmp/experiment-tsdb --web.enable-otlp-receiver --web.listen-address=127.0.0.1:9090)"
+PROM="$(docker create "${COMMON[@]}" --network "container:$CID" --memory 512m --cpus 1 "$PROMIMAGE" --config.file=/experiment-prometheus.yaml --storage.tsdb.path=/prometheus --web.enable-otlp-receiver --web.listen-address=127.0.0.1:9090)"
 chmod 644 "$OUT/prometheus.yaml"
-docker cp "$OUT/prometheus.yaml" "$PROM:/tmp/experiment-prometheus.yaml"
+docker cp "$OUT/prometheus.yaml" "$PROM:/experiment-prometheus.yaml"
 docker start "$PROM" >/dev/null
 PID="$(docker create -i "${COMMON[@]}" --network "container:$CID" --memory 128m --cpus 1 "$PYIMAGE" python3 -)"
 timeout 90s docker start -ai "$PID" <"$HERE/data-plane.py" | tee "$OUT/submissions.txt"
@@ -82,6 +82,7 @@ print("TARGET_INFO",json.dumps(query("target_info")))
 print("PROMETHEUS SERIES CHECK PASS")
 PY
 docker logs "$CID" >"$OUT/collector.log" 2>&1
+cat "$OUT/collector.log"
 python3 - "$OUT/collector.log" <<'PY'
 import pathlib,sys
 s=pathlib.Path(sys.argv[1]).read_text()
