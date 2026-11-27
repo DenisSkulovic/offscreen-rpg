@@ -1,5 +1,9 @@
 # Worker: Temporal Activities and durable outbox delivery
 
+## Known limitations and security follow-up
+
+**Zod dependency triage (2026-11-27):** the independent Agent Core E1 review identified `apps/worker/package.json` pinned to 4.6.5 at [5ea13cc6ac6ade8c3909acbecd54a039ceeb17fe](https://github.com/DenisSkulovic/offscreen-rpg/blob/5ea13cc6ac6ade8c3909acbecd54a039ceeb17fe/apps/worker/package.json). The isolated E1 npm audit reported [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5), high severity for versions below 4.6.6 (memory exhaustion validating oversized constrained collections); E1 tested 4.6.7 successfully. Worker exposure, actual resolved pnpm dependencies and other affected packages remain untriaged. Prioritize separate repository-wide dependency/exposure triage, targeted compatible upgrades and focused regression checks; do not infer a production exploit or cleared security gate from the isolated experiment. This is not an E1-introduced defect or an authorization to change the Worker in E1. Keep the real security severity and any required exposure gate; update this record after verified resolution.
+
 `@offscreen/worker` connects accepted database notices to Temporal workflows and runs Activity adapters over **application operations**. Workflow timing, outbox delivery and committed business effects are different responsibilities. See the [technical execution contract](../../docs/technical/platform/execution-and-delivery.md). When the question is which record to read before anyone retries, start at [Uncertain work recovery](../../docs/runbooks/uncertain-work-recovery.md). That guide does not change the exact-once fence below.
 
 ## Route a failure to its owner

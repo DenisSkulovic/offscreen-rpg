@@ -16,6 +16,8 @@
 
 One owner per guarantee. Product intent is [product](../product/README.md). These pages include selected future design. They are not a status report.
 
+[Agent Core foundation](platform/agent-core.md) records the independently reviewed E1 target, durable limitations, deferred findings and qualification boundary; its standing distinguishes review from owner acceptance and realization.
+
 ## Architecture at a glance
 
 ```mermaid

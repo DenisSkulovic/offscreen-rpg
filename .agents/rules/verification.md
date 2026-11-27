@@ -90,7 +90,7 @@ Node, pnpm, Docker/Temporal and Postgres are not interchangeable. Never claim a 
 
 ## Evidence receipt
 
-Report **what ran**, pass, fail or blocked, what did not run, and any actionable defect. For a construction close, name the source postcondition and the Change or Design boundary that owns the remaining proof. Review the actual diff, including relevant failure and retry paths when those paths are in scope. Code style, typechecking, tests, gameplay quality and human acceptance are separate claims.
+Report **what ran**, pass, fail or blocked, what did not run, and any actionable defect. For a construction close, name the source postcondition and the Change or Design boundary that owns the remaining proof. Review the actual diff, including relevant failure and retry paths when those paths are in scope. Code style, typechecking, tests, gameplay quality and human acceptance are separate claims. Persist still-relevant findings, limitations and unrun residual assurance in the affected durable technical owner or code-adjacent README under [durable engineering knowledge](../../REPOSITORY-STRUCTURE.md#durable-engineering-knowledge), with evidence and the next proof owner. Update the record when proof lands. A scheduled joint proof remains owned by its acceptance boundary and does not become a separate construction gate.
 
 A required test that did not run is NOT RUN. Name its assigned proof boundary. Do not represent it as PASS.
 

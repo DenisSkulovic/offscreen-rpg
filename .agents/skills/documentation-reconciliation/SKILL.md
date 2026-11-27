@@ -19,6 +19,8 @@ Use when a source inspection or completed feature reveals documentation drift, w
 
 ## Structural migration
 
+When promoting or retiring temporary work, reconcile still-relevant findings, known limitations, low-resolution areas, deferred decisions and residual assurance in the affected durable technical owner or code-adjacent README, following [durable engineering knowledge](../../../REPOSITORY-STRUCTURE.md#durable-engineering-knowledge). Preserve their status, provenance and triggers; never promote a hypothesis or unrun proof as an accepted or realized guarantee.
+
 When a documentation Change creates, splits, merges, moves, or retires an owner, declare it under `## Document shape | shape-ops.v1` and, once the diff exists, under `## Migration receipt | shape-receipt.v1`. A split or merge is not reconciled while a unique claim or negative constraint is missing from the successor, or while an inbound anchor still points at a heading that moved. Retiring a proposed page does not ratify its text. A reviewed page left untouched is `NO-OP` and stays out of the diff. Checked links do not prove the meaning survived.
 
 Prefer clear ownership, bounded reading and preserved semantics. [Submission standard](../../references/planning-artifact-quality.md) governs planning artifact size; a permanent contract may remain long when coherent and selectively readable.

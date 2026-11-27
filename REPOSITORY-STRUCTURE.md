@@ -124,10 +124,16 @@ Use the commands relevant to the zone and real available runtime. `pnpm repo:mai
 
 For each candidate record briefly: **path, current owner/lane, exact observed problem, inbound references, unique evidence, current successor, proposed keep/update/promote/retire disposition and authorization gate**. Inspect and resolve link dependencies first; don't replace broken citations with silence.
 
+### Durable engineering knowledge
+
+Design and Change folders (including backlog and archive) are temporary coordination and provenance, never the sole location of current engineering knowledge. When a design, review, investigation or implementation identifies a known limitation, unresolved decision, intentionally low-resolution area, deferred capability, substantive Medium/Low finding, risk or remaining proof, the responsible designer/planner or implementation coordinator must record its actionable meaning outside `work/`. Prefer an existing README adjacent to the affected package, app, subsystem or tooling for local constraints; use the existing `docs/technical/` owner for cross-boundary guarantees and architectural limitations. If the code owner does not yet exist, use the durable technical owner now and link it from the future package README. Do not create a new findings ledger, separate file per finding or shadow backlog.
+
+Keep entries compact: stable finding ID when available, affected source/contract, observed fact or explicitly unverified risk, consequence, current disposition/limitation, next trigger or proof owner, and immutable source/review provenance. Distinguish a planned capability from realized behavior and a missing proof from a defect. Security findings follow their real severity and applicable exposure boundary; do not demote them to documentation tasks. Preserve unique evidence in `evidence/` or curated `research/`; those historical records support, not replace, the current owner entry. An obsolete, corrected or purely dossier-local finding can close with a brief disposition and immutable provenance rather than pollute current code documentation. Reviewers name destinations in their verdicts; custodians reconcile them without modifying the independently reviewed candidate or inventing owner acceptance. No unapproved implementation follows from an entry. Maintain the same durable entry in later evolutions, removing or updating it only when resolved or superseded with evidence.
+
 ### Promotion and deletion gate
 
 Before retiring a temporary Design, Change, Task or Undertaking:
-1. Confirm its actual terminal **meaning/status** and where approved output now lives.
+1. Confirm its actual terminal **meaning/status** and where approved output now lives. Reconcile every still-relevant finding, low-resolution area, limitation and deferred proof with its durable owner above; verify the entry and link, or record why it was resolved/obsolete.
 2. Preserve unique proof in `evidence/` and distinct concluded findings in `research/`; do not duplicate text wholesale.
 3. Record a compact disposition with **full immutable Git SHA** and original path (plus current owner).
 4. Audit inbound paths/anchors, indexes, queues and external consumers where known; repair references to permanent successor or exact Git history.
