@@ -12,6 +12,8 @@ Permanent product and technical truth lives under [docs/product](../docs/product
 
 ## Put knowledge in the correct place
 
+[Planning artifact submission standard](references/planning-artifact-quality.md) owns Design/Change scale, file roles, measurements and rejection rules. The agent handbook follows current-state editing, one policy owner and short role-specific routes; knowledge packs are conditional references, not automatic startup context.
+
 | Kind | Purpose | Loading policy |
 | --- | --- | --- |
 | `AGENTS.md` | Safety and essential task routing | Small; every agent session |

@@ -27,6 +27,8 @@ Imagine the parent has received `do ID`. The first useful actions should be bran
 
 ## 3. Design the execution DAG before writing T-IDs
 
+Apply [Change scale](planning-artifact-quality.md#4-submission-scale-and-measurement) first: one measurable outcome, normal 5–10 minutes active implementation, at most seven actual executor assignments including nested subcards. If the DAG exceeds this ceiling, return to scope design; do not rename a many-task campaign as one Change.
+
 Draw a DAG of *edits and validations*, not just document sections. Each node has: contract/input prerequisites, exact write ownership, allowed reads, expected proof and a result needed by downstream nodes. Put interface/types/schema first if later edits depend on them. Different tasks are parallel candidates only when they do **not** share write paths, build/generated outputs, mutable fixtures/database/schema, runtime ports, exclusive local services, or a dependency on another task's unlanded result. Merely naming two tasks T01/T02 does not make them independent.
 
 **Parallel eligibility matrix** (record once in TASKS or EXECUTION for material Changes):

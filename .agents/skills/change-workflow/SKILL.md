@@ -19,7 +19,7 @@ If the owner gives a Cursor **parent chat** one direct Change assignment such as
 
 **Target-first portfolio modernization:** Before auditing, author an explicit end-state target independently of the existing code, then compare actual source to it. Read [target-driven renewal](../../rules/target-driven-renewal.md). A portfolio/refactor Change is not Ready without a target criterion → audited gap → bounded diff → falsifiable proof. Do not optimize for whatever code smells happened to be noticed first.
 
-**Submission quality:** [shared planning artifact standard](../../references/planning-artifact-quality.md) is a mandatory admission gate. Repair actual current statements in place; no competing amendment layers or unbounded child reading. Reject incoherent submissions before technical review.
+**Submission scale:** one outcome, normally 5–10 minutes active implementation, at most seven actual tasks. Apply folder/file/reading measurements before review. **Submission quality:** [shared planning artifact standard](../../references/planning-artifact-quality.md) is a mandatory admission gate. Repair actual current statements in place; no competing amendment layers or unbounded child reading. Reject incoherent submissions before technical review.
 
 **Authoring and acceptance separation:** Planner authors with [execution-first packet design](../../references/packet-design-manual.md) and runs an [independent G0–G7 readiness review](../../references/packet-readiness-review.md), including every T-ID and any proposed parallel wave. The reviewer records an initial verdict before repairs and reruns the whole audit afterward; do not equate document completeness with Composer readiness. Only ChatGPT loads these manuals, not every child.
 

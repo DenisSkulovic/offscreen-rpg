@@ -8,7 +8,8 @@ Use [independent readiness review](packet-readiness-review.md) for meanings, har
 - Source symbols and tests actually inspected; uninspected critical surface:
 
 ## Submission quality (G0 prerequisite)
-- Candidate folder inventory: active prose count/total and largest files, measurement method; separate research/evidence/history.
+- Recursive inventory: total tracked files/bytes; current planning count/bytes and largest files; research/evidence/history and specimens/scripts separately; measurement method.
+- Independent outcomes, actual executable task count (all subcards), parent/largest child mandatory words, active implementation estimate and heavy acceptance owner; justified scope/size exceptions.
 - Current authority and front door; obsolete/contradictory text, actual mandatory context routes, size exceptions with reason.
 - Disposition PASS / FAIL / UNVERIFIED; concrete offending path/section and repair. Stop at hard rejection; unreviewed gates are NOT REVIEWED.
 

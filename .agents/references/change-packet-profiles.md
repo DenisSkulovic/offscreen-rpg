@@ -33,6 +33,8 @@ The current source-backed examples are BOOT03, STORY02, STORY03, TURN02 and K8S1
 
 ## Files and ownership
 
+[Submission scale and role budgets](planning-artifact-quality.md#4-submission-scale-and-measurement): normally 1–5 tasks and 1–6 current documents; seven actual tasks maximum. Above eight documents or 35 KiB current prose presumptively reject until justified or repartitioned. Extra contract files count.
+
 `CHANGE.md` is **always the sole mandatory front door**, ideally one screen of live route data with historical evidence linked separately. Use the existing standardized template. Include:
 
 - ID, state, kind, profile, baseline SHA, execution permission/selector, explicitly verified source/owner anchors.
