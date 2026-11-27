@@ -9,6 +9,7 @@ import { GRAFANA_ADMIN_SECRET } from '../inventory.mjs';
 import {
   assertPhaseBudget,
   helmInstallArgv,
+  parseNamespaceCreateResponse,
   PHASE_TIMEOUT_MS,
   runObservability,
   runObservabilityEnsure,
@@ -109,8 +110,32 @@ function snapshotForPhases(phases) {
   };
 }
 
+const STAGED_NAMESPACE_UID = 'uid-target-namespace';
+
+function namespaceCreateStdout(uid = STAGED_NAMESPACE_UID) {
+  return JSON.stringify({
+    kind: 'Namespace',
+    metadata: {
+      name: devProfile.namespaces.observability,
+      uid,
+      labels: { [devProfile.ownerLabel]: devProfile.ownerValue },
+    },
+    status: { phase: 'Active' },
+  });
+}
+
 /**
- * @param {{ failAt?: string, calls?: { command: string, args: string[] }[], outputs?: string[] }} [options]
+ * @param {{
+ *   failAt?: string,
+ *   failHelmAt?: number,
+ *   badNamespaceCreateStdout?: boolean,
+ *   emptyNamespaceCreateStdout?: boolean,
+ *   wrongNamespaceCreateUid?: string,
+ *   failCustodyAdvanceAt?: string,
+ *   calls?: { command: string, args: string[] }[],
+ *   outputs?: string[],
+ *   helmDurationMs?: number,
+ * }} [options]
  */
 function makeEnsureDeps(options = {}) {
   let phase = 0;
@@ -164,7 +189,11 @@ function makeEnsureDeps(options = {}) {
       contextName: devKind.contextName,
       clusterName: devProfile.clusterName,
       port: 24443,
+      dockerContext: 'ensure-fixture-ctx',
       dockerControlPlaneId: 'cp',
+      dockerEndpointHost: 'unix:///var/run/docker.sock',
+      caSha256:
+        'a3b5c7d9e1f2031425364758697a8b9cadbecfd0e1f2a3b4c5d6e7f8091a2b3c',
       kubeSystemUid: 'kube-system',
       baselineUid: 'baseline',
       targetNamespaceUid: null,
@@ -179,10 +208,13 @@ function makeEnsureDeps(options = {}) {
       this.cancelled = true;
     },
     begin(record) {
-      pendingWrites.push(structuredClone(record));
+      pendingWrites.push(globalThis.structuredClone(record));
     },
     advance(record) {
-      pendingWrites.push(structuredClone(record));
+      if (options.failCustodyAdvanceAt === record.phase) {
+        throw new Error('advance refused');
+      }
+      pendingWrites.push(globalThis.structuredClone(record));
     },
     clear() {},
     close() {},
@@ -243,9 +275,27 @@ function makeEnsureDeps(options = {}) {
       }
       phase += 1;
       outputs.push(`${command} ${args.join(' ')}`);
+      const kubectlCreates = calls.filter(
+        (call) => call.command === 'kubectl' && call.args.includes('create'),
+      ).length;
+      const isNamespaceCreate =
+        command === 'kubectl' &&
+        args.includes('create') &&
+        kubectlCreates === 1;
+      let stdout = '';
+      if (isNamespaceCreate) {
+        if (options.badNamespaceCreateStdout) {
+          stdout = 'not-json';
+        } else if (options.emptyNamespaceCreateStdout) {
+          stdout = '';
+        } else {
+          const uid = options.wrongNamespaceCreateUid ?? STAGED_NAMESPACE_UID;
+          stdout = namespaceCreateStdout(uid);
+        }
+      }
       return {
         ok: true,
-        stdout: '',
+        stdout,
         exitCode: 0,
         signal: null,
         timedOut: false,
@@ -595,12 +645,118 @@ test('fresh ensure binds namespace UID before secret and persists it under custo
         .slice(1)
         .every((row) => row.tuple.targetNamespaceUid === uid),
     );
-    assert.ok(deps.calls[0].args.includes('create'));
+    const nsCreate = deps.calls[0];
+    assert.ok(nsCreate.args.includes('create'));
+    const outIndex = nsCreate.args.indexOf('-o');
+    assert.ok(outIndex >= 0);
+    assert.equal(nsCreate.args[outIndex + 1], 'json');
     assert.ok(deps.calls[1].args.includes('create'));
   } finally {
     if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
     else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
   }
+});
+
+test('malformed namespace create JSON retains pending and skips secret', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps({ badNamespaceCreateStdout: true });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.mutation, 'possible');
+    assert.equal(receipt.pending, true);
+    assert.equal(deps.calls.length, 1);
+    assert.equal(deps.calls[0].command, 'kubectl');
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+  }
+});
+
+test('empty namespace create stdout retains pending as possible mutation', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps({ emptyNamespaceCreateStdout: true });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.mutation, 'possible');
+    assert.equal(receipt.pending, true);
+    assert.equal(deps.calls.length, 1);
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+  }
+});
+
+test('create-response UID mismatch with inventory rejects before secret', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps({
+      wrongNamespaceCreateUid: 'wrong-create-uid',
+    });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.reasonCode, 'identity-changed');
+    assert.equal(deps.calls.length, 1);
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+  }
+});
+
+test('failed custody advance after namespace bind prevents secret', async () => {
+  const prior = process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+  process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
+  try {
+    const deps = makeEnsureDeps({ failCustodyAdvanceAt: 'namespace' });
+    const receipt = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
+    assert.equal(receipt.ok, false);
+    assert.equal(receipt.pending, true);
+    assert.equal(deps.calls.length, 1);
+  } finally {
+    if (prior === undefined) delete process.env.OFFSCREEN_OBSERVABILITY_ENSURE;
+    else process.env.OFFSCREEN_OBSERVABILITY_ENSURE = prior;
+  }
+});
+
+test('parseNamespaceCreateResponse validates Namespace object', () => {
+  const identity = {
+    namespace: devProfile.namespaces.observability,
+    tuple: { targetNamespaceUid: null },
+  };
+  const uid = parseNamespaceCreateResponse(
+    { ok: true, stdout: namespaceCreateStdout(), timedOut: false },
+    identity,
+    devProfile,
+  );
+  assert.equal(uid, STAGED_NAMESPACE_UID);
+  assert.throws(
+    () =>
+      parseNamespaceCreateResponse(
+        { ok: true, stdout: '{"kind":"ConfigMap"}', timedOut: false },
+        identity,
+        devProfile,
+      ),
+    /namespace-response-invalid/,
+  );
 });
 
 test('replacement namespace after binding prevents secret creation', async () => {

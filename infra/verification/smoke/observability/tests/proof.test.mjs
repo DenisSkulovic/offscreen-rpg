@@ -145,12 +145,26 @@ function createFakeIdentity(namespaceUid = NS_UID_A) {
   return {
     profileId: 'dev',
     contextName: CANONICAL_DEV_CONTEXT,
+    clusterName: 'offscreen-dev',
     namespace: 'offscreen-dev-observability',
     tuple: {
+      profileId: 'dev',
+      contextName: CANONICAL_DEV_CONTEXT,
+      clusterName: 'offscreen-dev',
+      port: 24_443,
+      dockerContext: 'proof-docker-ctx',
+      dockerControlPlaneId: 'proof-cp-id',
+      dockerEndpointHost: 'unix:///var/run/docker.sock',
+      caSha256:
+        'a3b5c7d9e1f2031425364758697a8b9cadbecfd0e1f2a3b4c5d6e7f8091a2b3c',
       kubeSystemUid: CLUSTER_UID,
       baselineUid: CLUSTER_UID,
       targetNamespaceUid: namespaceUid,
     },
+    snapshotSha256:
+      'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef',
+    snapshotDev: 1,
+    snapshotIno: 1,
     snapshotPath: '/tmp/offscreen-proof-fake-snapshot.json',
     cleanup() {
       return { ok: true };

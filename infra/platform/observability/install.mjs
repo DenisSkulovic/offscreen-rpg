@@ -7,13 +7,13 @@ import process from 'node:process';
 import { performance } from 'node:perf_hooks';
 
 import { readPlatformProfile } from '../common/profile.mjs';
-import { runPlatformCommand } from '../common/commands.mjs';
 import { helmValuesArgv, loadArtifacts } from './artifacts.mjs';
 import { acquireCustody, readPending, runMutation } from './custody.mjs';
 import {
   captureIdentity,
   INVENTORY_BUDGET_MS,
   recheckIdentity,
+  runObservabilityReadCommand,
 } from './identity.mjs';
 import { collectInventory, GRAFANA_ADMIN_SECRET } from './inventory.mjs';
 import {
@@ -391,6 +391,62 @@ function grafanaSecretManifest(namespace, password) {
 }
 
 /**
+ * @param {{
+ *   ok?: boolean,
+ *   timedOut?: boolean,
+ *   cancelled?: boolean,
+ *   stdout?: string,
+ * }} result
+ * @param {ReturnType<typeof captureIdentity>} identity
+ * @param {ReturnType<typeof readPlatformProfile>} profile
+ */
+export function parseNamespaceCreateResponse(result, identity, profile) {
+  if (!result.ok || result.timedOut === true || result.cancelled === true) {
+    throw new Error('phase-failed');
+  }
+  const trimmed = (result.stdout ?? '').trim();
+  if (trimmed.length === 0) {
+    throw new Error('namespace-response-invalid');
+  }
+  /** @type {unknown} */
+  let object;
+  try {
+    object = JSON.parse(trimmed);
+  } catch {
+    throw new Error('namespace-response-invalid');
+  }
+  if (typeof object !== 'object' || object == null) {
+    throw new Error('namespace-response-invalid');
+  }
+  const body =
+    /** @type {{ kind?: string, metadata?: Record<string, unknown> }} */ (
+      object
+    );
+  if (body.kind !== 'Namespace') {
+    throw new Error('namespace-response-invalid');
+  }
+  const metadata = body.metadata ?? {};
+  if (metadata.name !== identity.namespace) {
+    throw new Error('namespace-response-invalid');
+  }
+  const uid = metadata.uid;
+  if (typeof uid !== 'string' || uid.length === 0) {
+    throw new Error('namespace-response-invalid');
+  }
+  if (metadata.deletionTimestamp != null) {
+    throw new Error('namespace-response-invalid');
+  }
+  const labels =
+    metadata.labels && typeof metadata.labels === 'object'
+      ? /** @type {Record<string, string>} */ (metadata.labels)
+      : {};
+  if (labels[profile.ownerLabel] !== profile.ownerValue) {
+    throw new Error('namespace-response-invalid');
+  }
+  return uid;
+}
+
+/**
  * @param {ObservabilityProfileId} profileId
  * @param {string} contextName
  * @param {object} [deps]
@@ -413,7 +469,7 @@ export async function runObservabilityEnsure(
   const now = deps.now ?? (() => performance.now());
   const started = now();
   const workerDeadline = started + WORKER_BUDGET_MS;
-  const run = deps.run ?? runPlatformCommand;
+  const run = deps.run ?? runObservabilityReadCommand;
 
   const fail = (state, reasonCode, mutation, pending = mutationAttempted) =>
     buildWorkerReceipt({
@@ -569,6 +625,7 @@ export async function runObservabilityEnsure(
       }
 
       const timeoutMs = PHASE_TIMEOUT_MS[phaseId];
+      mutationAttempted = true;
       const result = await (deps.runMutation ?? runMutation)(command, args, {
         custody,
         now,
@@ -576,7 +633,58 @@ export async function runObservabilityEnsure(
         timeoutMs,
         signal: deps.signal,
       });
-      mutationAttempted = true;
+
+      if (phaseId === 'namespace') {
+        const createdUid = parseNamespaceCreateResponse(
+          result,
+          identity,
+          profile,
+        );
+        const bound = {
+          ...identity,
+          tuple: Object.freeze({
+            ...identity.tuple,
+            targetNamespaceUid: createdUid,
+          }),
+        };
+        try {
+          custody.advance({ phase: phaseId, tuple: bound.tuple });
+        } catch {
+          throw new Error('custody-advance-failed');
+        }
+
+        const check = (deps.recheckIdentity ?? recheckIdentity)(bound, {
+          run,
+          now,
+          deadline: workerDeadline,
+          expectedNamespaceUid: createdUid,
+        });
+        if (!check.ok) {
+          throw new Error('identity-changed');
+        }
+
+        completedPhases = [...completedPhases, phaseId];
+        const after = collect(bound);
+        const verify = verifyCompletedPhasePrefix(
+          after,
+          artifacts,
+          completedPhases,
+          profile,
+        );
+        if (!verify.ok) {
+          throw new Error(`phase-verify-${verify.detail ?? 'failed'}`);
+        }
+        const collectedUid = after.namespace?.uid;
+        if (
+          collectedUid !== createdUid ||
+          after.namespace?.object?.metadata?.name !== identity.namespace
+        ) {
+          throw new Error('identity-changed');
+        }
+        identity = bound;
+        return after;
+      }
+
       if (!result.ok || result.timedOut) {
         throw new Error('phase-failed');
       }
@@ -592,30 +700,7 @@ export async function runObservabilityEnsure(
       if (!verify.ok) {
         throw new Error(`phase-verify-${verify.detail ?? 'failed'}`);
       }
-      if (phaseId === 'namespace') {
-        const uid = after.namespace?.uid;
-        if (
-          identity.tuple.targetNamespaceUid !== null ||
-          typeof uid !== 'string' ||
-          uid.length === 0 ||
-          after.namespace?.object?.metadata?.name !== identity.namespace
-        ) {
-          throw new Error('identity-changed');
-        }
-        const bound = {
-          ...identity,
-          tuple: { ...identity.tuple, targetNamespaceUid: uid },
-        };
-        const check = (deps.recheckIdentity ?? recheckIdentity)(bound, {
-          run,
-          now,
-          deadline: workerDeadline,
-          expectedNamespaceUid: uid,
-        });
-        if (!check.ok) throw new Error('identity-changed');
-        identity = bound;
-        custody.advance({ phase: phaseId, tuple: identity.tuple });
-      } else if (after.namespace?.uid !== identity.tuple.targetNamespaceUid) {
+      if (after.namespace?.uid !== identity.tuple.targetNamespaceUid) {
         throw new Error('identity-changed');
       }
       return after;
@@ -626,10 +711,23 @@ export async function runObservabilityEnsure(
       if (message.includes('identity-changed')) {
         return 'identity-changed';
       }
+      if (message.includes('custody-advance-failed')) {
+        return 'phase-failed';
+      }
       if (message.includes('deadline')) {
         return 'deadline';
       }
       return 'phase-failed';
+    };
+
+    const mutationForPhaseFailure = (error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('namespace-response-invalid')) {
+        return /** @type {MutationState} */ ('possible');
+      }
+      return mutationAttempted
+        ? /** @type {MutationState} */ ('confirmed')
+        : 'none';
     };
 
     try {
@@ -642,6 +740,8 @@ export async function runObservabilityEnsure(
             '--context',
             identity.contextName,
             'create',
+            '-o',
+            'json',
             '-f',
             manifestPath,
           ]);
@@ -651,7 +751,7 @@ export async function runObservabilityEnsure(
       return fail(
         'not-ready',
         phaseFailureReason(error),
-        mutationAttempted ? 'confirmed' : 'none',
+        mutationForPhaseFailure(error),
         mutationAttempted,
       );
     }

@@ -1,6 +1,6 @@
 # OBS-D02 proof
 
-NOT RUN. Commands from repo root; only existing offline Helm/dependencies and short local subprocess tests. No cluster, image pull, network or paid operation during Cursor implementation. Any required live acceptance is owner-operated after separate authorization; no PASS inferred from fixtures.
+OFFLINE FOCUSED PASS (Cursor parent, worktree `/home/dskul/projects/offscreen-rpg-obs-d02`). Commands from repo root; only existing offline Helm/dependencies and short local subprocess tests. No cluster, image pull, network or paid operation during Cursor implementation. Any required live acceptance is owner-operated after separate authorization; no PASS inferred from fixtures. Full A/V certification remains open.
 
 | Gate | Predicate |
 |---|---|

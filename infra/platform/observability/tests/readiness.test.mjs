@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
+import { createHash } from 'node:crypto';
 import {
   chmodSync,
+  lstatSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -12,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { readKindProfile } from '../../../clusters/kind/manager/config.mjs';
 import { DEV_CLUSTER_OWNER } from '../../../clusters/kind/manager/dev-bootstrap.mjs';
+import { readPlatformProfile } from '../../common/profile.mjs';
 import {
   classifyInventory,
   observeObservability,
@@ -28,6 +32,241 @@ import {
 
 const locksRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'locks');
 const LOCK_PATH = join(locksRoot, 'images.tsv');
+
+const devKindProfile = readKindProfile('dev');
+const CA_MATERIAL = Buffer.from('dev-cluster-ca-material');
+const CA_B64 = CA_MATERIAL.toString('base64');
+const CERT_B64 = Buffer.from('client-cert-material').toString('base64');
+const KEY_B64 = Buffer.from('client-key-material').toString('base64');
+const OFFLINE_CA_SHA256 = createHash('sha256')
+  .update(CA_MATERIAL)
+  .digest('hex');
+
+/**
+ * @param {ReturnType<typeof readKindProfile>} devKind
+ */
+function validMinifiedKubeconfig(devKind) {
+  const cluster = `kind-${devKind.clusterName}`;
+  return {
+    apiVersion: 'v1',
+    kind: 'Config',
+    'current-context': devKind.contextName,
+    clusters: [
+      {
+        name: cluster,
+        cluster: {
+          server: 'https://127.0.0.1:24443',
+          'certificate-authority-data': CA_B64,
+        },
+      },
+    ],
+    contexts: [
+      { name: devKind.contextName, context: { cluster, user: cluster } },
+    ],
+    users: [
+      {
+        name: cluster,
+        user: {
+          'client-certificate-data': CERT_B64,
+          'client-key-data': KEY_B64,
+        },
+      },
+    ],
+  };
+}
+
+/** @param {{ targetNamespaceUid?: string | null, dockerContext?: string, dockerControlPlaneId?: string }} [overrides] */
+function offlineIdentityTuple(overrides = {}) {
+  return {
+    profileId: 'dev',
+    contextName: devKindProfile.contextName,
+    clusterName: devKindProfile.clusterName,
+    port: 24_443,
+    dockerContext: overrides.dockerContext ?? 'readiness-fixture-ctx',
+    dockerControlPlaneId: overrides.dockerControlPlaneId ?? 'readiness-cp-id',
+    dockerEndpointHost: 'unix:///var/run/docker.sock',
+    caSha256: OFFLINE_CA_SHA256,
+    kubeSystemUid: 'kube-system-uid',
+    baselineUid: 'baseline-uid',
+    targetNamespaceUid:
+      overrides.targetNamespaceUid === undefined
+        ? null
+        : overrides.targetNamespaceUid,
+  };
+}
+
+/**
+ * @param {object} identity
+ * @param {string} snapshotPath
+ */
+function attachSnapshotMetadata(identity, snapshotPath) {
+  const stat = lstatSync(snapshotPath);
+  const bytes = readFileSync(snapshotPath);
+  return {
+    ...identity,
+    snapshotSha256: createHash('sha256').update(bytes).digest('hex'),
+    snapshotDev: stat.dev,
+    snapshotIno: stat.ino,
+  };
+}
+
+/**
+ * @param {ReturnType<typeof readKindProfile>} devKind
+ * @param {string} snapshotPath
+ * @param {(command: string, args: string[]) => object} baseRun
+ * @param {{ wrongContext?: boolean, targetNamespaceUid?: string | null }} [options]
+ */
+function withRecheckFixtureRun(devKind, snapshotPath, baseRun, options = {}) {
+  const raw = readFileSync(snapshotPath, 'utf8').trim();
+  const tuple = offlineIdentityTuple({
+    dockerContext: 'readiness-fixture-ctx',
+    dockerControlPlaneId: 'readiness-cp-id',
+    targetNamespaceUid: options.targetNamespaceUid ?? null,
+  });
+  return (command, args) => {
+    if (command === 'kubectl' && args.includes('current-context')) {
+      return {
+        ok: true,
+        status: 0,
+        stdout: `${options.wrongContext ? 'wrong-context' : devKind.contextName}\n`,
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
+    }
+    if (
+      command === 'kubectl' &&
+      args.includes('config') &&
+      args.includes('--raw') &&
+      args.includes('--flatten')
+    ) {
+      return {
+        ok: true,
+        status: 0,
+        stdout: raw,
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
+    }
+    if (command === 'kind' && args[0] === 'get' && args[1] === 'kubeconfig') {
+      return {
+        ok: true,
+        status: 0,
+        stdout: raw,
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
+    }
+    if (command === 'docker' && args[0] === 'context' && args[1] === 'show') {
+      return {
+        ok: true,
+        status: 0,
+        stdout: `${tuple.dockerContext}\n`,
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
+    }
+    if (
+      command === 'docker' &&
+      args[0] === 'context' &&
+      args[1] === 'inspect'
+    ) {
+      return {
+        ok: true,
+        status: 0,
+        stdout: `"${tuple.dockerEndpointHost}"\n`,
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
+    }
+    if (command === 'docker' && args[0] === 'inspect') {
+      return {
+        ok: true,
+        status: 0,
+        stdout: JSON.stringify([
+          {
+            Id: tuple.dockerControlPlaneId,
+            State: { Running: true },
+            Config: {
+              Labels: {
+                'io.x-k8s.kind.cluster': devKind.clusterName,
+                'io.x-k8s.kind.role': 'control-plane',
+              },
+            },
+            NetworkSettings: {
+              Ports: {
+                '6443/tcp': [{ HostIp: '127.0.0.1', HostPort: '24443' }],
+              },
+            },
+          },
+        ]),
+        stderr: '',
+        timedOut: false,
+        missing: false,
+      };
+    }
+    if (command === 'kubectl' && args.includes(snapshotPath)) {
+      if (args.includes('kube-system')) {
+        return {
+          ok: true,
+          status: 0,
+          stdout: JSON.stringify({
+            kind: 'Namespace',
+            metadata: { name: 'kube-system', uid: tuple.kubeSystemUid },
+            status: { phase: 'Active' },
+          }),
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
+      }
+      if (args.includes('offscreen-dev-system')) {
+        return {
+          ok: true,
+          status: 0,
+          stdout: JSON.stringify({
+            kind: 'Namespace',
+            metadata: {
+              name: 'offscreen-dev-system',
+              uid: tuple.baselineUid,
+              labels: { 'offscreen.dev/owner': DEV_CLUSTER_OWNER },
+            },
+            status: { phase: 'Active' },
+          }),
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
+      }
+      if (args.includes('offscreen-dev-observability')) {
+        const targetUid = tuple.targetNamespaceUid;
+        return {
+          ok: true,
+          status: 0,
+          stdout:
+            targetUid == null
+              ? ''
+              : JSON.stringify({
+                  kind: 'Namespace',
+                  metadata: {
+                    name: 'offscreen-dev-observability',
+                    uid: targetUid,
+                  },
+                  status: { phase: 'Active' },
+                }),
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
+      }
+    }
+    return baseRun(command, args);
+  };
+}
 const LOCK_LINES = readFileSync(LOCK_PATH, 'utf8').trim().split('\n').slice(1);
 const LOCK_COLLECTOR = LOCK_LINES.find((line) =>
   line.startsWith('collector\t'),
@@ -229,51 +468,31 @@ test('observeObservability with default pending reports absent when namespace mi
   const snapshotPath = join(root, 'snapshot.json');
   writeFileSync(
     snapshotPath,
-    `${JSON.stringify({
-      contexts: [
-        {
-          name: devKind.contextName,
-          context: {
-            cluster: `kind-${devKind.clusterName}`,
-            user: `kind-${devKind.clusterName}`,
-          },
-        },
-      ],
-      clusters: [
-        {
-          name: `kind-${devKind.clusterName}`,
-          cluster: {
-            server: 'https://127.0.0.1:24443',
-            'certificate-authority-data': 'Y2E=',
-          },
-        },
-      ],
-      users: [{ name: `kind-${devKind.clusterName}`, user: {} }],
-      'current-context': devKind.contextName,
-    })}\n`,
+    `${JSON.stringify(validMinifiedKubeconfig(devKind))}\n`,
     { mode: 0o600 },
   );
   chmodSync(snapshotPath, 0o600);
+  const baseIdentity = attachSnapshotMetadata(
+    {
+      profileId: 'dev',
+      profile: readPlatformProfile('dev'),
+      contextName: devKind.contextName,
+      clusterName: devKind.clusterName,
+      namespace: 'offscreen-dev-observability',
+      snapshotPath,
+      tuple: offlineIdentityTuple(),
+      cleanup: () => ({ ok: true }),
+    },
+    snapshotPath,
+  );
   const result = observeObservability('dev', {
     verifyArchive: false,
     artifacts,
     stateRoot: root,
     now: () => 0,
     deadline: 500_000,
-    identity: {
-      profileId: 'dev',
-      profile: { id: 'dev' },
-      contextName: devKind.contextName,
-      clusterName: devKind.clusterName,
-      namespace: 'offscreen-dev-observability',
-      snapshotPath,
-      tuple: {
-        targetNamespaceUid: null,
-        port: 24443,
-      },
-      cleanup: () => ({ ok: true }),
-    },
-    run(command, args) {
+    identity: baseIdentity,
+    run: withRecheckFixtureRun(devKind, snapshotPath, (command, args) => {
       const resource = args[args.indexOf('get') + 1];
       if (
         command === 'kubectl' &&
@@ -387,7 +606,7 @@ test('observeObservability with default pending reports absent when namespace mi
         timedOut: false,
         missing: false,
       };
-    },
+    }),
   });
   rmSync(root, { recursive: true, force: true });
   assert.equal(result.state, 'absent');
@@ -401,28 +620,7 @@ test('observeObservability recheck failure forces unreadable', () => {
   const snapshotPath = join(root, 'snapshot.json');
   writeFileSync(
     snapshotPath,
-    `${JSON.stringify({
-      contexts: [
-        {
-          name: devKind.contextName,
-          context: {
-            cluster: `kind-${devKind.clusterName}`,
-            user: `kind-${devKind.clusterName}`,
-          },
-        },
-      ],
-      clusters: [
-        {
-          name: `kind-${devKind.clusterName}`,
-          cluster: {
-            server: 'https://127.0.0.1:24443',
-            'certificate-authority-data': 'Y2E=',
-          },
-        },
-      ],
-      users: [{ name: `kind-${devKind.clusterName}`, user: {} }],
-      'current-context': devKind.contextName,
-    })}\n`,
+    `${JSON.stringify(validMinifiedKubeconfig(devKind))}\n`,
     { mode: 0o600 },
   );
   chmodSync(snapshotPath, 0o600);
@@ -430,69 +628,68 @@ test('observeObservability recheck failure forces unreadable', () => {
     artifacts,
     now: () => 0,
     deadline: 500_000,
-    identity: {
-      profileId: 'dev',
-      contextName: devKind.contextName,
-      clusterName: devKind.clusterName,
-      namespace: 'offscreen-dev-observability',
+    identity: attachSnapshotMetadata(
+      {
+        profileId: 'dev',
+        profile: readPlatformProfile('dev'),
+        contextName: devKind.contextName,
+        clusterName: devKind.clusterName,
+        namespace: 'offscreen-dev-observability',
+        snapshotPath,
+        tuple: offlineIdentityTuple(),
+        cleanup: () => ({ ok: true }),
+      },
       snapshotPath,
-      tuple: { targetNamespaceUid: null, port: 24443 },
-      cleanup: () => ({ ok: true }),
-    },
-    run(command, args) {
-      const resource = args[args.indexOf('get') + 1];
-      if (
-        command === 'kubectl' &&
-        resource === 'namespace' &&
-        args.includes('offscreen-dev-observability')
-      ) {
+    ),
+    run: withRecheckFixtureRun(
+      devKind,
+      snapshotPath,
+      (command, args) => {
+        const resource = args[args.indexOf('get') + 1];
+        if (
+          command === 'kubectl' &&
+          resource === 'namespace' &&
+          args.includes('offscreen-dev-observability')
+        ) {
+          return {
+            ok: true,
+            status: 0,
+            stdout: JSON.stringify({
+              apiVersion: 'v1',
+              kind: 'Namespace',
+              metadata: { name: 'offscreen-dev-observability', uid: 'ns-uid' },
+            }),
+            stderr: '',
+            timedOut: false,
+            missing: false,
+          };
+        }
+        if (command === 'kubectl' || command === 'helm') {
+          return {
+            ok: true,
+            status: 0,
+            stdout:
+              command === 'helm'
+                ? '[]'
+                : args.includes('ignore-not-found')
+                  ? '\n'
+                  : '{"items":[]}',
+            stderr: '',
+            timedOut: false,
+            missing: false,
+          };
+        }
         return {
-          ok: true,
-          status: 0,
-          stdout: JSON.stringify({
-            apiVersion: 'v1',
-            kind: 'Namespace',
-            metadata: { name: 'offscreen-dev-observability', uid: 'ns-uid' },
-          }),
-          stderr: '',
+          ok: false,
+          status: 1,
+          stdout: '',
+          stderr: 'x',
           timedOut: false,
           missing: false,
         };
-      }
-      if (command === 'kubectl' && args.includes('current-context')) {
-        return {
-          ok: true,
-          status: 0,
-          stdout: 'wrong-context\n',
-          stderr: '',
-          timedOut: false,
-          missing: false,
-        };
-      }
-      if (command === 'kubectl' || command === 'helm') {
-        return {
-          ok: true,
-          status: 0,
-          stdout:
-            command === 'helm'
-              ? '[]'
-              : args.includes('ignore-not-found')
-                ? '\n'
-                : '{"items":[]}',
-          stderr: '',
-          timedOut: false,
-          missing: false,
-        };
-      }
-      return {
-        ok: false,
-        status: 1,
-        stdout: '',
-        stderr: 'x',
-        timedOut: false,
-        missing: false,
-      };
-    },
+      },
+      { wrongContext: true },
+    ),
   });
   assert.equal(result.state, 'unreadable');
   assert.match(result.detail, /context-changed/);
@@ -640,6 +837,7 @@ test('classifyInventory empty present namespace is not fresh', () => {
 test('observeObservability standalone cleanup failure forces unreadable', () => {
   const devKind = readKindProfile('dev');
   const artifacts = loadArtifacts('dev', { verifyArchive: false });
+  const capturedKube = JSON.stringify(validMinifiedKubeconfig(devKind));
   const result = observeObservability('dev', {
     artifacts,
     verifyArchive: false,
@@ -649,11 +847,21 @@ test('observeObservability standalone cleanup failure forces unreadable', () => 
     },
     run(command, args) {
       const resource = args[args.indexOf('get') + 1];
+      if (command === 'kind' && args[0] === 'get' && args[1] === 'kubeconfig') {
+        return {
+          ok: true,
+          status: 0,
+          stdout: capturedKube,
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
+      }
       if (command === 'kind') {
         return {
           ok: true,
           status: 0,
-          stdout: 'offscreen-dev\n',
+          stdout: `${devKind.clusterName}\n`,
           stderr: '',
           timedOut: false,
           missing: false,
@@ -727,7 +935,11 @@ test('observeObservability standalone cleanup failure forces unreadable', () => 
           missing: false,
         };
       }
-      if (command === 'kubectl' && args.includes('kube-system')) {
+      if (
+        command === 'kubectl' &&
+        args.includes('kube-system') &&
+        !args.includes('--kubeconfig')
+      ) {
         return {
           ok: true,
           status: 0,
@@ -791,33 +1003,61 @@ test('observeObservability standalone cleanup failure forces unreadable', () => 
         return {
           ok: true,
           status: 0,
+          stdout: args.includes('--raw') ? capturedKube : capturedKube,
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
+      }
+      if (
+        command === 'kubectl' &&
+        args.includes('--kubeconfig') &&
+        args.includes('kube-system')
+      ) {
+        return {
+          ok: true,
+          status: 0,
           stdout: JSON.stringify({
-            contexts: [
-              {
-                name: devKind.contextName,
-                context: {
-                  cluster: 'kind-offscreen-dev',
-                  user: 'kind-offscreen-dev',
-                },
-              },
-            ],
-            clusters: [
-              {
-                name: 'kind-offscreen-dev',
-                cluster: {
-                  server: 'https://127.0.0.1:24443',
-                  'certificate-authority-data': 'Y2E=',
-                },
-              },
-            ],
-            users: [
-              {
-                name: 'kind-offscreen-dev',
-                user: { 'client-certificate-data': 'Y2VydA==' },
-              },
-            ],
-            'current-context': devKind.contextName,
+            kind: 'Namespace',
+            metadata: { name: 'kube-system', uid: 'kube-system-uid' },
+            status: { phase: 'Active' },
           }),
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
+      }
+      if (
+        command === 'kubectl' &&
+        args.includes('--kubeconfig') &&
+        args.includes('offscreen-dev-system')
+      ) {
+        return {
+          ok: true,
+          status: 0,
+          stdout: JSON.stringify({
+            kind: 'Namespace',
+            metadata: {
+              name: 'offscreen-dev-system',
+              uid: 'baseline-uid',
+              labels: { 'offscreen.dev/owner': DEV_CLUSTER_OWNER },
+            },
+            status: { phase: 'Active' },
+          }),
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
+      }
+      if (
+        command === 'kubectl' &&
+        args.includes('--kubeconfig') &&
+        args.includes('offscreen-dev-observability')
+      ) {
+        return {
+          ok: true,
+          status: 0,
+          stdout: '',
           stderr: '',
           timedOut: false,
           missing: false,

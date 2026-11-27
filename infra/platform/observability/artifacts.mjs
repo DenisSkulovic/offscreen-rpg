@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml, parseAllDocuments } from 'yaml';
-import { runPlatformCommand } from '../common/commands.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
+import { runObservabilityReadCommand } from './identity.mjs';
 
 const observabilityRoot = dirname(fileURLToPath(import.meta.url));
 const valuesRoot = join(observabilityRoot, 'values');
@@ -460,7 +460,7 @@ function assertInventoryMatch(profileId, expected, direct, generated) {
 /**
  * @param {PlatformRun} run
  */
-function defaultHelmRun(command, args, options) {
+function defaultHelmRun(command, args, options = {}) {
   if (command !== 'helm') {
     return {
       ok: false,
@@ -471,7 +471,17 @@ function defaultHelmRun(command, args, options) {
       missing: false,
     };
   }
-  return runPlatformCommand(command, args, options);
+  const explicit =
+    typeof options.timeoutMs === 'number' ? options.timeoutMs : HELM_TIMEOUT_MS;
+  const remaining =
+    typeof options.remainingMs === 'number'
+      ? Math.max(0, Math.floor(options.remainingMs))
+      : HELM_TIMEOUT_MS;
+  const timeoutMs = Math.min(HELM_TIMEOUT_MS, explicit, remaining);
+  return runObservabilityReadCommand(command, args, {
+    input: options.input,
+    timeoutMs,
+  });
 }
 
 /**
@@ -640,7 +650,11 @@ export function loadArtifacts(profileId, deps = {}) {
 
   return {
     profile,
-    releases: releases.map(({ inventory, ...rest }) => rest),
+    releases: releases.map((row) => {
+      const { inventory, ...rest } = row;
+      void inventory;
+      return rest;
+    }),
     documents,
     expectedInventory: expected,
     imageLocks,

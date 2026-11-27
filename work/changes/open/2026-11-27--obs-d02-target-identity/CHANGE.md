@@ -1,6 +1,6 @@
 # OBS-D02 | Frozen target identity
 
-**State:** OWNER-RELEASED — OFFLINE SOURCE ONLY (dependency-gated); independent readiness verdict not yet PASS. **Kind:** CONTRACT (source implementation). **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `integration/observability-developer`; branch `change/obs-d02-target-identity`, dedicated linked worktree. Human integration custodian; ChatGPT planner.
+**State:** IMPLEMENTED — ACCEPTANCE PENDING (offline source receipt on `change/obs-d02-target-identity`; independent readiness verdict not yet PASS; no live claim). **Kind:** CONTRACT (source implementation). **Inspected source:** integration/observability-developer `176237508c6a` (OBS-D01 joined). **Integration:** `integration/observability-developer`; branch `change/obs-d02-target-identity`, dedicated linked worktree `/home/dskul/projects/offscreen-rpg-obs-d02`. Human integration custodian; ChatGPT planner.
 
 ## Outcome
 Every admitted observability operation binds to the verified local Kind target and actual created namespace UID; mismatch or uncertain read cannot authorize the next write.
