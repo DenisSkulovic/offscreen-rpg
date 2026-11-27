@@ -6,13 +6,13 @@
 
 ## Player settings (product)
 
-Settings change supported play preferences with captured impact visible before confirm. They must not rewrite past facts, secretly enlarge spending authority, or silently reinterpret creative fields as invent/risk authorities.
+Settings change supported play preferences, with the captured impact visible before confirm. They never rewrite past facts, secretly enlarge spending authority, or silently reinterpret creative fields as invent/risk authorities.
 
-Personal preferences (accessibility, sound, private notifications) remain personal even when a campaign locks creative/speed settings.
+**Personal settings are independent of campaign policy.** Accessibility, sound and private notifications stay personal. A campaign that locks creative or speed settings never removes an accessibility control, and no creative suggestion overrides a user safety preference ([Visual hierarchy and ownership](design-system-and-expression.md#visual-hierarchy-and-ownership), item 5).
 
 ## Accessibility obligations
 
-Design target: WCAG 2.2 AA for player-facing web where applicable, with motion-sensitivity guidance (SC 2.3.3). Game fiction is **not** an exception to accessible controls. The 320px, enlarged-text, and reduced-motion cases stay in [Reader jobs](living-book-poc.md#reader-jobs-and-non-negotiable-outcomes) and [Visual hierarchy and ownership](design-system-and-expression.md#visual-hierarchy-and-ownership).
+The selected design target, not a certified result, is WCAG 2.2 AA for player-facing web where applicable, with motion-sensitivity guidance (SC 2.3.3). Game fiction is **not** an exception to accessible controls. The 320px, enlarged-text, and reduced-motion cases stay in [Reader jobs](living-book-poc.md#reader-jobs-and-non-negotiable-outcomes) and [Visual hierarchy and ownership](design-system-and-expression.md#visual-hierarchy-and-ownership).
 
 - Every color, animation, icon or spatial cue that conveys “what is happening / committed / actionable” has a text equivalent.
 - Passages are semantic narrative text with sensible heading hierarchy—not canvas-only bitmaps.

@@ -1,8 +1,18 @@
 # Admin product
 
-Staff-facing intent. Player experience and in-game Storyteller behavior are other product owners. Engine authority is technical.
+Admin is the staff-facing product intent: the jobs employees must be able to do for the live game and the business, and the limits on each job. Player experience and in-game Storyteller behavior are other product owners. Engine authority is technical.
 
-Several pages below are **proposed operating policy**. They are written here so the proposal has one owner. They are not production grants and not a silent acceptance of refunds, raw-prompt access, or emergency world edits.
+## What this section establishes, and what it does not
+
+Staff work is organized by jobs and scoped, purpose-bound grants. A job name, a persona, a workspace or a case assignment never grants a capability. Metadata, private narrative, raw model context and secrets are separate disclosure classes, each opened by its own grant.
+
+Only a narrow set of Admin slices has landed: player-safe reads, case anchors, redacted diagnostic reads and audit. They do not expand into the journeys written here. Production grant issuance for live Support workers is absent, and the Situation UI in OBS06/07 is synthetic or disposable-grant proof only. Technical owners state what is realized and guaranteed ([admin technical](../../technical/admin/topology-and-authorization.md)).
+
+Most pages below are **proposed operating policy**, written here so each proposal has one owner. They are not production grants and not a silent acceptance of refunds, raw-prompt access or emergency world edits.
+
+**Illustrative examples.** Illustrative Support, impersonation, raw-prompt, refund, export and LiveOps examples on every Admin page stay Proposed or Blocked. This paragraph is their single owner statement; the other pages link here instead of repeating it.
+
+## Page map
 
 | Question | Owner | Status |
 | --- | --- | --- |
@@ -17,8 +27,17 @@ Several pages below are **proposed operating policy**. They are written here so 
 
 ## Future historical game and configuration exploration (Proposed, 2026-11-22)
 
-For the owner's detailed future staff investigation experience, refer to the four **Proposed** bounded Changes: [ADI01 scene history/game state](../../../work/changes/backlog/experience-admin/2026-11-22--adi01-scene-history-game-state-explorer/CHANGE.md), [ADI02 historical Library files/diffs](../../../work/changes/backlog/experience-admin/2026-11-22--adi02-historical-library-explorer/CHANGE.md), [ADI03 historical effective model/entitlement/configuration](../../../work/changes/backlog/experience-admin/2026-11-22--adi03-effective-policy-history-explorer/CHANGE.md), and the **non-Admin runtime** [CFG03 safe re-admission after changed plans/retired models](../../../work/changes/backlog/policy-finance/2026-11-22--cfg03-resume-policy-eligibility-and-portability/CHANGE.md). These extend the existing Player 360, Gameplay & Worlds and AI & Engineering *jobs*; they do **not** introduce another Admin architecture or confer raw-content permissions. [AI03](../../../work/changes/backlog/agent-runtime/2026-11-22--ai03-staff-agent-context-inspector/CHANGE.md) separately owns model-visible request/thread inspection, and [CFG02](../../../work/changes/backlog/policy-finance/2026-11-22--cfg02-admin-policy-management/CHANGE.md) separately owns future policy editing.
+Staff will eventually need to inspect what a player's game looked like at a past point. That experience is **Proposed** and is owned by four bounded backlog Changes. It extends the existing Player 360, Gameplay & Worlds and AI & Engineering *jobs*. It does **not** introduce another Admin architecture or confer raw-content permissions.
 
-The scene is the chronological player-facing unit, not a chapter, not one Workflow, and not always one model request. Historical Library availability, exact model-visible context and actual effective mission policy are three distinct evidence surfaces. All are metadata-first and capability scoped. Product/Support/Engineering/Business roles require individually authorized projections, not universal access.
+| Proposed capability | Owning Change |
+| --- | --- |
+| Scene history and game state | [ADI01 scene history/game state](../../../work/changes/backlog/experience-admin/2026-11-22--adi01-scene-history-game-state-explorer/CHANGE.md) |
+| Historical Library files and diffs | [ADI02 historical Library files/diffs](../../../work/changes/backlog/experience-admin/2026-11-22--adi02-historical-library-explorer/CHANGE.md) |
+| Historical effective model, entitlement and configuration | [ADI03 historical effective model/entitlement/configuration](../../../work/changes/backlog/experience-admin/2026-11-22--adi03-effective-policy-history-explorer/CHANGE.md) |
+| Safe re-admission after changed plans or retired models (**non-Admin runtime**) | [CFG03](../../../work/changes/backlog/policy-finance/2026-11-22--cfg03-resume-policy-eligibility-and-portability/CHANGE.md) |
 
-Technical companions: [admin technical](../../technical/admin/topology-and-authorization.md).
+Adjacent owners stay separate: [AI03](../../../work/changes/backlog/agent-runtime/2026-11-22--ai03-staff-agent-context-inspector/CHANGE.md) owns model-visible request/thread inspection, and [CFG02](../../../work/changes/backlog/policy-finance/2026-11-22--cfg02-admin-policy-management/CHANGE.md) owns future policy editing.
+
+The scene is the chronological player-facing unit, not a chapter, not one Workflow, and not always one model request. Historical Library availability, exact model-visible context and actual effective mission policy are three distinct evidence surfaces. All are metadata-first and capability scoped. Product, Support, Engineering and Business roles require individually authorized projections, not universal access.
+
+Technical companion: [admin technical](../../technical/admin/topology-and-authorization.md).

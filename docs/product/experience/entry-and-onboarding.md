@@ -17,7 +17,7 @@ For an empty account, lead directly toward story creation—do not strand the pl
 
 ## Creation information architecture
 
-Creation has two primary paths, intentionally shallower than the legacy staged wizard.
+Creation has two primary paths, intentionally shallower than the legacy staged wizard: **Prepared Play** and **one verbatim Story Prompt**. Customization is optional on either, and neither path passes through a mandatory preview. The sections below take the paths in order, then the launch they share.
 
 ### Prepared experience: Play first
 
@@ -31,11 +31,11 @@ A custom story begins with one freeform **Story Prompt**. It may be a paragraph,
 
 Submitting Play or a Story Prompt creates one durable launch operation. The UI shows honest queued/running/uncertain/failed states and can reconnect after reload. Successful publication moves directly into the first playable scene. There is **no mandatory generated preview and separate Start approval** in the target flow. A saved prompt draft may exist for convenience, but opening generation is not a five-step ceremony.
 
-Provider/model latency does not advance fictional time. Retrying after an uncertain response must recover the same launch identity rather than create duplicate stories or duplicate spend.
+Provider/model latency does not advance fictional time. Retrying after an uncertain response must recover the same launch identity rather than create duplicate stories or duplicate spend. A lost acknowledgement is recovered by reading the existing launch, never by submitting a second launch.
 
 ### Current POC honesty
 
-Stories home Create story opens `/stories/new`: one Story Prompt via `StoryLaunchForm`, with no env-gated alternate launch route (`/stories/launch` redirects here). The prepared catalogue appears only when the server supplies presets; an empty list must not fake one. Saved drafts remain on the legacy staged creator at `/stories/[id]`. A published opening can carry one server-scripted `observe` choice with no character sheet. Choosing it uses the existing campaign action API. A later scene is a scripted Writer continuation, not a live model evaluation.
+What the source does today, separate from the target above: Create story opens one Story Prompt form (`/stories/new`), a prepared catalogue appears only when the server supplies presets and is never faked, one operation identity per launch means a lost or ambiguous submit is followed by one status read and never a second submit, saved drafts remain on the legacy staged creator, and a published opening can carry one server-scripted `observe` choice that is not live model evaluation. Routes, symbols and limits are recorded in [client interaction contracts: Drafts and forms](../../technical/client/interaction-contracts.md#drafts-and-forms).
 
 ## Drafts vs playable stories
 
@@ -63,6 +63,6 @@ When a start contains a hoped-for arc, antagonist move or reveal, preserve it as
 
 Creation seeds stable records for the player and for immediate places and people whose participation is part of the selected start. Incidental mentions may remain prose until the player interacts meaningfully, a later turn depends on them, or a supported mechanic needs current state. A spoken name alone does not invent combat statistics. A nonhuman story may register organisms, signals, collectives, or nothing analogous.
 
-Generating a playable candidate requires a selected profile. An admitted candidate captures the exact profile and execution policy. Start freezes that captured configuration onto the story. Later catalogue edits do not alter it.
+**Legacy candidate path.** Where the legacy staged creator still generates a playable candidate, that candidate requires a selected profile, and an admitted candidate captures the exact profile and execution policy. In that path, Start freezes the captured configuration onto the story, and later catalogue edits do not alter it. This describes the legacy path only; it does not add a mandatory Start step or approval to Prepared Play or a Story Prompt.
 
 Shared-story invitations, readiness and who may start remain an explicit open design. There is no requirement for public matchmaking, and those rules are not accepted by this page.

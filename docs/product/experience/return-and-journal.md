@@ -6,7 +6,14 @@
 
 ## After absence
 
-Returning after a long absence should offer a **focused recap** and then make any current decision clear. It should not require reading every quiet interval. A push notification is not proof the new passage was read, and opening the story list does not mark every story read. A recap that needs inference must not delay a decision that is already available. If the story moves while the recap is prepared, label what the recap covers and show the newer entries. The chronology contains admitted results. An autonomous choice appears there only when that decision was specifically pre-authorized. A prepared narration or pending event is not yet a committed outcome. The recap helps someone understand how they reached the current situation.
+Return shows the **changed situation**: what is true now, and how the player got there.
+
+- Offer a **focused recap** and then make any current decision clear. The reader should not need to read every quiet interval.
+- A recap that needs inference must not delay a decision that is already available. If the story moves while the recap is prepared, label what the recap covers and show the newer entries.
+- A push notification is not proof the new passage was read, and opening the story list does not mark every story read.
+- The chronology contains admitted results. An autonomous choice appears there only when that decision was specifically pre-authorized. A prepared narration or pending event is not yet a committed outcome.
+
+The recap helps someone understand how they reached the current situation; the original published passages remain the record.
 
 ## Reading a long life
 
@@ -16,9 +23,13 @@ Use a focused recap and searchable history linked to people, places, commitments
 
 ## Scene checkpoints, review and forks | long-term target
 
-**Selected eventual experience, 2026-11-19:** The Living Book must allow the player to navigate back to **any committed scene**, inspect the actual recorded scene and its historical state, then fork a new independently evolving story **from that exact scene**. A scene checkpoint includes enough authoritative information to recover character capabilities, consequential world facts, relationships, applicable inventory/equipment/resources, fictional time and commitments without importing later parent-story outcomes. World-neutrality remains binding: a microbe's relevant facts are not a medieval adventurer's gold ledger. Historical reading and forking are separate actions; reading is side-effect free, and a fork may not reroll the old scene or repeat provider charges.
+### Selected eventual experience (2026-11-19)
 
-The journal remains source-faithful passage reading. Opening a saved scene may load that scene's checkpoint on a disjoint query key; it does not reuse the live snapshot and does not make a historic offer commandable. A quiescent checkpoint can start an independent fork. Scenes without a checkpoint still cannot be forked. Replay of dice, provider spend, and changing live time from the journal stay forbidden. Specific scene boundary semantics belong to the technical lifecycle/persistence contracts.
+The Living Book must allow the player to navigate back to **any committed scene**, inspect the actual recorded scene and its historical state, then fork a new independently evolving story **from that exact scene**. A scene checkpoint includes enough authoritative information to recover character capabilities, consequential world facts, relationships, applicable inventory/equipment/resources, fictional time and commitments without importing later parent-story outcomes: a fork of an earlier scene does not see the parent's later events, and a copy of the current head is not a historical fork. World-neutrality remains binding: a microbe's relevant facts are not a medieval adventurer's gold ledger. Historical reading and forking are separate actions; reading is side-effect free, and a fork may not reroll the old scene or repeat provider charges.
+
+### Narrow current proof and limits
+
+The journal remains source-faithful passage reading. Opening a saved scene may load that scene's checkpoint, but it never reuses the live snapshot and never makes a historic offer commandable (the query-key detail is recorded in [Living Book POC](../../technical/client/living-book-poc.md#data-and-command-invariants)). A quiescent checkpoint can start an independent fork. Scenes without a checkpoint still cannot be forked. Replay of dice, provider spend, and changing live time from the journal stay forbidden. Specific scene boundary semantics belong to the technical [lifecycle and compatibility](../../technical/engine/lifecycle-and-compatibility.md#forked-continuities) contracts, which also state the exact conditions under which a fork is supported or refused. This page does not claim the long-term target is built or proved beyond that narrow boundary.
 
 ## No chapters
 

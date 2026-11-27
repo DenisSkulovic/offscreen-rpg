@@ -1,5 +1,7 @@
 # Actions and commitments | intention to continuation
 
+The selected flow has four steps: the player is **offered** an intention, the application **admits** a valid choice as work, the work yields a **committed outcome**, and only then does **narration** report it. Each step has one owner and none can be skipped by the next: prose cannot admit work, and an offer cannot commit an outcome. Prepared local routines and a dormant Storyteller are selected behavior for that flow (see [Prepared local life](#prepared-local-life-while-the-storyteller-is-dormant)); this page does not claim they are delivered.
+
 Accepted fictional commitments belong to story state, not to a particular worker lease. When a published scene is forked, already-earned progress and unresolved admitted plans/offers/obligations at that scene remain meaningful in the child, while new execution identities are created for the child. Parent provider attempts, jobs and external side effects are never copied as fictional state.
 
 **Owns:** how player intentions become accepted work and what may continue without fresh inference.  
@@ -9,6 +11,8 @@ Accepted fictional commitments belong to story state, not to a particular worker
 ## Stable meanings
 
 An **offer** is permission to choose. It is not accepted work. A **player decision** selects one authored intention. It does not write the outcome. **Admission** is the application's acceptance of a valid intention into work. Narration does not admit an effect. **Work time** is the fictional duration of admitted work. The clock advances only for that admitted work, as [Pace](time-and-autonomy.md#pace) requires. A **committed effect** is a result the application has recorded. A later sentence cannot grant it again or take it back. A **retry** repeats a player choice only when the previous attempt did not commit. A reload is not a retry.
+
+**Opportunity versus permission.** An offer, a reusable activity menu or a prepared opportunity is an *opportunity*: it names what the player may choose. Permission to advance time or change the world exists only for an admitted choice, one admitted interval at a time. Having been offered an action once never authorizes the same or a later action, and no work runs without an admitted interval. A **committed outcome** is distinct from a **report** of it: the commit is the recorded result; narration, a summary or a notification only reports what was committed, and a late or missing report does not change the result.
 
 Normal: the player accepts a walk, leaves, and the walk finishes at its admitted duration. Negative: a sentence that says the character was paid does not move the clock or grant the coins. These meanings add no new action or consent right.
 
@@ -20,7 +24,7 @@ The Storyteller prepares a **turn**; the player receives narration and, when int
 
 ## From intention to continuation
 
-The Storyteller receives the current situation, relevant memories, character capabilities, campaign settings and a bounded selection of canonical material—not an entire setting dump. It offers contextual intentions and can prepare reusable local activities. An offer, including a reusable activity menu, is permission to choose. It does not advance fictional time. Time moves when the player accepts an action, an activity, or an eligible entry in an accepted plan, as [Pace](time-and-autonomy.md#pace) requires. Supported rules adjudicate a selected attempt and commit checks and effects; narration follows only when accepted policy calls for it. Timed activities resolve at meaningful game-time boundaries, not through one unconstrained prose prediction.
+The sequence is offered intention, admission, committed outcome, narration. The Storyteller receives the current situation, relevant memories, character capabilities, campaign settings and a bounded selection of canonical material—not an entire setting dump. It offers contextual intentions and can prepare reusable local activities. An offer, including a reusable activity menu, is permission to choose. It does not advance fictional time. Time moves when the player accepts an action, an activity, or an eligible entry in an accepted plan, as [Pace](time-and-autonomy.md#pace) requires. Supported rules adjudicate a selected attempt and commit checks and effects; narration follows only when accepted policy calls for it. Timed activities resolve at meaningful game-time boundaries, not through one unconstrained prose prediction.
 
 Player input expresses an **intention**; it does not directly supply resulting world changes. Neither repeated clicks nor reloading may produce free rerolls, duplicate actions or endless regeneration of suggestions.
 
@@ -28,17 +32,13 @@ Player input expresses an **intention**; it does not directly supply resulting w
 
 ## Prepared local life while the Storyteller is dormant
 
-On establishing a relevant situation, the Storyteller can prepare a bounded set of opportunities (fish, tavern, rumors, rest). The game validates supported rules, targets, outcomes, eligibility and wake conditions. The player may discover, select, repeat or switch among still-valid prepared activities **without fresh inference**.
+Selected product behavior for quiet situations, not delivery: [Prepared local opportunities](../../technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities) records the bounded solo realization and the limits that remain later work.
 
-The Storyteller authors available intentions for each situation; the engine does **not** invent options from inventory, capabilities or physical feasibility. Owning an apple does not add “Eat apple.” The engine may filter or reject an authored choice whose conditions fail, but cannot substitute its own choice or expand the menu.
+**What is prepared.** On establishing a relevant situation, the Storyteller can prepare a bounded set of opportunities (fish, tavern, rumors, rest). It authors the available intentions for that situation. The game validates supported rules, targets, outcomes, eligibility and wake conditions. The engine may filter or reject an authored choice whose conditions fail. It never substitutes its own choice or expands the menu: owning an apple does not add “Eat apple.”
 
-Each new interactive scene explicitly establishes its available choices. Earlier local activities do not automatically reappear because an encounter resolved. Within a still-authorized quiet situation, the player can repeatedly use exactly the prepared opportunities without another model call.
+**What the player can do without inference.** Within a still-authorized quiet situation, the player may discover, select, repeat or switch among the still-valid prepared activities with no further model call. Each new interactive scene establishes its choices explicitly; earlier local activities do not reappear merely because an encounter resolved.
 
-Known activities can end quietly, produce bounded mechanical results, continue accepted work, or request narration under configured policies. Wakes are bounded and deduplicated—not model polling. **No event is also a valid result.**
-
-Routine chitchat does not promise fresh bespoke dialogue; repeated rumor gathering cannot manufacture unlimited novel lore for free.
-
-The paragraphs above are the selected promise. [Prepared local opportunities](../../technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities) records the bounded solo realization and the limits that remain later work.
+**What may result.** A known activity can end quietly, produce bounded mechanical results, continue accepted work, or request narration under configured policies. Wakes are bounded and deduplicated, not model polling. **No event is also a valid result.** Routine chitchat does not promise fresh bespoke dialogue, and repeated rumor gathering cannot manufacture unlimited novel lore for free.
 
 ## Storyteller-directed pace
 
@@ -60,7 +60,7 @@ A compact possession list may suffice; keep identity for significant objects and
 
 ## Keeping inference affordable
 
-Prepare a short stretch after an intention is selected rather than generating every possible future. Waiting, publishing a valid scheduled update and applying an agreed change do not require another model call. If generation is unavailable or budget exhausted, use only still-valid prepared content or a supported fallback—**do not invent progress or silently exceed the budget**.
+Prepare a short stretch after an intention is selected rather than generating every possible future. Waiting, publishing a valid scheduled update and applying an agreed change do not require another model call. If generation is unavailable or budget exhausted, use only still-valid prepared content or a supported fallback—**do not invent progress or silently exceed the budget**. Affordability is a product constraint on what the game may promise, not a chosen controller: this page selects no budget mechanism, model routing or cost meter.
 
 ## Open / deferred product policy
 

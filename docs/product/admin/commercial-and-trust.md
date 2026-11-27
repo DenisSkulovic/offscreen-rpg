@@ -1,13 +1,16 @@
 # Commercial operations and trust
 
-**Owns:** how staff explain money, allowances and privacy, and which of those actions stay conditional.  
-**Status: proposed, 2026-11-14.** Owner review is still required. Legal review is still required before a privacy or enforcement workflow is operational. Nothing on this page is a production grant to refund, export, delete, or read private narrative. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.
+**Owns:** how staff explain money, allowances and privacy, and which of those actions stay conditional.
+
+**Status:** proposed, 2026-11-14. Owner review is still required, and legal review is still required before a privacy or enforcement workflow is operational. Nothing on this page is a production grant to refund, export, delete or read private narrative, and no production billing or LiveOps capability is asserted ([illustrative examples](README.md#what-this-section-establishes-and-what-it-does-not)).
+
+Two mandates live here with two evidence audiences: commercial operations (money and allowances) and trust and privacy. Within commercial operations, entitlement, funding, usage and external payment or refund are separate objects with separate histories.
 
 Companion: [Player 360](player-360-and-support.md), [authority](authority-and-governance.md).
 
 ## Commercial objects that must stay distinct
 
-Commercial Operations answers who was promised what, whether it is available now, what was consumed, who is responsible, and what it cost the business. Settlement and payment credentials may stay with a provider. Offscreen owns what a player may do in the game.
+Commercial Operations answers who was promised what, whether it is available now, what was consumed, who is responsible, and what it cost the business. Settlement and payment credentials may stay with a provider; Offscreen owns what a player may do in the game.
 
 | Concept | Meaning | Do not confuse it with |
 | --- | --- | --- |
@@ -23,7 +26,7 @@ Commercial Operations answers who was promised what, whether it is available now
 | Internal budget | Company exposure for trials, promotions or diagnostics | A contractual entitlement or a game rule |
 | Restriction | A separate stop on account, campaign or dispatch | Proof the customer was never paid |
 
-Customer allowance, company provider spend and fictional resources have different histories. A screen may show them together. It must not treat them as one balance. Who pays for another participant is an open business rule. A one-payer, several-beneficiary layout is a stress test, not approval of a family plan.
+Four of these are the core separation. **Entitlement** is the named capability a beneficiary holds. **Funding** is the allowance or internal budget that pays for use. **Usage** is the reservation and consumption of an admitted activity. **External payment or refund** is the provider-side money movement, confirmed outside Offscreen. Each has its own history; none stands in for another. An active subscription proves a billing lifecycle, not an entitlement, and not remaining allowance. A refund is confirmed only by the external result. Customer allowance, company provider spend and fictional resources have different histories. A screen may show them together. It must not treat them as one balance. Who pays for another participant is an open business rule. A one-payer, several-beneficiary layout is a stress test, not approval of a family plan.
 
 ### Actions that stay conditional
 
@@ -45,7 +48,7 @@ Prices, SLA numbers, exact monetary thresholds and the ledger schema are not dec
 
 **Normal.** Support sees valid payment evidence, a stale entitlement, and a separate platform stop. Revenue Operations reconciles or issues a narrowly bounded provisional remedy, then checks effective gameplay permission. If the provider is late, the case stays pending.
 
-**Negative.** A goodwill allowance is not a refund, and a refund is not an allowance. Retrying a lost acknowledgement does not create a second grant. Fictional gold is not an editable commercial balance.
+**Negative.** A goodwill allowance is not a refund, and a refund is not an allowance. Retrying a lost acknowledgement does not create a second grant. Fictional gold is not an editable commercial balance. An active subscription does not imply unlimited sponsored usage: entitlement, remaining allowance and the platform spending stop are checked separately.
 
 ## Trust and privacy are a different mandate
 

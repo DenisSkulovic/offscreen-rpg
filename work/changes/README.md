@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-**Documentation renewal E1:** [product](open/product-documentation-renewal/README.md) and [technical](../designs/archive/technical-documentation-renewal/implementation-record/README.md) — both owner-accepted. Technical: TD01–TD08 and TD10 archived, technical joint semantic acceptance PASS (see the retired group's [implementation record](../designs/archive/technical-documentation-renewal/implementation-record/README.md)); TD09 protected no-op. Product: PD01–PD06 archived; PD07 pending the technical integration on main. Runtime, native and live qualification NOT RUN; no queue change.
+**Documentation renewal E1:** [product](../designs/archive/product-documentation-renewal/README.md) and [technical](../designs/archive/technical-documentation-renewal/implementation-record/README.md) — both owner-accepted. Technical: TD01–TD08 and TD10 archived, technical joint semantic acceptance PASS (see the retired group's [implementation record](../designs/archive/technical-documentation-renewal/implementation-record/README.md)); TD09 protected no-op. Product: PD01–PD07 archived and product joint semantic acceptance PASS (see the retired group's [implementation record](../designs/archive/product-documentation-renewal/implementation-record/README.md)). Runtime, native and live qualification NOT RUN; no queue change.
 
 [Agent Core E1](../designs/archive/agent-core-monorepo-map/README.md) — owner-accepted initial foundation; AC01–AC08 and AC08R archived; full native qualification remains unestablished.
 

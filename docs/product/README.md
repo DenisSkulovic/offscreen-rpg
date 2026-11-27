@@ -51,4 +51,4 @@ This describes product intent. It does **not** assert that every loop, arbitrary
 
 Shared play and player-facing replay are proposed, not norms: [shared play](../../work/designs/backlog/shared-play/README.md), [player replay](../../work/designs/backlog/player-replay/README.md).
 
-Economy, progression, space, relationships, collaboration, and content policy that are not already selected stay Proposed in the [gameplay domain coverage catalogue](../../work/designs/open/gameplay-domain-coverage/README.md). That catalogue adds no rule.
+Economy, progression, space, relationships, collaboration, and content policy that are not already selected stay Proposed in the [gameplay domain coverage catalogue](../../work/designs/archive/gameplay-domain-coverage/README.md). That catalogue adds no rule.

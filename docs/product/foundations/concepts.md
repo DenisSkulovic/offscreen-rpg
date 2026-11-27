@@ -1,20 +1,18 @@
 # Gameplay and Storyteller concepts
 
-This is the vocabulary for product descriptions, feature plans and technical contracts. It distinguishes what the player experiences, what the Storyteller does, and what the software stores. The tables are selected vocabulary. Names such as `result.scene` and `story_passage` are current storage labels, not extra product objects. The conversation example is illustrative. It is not a live-run receipt. These definitions do not require a new table or class for every term. See [progress](../../../STATUS.md) for implemented coverage and [execution language](../../../research/authored-scenarios/execution-language.md) for runtime notation.
+This is the shared vocabulary for product descriptions, feature plans and technical contracts. It separates what the player experiences, what the Storyteller does, and what the software stores. The definitions are selected meaning and do not require a new table or class for every term. See [execution language](../../../research/authored-scenarios/execution-language.md) for runtime notation and [progress](../../../STATUS.md) for implemented coverage.
 
 ## The answer to “what does the Storyteller do?”
 
-The **Storyteller** is a persistent-knowledge writer, not an immortal chat session and not Game Authority. For an opening or continuation it receives a small pinned orientation, then may inspect the rooted Library, search and compare exact sources, consult versioned writing skills, keep a durable task **Workdesk**, revise drafts, and delegate bounded research/editorial questions to independent assistant contexts. It decides how much of that work is useful for the mission; the product does not require a theatrical fixed number of model rounds or agents.
+The **Storyteller** is a persistent-knowledge writer, not an immortal chat session and not Game Authority. The selected investigative target gives it, for an opening or continuation, a small pinned orientation. From there it may inspect the rooted Library, search and compare exact pinned sources, consult versioned writing skills, keep a durable task **Workdesk**, use tools, revise drafts, and delegate bounded research or editorial questions to optional independent assistant contexts. It decides how much of that work the mission needs; the product requires no fixed number of model rounds or agents, and one simple scene may need almost none. This is the target the product selects, not a general agent that runs today; [progress](../../../STATUS.md) records what is realized.
 
-A **Storyteller mission** ends by proposing a scene, choices/intentions and any source changes that should accompany it. Game Authority validates what may become authoritative and publishes one coherent outcome. Several model rounds, tool calls and draft revisions may therefore belong to one mission; one simple scene may need almost none.
+A **Storyteller mission** ends by proposing a scene, choices/intentions and any source changes that should accompany it. Everything it proposes passes authority admission: Game Authority validates what may become authoritative and publishes one coherent outcome, and the Storyteller never owns a mechanical result.
 
-A published scene is more than prose. It is a historical boundary tied to the exact admitted Library, fictional state, clock, effective creative/rule pins, choices and active fictional commitments at that point. That boundary is reviewable and forkable without replaying the writer.
-
-“Mission,” “turn,” “scene,” “passage” and “model round” are deliberately not synonyms. Internal reasoning is not player-visible history and hidden chain-of-thought is not a persistence requirement.
+A published scene is more than prose. It is a historical boundary tied to the exact admitted Library, fictional state, clock, effective creative/rule pins, choices and active fictional commitments at that point, reviewable and forkable without replaying the writer. “Mission,” “turn,” “scene,” “passage” and “model round” are deliberately not synonyms. Internal reasoning is not player-visible history, and hidden chain-of-thought is not a persistence requirement.
 
 ## Player and world concepts
 
-The Storyteller is a product identity realized by purpose-specific tasks, creative configuration and application logic. A fresh task reconstructs its context from durable evidence; it does not inherit an indefinitely growing agent chat. Reconstructing context must preserve the detailed interaction still unfolding, including nonverbal or nonhuman communication. Dialogue is story evidence, not a requirement to represent gameplay as human chat. [Active-scene continuity](../../technical/storyteller/request-context-and-cost.md#active-scene-continuity-and-disposable-task-conversations) defines its bounded request policy.
+The Storyteller is a product identity; the selected design realizes it through purpose-specific tasks, creative configuration and application logic. A fresh task reconstructs its context from durable evidence; it does not inherit an indefinitely growing agent chat. Reconstructing context must preserve the detailed interaction still unfolding, including nonverbal or nonhuman communication. Dialogue is story evidence, not a requirement to represent gameplay as human chat. [Active-scene continuity](../../technical/storyteller/request-context-and-cost.md#active-scene-continuity-and-disposable-task-conversations) defines its bounded request policy.
 
 | Term | Meaning | Boundary |
 | --- | --- | --- |
@@ -40,9 +38,16 @@ The Storyteller is a product identity realized by purpose-specific tasks, creati
 | Report | An account of an already committed result | Does not create current choices or take control of ongoing activity |
 | Accepted activity plan | The player's finite sequence of future activity intentions under explicit bounds | Cannot choose responses at decision points or override fresh situation authority |
 
-Scene is useful descriptive context, not a synonym for every screen update. A new passage can describe the same scene. One scene can contain several events and decisions, or no dramatic event at all. Ordinary dialogue can warrant a turn without pretending a new incident happened.
+The terms above group around four distinctions:
+
+- **Scene** is descriptive context, not a synonym for every screen update. A new passage can describe the same scene, and one scene can hold several turns, events and decisions, or no dramatic event at all. Ordinary dialogue can warrant a turn without pretending a new incident happened.
+- **Decision** is the moment of choice. Deliberation holds the fiction; the accepted action owns the elapsed time that follows.
+- **Activity** is a commitment extended over eligible game time. Immediate dialogue choices and single attempts are actions, even when they share mechanical policies with activities.
+- **Authority** decides what becomes true. Narration, reports and Storyteller proposals present or suggest; only committed actions, events and work change the situation.
 
 ## Execution and storage concepts
+
+The terms below are the technical vocabulary behind the player concepts. Internal storage labels are names for stored records, not extra product objects; the dated note after the table covers the current ones.
 
 | Term | Responsibility |
 | --- | --- |
@@ -57,9 +62,9 @@ Scene is useful descriptive context, not a synonym for every screen update. A ne
 | Canonical document | A versioned authoritative document for its declared role; a summary's role remains derived, while a published source preserves original prose |
 | Story fork | A new first-class story copied from one exact committed position; lineage records provenance, while later mutable state is independent and neither branch is automatically canonical |
 
-A file is not automatically a scene, turn, event or unit of time. One turn may consult many documents. A scene can be represented by several source passages. A memory segment can split a long conversation without ending it or making the player wait. Summary creation never gates progress merely because a segment reached its size threshold; missing required evidence has a separate recovery rule.
+A file is not automatically a scene, turn, event or unit of time. One turn may consult many documents, and a scene can be represented by several source passages. A memory segment can split a long conversation without ending it or making the player wait. Summary creation never gates progress merely because a segment reached its size threshold; missing required evidence has a separate recovery rule. Do not assume one model call equals one turn, one passage, one scene, or one file.
 
-Do not assume one model call equals one turn, one passage, one scene, or one file. A current source name such as `result.scene` or `story_passage` is a storage name. It does not add a scene lifecycle or a second turn engine. One current path can publish both the present passage and a later arrival from the same result. That path does not make the model call into two turns. [Status](../../../STATUS.md) records what those names currently cover.
+**Storage labels are not product objects.** Names such as `result.scene` and `story_passage` are internal storage labels; they add no scene lifecycle or second turn engine, and one model call is not one turn, passage, scene or file. The one current path that can publish both a present passage and a later arrival from the same result is a dated realization, recorded with its scope at [execution and storage concepts: dated realization](../../technical/storyteller/operation-and-controller.md#execution-and-storage-concepts-dated-realization-of-the-vocabulary). [Status](../../../STATUS.md) records what those names currently cover.
 
 ## Worked example: one conversation, several decisions
 
