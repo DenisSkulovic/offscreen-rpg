@@ -87,7 +87,7 @@ Give consequential people and objects consistent identity. A golden spear sold t
 
 Characters can have descriptive traits, capabilities, relationships and conditions. Their representation must accommodate unusual bodies and settings. Being miniature changes what is plausible; it need not automatically introduce a physics simulator. A character cannot use a lost object or an established unavailable ability simply because the next generated scene would be convenient.
 
-Important injuries and other lasting changes should constrain subsequent choices until something in the story changes them. Ordinary atmospheric description need not become a tracked attribute. The open boundary among growth, fatal loss, aging, form change, return, and story ending stays Proposed in [character lifecourse](../../../work/designs/open/character-lifecourse/README.md). The link selects no hit-point track, disease, aging rule, or level ladder.
+Important injuries and other lasting changes should constrain subsequent choices until something in the story changes them. Ordinary atmospheric description need not become a tracked attribute. The open boundary among growth, fatal loss, aging, form change, return, and story ending remains unratified and deferred in [character lifecourse](../../../work/designs/backlog/character-lifecourse/README.md). The link selects no hit-point track, disease, aging rule, or level ladder.
 
 ## Possessions and exchanges
 

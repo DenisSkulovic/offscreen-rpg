@@ -19,7 +19,6 @@ Existing classifications below are historical starting points, not fresh disposi
 | Item | Status |
 | --- | --- |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R4 candidate-specific agent runtime research, pinned upstream source evidence and hard gates; no framework or implementation commissioned |
-| [character-lifecourse/](open/character-lifecourse/README.md) | **Proposed, not selected.** Unratified growth, injury, loss, aging, and form questions. No universal damage track or selected death rule |
 | [shared-play/](open/shared-play/) | **Proposed, not selected.** Group rules are not accepted. The consent and resolution matrix keeps invitation, control, deadlines, funding, and leave unratified |
 | [player-replay/](open/player-replay/) | Proposed player reread. Not the staff forensic capsule |
 | [legacy-initiatives-index/](open/legacy-initiatives-index/README.md) | **Retained historical reference**, not a current design authorization; canonical and research pages still cite unique legacy analyses. HK08 left this route in place |
