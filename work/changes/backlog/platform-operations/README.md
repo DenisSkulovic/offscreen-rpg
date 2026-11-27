@@ -53,3 +53,10 @@ INF01–INF05 promoted to [open Changes](../../open/README.md); [selected execut
 - [OBS-D02 Frozen target identity](2026-11-27--obs-d02-target-identity/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
 - [OBS-D03 Bounded operation custody](2026-11-27--obs-d03-operation-custody/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
 - [OBS-D04 Developer topology and exact classifier](2026-11-27--obs-d04-collector-topology/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
+- [OBS-D05 Foreground WSL connection](2026-11-27--obs-d05-foreground-connection/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
+- [OBS-D06 Explicit Collector upgrade](2026-11-27--obs-d06-collector-upgrade/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
+- [OBS-D07 Safe synthetic proof ownership](2026-11-27--obs-d07-synthetic-proof/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
+- [OBS-D08 Fresh developer signal verification](2026-11-27--obs-d08-developer-signal-proof/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
+- [OBS-D09 Authenticated health and resource observation](2026-11-27--obs-d09-health-resource-proof/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
+- [OBS-D10 Persistence and outage verification](2026-11-27--obs-d10-recovery-proof/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
+- [OBS-D11 Isolated partial-install verification](2026-11-27--obs-d11-partial-install-proof/CHANGE.md): prepared candidate; planner gates and independent readiness pending.
