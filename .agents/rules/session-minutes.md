@@ -14,7 +14,7 @@ When the owner gives a long, stream-of-consciousness request, **extract every ma
 
 - **Owner input and rationale:** what the user actually requested or argued, separated from an agent's interpretation or recommendation.
 - **Decision state:** `Owner direction`, `Agreed`, `Proposed`, `Rejected`, `Deferred`, `Superseded`, or `Open`; name who owns any pending decision. An agent recommendation is not owner approval.
-- **Engineering substance:** target end state, significant design alternatives/trade-offs, risks or constraints, relevant paths/sections and which work is explicitly excluded.
+- **Engineering substance:** the selected evolution's accepted state, significant design alternatives and trade-offs, risks or constraints, relevant paths or sections, and which work is explicitly excluded. A bounded evolution may have an end state. Do not treat the minutes as a requirement to specify a comprehensive final architecture.
 - **Action and evidence:** links to documents, Changes and commits actually created; tests **actually run**, with revision and limits. If no test was run, say so; don't claim an agent-only source read is runtime proof.
 - **Next handoff:** what a fresh agent should do or deliberately avoid, and the smallest meaningful next question.
 

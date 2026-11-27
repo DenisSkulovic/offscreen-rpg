@@ -6,13 +6,13 @@
 
 | | Design dossier | Change packet |
 | --- | --- | --- |
-| Purpose | Discover and defend the best bounded target | Deliver one decided, source-grounded, independently verifiable outcome |
+| Purpose | Discover and defend the selected evolution | Deliver one decided, source-grounded, independently verifiable outcome |
 | Reader | Designer, owner, independent architecture committee | Implementation coordinator and bounded workers; independent packet committee |
 | Shape | Flexible; problem-specific research, alternatives, specimens, experiments and decision records | Standardized roles and direct execution routes; no unresolved architecture homework |
-| Current front door | README.md or existing clearly named entrypoint: scope, posture, status, current target/unknowns, next decision, links by purpose | CHANGE.md: selected outcome, authority, baseline, scope/exclusions, execution/acceptance route, current state |
+| Current front door | README.md or existing clearly named entrypoint: scope, posture, status, current evolution boundary, unknowns, later candidates, next decision, links by purpose | CHANGE.md: selected outcome, authority, baseline, scope/exclusions, execution/acceptance route, current state |
 | History | Research and actual experimental/committee receipts may be substantial, explicitly non-normative | No research diary in executable contracts; historical receipts are separate, compact and optional reads |
 
-During exploration, provisional alternatives, raw measurements and unfinished specimens are legitimate. At any checkpoint label their status and keep the current route honest. For formal defense, one coherent target and feasible proof matrix must be readable without reconstructing the investigation. Use the flexible Design profiles below; no artificial minimum length or one-size-fits-all investigation.
+During exploration, provisional alternatives, raw measurements and unfinished specimens are legitimate. At any checkpoint label their status and keep the current route honest. For formal defense, the selected evolution and its feasible proof matrix must be readable without reconstructing the investigation. Later candidates stay in a compact section or the existing register. Do not add a file, packet or specification for each speculative capability. [Progressive resolution](../rules/target-driven-renewal.md#progressive-resolution-owner-decision-2026-11-27) owns that boundary. Use the flexible Design profiles below; no artificial minimum length or one-size-fits-all investigation.
 
 ## 2. Current state, not an edit log
 
@@ -112,6 +112,7 @@ Other smells: giant paragraphs, repair/recovery/amendment headings as current in
 | Twenty 8 KiB files and nineteen subcards renamed T01–T05. | Count aggregate prose and actual assignments. Block only when the result prevents reliable review or bounded dispatch. |
 | Coherent 70 KiB subsystem Design yields five Changes. | Accept if its scope and proof cohere; independently review each bounded Change. |
 | Three-page distributed payment Design omits transaction ownership. | Reject insufficient substance; compact does not mean underspecified. |
+| A review blocks a coherent evolution because a high-priority later capability is undesigned. | Record the candidate, its motivation and its trigger. Block only a defect, missing indispensable evidence, or an unsafe exclusion in the selected scope. |
 
 ## 6. Independent review: submission quality
 
