@@ -2,23 +2,25 @@
 
 **Question:** How can several Cursor agents work on Offscreen RPG without overwriting each other's code, game data, running services or ports?
 
-**Audience:** humans first. **Observed state at integration `undertaking/storyteller-workshop@8a782ffd` (2026-11-23):** a fresh worktree started an owned full six-role dev environment unattended, reached current-generation readiness and parked with tenant state intact. DXK11 removed redundant Kind imports: where both nodes already contain the canonical image digest, aliases are created locally rather than reimporting the same image. `pnpm dev:reserve` and `pnpm dev:attach` are source-tested registry commands and do not start Pods. Selective profiles and cross-checkout handoff of a provisioned environment remain **design, not commands**. Cluster absence during reserve/attach was proven with an isolated temporary registry, not by inspecting a live cluster.
+**Audience:** humans first. This page explains the selected model and separates three things: the **current source** (commands and declarations that exist), a **dated runtime observation** (what one run saw) and the **selected target** (not yet commands).
 
-**Performance reality:** original parked activation took 376 s with ten redundant Kind imports; the later DXK11 115.8 s run incurred a genuine new artifact plus two node imports, so it **does not** measure a pure same-image warm restart. Same-image restart performance is still to be established.
+**Current source.** `pnpm dev` starts the Tilt graph for this checkout's owned slot on `kind-offscreen-dev`; the slot runs the six declared application roles of the development profile (`infra/workloads/profiles/development.yaml`; [topology: Current deployment declarations](../technical/platform/topology.md#current-deployment-declarations)). `pnpm dev:reserve` and `pnpm dev:attach` are source-tested registry commands that do not start Pods. Profile activation (`dev:up --profile`) and guarded release (`dev:release`) are not commands: the DXK10 packet that proposed them was cancelled on 2026-11-24 and is not Done. `pnpm dev` still attempts the full six-role stack.
+
+**Dated observation (integration `undertaking/storyteller-workshop@8a782ffd`, 2026-11-23).** A fresh worktree started an owned full six-role environment unattended, reached current-generation readiness and parked with tenant state intact. DXK11 removed redundant Kind imports: where both nodes already contain the canonical image digest, aliases are created locally rather than reimporting the same image. Cluster absence during reserve/attach was proven with an isolated temporary registry, not by inspecting a live cluster. Original parked activation took 376 s with ten redundant Kind imports; the later DXK11 115.8 s run incurred a genuine new artifact plus two node imports, so it **does not** measure a pure same-image warm restart, which is still to be established. Cross-checkout handoff of a provisioned environment remains design, not a command.
 
 ```mermaid
 flowchart LR
   S["Checkout source"] --> Q{"Need runtime?"}
   Q -->|No| T["Edit + focused tests"]
   Q -->|Yes; today| F["Owned full six-role slot"]
-  Q -->|Yes; DXK10 target| P["Reserve + attach + selected profile"]
+  Q -->|Yes; selected target, not a command| P["Reserve + attach + selected profile"]
   F --> V["Verified image / synced generation / readiness"]
   P --> V
   V --> K["Park own workloads; keep tenant data"]
 ```
 
 
-**If you need to operate it:** [dev runbook](../runbooks/dev-worktree-stacks.md). **If you need the exact engineering guarantees:** [developer environment contract](../technical/platform/developer-environments.md). **If you need the latest proof:** [DXK09](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md). Do not use this picture as execution permission.
+**To operate it:** [dev runbook](../runbooks/dev-worktree-stacks.md). **For the exact engineering guarantees:** [developer environment contract](../technical/platform/developer-environments.md). **For recorded proof:** [DXK09](../../work/changes/archive/2026-11/infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md), now archived as superseded with residual acceptance in `infra/verification/CAPABILITIES.md`. Do not use this picture as execution permission.
 
 ## The idea in one minute
 
@@ -69,7 +71,7 @@ flowchart LR
     Park -.->|"explicit safe release"| Release["Release reservation"]
 ```
 
-Reserve and attach are today's registry CLI. The rest of this diagram, especially per-profile activation and release, is still the DXK10 target. `pnpm dev` still attempts a **full six-workload application stack**. Consult the [runbook's current commands](../runbooks/dev-worktree-stacks.md#what-works-on-the-integrated-branch).
+Reserve and attach are today's registry CLI. The rest of this diagram, especially per-profile activation and release, is a selected target that no command implements (DXK10 was cancelled). `pnpm dev` still attempts a **full six-workload application stack**. Consult the [runbook's current commands](../runbooks/dev-worktree-stacks.md#what-works-on-the-integrated-branch).
 
 ## What a full application stack contains
 
@@ -88,7 +90,7 @@ These six roles are application processes, **not** six separate full copies of P
 
 **Your environment is yours.** A Cursor may modify or park its own workloads, but it must not kill another Cursor's processes, adopt its ports, use its database identity, or reset shared infrastructure to fix its own test. When a slot stops, its saved data and tenant secrets remain.
 
-**A failed startup does not get to occupy half a stack.** If an agent requests a complete stack and readiness fails, the intended behavior is to park **all its attempted application roles**, verify cleanup, and report whether the cause was capacity or a software defect. If cleanup fails, report `rollback-incomplete`; do not claim the slot is parked. This has focused test evidence in the in-flight DXK09 branch, but is not yet an integrated, fully accepted unattended workflow.
+**A failed startup does not get to occupy half a stack.** If an agent requests a complete stack and readiness fails, the intended behavior is to park **all its attempted application roles**, verify cleanup, and report whether the cause was capacity or a software defect. If cleanup fails, report `rollback-incomplete`; do not claim the slot is parked. This has focused test evidence in the DXK09 receipts, but is not an accepted unattended workflow.
 
 ```mermaid
 flowchart TD
@@ -110,24 +112,24 @@ This is a **selected fail-closed behavior model**. It is not evidence that every
 
 A **container image** is a packaged runtime. **Kind** makes that image available to Kubernetes. **Tilt** watches source edits and updates a development environment. **Kubernetes** runs Pods. If image loading and Tilt independently rewrite what a Pod should run, a green Pod may still contain an old image.
 
-The selected correction is simple to state: **image preparation returns one verified artifact; Tilt owns the desired active development Deployment; Kubernetes replaces Pods; readiness only observes**. This architecture decision is documented precisely in the [technical contract](../technical/platform/developer-environments.md#one-owner-for-the-active-development-image) but is **not yet proven as integrated code**. An unverified local image-generation fix must never be described here as shipped.
+The selected correction is simple to state: **image preparation returns one verified artifact; Tilt owns the desired active development Deployment; Kubernetes replaces Pods; readiness only observes**. This architecture decision is documented precisely in the [technical contract](../technical/platform/developer-environments.md#one-owner-for-the-active-development-image) but its integrated-code proof is the recorded DXK09 evidence and the capability catalog, not this page. An unverified local image-generation fix must never be described here as shipped.
 
 ## What is proven versus still ahead?
 
-| Capability | Status at this documentation checkpoint |
+| Capability | Evidence tier at the 2026-11-23 checkpoint (not re-run for this page) |
 | --- | --- |
 | Two distinct live development stacks and isolated source changes | Live-observed in earlier DXK09 receipts |
 | Stop one stack without stopping another | Live-observed in earlier DXK09 receipts |
 | Separate SQL, object-storage and Temporal tenants | Live-observed in bounded earlier trials |
-| Fully unattended new-worktree startup and current-image readiness | **Not accepted**; in-flight image ownership correction |
+| Fully unattended new-worktree startup and current-image readiness | Dated observation above; **not an accepted gate** |
 | Automatic partial-start rollback | Local Cursor tests reported; integrated acceptance pending |
 | Reserve and attach without launching pods | Source-tested CLI. No live cluster observation in this Change |
-| Activate Web-only/API/full profiles | **Selected DXK10-B target, not implemented** |
+| Activate Web-only/API/full profiles | **Selected target, not implemented** (DXK10 cancelled) |
 | Three simultaneously productive Cursor agents | End-user goal; not yet demonstrated |
 | Four healthy full application stacks | Separate capacity target; unproven on this machine |
 | Real browser OAuth and complete game/release acceptance | Separate outstanding proofs |
 
-**Next:** finish [DXK09](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md)'s truthful ordinary development gate, implement [DXK10](../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md)'s demand-driven activation, then use it for independent application Changes. Do not demand four full stacks merely to let three agents edit and test code.
+**Next:** the residual acceptance moved out of [DXK09](../../work/changes/archive/2026-11/infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/CHANGE.md) (superseded, no blanket PASS) is owned by `infra/verification/CAPABILITIES.md`; the cancelled [DXK10](../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) remains the historical proposal for demand-driven activation. Do not demand four full stacks merely to let three agents edit and test code.
 
 ## Find the next layer
 
@@ -135,6 +137,6 @@ The selected correction is simple to state: **image preparation returns one veri
 | --- | --- |
 | Which developer commands are safe today? | [Worktree development runbook](../runbooks/dev-worktree-stacks.md) |
 | Which component owns image builds, Tilt, Kubernetes and readiness? | [Developer environment technical contract](../technical/platform/developer-environments.md) |
-| What exactly passed and failed? | [DXK09 operational proof](../../work/changes/open/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) |
-| How will idle reservations and partial profiles work? | [DXK10 design proposal](../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) |
+| What exactly passed and failed? | [DXK09 operational proof](../../work/changes/archive/2026-11/infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) |
+| What did the cancelled idle-reservation and partial-profile proposal say? | [DXK10 historical proposal](../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md) |
 | Why is release testing isolated from development? | [Infrastructure restructuring program](../../work/changes/backlog/platform-operations/INFRA-RESTRUCTURE-PLAN.md) |
