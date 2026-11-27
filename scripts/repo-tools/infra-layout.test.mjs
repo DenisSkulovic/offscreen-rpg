@@ -941,9 +941,14 @@ test('native observability replacement owns the current files and retires old pa
     'infra/platform/observability/inventory.mjs',
     'infra/platform/observability/readiness.mjs',
     'infra/platform/observability/custody.mjs',
-    'infra/platform/observability/specimens/pins.yaml',
-    'infra/platform/observability/specimens/image-lock-candidate.tsv',
-    'infra/platform/observability/specimens/expected-inventory.json',
+    'infra/platform/observability/values/collector.yaml',
+    'infra/platform/observability/values/prometheus.yaml',
+    'infra/platform/observability/values/loki.yaml',
+    'infra/platform/observability/values/tempo.yaml',
+    'infra/platform/observability/values/grafana.yaml',
+    'infra/platform/observability/locks/charts.yaml',
+    'infra/platform/observability/locks/images.tsv',
+    'infra/platform/observability/expected-inventory.json',
     'infra/platform/observability/vendor/opentelemetry-collector-0.183.2.tgz',
     'infra/platform/observability/vendor/prometheus-31.0.0.tgz',
     'infra/platform/observability/vendor/loki-21.6.0.tgz',
@@ -960,6 +965,18 @@ test('native observability replacement owns the current files and retires old pa
     existsSync(join(repoRoot, 'infra/platform/observability/chart')),
     false,
   );
+  for (const path of [
+    'infra/platform/observability/specimens/collector.yaml',
+    'infra/platform/observability/specimens/prometheus.yaml',
+    'infra/platform/observability/specimens/loki.yaml',
+    'infra/platform/observability/specimens/tempo.yaml',
+    'infra/platform/observability/specimens/grafana.yaml',
+    'infra/platform/observability/specimens/pins.yaml',
+    'infra/platform/observability/specimens/image-lock-candidate.tsv',
+    'infra/platform/observability/specimens/expected-inventory.json',
+  ]) {
+    assert.equal(existsSync(join(repoRoot, path)), false, path);
+  }
 });
 
 test('native Temporal replacement owns the current files and retires old paths', () => {

@@ -106,7 +106,7 @@ test('native observability values are excluded from raw yaml scan', () => {
     );
     assert.ok(!files.includes(absolute), relative);
   }
-  assert.ok(files.some((file) => file.endsWith('specimens/pins.yaml')));
+  assert.ok(files.some((file) => file.endsWith('locks/charts.yaml')));
 });
 
 test('native observability five-archive manifests validate both profiles', () => {

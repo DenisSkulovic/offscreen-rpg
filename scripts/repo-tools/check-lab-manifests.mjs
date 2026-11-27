@@ -69,11 +69,11 @@ const PLATFORM_SECTIONS_BY_SERVICE = {
 
 /** Validated via validateNativeObservabilityManifests, not the raw YAML scan. */
 export const NATIVE_OBSERVABILITY_VALUES_PATHS = Object.freeze([
-  'infra/platform/observability/specimens/collector.yaml',
-  'infra/platform/observability/specimens/prometheus.yaml',
-  'infra/platform/observability/specimens/loki.yaml',
-  'infra/platform/observability/specimens/tempo.yaml',
-  'infra/platform/observability/specimens/grafana.yaml',
+  'infra/platform/observability/values/collector.yaml',
+  'infra/platform/observability/values/prometheus.yaml',
+  'infra/platform/observability/values/loki.yaml',
+  'infra/platform/observability/values/tempo.yaml',
+  'infra/platform/observability/values/grafana.yaml',
 ]);
 
 const PYTHON_PARSE = `

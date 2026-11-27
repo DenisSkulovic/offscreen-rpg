@@ -1,4 +1,4 @@
-# Candidate release metadata; archive bytes NOT verified, image digests NOT selected.
+# Chart name, version, appVersion and archive sha256. Image digests are in images.tsv.
 charts:
   collector:
     repository: open-telemetry/opentelemetry-helm-charts

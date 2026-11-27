@@ -4,7 +4,7 @@ import test from 'node:test';
 
 import { readKindProfile } from '../../../clusters/kind/manager/config.mjs';
 import { readPlatformProfile } from '../../common/profile.mjs';
-import { loadArtifacts } from '../artifacts.mjs';
+import { helmValuesArgv, loadArtifacts } from '../artifacts.mjs';
 import { GRAFANA_ADMIN_SECRET } from '../inventory.mjs';
 import {
   assertPhaseBudget,
@@ -178,8 +178,12 @@ function makeEnsureDeps(options = {}) {
     cancel() {
       this.cancelled = true;
     },
-    begin(record) { pendingWrites.push(structuredClone(record)); },
-    advance(record) { pendingWrites.push(structuredClone(record)); },
+    begin(record) {
+      pendingWrites.push(structuredClone(record));
+    },
+    advance(record) {
+      pendingWrites.push(structuredClone(record));
+    },
     clear() {},
     close() {},
   };
@@ -196,7 +200,8 @@ function makeEnsureDeps(options = {}) {
       const observed = stages[Math.min(phase, stages.length - 1)].namespace;
       const uid = observed.absent ? null : observed.uid;
       return {
-        ok: expectedNamespaceUid === uid &&
+        ok:
+          expectedNamespaceUid === uid &&
           bound.tuple.targetNamespaceUid === uid,
         reason: 'namespace-uid-changed',
       };
@@ -337,22 +342,43 @@ test('failed helm phase retains prefix and skips later helm calls', async () => 
 });
 
 test('helm install argv preserves helmValueArgs parity with render', () => {
-  const release = artifacts.releases[0];
-  const argv = helmInstallArgv(
-    {
-      snapshotPath: '/tmp/kubeconfig',
-      contextName: devKind.contextName,
-      namespace: devProfile.namespaces.observability,
-    },
-    release,
-  );
-  for (const arg of release.helmValueArgs) {
-    assert.ok(argv.includes(arg), `missing helm value arg ${arg}`);
+  const releaseProfile = readPlatformProfile('release');
+  const bundles = [
+    [
+      'dev',
+      artifacts,
+      devKind.contextName,
+      devProfile.namespaces.observability,
+    ],
+    [
+      'release',
+      loadArtifacts('release', { verifyArchive: false }),
+      readKindProfile('release').contextName,
+      releaseProfile.namespaces.observability,
+    ],
+  ];
+  for (const [profileId, bundle, contextName, namespace] of bundles) {
+    for (const release of bundle.releases) {
+      assert.equal(release.valuesPaths.length, 1, profileId);
+      assert.equal(release.valuesPath, undefined);
+      const slice = helmValuesArgv(release);
+      const argv = helmInstallArgv(
+        {
+          snapshotPath: '/tmp/kubeconfig',
+          contextName,
+          namespace,
+        },
+        release,
+      );
+      const start = argv.indexOf('-f');
+      assert.deepEqual(argv.slice(start, start + slice.length), slice);
+      assert.equal(argv.at(-3), '--wait');
+      assert.equal(argv.at(-2), '--timeout');
+      assert.equal(argv.at(-1), '180s');
+      assert.ok(!argv.includes('--atomic'));
+      assert.ok(!argv.includes('--cleanup-on-fail'));
+    }
   }
-  assert.equal(argv.at(-2), '--timeout');
-  assert.equal(argv.at(-1), '180s');
-  assert.ok(!argv.includes('--atomic'));
-  assert.ok(!argv.includes('--cleanup-on-fail'));
 });
 
 test('five slow helm calls still fit the 1500s worker budget', () => {
@@ -553,14 +579,22 @@ test('fresh ensure binds namespace UID before secret and persists it under custo
   process.env.OFFSCREEN_OBSERVABILITY_ENSURE = 'authorized';
   try {
     const deps = makeEnsureDeps();
-    const result = await runObservabilityEnsure('dev', devKind.contextName, deps);
+    const result = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
     assert.equal(result.ok, true, JSON.stringify(result));
     const uid = snapshotForPhases(['namespace']).namespace.uid;
     assert.equal(deps.pendingWrites[0].tuple.targetNamespaceUid, null);
     assert.equal(deps.pendingWrites[1].phase, 'namespace');
     assert.equal(deps.pendingWrites[1].tuple.targetNamespaceUid, uid);
     assert.equal(deps.pendingWrites[2].phase, 'secret');
-    assert.ok(deps.pendingWrites.slice(1).every(row => row.tuple.targetNamespaceUid === uid));
+    assert.ok(
+      deps.pendingWrites
+        .slice(1)
+        .every((row) => row.tuple.targetNamespaceUid === uid),
+    );
     assert.ok(deps.calls[0].args.includes('create'));
     assert.ok(deps.calls[1].args.includes('create'));
   } finally {
@@ -581,7 +615,11 @@ test('replacement namespace after binding prevents secret creation', async () =>
       if (checks === 3) return { ok: false, reason: 'namespace-uid-changed' };
       return check(identity, options);
     };
-    const result = await runObservabilityEnsure('dev', devKind.contextName, deps);
+    const result = await runObservabilityEnsure(
+      'dev',
+      devKind.contextName,
+      deps,
+    );
     assert.equal(result.ok, false);
     assert.equal(result.reasonCode, 'identity-changed');
     assert.equal(result.pending, true);
