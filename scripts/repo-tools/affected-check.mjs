@@ -35,9 +35,13 @@ export function isRootGlobalInput(filePath) {
   return false;
 }
 
+const GROUPED_PACKAGE_FAMILIES = 'domain|ai|commerce|platform|foundation';
+
 export function isWorkspacePackageManifest(filePath) {
   const p = normalize(filePath);
-  return /^(apps|packages|tools)\/[^/]+\/package\.json$/.test(p);
+  return new RegExp(
+    `^(?:(?:apps|tools)/[^/]+|packages/(?:[^/]+|(?:${GROUPED_PACKAGE_FAMILIES})/[^/]+))/package\\.json$`,
+  ).test(p);
 }
 
 export function isWorkspaceSourcePath(filePath) {

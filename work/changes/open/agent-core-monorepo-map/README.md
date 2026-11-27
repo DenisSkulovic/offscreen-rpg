@@ -16,7 +16,7 @@ All eight are current E1 scope, not backlog. Source dependencies below are actua
 | Change | Outcome | Source prerequisites | Tasks | State |
 | --- | --- | --- | ---: | --- |
 | [AC01](../../archive/2026-11/other/2026-11-27--ac01-grouped-image-workspaces/CHANGE.md) | Grouped workspace image and sync compatibility | None | 2 | Done on the design branch; joint proof remains AC08 |
-| [AC02](2026-11-27--ac02-grouped-repository-checks/CHANGE.md) | Grouped source and repository knowledge checks | None | 3 | READY; commissioned; eligible on branch creation |
+| [AC02](../../archive/2026-11/other/2026-11-27--ac02-grouped-repository-checks/CHANGE.md) | Grouped source and repository knowledge checks | None | 3 | Done; archived on this Change; joint proof remains AC08 |
 | [AC03](../../archive/2026-11/other/2026-11-27--ac03-workspace-and-contracts/CHANGE.md) | Agent Core workspace, dependency pins and pure contracts | None | 3 | Done on design branch; source gate passed; AC08 joint proof not passed |
 | [AC04](2026-11-27--ac04-mission-policy-context/CHANGE.md) | Deterministic mission admission, context and execution limits | AC03 | 2 | READY; commissioned (dependency-gated) |
 | [AC05](2026-11-27--ac05-capability-registry-dispatch/CHANGE.md) | Explicit capability registry and guarded tool wrappers | AC03, AC04 | 2 | READY; commissioned (dependency-gated) |

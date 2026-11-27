@@ -88,13 +88,13 @@ For a parallel tool request, reserve one mission-local slot synchronously before
 
 | Finding | Meaning and intended disposition | Owner / trigger |
 | --- | --- | --- |
-| AC-M01 (Medium) | Nested-workspace import scanner may miss imports even when manifest discovery works; see [repo tooling](../../../scripts/repo-tools/README.md). Include in grouped workspace compatibility work. | Workspace tooling; before E1 joint acceptance |
+| AC-M01 (Medium) | Grouped source scan, affected-manifest classification, and knowledge-boundary classification now follow loaded package directories and one recognized family segment. Focused AC02 checks passed; the real post-move repository graph and joint E1 acceptance remain AC08. See [repo tooling](../../../scripts/repo-tools/README.md). | Workspace tooling; joint acceptance still open |
 | AC-M02 (Medium) | Nonempty model output alone is not successful termination. Distinguish normal stop, truncation, invalid/unresolved tools and other errors using native SDK results and denial/limit/failure precedence. No success from text after a failed or denied call. | Agent Core loop/outcomes; focused negatives and joint qualification |
 | AC-M03 (Medium) | Temporal plugin default downloader can act before model invocation. Text-only fixture input excludes the path; explicitly configure a rejecting download hook in isolated host as defense in depth. No implicit fetch, URL or file access. | Test host composition; assert rejection/no dispatch |
 | AC-M04 (Medium) | Ordinary root/Turbo tests must remain offline; live Temporal qualification has a separate explicit command with isolated namespace, loopback endpoint, unique task queue and bounded ownership/cleanup. | Package scripts and qualification harness |
 | AC-L01 (Low) | Historical dossier navigation noise; no extra cleanup cycle. Retire ordinary temporary research through normal lifecycle and keep immutable provenance. Not a runtime defect. | Design custodian, normal retirement |
 
-All four Medium findings are assigned refinements within already scoped E1 work, not new architectural prerequisites or separate packets. Implementation and evidence are NOT RUN. The existing Worker Zod finding is separate; see [Worker limitations](../../../apps/worker/README.md#known-limitations-and-security-follow-up). The future package README should link this owner and document its current usage/limitations rather than duplicate this table. Update the table with actual evidence when resolved.
+All four Medium findings are assigned refinements within already scoped E1 work, not new architectural prerequisites or separate packets. AC-M01 has focused scanner evidence from AC02. AC-M02, AC-M03, and AC-M04 implementation and evidence are NOT RUN. The existing Worker Zod finding is separate; see [Worker limitations](../../../apps/worker/README.md#known-limitations-and-security-follow-up). The future package README should link this owner and document its current usage/limitations rather than duplicate this table. Update the table with actual evidence when resolved.
 
 ## Intentionally limited resolution and future gates
 
