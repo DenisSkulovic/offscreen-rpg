@@ -78,6 +78,6 @@ Source/markup, current command handlers, one history infinite query, and V1 appe
 
 ## Audited starting facts (source `main@4e42bd76028ebf13458b799016446cc3f9dae38f`)
 
-**Dated starting facts, not current authority.** These record what the audit saw before UI01 to UI08, so the selected roles below can be read against the problem they answer. Later headings record what was delivered. Recheck HEAD before code edits.
+**Dated starting facts, not current authority.** These record what the audit saw before UI01 to UI08, so the selected roles above can be read against the problem they answer. The dated realization records above record what was delivered. Recheck HEAD before code edits.
 
 `apps/web/app/style.css` owns global selectors (including bare `main`, `p`, `h1`, `button`) and hardcoded colors; `src/features/stories/stories-library.css` owns distinct `--sl-*` roles; Play's `story-frame.css` owns `--sf-*` roles and page overrides. `StoryFrame`, `NarrativePassage`, `IntentionChoice`, `SceneMedia`, `StoryHistoryView`, and Storybook are useful real components/fixtures but not a shared design-system catalogue. React 19/Next 16/Storybook 10 are installed; no common `src/shared/ui` or `packages/ui` directory existed at source inspection. The later UI01 and UI02 deliveries added `apps/web/src/shared/design` and `apps/web/src/shared/ui` (see the registry and component records below).
