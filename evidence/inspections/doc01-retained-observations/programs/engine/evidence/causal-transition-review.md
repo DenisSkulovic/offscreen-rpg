@@ -42,7 +42,7 @@ player action + immutable operation ID
 
 **Good:** the player cannot receive actual work/reward merely because narrative prediction was computed. Source digest is a real guard, not blind optimism.
 
-**Hard limit:** the digest covers character, story facts and time. It does not prove independence from every future rule family (unique inventory, another actor's action, position, relation, weather, target survival, hidden private event). The present solo policy excludes many such overlaps. **Do not make early preparation the default when new world capabilities are added.** See [prediction-fence decision](../../../../../../work/designs/open/prediction-fences/prediction-dependency-fences.md).
+**Hard limit:** the digest covers character, story facts and time. It does not prove independence from every future rule family (unique inventory, another actor's action, position, relation, weather, target survival, hidden private event). The present solo policy excludes many such overlaps. **Do not make early preparation the default when new world capabilities are added.** See [prediction-fence decision](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/designs/open/prediction-fences/prediction-dependency-fences.md) (deferred, unratified; recoverable from the design ledger).
 
 ## 4. Context capture under a write lock
 
