@@ -145,7 +145,7 @@ test('B07 negatives for runtime identity', () => {
   );
   const withStatusImage = {
     containerStatuses: [
-      { ...baseStatus.containerStatuses[0], image: 'ignored' },
+      { ...baseStatus.containerStatuses[0], image: 'sha256:1080afcdde7624998314ebd6cc707c401436f00dfbd778eb9d0466f7a2501c40' },
     ],
   };
   assert.equal(
@@ -153,9 +153,26 @@ test('B07 negatives for runtime identity', () => {
       withStatusImage,
       expectedImage.containerName,
       expectedImage.canonicalReference,
-    ).reason,
-    'status-image-forbidden',
+    ).ok,
+    true,
   );
+});
+
+test('status.image cannot substitute for a missing or mismatched imageID', () => {
+  const entry = {
+    name: expectedImage.containerName,
+    ready: true,
+    state: { running: {} },
+    image: expectedImage.canonicalReference,
+  };
+  for (const imageID of [undefined, 'sha256:' + 'a'.repeat(64),
+    'ghcr.io/wrong@sha256:' + LOCK_COLLECTOR.split('@sha256:')[1]]) {
+    assert.equal(verifyContainerRuntimeIdentity(
+      { containerStatuses: [{ ...entry, imageID }] },
+      expectedImage.containerName,
+      expectedImage.canonicalReference,
+    ).ok, false);
+  }
 });
 
 test('pod spec rejects extra containers and tag-only spec', () => {
