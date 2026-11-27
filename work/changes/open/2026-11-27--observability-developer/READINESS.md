@@ -7,12 +7,12 @@
 | Owner | Required decision or evidence | Affected cards |
 | --- | --- | --- |
 | ChatGPT + owner | Obtain actual pinned Grafana Service port/targetPort and Collector configuration render; verify local branch/worktree collision state. Operational reference census is already reconciled in SOURCE-MAP.md. | T01, T06, T10, T12 |
-| ChatGPT + owner | Run the bounded pinned D3/D4 experiment in PROOF.md; verify exact metric labels, timestamps and raw query behavior. Resolve and ratify the D4.1 durable allocation watermark for delayed ingestion/clock rollback, including proof-local state custody. | T09 |
+| ChatGPT + owner | Run the bounded pinned D3/D4 experiment in PROOF.md; verify exact metric labels, timestamps and raw query behavior. Ratify the single session-start scan plus D4.1 durable allocation watermark, including reserved-job exclusive writer/state custody and delayed ingestion/clock rollback. | T09 |
 | ChatGPT | Reconcile and independently ratify the candidate deadline allocations, owned process cancellation and FD/lock semantics, exact Tempo restoration and A9 wrapper chain. Verify feasible Linux execution and affected source seams; do not weaken bounds to fit. | T03–T05, T07–T11 |
 | ChatGPT + owner | Confirm isolated A6/A8/A9 environment availability, exact identities and permission boundaries. No live or destructive operation authorized here. | T11, owner acceptance |
 | Independent reviewer | Cold-read all execution cards (including the ten T05/T11 subcards), re-audit G0–G7 and record a verdict against the exact candidate. | All |
 
-The owner evidence batch is in [PROOF.md](PROOF.md). Run read-only census/render first; isolated Docker experiments are separately opt-in. No workstation evidence or implementation test is claimed by this document. The D4.1 Python phase allocation is 573s work + 22s slack + 5s termination within 600s; arithmetic alone does not establish feasibility.
+The owner evidence batch is in [PROOF.md](PROOF.md). Run read-only census/render first; isolated Docker experiments are separately opt-in. No workstation evidence or implementation test is claimed by this document. The D4.1 Python phase allocation is 483s work + 112s slack + 5s termination within 600s; arithmetic alone does not establish feasibility.
 
 ## Gate disposition
 
