@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+**Mandatory packet admission:** [planning artifact quality](../../.agents/references/planning-artifact-quality.md) governs every new or repaired open packet and independent readiness review. No amendment diaries, contradictory current contracts or unbounded Cursor preload.
+
 [OBSERVABILITY-DEVELOPER](open/2026-11-27--observability-developer/CHANGE.md) — R5 accepted; independent packet review pending, all dispatch suspended. [OBSERVABILITY-NATIVE](archive/2026-11/observability/2026-11-26--observability-native/CHANGE.md) superseded; outstanding proof transferred.
 
 [RABBITMQ-NATIVE](open/2026-11-26--rabbitmq-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and fresh release separately gated.

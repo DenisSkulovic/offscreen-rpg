@@ -40,6 +40,8 @@ A cheap implementation agent should not have to read a 30-KB target, a 28-KB aud
 - `scripts/check_docs.py` scans root, `docs/`, agent Markdown, nested `README.md` files under `apps/`, `packages/` and `tools/`, and `work/designs/open/`. It checks heading anchors. [W22](../../work/changes/archive/2026-11/web/2026-11-12--web-context-navigation-check/CHANGE.md) is Done. It does not scan `work/changes/archive/`. A path check does not certify that a described symbol is still the source owner.
 - `pnpm wiki:health` is the separate maintained-page graph. It reports broken paths, anchors, and whether each `docs/**` page is reachable from `docs/README.md`. It does not scan the terminal Change archive, and a green or red graph is not proof that a claim is true.
 
+**Active planning artifacts:** [the design/Change submission standard](../references/planning-artifact-quality.md) governs folder structure, current-vs-history separation, retrieval budgets and mandatory committee rejection. Edit the owning current statement in place; do not append supersession instructions as a replacement for editing. Preserve genuine evidence and decisions with immutable provenance.
+
 ## One explanation, several useful levels
 
 Find the existing owner before adding a document. Put the full explanation there and link from higher levels. A summary is useful when it answers a different, broader question; copying a detailed contract into a plan or package README creates drift.

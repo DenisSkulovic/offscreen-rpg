@@ -8,6 +8,8 @@ Owner direction (2026-11-24): distinguish design readiness, execution dependency
 
 **Entry gate:** This is an execution-packet manual, not an architecture-design method. For material new design or renewal, finish the [design-led renewal gate](../rules/target-driven-renewal.md) in the active Design first, with independent review, specimens, experiments and accepted target. Only use this manual when packet-based delegation is actually selected. Do not convert an unresolved Design into a series of Change folders.
 
+The [planning artifact quality standard](planning-artifact-quality.md) governs active file roles, size/retrieval smells, edit-in-place repair and mandatory submission quality. It is part of readiness, not cosmetic polish.
+
 ## 1. Plan backward from cheap execution, not forward from document completion
 
 Imagine the parent has received `do ID`. The first useful actions should be branch/worktree guard, read the short front door and task queue, and **dispatch a ready task**, without surveying the architecture. Imagine the child sees only its T-ID and 2–5 named anchors. It should be able to open those anchors, write the planned edit, run an exact focused positive and negative proof, and return a short receipt. If either agent must first determine who owns a contract, which callers exist, what semantics are intended, or how to test the change, the *planner* is not finished.
@@ -44,7 +46,7 @@ A parent may run **two** independent Composer children concurrently under the ex
 
 **Child task card** (T-ID, preferably one screen): exact owned write paths/symbols, 2–5 initial read anchors, frozen API and edit algorithm, no-choice code expectations, prerequisite receipts, focused command/cwd and expected positive + discriminating negative result, bounded local repair permission, stop on *specific* contradiction, compact receipt. A child should not need to read every SOURCE-MAP/EXECUTION/PROOF page.
 
-**Planner deep notes**: SOURCE-MAP contains inspected real graph and source assertions; EXECUTION settles algorithms and cross-boundary migration; PROOF fixes fixtures and failure observations. These pages are for planning provenance and debugging exceptional drift, not for universal child preload. Avoid duplicating and contradicting core decisions across five files: link to one canonical location and repeat only indispensable routing facts.
+**Planner deep notes**: keep only current source facts and decided implementation contracts, with exact section-level child anchors; no amendment diary or raw research paste. SOURCE-MAP contains inspected real graph and source assertions; EXECUTION settles algorithms and cross-boundary migration; PROOF fixes fixtures and failure observations. These pages are for planning provenance and debugging exceptional drift, not for universal child preload. Avoid duplicating and contradicting core decisions across five files: link to one canonical location and repeat only indispensable routing facts.
 
 ## 5. Test dispatchability while writing
 

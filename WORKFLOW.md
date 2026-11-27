@@ -124,6 +124,8 @@ After implementation, update realized-state claims, source mappings, proofs and 
 
 [Documentation ownership](docs/README.md) · [documentation reconciliation skill](.agents/skills/documentation-reconciliation/SKILL.md) · [Change workflow](.agents/skills/change-workflow/SKILL.md).
 
+**Submission quality is an admission gate, not polish.** [The common design/Change artifact standard](.agents/references/planning-artifact-quality.md) requires coherent current statements, separate evidence/history, flexible design research and bounded execution packets. Independent reviews reject bad submissions before expensive technical review; a repair replaces obsolete text and reconciles dependents.
+
 ## 5. Plan Changes for genuine parallel execution
 
 **Default preference for *future* multi-Change planning: parallelizable outcomes.** ChatGPT should identify the dependency graph and cut Changes along real independent behavior/authority seams, not arbitrary file counts. Freeze shared interfaces, migrations and cross-service algorithms **before** launching parallel Cursor chats. Each independent Change must have its own observable outcome, source owner, positive/negative tests, permission boundary, branch and integration receipt.

@@ -27,13 +27,13 @@ The value metric is accepted correct work per total spend, including rework and 
 
 ### The executor's real unit is a microtask
 
-For a multi-file implementation Change, the planner should additionally prepare [Composer-first microtasks](composer-first-execution.md) in an optional `TASKS.md`. This file is a **short dispatch queue**, *not* another Change, approval or canon. T01–Txx contain exact symbols and ownership, settled algorithm, normal/negative tests, stop and receipt, preferably one small diff each. A large STATE/RELEASE Change should not be assigned wholesale to a Grok child just because the architecture is complicated; the planner splits it into Composer-sized tasks. `CHANGE.md` still owns lifecycle/selection; TASKS never mark Proposed work automatically Ready.
+For a material multi-task delegated Change, the planner must prepare [Composer-first microtasks](composer-first-execution.md) in `TASKS.md`; tiny single-route work need not manufacture a file. This file is a **short dispatch queue**, *not* another Change, approval or canon. T01–Txx contain exact symbols and ownership, settled algorithm, normal/negative tests, stop and receipt, preferably one small diff each. A large STATE/RELEASE Change should not be assigned wholesale to a Grok child just because the architecture is complicated; the planner splits it into Composer-sized tasks. `CHANGE.md` still owns lifecycle/selection; TASKS never mark Proposed work automatically Ready.
 
 The current source-backed examples are BOOT03, STORY02, STORY03, TURN02 and K8S10. Each task's source baseline is 584b594 and must be revalidated against a newer checkout before execution. Composer should be the parent model as well as the usual child model; the agent config and hook cannot change Cursor's parent UI.
 
 ## Files and ownership
 
-`CHANGE.md` is **always the sole mandatory front door**, ideally one screen of live route data before historical detail. Use the existing standardized template. Include:
+`CHANGE.md` is **always the sole mandatory front door**, ideally one screen of live route data with historical evidence linked separately. Use the existing standardized template. Include:
 
 - ID, state, kind, profile, baseline SHA, execution permission/selector, explicitly verified source/owner anchors.
 - One testable outcome; what code/spec *will* and *will not* change.
@@ -42,7 +42,7 @@ The current source-backed examples are BOOT03, STORY02, STORY03, TURN02 and K8S1
 - Links to deep notes **by purpose**. State whether a file is source evidence, future implementation design, or a test plan. Link, don't paste the whole file.
 - Short stop/escalation condition, coordinator/shared-resource ownership, and reconciliation ledger.
 
-Optional companions (each should justify its own cost):
+Companions by profile (each should justify its own cost). The [planning artifact quality standard](planning-artifact-quality.md#3-execution-packet-shape) requires the source map and proof roles for material multi-task delegation; exact canonical references may supply details, and tiny routes need no empty companions:
 
 | File | Written by | Contents, not content to repeat elsewhere | When Cursor reads it |
 | --- | --- | --- | --- |
