@@ -1130,7 +1130,10 @@ export function verifyOwnedFinalShape(snapshot, desired, params) {
     params.expectedOperation === 'upgrade' || params.expectedRevision === 2
       ? 'upgraded'
       : 'desired';
-  const shape = assessShape(snapshot, desired, { collectorVariant: variant });
+  const shape = assessShape(snapshot, desired, {
+    collectorVariant: variant,
+    predecessorArtifacts: params.predecessorArtifacts ?? null,
+  });
   if (!shape.ok) {
     return {
       ok: false,

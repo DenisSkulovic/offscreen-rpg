@@ -23,7 +23,7 @@ Status below was checked against this branch at `9257d223`, then reconciled with
 | [OBS-D03](2026-11-27--obs-d03-operation-custody/CHANGE.md) | Operation custody | D02 frozen identity tuple | `install.mjs` with D02 | Source joined `638b9cf3`. Packet open |
 | [OBS-D04](../../../archive/2026-11/observability/2026-11-27--obs-d04-collector-topology/CHANGE.md) | Collector topology and classifier | D01, D02 and D03 | Installer, receipt and caller migration inside this Change | Source joined and archived at `9257d223` |
 | [OBS-D05](../../../archive/2026-11/observability/2026-11-27--obs-d05-foreground-connection/CHANGE.md) | Foreground connection | D03 forward primitive and D04 classifier and ports | `package.json`, `artifacts.mjs` with D06 | Source joined. Packet archived. Joint A1–A12/V01–V12 pending |
-| [OBS-D06](2026-11-27--obs-d06-collector-upgrade/CHANGE.md) | Known-predecessor upgrade | D03 custody and D04 classifier. Does not require D05 | `package.json`, `artifacts.mjs` with D05; `custody.mjs` with D10 | Eligible |
+| [OBS-D06](../../../archive/2026-11/observability/2026-11-27--obs-d06-collector-upgrade/CHANGE.md) | Known-predecessor upgrade | D03 custody and D04 classifier. Does not require D05 | `package.json`, `artifacts.mjs` with D05; `custody.mjs` with D10 | Source joined. Packet archived. Joint A1–A12/V01–V12 pending |
 | [OBS-D07](2026-11-27--obs-d07-synthetic-proof/CHANGE.md) | Synthetic proof ownership | D04 | May run beside D05 or D06 when those files stay disjoint | Eligible |
 | [OBS-D08](2026-11-27--obs-d08-developer-signal-proof/CHANGE.md) | Developer signal proof | D05 and D07 for source. D06 is the occupied-upgrade acceptance path only | `proof.mjs`, `proof-host.mjs`, `proof.test.mjs` with D09, D10 and D11 | Waiting on D07 |
 | [OBS-D09](2026-11-27--obs-d09-health-resource-proof/CHANGE.md) | Health and resource proof | D05 and D07. Does not require D08 | Same proof files as D08, D10 and D11 | Waiting on D07 |
@@ -32,7 +32,7 @@ Status below was checked against this branch at `9257d223`, then reconciled with
 
 ## Parallel execution
 
-Eligible now, from the current implementation tip: OBS-D06 and OBS-D07. OBS-D05 source is joined.
+Eligible now, from the current implementation tip: OBS-D07. OBS-D05 and OBS-D06 source are joined.
 
 Safe concurrent combinations:
 
