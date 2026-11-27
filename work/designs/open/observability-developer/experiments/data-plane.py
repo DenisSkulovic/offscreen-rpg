@@ -64,6 +64,16 @@ def send(signal, payload, port=4328, positive=False):
                 for k in ("rejectedSpans","rejectedLogRecords","rejectedDataPoints")), body
         print(signal, port, response.status, "positive" if positive else "negative", flush=True)
 
+# Wait for actual Prometheus readiness before submitting metrics.
+for attempt in range(30):
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:9090/-/ready",timeout=2) as response:
+            if response.status == 200: break
+    except (OSError,urllib.error.URLError):
+        time.sleep(1)
+else:
+    raise SystemExit("Prometheus not ready")
+
 # Wait for actual OTLP HTTP endpoint. Empty requests exercise transport only.
 for attempt in range(30):
     try:
