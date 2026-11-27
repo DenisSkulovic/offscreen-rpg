@@ -2,24 +2,20 @@
 
 Offscreen RPG is the experience of living inside a story that unfolds over time. You would enter through a prepared experience or a freeform **Story Prompt**, then inhabit a perspective whose world can keep accumulating history between visits. That perspective may be a person, creature, community, organism, place, system, observer, distributed consciousness or something stranger. Ordinary life and dramatic events both matter. The story can be quiet, funny, strange, dangerous or tragic.
 
-The defining promise is not “AI chat with a character sheet.” It is a **living, persistent, historically exact story**: the Storyteller investigates and writes from durable sources, the game admits consequences under explicit authority, and each published scene becomes a faithful historical point that can later be reviewed or forked. This page states that selected product intent. It is a target, not a description of what currently runs; [progress](../../../STATUS.md) records demonstrated coverage.
-
-The intended experience centers on a character with a life. The first tested milestone is solo; [Larger shared worlds](#larger-shared-worlds) states the shared-story ambition and its status.
+The defining promise is not “AI chat with a character sheet.” It is a **living, persistent, historically exact story**: the Storyteller would investigate and write from durable sources, the game would admit consequences under explicit authority, and each published scene would become a faithful historical point that can later be reviewed or forked. The experience centers on a character with a life. [Progress](../../../STATUS.md) records what has been demonstrated.
 
 ## What this page selects
 
 The sections below select these commitments, each detailed where it appears:
 
 - **Earned time and consequence:** effort takes real time and risk can destroy accumulated progress where the campaign permits ([Earned life](#earned-life)).
-- **Player consent:** participation is on the player's terms (below).
+- **Player consent:** leaving the page does not authorize a new player decision. Accepted unattended work progresses only under the campaign's explicit time/autonomy rules, and a personality acting overnight without that consent remains outside the selected player-agency contract.
 - **A genuine investigative Storyteller** and **persistent rooted knowledge** ([The storyteller](#the-storyteller)).
 - **Exact scene history and forks** as a future experience ([Scene history and alternate continuities](#scene-history-and-alternate-continuities)).
 - **Sparse continuity and world neutrality:** no universal humanoid body, D&D sheet, inventory, profession or grand quest is required.
 - **Optional authoritative mechanics** ([Optional mechanical foundations](#optional-mechanical-foundations)).
 
 The sponsored allowance in [Why build it](#why-build-it) is illustrative and is not spend authorization. A general delegated player choice is not accepted merely because the Storyteller can delegate research to its own assistants; player autonomy and writer-agent delegation are separate concepts.
-
-Participation is on your terms. Leaving the page does not authorize a new player decision. Accepted unattended work progresses only under the campaign's explicit time/autonomy rules. A personality acting overnight without that consent remains outside the selected player-agency contract.
 
 ## Optional mechanical foundations
 
@@ -61,20 +57,20 @@ A messaging service such as Slack could support brief updates and choices during
 
 ## First playable target
 
-The target creation path has two deliberately simple entrances:
+A story begins through one of two deliberately simple entrances:
 
 - **Prepared experience:** choose an authored experience and press **Play**. Optional **Customize** changes only the dimensions that experience exposes.
-- **Custom story:** provide one freeform **Story Prompt**. A title, humanoid role, class, rules package, profile picker and review wizard are not mandatory prerequisites.
+- **Custom story:** provide one freeform **Story Prompt**. A title, humanoid role, class, rules package, profile picker and review wizard are not prerequisites.
 
-The Story Prompt is recorded verbatim as player intent. It is not automatically established world canon. The Storyteller may invent an original world where policy permits, then Game Authority admits the opening as one coherent first scene. The player should not need to approve a generated preview before the story becomes playable. A recoverable saved draft is useful, but “draft” is not a second mandatory lifecycle between prompt and play.
+The Story Prompt is recorded verbatim as player intent; it is not automatically world canon. The Storyteller may invent an original world where policy permits, and Game Authority then admits the opening as one coherent first scene. The player does not approve a generated preview before play. A recoverable saved draft is useful, but “draft” is not a second lifecycle between prompt and play.
 
-The first scene appears without fictitious background time having elapsed merely because generation took time. Provider latency, retries and browser navigation do not advance the world. A prepared experience may require **no setup model call at all** before the opening mission when its authored Library already contains the needed orientation.
+The first scene appears without fictitious background time: provider latency, retries and browser navigation never advance the world. A prepared experience may need **no setup model call at all** before the opening mission when its authored Library already holds the needed orientation.
 
-The first tested proof is solo; see [Larger shared worlds](#larger-shared-worlds). The concrete solo story and broader target journeys live in [acceptance scenarios](../gameplay/acceptance-scenarios.md).
+The solo story and broader target journeys live in [acceptance scenarios](../gameplay/acceptance-scenarios.md); the shared ambition is stated in [Larger shared worlds](#larger-shared-worlds).
 
 ## Larger shared worlds
 
-On 2026-11-18 the owner ratified the first tested playability milestone as solo, as [First playable target](#first-playable-target) states. The intended experience still names the possibility of inviting friends into a shared story. A small cooperative party in one story is a distant, unscheduled later aspiration: not cancelled, not implemented, not required before that solo proof and not the next obligation. Shared decision and pause rules remain [proposed](../../../work/designs/backlog/shared-play/README.md). Thousands of players across independent stories, and eventually a world with roughly a hundred participants, come only after that party if it is ever ratified. They are not demonstrated capacity. The exact live acceptance for the small party stays Proposed/Blocked. Larger worlds need independent scenes, limited pause authority and explicit absence rules; increasing a player-count setting cannot supply those behaviors.
+On 2026-11-18 the owner ratified the first tested playability milestone as solo. The intended experience still names the possibility of inviting friends into a shared story. A small cooperative party in one story is a distant, unscheduled later aspiration: not cancelled, not implemented, not required before that solo proof and not the next obligation. Shared decision and pause rules remain [proposed](../../../work/designs/backlog/shared-play/README.md), and the exact live acceptance for the small party stays Proposed/Blocked. Thousands of players across independent stories, and eventually a world with roughly a hundred participants, come only after that party if it is ever ratified; they are not demonstrated capacity. Larger worlds need independent scenes, limited pause authority and explicit absence rules; increasing a player-count setting cannot supply those behaviors.
 
 ## Why build it
 
@@ -86,21 +82,19 @@ The first proof of concept should let us create a character, experience ordinary
 
 ## Earned life
 
-The defining experience is not simply that an AI tells a story slowly. Time, persistence and consequence make the character's life feel earned.
+The defining experience is not simply that an AI tells a story slowly. Time, persistence and consequence make the character's life feel earned. An ordinary chat interface can declare a journey completed immediately; Offscreen RPG preserves the cost, elapsed time, state and uncertainty between intention and outcome. The distinction is **instant narration** versus **earned progression**.
 
-An action that should take meaningful fictional effort can require meaningful real elapsed time. A character walking across a region may genuinely be travelling for hours while the player is elsewhere. A work shift may occupy part of an evening. Recovering, studying, earning money, building trust or waiting for an opportunity may unfold over days.
+An action that takes meaningful fictional effort can require meaningful real elapsed time. A character walking across a region may travel for hours while the player is elsewhere, a work shift may occupy part of an evening, and recovering, studying, earning money, building trust or waiting for an opportunity may unfold over days. Completion is authoritative: starting an eight-hour journey does not mean the character has arrived, and beginning a shift does not grant its pay. An estimated reward is not owned until the activity reaches its valid completion or consequence.
 
-Completion is authoritative. Starting an eight-hour journey does not mean the character has already arrived. Beginning a shift does not immediately grant its pay. An estimated reward is not owned until the relevant activity actually reaches its valid completion or consequence.
+This makes modest things valuable. A few coins matter because they represent time spent earning them, ordinary equipment because obtaining it took days of decisions and survival, and a familiar NPC because the relationship accumulated through repeated encounters rather than being invented for the current prompt.
 
-This creates value from otherwise modest things. A few coins can matter because they represent real time spent earning them. Ordinary equipment can matter because obtaining it required several days of decisions and survival. A familiar NPC can matter because the relationship accumulated through repeated encounters rather than being invented for the current prompt.
+Risk matters for the same reason. The storyteller must not protect accumulated progress merely because losing it would be inconvenient. If the campaign permits serious injury, theft or death, reckless choices may destroy things that genuinely took time to obtain. Consequences follow the fiction and selected campaign risk rather than preserving progression by default.
 
-Risk matters for the same reason. The storyteller must not protect accumulated progress merely because losing it would be inconvenient. If the campaign permits serious injury, theft or death, reckless choices may destroy things that genuinely took time to obtain. Consequences should follow the fiction and selected campaign risk rather than preserve a player's progression by default.
+Duration comes from what happens in the fiction, the campaign's selected pace and supported rules. A brief reply need not acquire an hour-long timer, but a hundred exchanges cannot all be treated as timeless merely because they use Storyteller choices. Every offered in-world action declares its time semantics. Reading choices, navigating menus and waiting for the model do not age the world. Time advances through deliberate accepted commitments, including an explicitly offered wait; it does not run freely while the character has no plan.
 
-Duration comes from what happens in the fiction, the campaign's selected pace and supported rules. A brief reply need not acquire an hour-long timer, but a hundred exchanges cannot all be treated as timeless merely because they use Storyteller choices. Every offered in-world action declares its time semantics. Reading choices, navigating menus and waiting for the model do not themselves age the world. Time advances through deliberate accepted commitments, including an explicitly offered wait; it does not run freely while the character has no plan.
+Time creates value through effort, opportunity cost and continuity, but it is not the only legitimate cause of change. Walking to another town or sustained practice cannot be replaced by an unearned narrative montage at an unchanged campaign pace. A conversation can establish a relationship, an immediate gift can change possessions, and a supported teleport can change location. Those causes have their own rules and are not exceptions to conceal. The design should make waiting meaningful and legible without declaring all important change inaccessible outside timers.
 
-The important distinction is between **instant narration** and **earned progression**. An ordinary chat interface can declare a journey completed immediately; Offscreen RPG should preserve the cost, elapsed time, state and uncertainty between intention and outcome.
-
-The game should therefore make unfinished activity visible. A player can know that their character is travelling, working, recovering or waiting without receiving fresh prose every minute. Relevant developments can interrupt that activity. If nothing meaningful happens, the activity can finish quietly and commit its result.
+Unfinished activity is therefore made visible. A player can know that their character is travelling, working, recovering or waiting without receiving fresh prose every minute. Relevant developments can interrupt that activity; if nothing meaningful happens, it finishes quietly and commits its result.
 
 ### Ordinary life and Storyteller scenes
 
@@ -112,10 +106,8 @@ Ordinary life is not limited to following a prepared itinerary. The Storyteller 
 
 The Storyteller also directs the moment-to-moment rhythm within campaign preferences and mechanical authority. A rapid run of narration and choices with no activity menu is as fundamental as hours-long offscreen travel. Short actions consume their admitted durations within that rhythm; no fixed wait per paragraph or automatic reopening of routines is required. See [Storyteller-directed pace](../gameplay/actions-and-commitments.md#storyteller-directed-pace).
 
-Here, activity means a commitment extended over time. Immediate dialogue choices or individual attempts remain actions even when they share the same mechanical policies. A Storyteller turn prepares the next narration and authored possibilities; many turns can develop the same scene rapidly. There are no chapters in the game model. The same fiction can change resolution detail: an ordinary patrol uses an admitted routine, while a consequential encounter develops through specific decisions. Both use the same authoritative character and world state. [Concepts](concepts.md) defines these boundaries.
+Here, activity means a commitment extended over time. Immediate dialogue choices or individual attempts remain actions even when they share the same mechanical policies. A Storyteller turn prepares the next narration and authored possibilities, and many turns can develop the same scene rapidly. There are no chapters in the game model. The same fiction can change resolution detail: an ordinary patrol uses an admitted routine, while a consequential encounter develops through specific decisions, both on the same authoritative character and world state. [Concepts](concepts.md) defines these boundaries.
 
 Unattended life is a sequence of intentions the player selected, such as rest and then a patrol. It is not a mandatory daily timetable, an eight-hour sleep rule, or a universal routine planner. Preparation may involve the Storyteller. Executing a known routine and its permitted transitions needs no inference. Permission to spend on a new scene is separate from permission to continue routine work. A queue, automatic event selection, and an absence policy remain [proposals](../../../work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-autonomy-and-re-entry), not part of this promise.
-
-Time creates value through effort, opportunity cost and continuity. Walking to another town or sustained practice cannot be replaced by an unearned narrative montage at an unchanged campaign pace. However, a conversation can establish a relationship, an immediate gift can change possessions, and a supported teleport can change location. Those are legitimate causes with their own rules, not exceptions to conceal. The design should make waiting meaningful and legible without declaring all important change inaccessible outside timers.
 
 This principle is setting-independent. The same foundation should support a fantasy traveller, a Roman soldier, a space merchant, an ordinary modern life, a microorganism or something abstract. The engine records only the state and rules that matter to the current story rather than implementing one universal economy, profession system or biological simulation.
