@@ -1,6 +1,6 @@
 # OBS-D11 | Isolated partial-install verification
 
-**State:** OWNER-RELEASED — OFFLINE SOURCE ONLY (dependency-gated); independent readiness verdict not yet PASS. **Kind:** CONTRACT (source implementation). **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `implementation/observability-developer`; branch `change/obs-d11-partial-install-proof`, dedicated linked worktree. The implementation coordinator owns the routine lifecycle through the serialized source join. The planner owns the packet.
+**State:** SOURCE ARCHIVED on `change/obs-d11-partial-install-proof` at `aed1e411d497`. Joint A1–A12/V01–V12 and live A9 feasibility remain pending and are not passed. Independent readiness is not PASS. **Kind:** CONTRACT (source implementation). **Inspected source:** main `e7a6eed5789401737701d2bff38a1b54ec3085d4` (prior inspected source and intervening docs-only observability edits; recheck affected anchors). **Integration:** `implementation/observability-developer`; branch `change/obs-d11-partial-install-proof`, dedicated linked worktree. The implementation coordinator owns the routine lifecycle through the serialized source join. The planner owns the packet.
 
 ## Outcome
 Actual public installer fails at Loki after successful Prometheus, retains exact state and durable fence; repeat refuses without mutation.
