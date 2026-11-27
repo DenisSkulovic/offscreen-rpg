@@ -12,3 +12,5 @@ Curated non-normative studies. Explicitly **not** product/technical authority.
 | [engineering-manuals.md](engineering-manuals.md) | Prefer-map after `docs/engineering/` was removed. Not authority |
 
 Coding-agent operating rules belong in `.agents/`, not here.
+
+Historical architecture investigation: [Code architecture health, MA/DO findings](agent-practice/CODE-ARCHITECTURE-HEALTH-2026-11.md) (dated evidence and reopen questions, not target topology).
