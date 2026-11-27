@@ -4,6 +4,8 @@ Repository-level maintenance and architecture checks live here. `module-graph.mj
 
 ## Known limitations
 
+**AC08 graph check:** `node scripts/repo-tools/module-graph.mjs --json` on the AC08 worktree still reports one `forbidden-authority-writer-import` in `packages/story-engine`, unchanged by Agent Core. Joint closure comparison remains NOT RUN.
+
 **AC-M01 focused proof (2026-11-27, PASS):** `module-graph.mjs` loads manifests before listing source and keeps a file only when it sits under a loaded package `src/` tree. A temp Git fixture showed an undeclared grouped import of `@offscreen/fixture` from `packages/platform/nested/src/index.ts`, then a declared resolved edge, a README-only directory excluded, and a duplicate package name refused through the existing manifest-unreadable route. `node --test scripts/repo-tools/module-graph.test.mjs` passed, including the existing injected graph cases.
 
 **Affected-check grouped manifests (2026-11-27, PASS):** `isWorkspacePackageManifest` recognizes `packages/(domain|ai|commerce|platform|foundation)/<leaf>/package.json` as well as flat `apps`, `packages`, and `tools` leaves. Grouped deletion and both sides of a rename select full scope. An ordinary grouped source path stays affected. `packages/not-a-family/leaf/package.json` is not a recognized manifest. `node --test scripts/repo-tools/affected-check.test.mjs` passed.

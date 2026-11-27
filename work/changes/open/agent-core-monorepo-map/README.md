@@ -22,7 +22,7 @@ All eight are current E1 scope, not backlog. Source dependencies below are actua
 | [AC05](../../archive/2026-11/other/2026-11-27--ac05-capability-registry-dispatch/CHANGE.md) | Explicit capability registry and guarded tool wrappers | AC03, AC04 | 2 | Done on design branch; source gate passed; AC08 joint proof not passed |
 | [AC06](../../archive/2026-11/other/2026-11-27--ac06-native-loop-runtime/CHANGE.md) | Native Vercel loop and Workflow-safe execution composition | AC03, AC04, AC05 | 2 | Done on design branch; source gate passed; AC08 joint proof not passed |
 | [AC07](../../archive/2026-11/other/2026-11-27--ac07-synthetic-fixtures/CHANGE.md) | Stateless synthetic model, definition and tool fixtures | AC03 | 3 | Done on design branch; focused fixture tests passed; AC08 joint proof not passed |
-| [AC08](2026-11-27--ac08-integration-qualification/CHANGE.md) | Maintained runtime qualification and E1 joint acceptance | AC01, AC02, AC03, AC04, AC05, AC06, AC07 | 5 | READY; commissioned (dependency-gated) |
+| [AC08](../../../archive/2026-11/other/2026-11-27--ac08-integration-qualification/CHANGE.md) | Maintained runtime qualification and E1 joint acceptance | AC01, AC02, AC03, AC04, AC05, AC06, AC07 | 5 | Source gate passed; live joint acceptance NOT RUN |
 
 ## Readiness disposition
 
