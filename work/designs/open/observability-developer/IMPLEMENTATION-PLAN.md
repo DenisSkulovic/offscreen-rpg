@@ -1,6 +1,6 @@
 # Implementation recovery roadmap
 
-**Status:** All eleven current-sprint packets are owner-released for reversible offline candidate implementation. They are not independently READY or certified. Implementation branch `implementation/observability-developer`. OBS-D01, OBS-D02 and OBS-D03 are already merged there. Each remaining Change's coordinator owns that Change's serialized source join back into the same branch. No global queue change. [Acceptance boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
+**Status:** All eleven current-sprint packets are owner-released for reversible offline candidate implementation. They are not independently READY or certified. Implementation branch `implementation/observability-developer`. OBS-D01, OBS-D02, OBS-D03 and OBS-D04 are already merged there. Each remaining Change's coordinator owns that Change's serialized source join back into the same branch. No global queue change. [Acceptance boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 ## Finish line and method
 
@@ -25,7 +25,7 @@ Identifiers retained. D01–D11 are open and owner-released for offline source i
 | [D01 native artifact normalization](../../../changes/open/2026-11-27--obs-d01-native-artifacts/CHANGE.md) | T01 | Current render/install/check callers, values/locks paths, no behavior delta | V01, A1 render parity; A2 path/routing regression |
 | [D02 frozen target binding](../../../changes/open/2026-11-27--obs-d02-target-identity/CHANGE.md) | T03 | identity, common target guard and bound observation/mutation call sites; coordinate shared files with D03/D04 | V05 identity, A4 identity; affected A2/A12 |
 | [D03 bounded custody/process ownership](../../../changes/open/2026-11-27--obs-d03-operation-custody/CHANGE.md) | T04 | Stable lock inode, pending intent and cancellation; D02 interface, shared process owners | V05 custody, A4 custody; affected A12 |
-| [D04 dev topology and classification](../../../changes/open/2026-11-27--obs-d04-collector-topology/CHANGE.md) | T02, T05.1–4 | D01–03; atomic supported-state classification and installer/receipt/caller migration; no early dev activation | V02–04, V11; A1–3, A5, A11 source, A12 |
+| [D04 dev topology and classification](../../../changes/archive/2026-11/observability/2026-11-27--obs-d04-collector-topology/CHANGE.md) | T02, T05.1–4 | D01–03; atomic supported-state classification and installer/receipt/caller migration; no early dev activation | V02–04, V11; A1–3, A5, A11 source, A12 |
 | [D05 foreground connection](../../../changes/open/2026-11-27--obs-d05-foreground-connection/CHANGE.md) | T06 | D02–04; shared custody, frozen binding, loopback forwarding | V07, affected V05 |
 | [D06 known-predecessor upgrade](../../../changes/open/2026-11-27--obs-d06-collector-upgrade/CHANGE.md) | T07 | D02–04; preservation projection, exact upgrade and refusal | V06, V11, A5 install-only regression |
 | [D07 synthetic proof ownership](../../../changes/open/2026-11-27--obs-d07-synthetic-proof/CHANGE.md) | T08, synthetic T09 | D02–04; proof host and UID ledger; separate synthetic correctness from developer metrics | V09, A7, affected A12 |
@@ -37,7 +37,7 @@ Identifiers retained. D01–D11 are open and owner-released for offline source i
 
 ## Source-join schedule
 
-Re-inspected after main `7e5f3b83` and the OBS-D03 source join. The recorded branch is `implementation/observability-developer`. OBS-D01, OBS-D02 and OBS-D03 are already merged there. The old `integration/observability-developer` ref is absent locally; do not recreate it. Where the table above and this schedule disagree, this schedule is the execution order.
+Re-inspected after main `7e5f3b83` and the OBS-D03 source join. The recorded branch is `implementation/observability-developer`. OBS-D01, OBS-D02, OBS-D03 and OBS-D04 are already merged there. The old `integration/observability-developer` ref is absent locally; do not recreate it. Where the table above and this schedule disagree, this schedule is the execution order.
 
 - D01 has no source predecessor.
 - D02 waits for D01's normalized descriptor and values paths. Both write `artifacts.mjs` and `install.mjs`.
@@ -90,4 +90,4 @@ Known canonical/catalog/predecessor links repaired. Remote search returned zero 
 
 **Independent disposition:** [Pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/114cc39cf4e1477ac34e24d4a26684ad9f91b8c3/work/designs/open/observability-developer/committee/pass-03.md) DEFENDED D01-only staged integration, REVISE AND RE-DEFEND broader staging (OD-05 activation/functional proof dependency; OD-06 legacy public mutation and cleanup paths; OD-07 cross-worktree lock/fence compatibility or owner-controlled exclusion). Existing joint rule remains selected except after owner accepts a defended slice. Drafting successors does not ratify these unresolved boundaries. D04/D06 activation must use safe coordinated candidate proof, not rely on unsafe already-merged changed default; settle exact entrypoint and cross-revision mechanism before affected commission.
 
-**Immediate next action:** OBS-D01, OBS-D02 and OBS-D03 are already on `implementation/observability-developer`. An owner instruction such as "Do OBS-D04" runs that Change's routine lifecycle on that branch when D01–D03 edges hold. Other successors start when their own edges above hold, without another commission. Joint A1–A12/V01–V12 acceptance still precedes any main merge or Done. No constituent Change joins main.
+**Immediate next action:** OBS-D01–D04 are already on `implementation/observability-developer` (D04 archived after its Change-level source gate). Remaining successors start when their own edges above hold, without another commission. Joint A1–A12/V01–V12 acceptance still precedes any main merge or Done. No constituent Change joins main.

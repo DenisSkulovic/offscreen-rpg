@@ -6,7 +6,7 @@ The workstation Python observer in `infra/monitoring/` is separate. [Workstation
 
 ## What the selected native platform is
 
-Five independently versioned Helm releases (`obs-prometheus`, `obs-loki`, `obs-tempo`, `obs-collector`, `obs-grafana`) under `offscreen-dev-observability` or `offscreen-observability`. Vendored chart archives and frozen image digests live in `infra/platform/observability/`. Platform ensure/status uses the ordinary infra CLI; synthetic bounded proof uses an isolated query harness under `infra/verification/smoke/observability/`.
+Five independently versioned Helm releases (`obs-prometheus`, `obs-loki`, `obs-tempo`, `obs-collector`, `obs-grafana`) under `offscreen-dev-observability` or `offscreen-observability`. Vendored chart archives and frozen image digests live in `infra/platform/observability/`. Dev desired Collector merges `values/collector.yaml` then `values/profiles/dev/collector.yaml`; exact occupied predecessor refuses ensure with `upgrade-required` (upgrade is a separate command). Platform ensure/status uses the ordinary infra CLI; synthetic bounded proof uses an isolated query harness under `infra/verification/smoke/observability/`. Offline source for that classifier exists on the observability implementation branch; live acceptance remains NOT RUN.
 
 ## Plan, ensure, and read-only status
 

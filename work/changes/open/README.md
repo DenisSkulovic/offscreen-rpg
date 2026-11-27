@@ -2,14 +2,14 @@
 
 ## Developer observability | current sprint (2026-11-27)
 
-All eleven Changes are owner-released for isolated offline source implementation. Implementation branch `implementation/observability-developer` already holds OBS-D01, OBS-D02 and OBS-D03. OBS-D04 through OBS-D11 branch from that branch and merge back into it on the [source-join schedule](../../designs/open/observability-developer/IMPLEMENTATION-PLAN.md#source-join-schedule), not a total order. Independent readiness and changed-authority review remain outstanding. No real cluster or paid operations, constituent main merge, or live certification. A constituent packet is archived when its own gate passes; the Design stays open until joint certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
+Implementation branch `implementation/observability-developer` already holds OBS-D01, OBS-D02, OBS-D03 and OBS-D04 (D04 archived after its source gate). Remaining OBS-D05 through OBS-D11 branch from that branch and merge back into it on the [source-join schedule](../../designs/open/observability-developer/IMPLEMENTATION-PLAN.md#source-join-schedule), not a total order. Independent readiness and changed-authority review remain outstanding. No real cluster or paid operations, constituent main merge, or live certification. A constituent packet is archived when its own gate passes; the Design stays open until joint certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 | Change | Current readiness |
 | --- | --- |
 | [OBS-D01 native artifact normalization](2026-11-27--obs-d01-native-artifacts/CHANGE.md) | OWNER-RELEASED — offline source only (no source predecessor; local census and baseline) |
 | [OBS-D02 target identity](2026-11-27--obs-d02-target-identity/CHANGE.md) | OWNER-RELEASED — offline source only (after D01) |
 | [OBS-D03 operation custody](2026-11-27--obs-d03-operation-custody/CHANGE.md) | OWNER-RELEASED — offline source only (after D02) |
-| [OBS-D04 collector topology](2026-11-27--obs-d04-collector-topology/CHANGE.md) | OWNER-RELEASED — offline source only (after D01, D02 and D03) |
+| [OBS-D04 collector topology](../archive/2026-11/observability/2026-11-27--obs-d04-collector-topology/CHANGE.md) | Done source on implementation branch; joint A/V ACCEPTANCE PENDING |
 | [OBS-D05 foreground connection](2026-11-27--obs-d05-foreground-connection/CHANGE.md) | OWNER-RELEASED — offline source only (after D03 and D04; not beside D06) |
 | [OBS-D06 collector upgrade](2026-11-27--obs-d06-collector-upgrade/CHANGE.md) | OWNER-RELEASED — offline source only (after D03 and D04; not beside D05 or D10) |
 | [OBS-D07 synthetic proof](2026-11-27--obs-d07-synthetic-proof/CHANGE.md) | OWNER-RELEASED — offline source only (after D04; may proceed beside D05 or D06) |
