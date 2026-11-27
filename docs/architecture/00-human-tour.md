@@ -22,7 +22,7 @@ flowchart TB
   A --> W
 ```
 
-This is a **composite** picture of the important journeys, not a claim that opening the home page launches all these services. Some paths run inside the API in **embedded mode**; in **distributed mode**, the API's `StorySeam` calls Game Authority over private HTTP. The outbox does not execute a story itself. Temporal orchestrates tasks, but game truth is only real after authoritative state is committed. A Storyteller result is a *proposal*, not permission to alter game state. Read [system owners](01-system-and-ownership.md) and [one turn](02-one-turn.md) for deeper treatment.
+This is a **composite** picture of the important journeys, not a claim that opening the home page launches all these services. Some paths run inside the API in **embedded mode**; in **distributed mode**, the API's `StorySeam` calls Game Authority over private HTTP. The outbox does not execute a story itself. Temporal orchestrates tasks, but game truth is only real after authoritative state is committed. A Storyteller result is a *proposal*, not permission to alter game state, and neither this diagram nor the source it summarizes proves a live turn. Read [system owners](01-system-and-ownership.md) and [one turn](02-one-turn.md) for deeper treatment.
 
 ## Two meanings of “where it lives”
 
@@ -42,7 +42,7 @@ This is a **composite** picture of the important journeys, not a claim that open
 | `packages/game` | Game-specific mechanics/rules components | Not automatically a separate process |
 | `infra/kubernetes/lab` | Historical name for disposable local cluster/runtime work | **Not** a fifth product service; the term's boundaries need SEM01 audit |
 
-**Naming caution:** historical packet codes in test harnesses and compatibility references are *not* architectural vocabulary. `packages/application` no longer appears as a current top-level package; older guides referencing it are stale. `packages/story-engine` is the current owner for many modules formerly referenced through application. Confirm actual imports before following an old link.
+**Naming caution:** historical packet codes in test harnesses and compatibility references are *not* architectural vocabulary. `packages/application` does not exist in the source tree; a guide or evidence note that cites it records a historical path. `packages/story-engine` is the current owner for many modules formerly reached through it. Confirm actual imports before following an old link, and use the [package map](../../packages/README.md) for the present tree.
 
 ## Choose a journey, not a package
 
@@ -62,7 +62,7 @@ flowchart LR
   L --> R["3. A real player completes it<br/>LIVE PROOF"]
 ```
 
-**Do not skip a box.** The provider-free distributed turn has code and focused local tests, including source-only HTTP/fixture/SQL helpers. The repository's tracked acceptance status does **not** establish one complete cold Kind scene-2 and independent fork, nor an authorized real-LLM continuation. [STATUS](../../STATUS.md) owns evidence; [TURN03 roadmap](../../work/IMPLEMENTATION-ROADMAP.md) owns current execution milestones.
+**Do not skip a box.** A selected design, or a documentation Change that records one, sits before the first box: it is not code at all. A source join of a construction Change reaches only the first box. The provider-free distributed turn has code and focused local tests, including source-only HTTP/fixture/SQL helpers. The repository's tracked acceptance status does **not** establish one complete cold Kind scene-2 and independent fork, nor an authorized real-LLM continuation. [STATUS](../../STATUS.md) owns evidence; [implementation roadmap](../../work/IMPLEMENTATION-ROADMAP.md) owns execution milestones; the TURN03 cold-cluster proof was cancelled on 2026-11-27 and none of its gates is a pending claim.
 
 ## Read code without getting buried
 
@@ -77,6 +77,6 @@ Example source trail: [Play screen](../../apps/web/src/features/play/view.tsx) �
 
 ## What these diagrams do *not* settle
 
-This guide intentionally does not decide whether the newer direct prompt launch or the older draft/opening path should be removed; whether the `lab` path is well named; or whether all current modules are justified. Those are genuine design/audit questions, not permission to rename code during a documentation change. [SEM01](../../work/changes/backlog/quality-evaluation/2026-11-23--sem01-semantic-debt-and-codebase-inventory/CHANGE.md) owns the broader source-based architectural/semantic debt inventory.
+This guide is a reading aid: nothing it draws is selected architecture, and it records no decision. It intentionally does not decide whether the newer direct prompt launch or the older draft/opening path should be removed; whether the `lab` path is well named; or whether all current modules are justified. Those are genuine design/audit questions, not permission to rename code during a documentation change. [SEM01](../../work/changes/backlog/quality-evaluation/2026-11-23--sem01-semantic-debt-and-codebase-inventory/CHANGE.md) owns the broader source-based architectural/semantic debt inventory.
 
 **Maintenance rule:** when a source owner changes a route, update its journey page and source anchor in the same accepted Change. Keep permanent selected requirements in `docs/product` and `docs/technical`; these pages are descriptive maps with dated inspection labels. Do not paint a target path as already proved.

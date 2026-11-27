@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { claimImpactFindings, scanDocuments } from './content-health.mjs';
+import { classifyKnowledgeBoundary } from './model.mjs';
 
 const codes = (issues, code) => issues.filter((item) => item.code === code);
 
@@ -68,6 +69,42 @@ The Book UX is selected. Cognee was rejected. This prose is not a claim-impact t
   assert.equal(impact.filter((item) => item.code === 'missing-evidence-route').length, 1);
   assert.equal(impact.filter((item) => item.code === 'rejected-research-promoted').length, 1);
   assert.equal(impact.length, 2);
+  const groupedManifest = classifyKnowledgeBoundary(
+    'packages/platform/leaf/package.json',
+    JSON.stringify({ exports: { '.': './src/index.ts' } }),
+  );
+  assert.equal(groupedManifest?.kind, 'package-exported-contract');
+  const groupedBarrel = classifyKnowledgeBoundary(
+    'packages/ai/leaf/src/index.ts',
+    'export const grouped = 1;\n',
+  );
+  assert.equal(groupedBarrel?.kind, 'package-exported-contract');
+  const groupedCommand = classifyKnowledgeBoundary(
+    'packages/domain/leaf/src/orders.ts',
+    'export const PlaceOrderCommand = z.object({\n  id: z.string(),\n});\n',
+  );
+  assert.equal(groupedCommand?.kind, 'command-authority');
+  assert.equal(
+    classifyKnowledgeBoundary(
+      'packages/not-a-family/leaf/package.json',
+      JSON.stringify({ exports: { '.': './src/index.ts' } }),
+    ),
+    null,
+  );
+  assert.equal(
+    classifyKnowledgeBoundary(
+      'packages/platform/leaf/src/orders.test.ts',
+      'export const PlaceOrderCommand = z.object({});\n',
+    ),
+    null,
+  );
+  assert.equal(
+    classifyKnowledgeBoundary(
+      'packages/identity-persistence/src/auth.ts',
+      'export const users = pgTable("users", {});\n',
+    )?.kind,
+    'persisted-entity',
+  );
   console.log(
     'Content-health self-test passed: proposal page, stale script, fenced snippet, legacy default, dated exception, large section, duplicate, missing path, claim-impact negatives.',
   );

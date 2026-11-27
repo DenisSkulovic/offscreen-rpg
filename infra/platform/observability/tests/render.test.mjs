@@ -11,6 +11,7 @@ import { runPlatformCommand } from '../../common/commands.mjs';
 import {
   helmValuesArgv,
   loadArtifacts,
+  loadObservabilityVariants,
   lintObservability,
   OBSERVABILITY_RELEASE_ORDER,
   renderObservabilityDocuments,
@@ -100,11 +101,20 @@ function assertReleaseDescriptor(release, profileId) {
     );
   }
   assert.deepEqual(release.helmValueArgs, expectedArgs, `${release.role} argv`);
-  assert.equal(release.valuesPaths.length, 1);
-  assert.equal(
-    release.valuesPaths[0],
-    join(valuesRoot, `${release.role}.yaml`),
-  );
+  if (release.role === 'collector' && profileId === 'dev') {
+    assert.equal(release.valuesPaths.length, 2);
+    assert.equal(release.valuesPaths[0], join(valuesRoot, 'collector.yaml'));
+    assert.equal(
+      release.valuesPaths[1],
+      join(valuesRoot, 'profiles', 'dev', 'collector.yaml'),
+    );
+  } else {
+    assert.equal(release.valuesPaths.length, 1);
+    assert.equal(
+      release.valuesPaths[0],
+      join(valuesRoot, `${release.role}.yaml`),
+    );
+  }
   assert.equal(release.valuesPath, undefined);
   const pins = parseYaml(
     readFileSync(join(locksRoot, 'charts.yaml'), 'utf8'),
@@ -712,4 +722,280 @@ test('negative: injected unknown imageLocks role is refused', () => {
     () => loadArtifacts('dev', { run: helmRun, imageLocks }),
     /unknown image lock role/,
   );
+});
+
+const COLLECTOR_OVERLAY_PATH = join(
+  valuesRoot,
+  'profiles',
+  'dev',
+  'collector.yaml',
+);
+const COLLECTOR_MUTABLE_KINDS = new Set(['ConfigMap', 'Deployment', 'Service']);
+
+/**
+ * @param {Record<string, unknown>} doc
+ * @param {string} namespace
+ */
+function documentIdentityKey(doc, namespace) {
+  const meta =
+    /** @type {{ metadata?: { name?: string, namespace?: string } }} */ (doc)
+      .metadata;
+  const docNs = meta?.namespace ?? namespace;
+  return `${doc.apiVersion}/${doc.kind}/${docNs}/${meta?.name}`;
+}
+
+/**
+ * @param {Awaited<ReturnType<typeof loadArtifacts>>} bundle
+ */
+function collectorRelay(bundle) {
+  const release = bundle.releases.find((row) => row.role === 'collector');
+  assert.ok(release);
+  const configMap = release.documents.find(
+    (doc) => doc.kind === 'ConfigMap' && doc.metadata?.name === 'obs-collector',
+  );
+  assert.ok(configMap);
+  const data = /** @type {{ data?: Record<string, string> }} */ (configMap)
+    .data;
+  assert.ok(data?.relay);
+  return parseYaml(data.relay);
+}
+
+/**
+ * @param {Awaited<ReturnType<typeof loadArtifacts>>} bundle
+ */
+function nonCollectorDocuments(bundle) {
+  return bundle.documents.filter(
+    (doc) => !String(doc.metadata?.name ?? '').startsWith('obs-collector'),
+  );
+}
+
+test('loadObservabilityVariants returns predecessor only for dev', () => {
+  const releaseVariants = loadObservabilityVariants('release', {
+    run: helmRun,
+  });
+  assert.ok(releaseVariants.desired);
+  assert.equal(releaseVariants.predecessor, null);
+  const devVariants = loadObservabilityVariants('dev', { run: helmRun });
+  assert.ok(devVariants.desired);
+  assert.ok(devVariants.predecessor);
+});
+
+test('dev desired collector exposes five service ports with dev otlp bindings', () => {
+  const bundle = loadArtifacts('dev', { run: helmRun });
+  const collector = bundle.releases.find((row) => row.role === 'collector');
+  assert.ok(collector);
+  const service = collector.documents.find((doc) => doc.kind === 'Service');
+  assert.ok(service);
+  const ports =
+    /** @type {{ name?: string, port?: number, protocol?: string, appProtocol?: string }[]} */ (
+      service.spec.ports
+    );
+  assert.equal(ports.length, 5);
+  const byName = Object.fromEntries(ports.map((port) => [port.name, port]));
+  assert.equal(byName['dev-otlp'].port, 4327);
+  assert.equal(byName['dev-otlp'].protocol, 'TCP');
+  assert.equal(byName['dev-otlp'].appProtocol, 'grpc');
+  assert.equal(byName['dev-otlp-http'].port, 4328);
+  assert.equal(byName['dev-otlp-http'].protocol, 'TCP');
+  assert.ok(byName.metrics);
+  assert.ok(byName.otlp);
+  assert.ok(byName['otlp-http']);
+});
+
+test('dev desired vs predecessor differs only on collector config workload objects', () => {
+  const { desired, predecessor } = loadObservabilityVariants('dev', {
+    run: helmRun,
+  });
+  assert.ok(predecessor);
+  const namespace = desired.profile.namespaces.observability;
+  const desiredCollector = desired.releases.find(
+    (row) => row.role === 'collector',
+  );
+  const predecessorCollector = predecessor.releases.find(
+    (row) => row.role === 'collector',
+  );
+  assert.ok(desiredCollector && predecessorCollector);
+  const desiredIds = new Set(
+    desiredCollector.documents.map((doc) =>
+      documentIdentityKey(doc, namespace),
+    ),
+  );
+  const predecessorIds = new Set(
+    predecessorCollector.documents.map((doc) =>
+      documentIdentityKey(doc, namespace),
+    ),
+  );
+  assert.deepEqual([...desiredIds].sort(), [...predecessorIds].sort());
+  assert.equal(desiredIds.size, 4);
+  for (const doc of desiredCollector.documents) {
+    const key = documentIdentityKey(doc, namespace);
+    const peer = predecessorCollector.documents.find(
+      (candidate) => documentIdentityKey(candidate, namespace) === key,
+    );
+    assert.ok(peer, key);
+    const kind = /** @type {string} */ (doc.kind);
+    if (kind === 'ServiceAccount') {
+      assert.deepEqual(doc, peer);
+    } else if (COLLECTOR_MUTABLE_KINDS.has(kind)) {
+      assert.notDeepEqual(doc, peer);
+    }
+  }
+  assert.deepEqual(
+    nonCollectorDocuments(desired),
+    nonCollectorDocuments(predecessor),
+  );
+  assert.equal(
+    desiredCollector.expectedImage.renderedReference,
+    predecessorCollector.expectedImage.renderedReference,
+  );
+});
+
+test('collector relay keeps base sections and adds developer lanes only on desired dev', () => {
+  const { desired, predecessor } = loadObservabilityVariants('dev', {
+    run: helmRun,
+  });
+  const desiredRelay = collectorRelay(desired);
+  const predecessorRelay = collectorRelay(predecessor);
+  const releaseBundle = loadArtifacts('release', { run: helmRun });
+  const releaseRelay = collectorRelay(releaseBundle);
+  const baseSections = ['traces', 'metrics', 'logs'];
+  for (const name of baseSections) {
+    assert.deepEqual(
+      desiredRelay.service.pipelines[name],
+      releaseRelay.service.pipelines[name],
+    );
+    assert.deepEqual(
+      predecessorRelay.service.pipelines[name],
+      releaseRelay.service.pipelines[name],
+    );
+  }
+  assert.deepEqual(desiredRelay.receivers.otlp, releaseRelay.receivers.otlp);
+  assert.equal(
+    desiredRelay.receivers['otlp/developer'].protocols.grpc.endpoint,
+    '0.0.0.0:4327',
+  );
+  assert.equal(
+    desiredRelay.receivers['otlp/developer'].protocols.http.endpoint,
+    '0.0.0.0:4328',
+  );
+  for (const signal of ['traces', 'logs', 'metrics']) {
+    const pipeline = desiredRelay.service.pipelines[`${signal}/developer`];
+    assert.deepEqual(pipeline.receivers, ['otlp/developer']);
+    assert.deepEqual(pipeline.processors, [
+      'memory_limiter',
+      'filter/developer',
+      'transform/developer',
+      'batch',
+    ]);
+  }
+  for (const relay of [predecessorRelay, releaseRelay]) {
+    assert.equal(relay.receivers['otlp/developer'], undefined);
+    assert.equal(relay.service.pipelines['traces/developer'], undefined);
+    assert.equal(relay.service.pipelines['logs/developer'], undefined);
+    assert.equal(relay.service.pipelines['metrics/developer'], undefined);
+  }
+});
+
+test('checked-in dev overlay matches immutable generator output', () => {
+  const overlayText = readFileSync(COLLECTOR_OVERLAY_PATH, 'utf8');
+  const overlayDoc = parseYaml(overlayText);
+  assert.equal(overlayDoc.ports['dev-otlp'].containerPort, 4327);
+  assert.equal(overlayDoc.ports['dev-otlp-http'].containerPort, 4328);
+  assert.equal(
+    overlayDoc.alternateConfig.receivers['otlp/developer'].protocols.grpc
+      .endpoint,
+    '0.0.0.0:4327',
+  );
+});
+
+test('release collector parity and dev predecessor base relay match', () => {
+  const devPredecessor = loadArtifacts('dev', {
+    run: helmRun,
+    variant: 'predecessor',
+  });
+  const releaseBundle = loadArtifacts('release', { run: helmRun });
+  const devCollector = devPredecessor.releases.find(
+    (row) => row.role === 'collector',
+  );
+  const relCollector = releaseBundle.releases.find(
+    (row) => row.role === 'collector',
+  );
+  assert.ok(devCollector && relCollector);
+  assert.equal(devCollector.valuesPaths.length, 1);
+  assert.equal(relCollector.valuesPaths.length, 1);
+  assert.deepEqual(devCollector.valuesPaths, relCollector.valuesPaths);
+  assert.deepEqual(
+    devCollector.expectedImage.renderedReference,
+    relCollector.expectedImage.renderedReference,
+  );
+  assert.deepEqual(
+    collectorRelay(devPredecessor),
+    collectorRelay(releaseBundle),
+  );
+});
+
+test('negative: unknown artifact variant is refused', () => {
+  assert.throws(
+    () =>
+      loadArtifacts('dev', {
+        run: helmRun,
+        variant: /** @type {'desired'} */ (/** @type {unknown} */ ('legacy')),
+      }),
+    /unknown artifact variant/,
+  );
+});
+
+test('negative: release predecessor variant is refused before template', () => {
+  let helmCalls = 0;
+  const countingRun = (command, args, options) => {
+    if (command === 'helm') helmCalls += 1;
+    return helmRun(command, args, options);
+  };
+  assert.throws(
+    () =>
+      loadArtifacts('release', {
+        run: countingRun,
+        variant: 'predecessor',
+      }),
+    /release predecessor refused/,
+  );
+  assert.equal(helmCalls, 0);
+});
+
+test('negative: malformed dev overlay refuses before template', () => {
+  const backup = readFileSync(COLLECTOR_OVERLAY_PATH);
+  let helmCalls = 0;
+  const countingRun = (command, args, options) => {
+    if (command === 'helm') helmCalls += 1;
+    return helmRun(command, args, options);
+  };
+  try {
+    writeFileSync(COLLECTOR_OVERLAY_PATH, 'metadata:\n  name: [broken\n');
+    assert.throws(
+      () => loadArtifacts('dev', { run: countingRun }),
+      /artifact-invalid/,
+    );
+    assert.equal(helmCalls, 0);
+  } finally {
+    writeFileSync(COLLECTOR_OVERLAY_PATH, backup);
+  }
+});
+
+test('negative: missing dev overlay refuses before template', () => {
+  const backup = readFileSync(COLLECTOR_OVERLAY_PATH);
+  let helmCalls = 0;
+  const countingRun = (command, args, options) => {
+    if (command === 'helm') helmCalls += 1;
+    return helmRun(command, args, options);
+  };
+  try {
+    rmSync(COLLECTOR_OVERLAY_PATH);
+    assert.throws(
+      () => loadArtifacts('dev', { run: countingRun }),
+      /artifact-invalid/,
+    );
+    assert.equal(helmCalls, 0);
+  } finally {
+    writeFileSync(COLLECTOR_OVERLAY_PATH, backup);
+  }
 });

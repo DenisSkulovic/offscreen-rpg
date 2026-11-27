@@ -1,10 +1,12 @@
 # Living Book POC | Client implementation target and source boundaries
 
-**State:** SELECTED **POC technical target** (2026-11-17), **not implemented by this document**. Final visual design, adaptive rich-text publication, source-level page pagination and page-curl driver remain separate design work. **Product authority:** [Living Book POC](../../product/experience/living-book-poc.md). **Core client authority retained:** [architecture](architecture.md), [state/server boundary](state-and-server-boundary.md), [interaction](interaction-contracts.md), [accessibility/performance](accessibility-and-performance.md), and [presentation V1](presentation-runtime.md).
+**Authority:** SELECTED **POC technical target** (2026-11-17): the bounded reader shell, geometry promise, Now/Journal navigation, data and command invariants and test bar below. This document does not implement anything. **Dated realization:** the source baseline and the landed BOOK01/BOOK02 shell are source-observed records, not acceptance (see [Source-based starting point](#source-based-starting-point-verified-github-main-7c2fd93a08b718e956a66cdf963ed6ad238a4723) and the [reconciliation note](#two-bounded-implementation-outcomes-not-one-giant-frontend-rewrite)). Final visual design, adaptive rich-text publication, source-level page pagination and page-curl driver remain separate design work. **Product authority:** [Living Book POC](../../product/experience/living-book-poc.md). **Core client authority retained:** [architecture](architecture.md), [state/server boundary](state-and-server-boundary.md), [interaction](interaction-contracts.md), [accessibility/performance](accessibility-and-performance.md), and [presentation V1](presentation-runtime.md).
 
 **Owns:** the bounded Next/React reader shell, view/navigation states, source-to-visual-leaf safety and integration policy for the *first* POC only. It does not authorize changing engine mechanics, Storyteller generation, history read APIs, transport, saved passage schema or developer tooling.
 
 ## Source-based starting point (verified GitHub main `7c2fd93a08b718e956a66cdf963ed6ad238a4723`)
+
+**Dated source baseline (inspected before BOOK01/BOOK02), not a contract.** The bullets describe the code at that revision. The BOOK01 paragraph after them records the shell that later landed. Neither is human acceptance. Re-verify HEAD before relying on any file path.
 
 - `apps/web/src/features/play/view.tsx`: `PlayScene` holds TanStack Query snapshot, reconciles SSE/GET, renders `StoryFrame` with current V1 title/paragraphs, legitimate legacy options and campaign `CampaignPlay`, waiting/recovery and settings. Its `journalHref='#story-journal'` currently targets history inside the `details` prop.
 - `apps/web/src/features/play/ui/story-frame.tsx` + `story-frame.css`: present UX01/UX02 stage and top chrome, appearance resolver consumer, narrative, option region and secondary Details. **Presentation-only, not owner of Query or commands**.
@@ -14,7 +16,7 @@
 - `packages/story-interface/src/stories.ts`: V1 passage content `{version:1,title,paragraphs}` (1–10, each 1–6000 chars); history record `{id,sequence,content}` capped at 20/page; current snapshot optional validated `appearance`. No rich block AST, historic choice or original artistic look in history.
 - `apps/web/src/shared/api/story-history-query.ts`: `storyHistoryInfiniteOptions` owns the existing reader source; do not create another cache or guess random history seek.
 
-**Reinspection gate:** Cursor must fetch the latest HEAD/source/dirty state before the first code edit; it may differ from this dated source basis.
+**Reinspection gate:** an implementer must fetch the latest HEAD/source/dirty state before the first code edit; it may differ from this dated source basis.
 
 **BOOK01 shell, source after the selected Change:** `StoryFrame` no longer renders `story-frame__chrome`. The player-facing surface is `.story-frame__book`: a stable paper leaf on the existing dark stage, with an in-book contents nav (`← Stories`, `Now`, `Journal`). `#story-frame-now` and `#story-journal` are hash leaves. Journal is `StoryHistoryView`, not a collapsed Details section. Settings and technical details stay in that quiet disclosure. One flowing leaf is the POC geometry; there is no page-curl and no word-level paginator. Appearance may still tint the viewport atmosphere. The book page keeps its own ink. This paragraph records the landed shell. It does not accept final art direction.
 
@@ -46,11 +48,11 @@ Keep one current validated Query snapshot, one command owner and one history inf
 
 ## Now ↔ Journal navigation (POC)
 
-The current `#story-journal` sitting **inside collapsed Details** is not adequate as the primary Journal destination. Move Journal visibility into an in-book, keyboard-operable *primary* view, while keeping technical/administrative details in a quiet secondary disclosure. The contents affordance must make Now and Journal discoverable; it must not be a giant developer control bar.
+**Selected requirement:** Journal is an in-book, keyboard-operable *primary* view, never a section inside a collapsed Details accordion. Technical and administrative details stay in a quiet secondary disclosure. (At the dated source baseline Journal sat inside collapsed Details, which is why this requirement exists; the BOOK01 paragraph records the landed shell.) The contents affordance must make Now and Journal discoverable; it must not be a giant developer control bar.
 
 **Chosen POC identity:** story remains `/play/:id`; Now/Journal may be represented with native fragments `#story-frame-now` and `#story-journal`, with client view-state synchronized to fragment changes and Back/Forward. The implementation must correctly handle initial direct load, menu dismissal, focus, and history navigation. Do not introduce new Nest APIs or a second authenticated route simply to draw a book. A later real passage deep link is **not** falsely promised by this mechanism.
 
-The initial POC may render a straightforward source list before the more focused original reader in the second Change, but Journal is never locked behind a generic Details accordion. In Journal, past source choices are inert. An explicit "Return to Now" should re-read the latest authorized snapshot in the existing Query flow when necessary; the old historic cursor cannot become gameplay state.
+The initial POC may render a straightforward source list before the more focused original reader of BOOK02. In Journal, past source choices are inert. An explicit "Return to Now" should re-read the latest authorized snapshot in the existing Query flow when necessary; the old historic cursor cannot become gameplay state.
 
 **Accessibility caveat:** if hash-state complexity makes initial SSR/keyboard behavior unreliable, a small semantically equivalent in-book mode navigation with a *tested* URL state may be chosen, but it must not invent a new backend command or depend on stored physical page numbers. Record the deviation in the implementation Change review before proceeding.
 
@@ -64,7 +66,21 @@ The initial POC may render a straightforward source list before the more focused
 - A validated current appearance document is optional; corrupt/missing direction falls back to safe neutral book. Late image, pending narration and failed provider cannot block or rewrite original text.
 - Historical items come from `storyHistoryInfiniteOptions` only, with real nextBefore and 20-item page limit. No synthetic seek/search, fabricated summarization, other user's private history, historical choice reroll or "since you left" invented claim.
 
+### Selected checkpoint constraints for a later historical scene (selected future client constraint; not realized proof)
+
+Mirrored with provenance from [product return and journal, Scene checkpoints, review and forks](../../product/experience/return-and-journal.md#scene-checkpoints-review-and-forks--long-term-target). The product page keeps the player-facing guarantees: reading a historical scene is side-effect free, reading and forking are separate actions, the Journal stays source-faithful passage reading, a fork may not reroll the old scene or repeat provider charges, scenes without a checkpoint cannot be forked, and replay of dice, provider spend and live-time change from the Journal stay forbidden. Technical engine authority for checkpoint scene boundaries stays with the lifecycle and persistence contracts, not this page.
+
+For this client the product facts reduce to three constraints on a reader that opens a saved scene:
+
+1. **Disjoint query key.** A saved scene's checkpoint loads on its own key, never on the live snapshot key.
+2. **No live snapshot reuse.** The checkpoint read model is not written into, merged with or substituted for the live story snapshot, and a historical reader never becomes gameplay state.
+3. **No historic offer commandability.** An offer seen in a historical scene is inert. The historical component never accepts a live command callback, consistent with the rule above.
+
+**Evidence tier:** the selected key rule is stated in the [required query keys](architecture.md#required-query-keys-and-cache-policies) table (`['story',storyId,'scene',sequence]`). Source at this reading contains `apps/web/src/shared/api/story-historical-query.ts`, which reads `/api/stories/:id/scenes/:sequence` on a key disjoint from the live snapshot and states "Historic offers are not commands". Whether any reader consumes it, and whether the checkpoint content suffices for a fork, were not verified here. This is not proof of the player experience or of fork behavior.
+
 ## Two bounded implementation outcomes, not one giant frontend rewrite
+
+**Historical planned boundaries, now landed for their initial POC outcomes.** BOOK01 and BOOK02 are the two bounded outcomes this target was split into. They are recorded here as provenance and are not a current dispatch. The reconciliation note at the end of this page and [STATUS](../../../STATUS.md) hold what landed.
 
 ### BOOK01: Book shell and current Now composition
 
@@ -74,7 +90,9 @@ Replace existing `StoryFrame` top-chrome/status-dominant layout with a recogniza
 
 `StoryHistoryView` is that reader: compact overview rows, one exact saved passage, and previous/next only inside the loaded authorized set. Load older uses the existing numeric `before` cursor. There is no new history API, arbitrary jump, search, or derived summary. See implemented and archived [BOOK02 Change](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--book02-original-journal-reader/CHANGE.md).
 
-Both are **independent code-review outcomes**, sequenced BOOK01 → BOOK02. What has landed, and that the queue currently has no selected Change, is recorded in [STATUS](../../../STATUS.md) and the [change queue](../../../work/changes/README.md). This page does not select a Change.
+Both are **independent code-review outcomes**, sequenced BOOK01 → BOOK02. This page does not select a Change.
+
+**Implementation reconciliation, 2026-11-18 (dated realization):** [BOOK01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--book01-reader-shell-poc/CHANGE.md) and [BOOK02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--book02-original-journal-reader/CHANGE.md) are archived Done for their source-confirmed initial POC outcomes and previously recorded web test receipts. The remaining human browser and visual acceptance criteria in this document are *not* certified by that archive. The historical DIR/cleanup dispatch is retired; its outcomes and limits are retained in [Backlog convergence research](../../../research/agent-practice/BACKLOG-CONVERGENCE-2026-11-18.md). What currently lands, and that the queue has no selected Change, is in [STATUS](../../../STATUS.md) and the [change queue](../../../work/changes/README.md).
 
 ## POC test and human acceptance bar
 
@@ -92,6 +110,3 @@ Both are **independent code-review outcomes**, sequenced BOOK01 → BOOK02. What
 No final design system, font files, third-party flipbook, physics page turning, browser-canvas generated imagery, semantic narrative score V2, archive random seek, bookmarks synced across devices, user Replay/forks, modifications to engine/provider schemas, or aesthetic approval of developer prototypes.
 
 This POC is a **reversible presentation evolution**. If book geometry ever competes with the integrity of text and interaction, keep the story usable as continuous reading and postpone page physics.
-
-
-**Implementation reconciliation, 2026-11-18:** [BOOK01](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--book01-reader-shell-poc/CHANGE.md) and [BOOK02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/experience/2026-11-17--book02-original-journal-reader/CHANGE.md) are archived Done for their source-confirmed initial POC outcomes and previously recorded web test receipts. The remaining human browser/visual acceptance criteria in this document are *not* automatically certified by that archive. The historical DIR/cleanup dispatch is retired; its outcomes and limits are retained in [Backlog convergence research](../../../research/agent-practice/BACKLOG-CONVERGENCE-2026-11-18.md).

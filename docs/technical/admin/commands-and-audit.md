@@ -1,6 +1,6 @@
 # Governed Admin actions, approvals, durable receipts and audit
 
-**Status:** Selected technical target, 2026-11-14. Product owners: [Intervention workflows](../../product/admin/operator-workflows.md), [Authority](../../product/admin/authority-and-governance.md), [Governance](../../product/admin/authority-and-governance.md), [Adversarial review](../../product/admin/README.md). Initial read-only delivery requires **audit and safe action contracts**, not immediate implementation of money-moving or world-editing actions.
+**Status:** Selected technical target, 2026-11-14. Product owners: [Intervention workflows](../../product/admin/operator-workflows.md), [Authority](../../product/admin/authority-and-governance.md), [Governance](../../product/admin/authority-and-governance.md), [Adversarial review](../../product/admin/README.md). This page owns the selected contract for governed actions, approvals, receipts and audit. Initial read-only delivery requires **audit and safe action contracts**, not immediate implementation of money-moving or world-editing actions. Current realization is limited to case create/assign/status with append-only audit events ([section 7](#7-first-wave-enabled-operations)); the envelope, approval, `admin_action*` families, outbox and every money-moving or world-editing category below are target, with no live action implementation run or evidenced.
 
 ## 1. Operational intent is not a raw CRUD mutation
 
@@ -15,7 +15,7 @@ An administrative action is a typed business operation:
 
 **Do not implement generic `PATCH /admin/tables/:name/:id`, "edit arbitrary JSON", "execute SQL", or `ownerId` impersonation.** Each effect must pass the owning game's/commercial system's domain validators and concurrency fences.
 
-Command, write, and audit semantics stay on this page. Describing this envelope does not issue a production write grant or a production staff role. Cross-tenant access is not selected. The [authorization claim map](topology-and-authorization.md#authorization-claim-map) records that withholding.
+Describing this envelope issues no production write grant or staff role; the [authorization claim map](topology-and-authorization.md#authorization-claim-map) records that withholding.
 
 ## 2. Bounded envelope and identities
 
@@ -112,7 +112,9 @@ Do not define `case.status = resolved` as a substitute for these states.
 
 The foundational Admin delivery should enable **only** safe session/staff bootstrap and scoped read-oriented workflows after proof, with audit. Case creation/assignment may follow after the governing assignment rule is proven.
 
-For later write categories, each gets its own specialized technical contract and packet:
+**Current realization (source-verified, 2026-11-27).** `packages/admin/src/case-writes.ts` and `apps/api/src/modules/admin/controllers/admin-cases.ts` realize only: `POST admin/cases` (`case.create`; a player link additionally needs `player.summary.read`), `POST admin/cases/:caseId/assign` (`case.assign`) and `POST admin/cases/:caseId/status` (`case.create` on the case). Case creation takes a caller-supplied idempotency key and a replay returns the original case; each operation appends `admin.case.created`, `admin.case.assigned` or `admin.case.status` to `admin_audit_event`, which `GET admin/audit` exposes only through a closed allowlist. These calls exist as scoped case anchors from the Admin wave, not as the command envelope: there is no `AdminActionIntentV1`, canonical request digest, approval, `admin_action` or `admin_outbox` persistence, and the audit append is a separate statement after the case write rather than a proven single transaction, so the section 4 guarantee is not demonstrated for these paths. The bootstrap/session audit kinds are `admin.session.*` and `admin.bootstrap.*`. See [investigation and privacy, Current realization](investigation-and-privacy.md#current-realization-source-verified-2026-11-27) and the status mirror in [topology and authorization](topology-and-authorization.md#authorization-claim-map): no production support-investigator grant, no refund, export, impersonation or raw-prompt action exists.
+
+The six later write categories are conditional: each depends on the named prerequisite and is neither selected for implementation nor granted by this list. Each gets its own specialized technical contract and packet:
 1. Bounded service compensation / entitlement adjustments (depends on commercial funding policy).
 2. Platform new-sponsored-dispatch emergency stop (depends on real dispatcher enforcement, accepted/in-flight policy and verification).
 3. Restricted customer/session assistance (depends on consent, attribution and precise allowed actions).
@@ -127,12 +129,13 @@ No one generic action engine should launch those six unreviewed domains as a bat
 - Same `clientRequestId` with two bodies → conflict; same body after lost ACK → same original action.
 - Approved refund changes target or amount → approval invalid before dispatch.
 - Staff role revoked after preflight → no action despite previously green UI.
-- Case self-assignment used to manufacture a grant scope → denied.
+- Case self-assignment used to manufacture a grant scope → denied (assignment is a governed event; it confers no resource scope, section 6).
 - One user clicks a repair while same campaign advances → check current committed state, hold/refuse stale repair.
-- Provider status unknown → action stays unknown; no second charge or falsely "completed" badge.
+- Provider status unknown → action stays unknown; no second charge or falsely "completed" badge. A lost acknowledgment or retry never executes a second refund or grant; it returns the original action (section 2) or reconciles (section 4).
+- A denied request or an audit-persistence failure on a sensitive read or write returns no sensitive result: attribution precedes release (section 5) and the write fails closed (section 4).
 - An approved emergency stop is invoked → does not allow raw story export or permanent privilege elevation.
 - Writer attempts a sensitive action while audit persistence is unavailable → no unaccounted successful effect.
 - An audit reviewer sees the record of a private-story read, but still cannot read the story without its own capability.
 - Compensation for a failed model task is recorded separately from the actual provider attempt and immutable mechanical receipt.
 
-No live action implementation has been run or evidenced by this design.
+This list is the selected acceptance target for the action framework. None of it has been run or evidenced against a live action implementation; the only realized action paths are the case operations in section 7.

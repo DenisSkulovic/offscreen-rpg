@@ -12,7 +12,7 @@ Historical research, not product authority. Two November 18 audits led to comple
 
 - [46-claim register](CLAIM-REGISTER-2026-11-18.md), dated unratified treatments.
 - [Economics study](ECONOMICS-2026-11-18.md), historical data and experiment methodology.
-- [Agent Core](../../work/designs/open/agent-core-monorepo-map/README.md), [domain coverage research](DOMAIN-COVERAGE-2026-11-18.md), successor investigations only; [Playability experiments](PLAYABILITY-EXPERIMENTS-2026-11-18.md) preserves the retired REAL programme's unique probes and evaluation methodology.
+- [Agent Core](../../work/designs/archive/agent-core-monorepo-map/README.md), [domain coverage research](DOMAIN-COVERAGE-2026-11-18.md), successor investigations only; [Playability experiments](PLAYABILITY-EXPERIMENTS-2026-11-18.md) preserves the retired REAL programme's unique probes and evaluation methodology.
 
 ## Immutable original materials
 

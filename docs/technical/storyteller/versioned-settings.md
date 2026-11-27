@@ -1,10 +1,12 @@
 # Versioned story settings and clock policy
 
-**Target contract:** every published scene can identify the effective creative guidance, writing-skill revisions and typed mechanics/clock policy that governed it. Creative guidance follows historical/fork semantics; runtime authorization and spend permissions are freshly checked and are never inherited merely because a document says so.
+**Selected contract (binding).** Every published scene can identify the effective creative guidance, writing-skill revisions and typed mechanics/clock policy that governed it. Creative guidance follows historical/fork semantics; runtime authorization and spend permissions are freshly checked and are never inherited merely because a document says so. A settings save writes a new revision for work prepared after it; it never changes a task, offer, plan or arrival that already captured an earlier revision, and it grants no permission, money or provider call.
+
+**What is realized today.** [Current adapters](#current-adapters) records the shipped routes, the editor boundary and the known gaps. Canon-invention ceilings, story overrides and the tag/world editor are selected design, not active behavior. Read the selected headings below as policy and persisted-format compatibility, and Current adapters as the dated realization record.
 
 Design and current implementation boundary for [editable presets](../../product/storyteller/profiles-and-settings.md). Existing story/task profile snapshots remain provenance; explicit settings commands add subsequent revisions. Preserve that initial snapshot as provenance while adding explicit subsequent revisions; do not mutate old generation artifacts.
 
-**Route:** [what a later edit may change](#captured-revision-and-a-later-edit). Effective spending stays in [Distinct authorities](../platform/spending-and-entitlements.md#distinct-authorities).
+**Route:** [what a later edit may change](#captured-revision-and-a-later-edit) · [revision command and authorities](#data-and-commands) · [canon invention policy (selected, not active)](#canon-invention-policy) · [clock and speed](#clock-and-speed) · [current adapters and editor limits](#current-adapters). Effective spending stays in [Distinct authorities](../platform/spending-and-entitlements.md#distinct-authorities).
 
 ## Captured revision and a later edit
 
@@ -18,7 +20,7 @@ Admission copies the settings revision the task may use. A later save writes a n
 
 [Changes during play](../../product/storyteller/profiles-and-settings.md#changes-during-play) owns the player meaning. [Data and commands](#data-and-commands) owns the revision command. [Current adapters](#current-adapters) says canon-invention ceilings and the tag editor are not active, so [Canon invention policy](#canon-invention-policy) stays selected design. Pace stays in [Pace](../../product/gameplay/time-and-autonomy.md#pace). A settings save does not reserve money or open a provider call.
 
-Negative: a changed creative profile does not override the permissions captured for an existing attempt.
+Negative: a changed creative profile does not override the permissions captured for an existing attempt, and a settings save never rewrites the plan an admitted task captured.
 
 ## Data and commands
 
@@ -33,6 +35,8 @@ Versioned settings are split by authority instead of collapsed into one JSON pro
 Prepared-experience customization produces a captured effective configuration. A fork retains the historical creative/rule pins needed to understand the selected scene while obtaining fresh account/security/spend authorization for new work.
 
 ## Canon invention policy
+
+**Status: selected design, not implemented** (see [Current adapters](#current-adapters)). Absence of a stored permission is not a grant: where no matrix is captured, no domain is treated as `broad-invention`, and the missing control is a known evaluation blocker, not a default.
 
 Store a typed five-domain matrix on the story settings revision using the ordered permissions `reference-only`, `compatible-additions` and `broad-invention`. The domains are `characters-and-agents`, `places-and-routes`, `groups-and-institutions`, `world-elements` and `history-and-cosmology`. These categories classify descriptive authority only; they do not define a universal entity model or imply that every world contains each kind.
 
@@ -65,3 +69,15 @@ Authenticated routes: `PUT /stories/:id/settings/:operationId`, `GET /stories/:i
 Creative task context captures the full settings revision separately from the compiled profile. Private preset application uses its saved profile snapshot. Catalogue defaults replace creative settings only; typed risk/rules remain the nonlethal subset. The lock currently fixes all creative fields and speed as one explicit choice; per-field lock editing and full Ironman remain later scope. Initial pace is selectable before Start. In-play speed controls reschedule an active mechanical activity and set the subsequent default; narrative prepared waits keep their own deadlines.
 
 The tag/editor portion remains incomplete: the existing global emphasis/surprises fields and id/description pairs do not satisfy [the definition/application contract](../engine/ticks-and-tags.md). Canon-invention ceilings, story overrides, task capture and document-change classification are also not implemented. Do not use this document as evidence that those semantics are active. Old campaigns are inspectable without rewriting their settings into the new pace schema.
+
+### Recorded legacy product observation: editor boundary
+
+*Provenance: transferred from [Profiles and settings, Current implementation boundary](../../product/storyteller/profiles-and-settings.md#current-implementation-boundary) (PD05). This is a recorded legacy product observation of the shipped live-story editor, not newly verified UI behavior and not a feature qualification. The product page keeps its own copy until the product successor step.*
+
+The live-story editor supports catalogue presets, private saved presets, emphasis, encounter frequency, up to 16 custom narrative tags and four guidance snippets. Settings history exposes the latest 20 revisions. Existing profiled stories project their original settings until the first explicit update persists revisions. New stories can lock creative and speed settings before Start; pause remains available.
+
+The offline source does not improvise from arbitrary text: creative configuration is stored and included in bounded generated-task context, including the mechanical consequence task. Its offline narrator repeats saved outcomes; it has no special profile voice or absurd-comedy tag branch. Unknown custom tags carry no mechanical effect. Mechanical modifiers and event thresholds belong to captured action content; a world-tag editor is not implemented. Mid-activity pace changes are separate controls.
+
+The current editor does not yet expose narrative initiative, a campaign narrative-direction revision or canon-invention permissions. Existing emphasis, encounter-frequency and guidance fields are not silently reinterpreted as any of those authorities. Current tasks therefore receive canonical material without a captured per-domain answer for how freely gaps may be filled; this is a known blocker before meaningful long-run evaluation in a private or sparsely documented world. No per-domain permission exists today, and this page selects no new defaults.
+
+**Source scope.** `GET /stories/:id/settings` and `PUT /stories/:id/settings/:operationId` exist in `apps/api/src/modules/stories/controllers/story-reads.ts` and `story-commands.ts`. Their existence shows the revision route is present; it does not establish that the whole editor, preset catalogue or lock behavior above is qualified.

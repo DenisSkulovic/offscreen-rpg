@@ -645,7 +645,6 @@ export function observeSelectedServiceState(profileId, serviceId, deps = {}) {
       return observabilityReadinessToServiceState(
         observeObservability('dev', {
           run: deps.run,
-          verifyArchive: false,
           ...deps.observability,
         }),
       );
@@ -660,7 +659,6 @@ export function observeSelectedServiceState(profileId, serviceId, deps = {}) {
     return observabilityReadinessToServiceState(
       observeObservability('release', {
         run: deps.run,
-        verifyArchive: false,
         ...deps.observability,
       }),
     );

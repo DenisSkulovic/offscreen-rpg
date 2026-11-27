@@ -1,0 +1,40 @@
+# AC01 | Grouped workspace image and sync compatibility
+
+**State:** Done — source gate passed; joint qualification remains on the Design and AC08, not passed
+
+**Kind:** implementation
+
+**Target:** `implementation/agent-core-monorepo-map`. **Source baseline:** `1cf22fe0f512b5dd92b5cedaa2d35a3fe27cee7c` (main). Reviewed R10 `5ea13cc6ac6ade8c3909acbecd54a039ceeb17fe`. Final readiness confirmed at `96f0a26904a6a6e1fb07dfac0ccad618ea634ab2`; [review and owner commission](../../../../../designs/archive/agent-core-monorepo-map/implementation-record/READINESS.md#targeted-independent-re-review--2026-11-27). Recheck actual latest target, plan guard and unrelated worktrees before dispatch. No paid/live/destructive permission. [Group schedule](../../../../../designs/archive/agent-core-monorepo-map/implementation-record/README.md).
+
+## Outcome and authority
+
+Existing flat and grouped leaf workspace manifests participate in the same image closure and dev-sync classification; placeholders are not workspaces and all existing app closures remain unchanged.
+
+**Gap:** The image index scans only immediate apps/packages/tools children; dev sync derives ownership from the first two path segments. Both miss the grouped leaf ownership. Release closure and image selection depend on the common graph; release `requiresFullImageRebuild` also has a flat-only manifest classifier. See [source map](SOURCE-MAP.md). Primary owner: [Agent Core technical contract](../../../../../../docs/technical/platform/agent-core.md#selected-boundary); [package organization](../../../../../../packages/README.md). Product promises unchanged: E1 is internal provider-free foundation, no player/game/Storyteller behavior or production deployment change. No new architectural choices, no legacy domain refactor. Preserve spending/trust/SQL/publication and existing app ownership. No real provider, protected data, migration, external tools or production activation.
+
+## Implementation first-screen brief
+
+2 tasks; 5–10 min active implementation, excluding dependency installation and joint proof. Prerequisites: **None**. Parent reads this front door and [TASKS](TASKS.md), then first eligible card and its named anchors only. The [group readiness disposition](../../../../../designs/archive/agent-core-monorepo-map/implementation-record/README.md#readiness-disposition) records the full-batch commission; dispatch only after this Change’s prerequisites hold. No additional owner approval or review required for unchanged scope. Source postcondition and assigned focused checks; AC08 owns full joint proof. [PROOF](PROOF.md) owns assigned checks. No auto-next; one coordinator and worktree per Change.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+Write ownership is the named T-ID files; no sibling file writes except parent-owned packet closure and target-locked catalog/ledger reconciliation. Update source-adjacent tooling note only if a residual limitation remains; the permanent package map and technical owner retain joint proof standing. No image contract claim beyond actual focused evidence.
+
+| Plane | Selected authority and exact change/no-op | Related documents/maps | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | unchanged because no player-facing behavior or authority changes | Existing product and Storyteller owners remain | No production consumers or effects |
+| Technical | unchanged selected contract; implement [technical owner](../../../../../../docs/technical/platform/agent-core.md#selected-boundary) and reconcile only observed status/limitations | [Package map](../../../../../../packages/README.md); named durable owners in TASKS | AC01 source gate, AC08 joint proof |
+| Code | changed: `infra/images/common/workspace-graph.mjs`, `infra/images/common/workspace-graph.test.mjs`, `infra/images/development/sync-plan.mjs`, `infra/images/development/sync-plan.test.mjs`, `infra/images/release/select-affected-images.mjs`, `infra/images/release/test/warm-path.test.mjs`; exact postcondition above | [Source map](SOURCE-MAP.md) | [Assigned proof](PROOF.md) and diagnostic negatives |
+| Related | changed: own package/tooling README or status where assigned, otherwise unchanged because no public consumer; reconcile temporary packet/catalog at closure | [Group](../../../../../designs/archive/agent-core-monorepo-map/implementation-record/README.md), technical owner | actual source status and durable findings |
+
+## Handoff and closure
+
+Owner-commissioned: linked Change worktree from latest verified `implementation/agent-core-monorepo-map`; run `node scripts/repo-tools/change-branch-guard.mjs --change AC01 --target implementation/agent-core-monorepo-map --design agent-core-monorepo-map` before writes. Parent executes selected tasks, records source/assigned checks, exact SHA and outstanding proof. Stop on material contradiction or failed assigned gate; no unapproved live operations. When assigned Change gate passes, reconcile durable knowledge, complete P/T/C/Related ledger with observed evidence, archive this leaf in same commission, commit closure, integrate under target lock and verify archive present/open absent before reporting. AC08 owns joint acceptance; no constituent main merge. No false PASS; if assigned gate fails keep worktree. No new required review for Medium/Low findings. Follow current AGENTS and change lifecycle, not historical packet examples.
+
+## Reconciliation ledger (complete before Done)
+
+| Affected selected claim/heading | Authority | Target delta (changed/unchanged; reason) | Source delta & inspected SHA | Status/evidence tier | Negative proof | Map/link update or N/A |
+| --- | --- | --- | --- | --- | --- | --- |
+| docs/technical/platform/agent-core.md#selected-boundary | technical | unchanged selected contract; source realizes grouped closure, dev sync and release manifest classification | Change branch after assigned tests | focused tests PASS; joint NOT RUN | grouped placeholder and unknown family do not select images; duplicate name and family manifest throw | E1-IR-M01 updated in technical owner and packages/README.md |
+| Product / existing application authority | product | unchanged: provider-free internal foundation | no app or domain source edits | diff inspection | no production exposure | no product change |
+| packages/README.md / affected README | related | M01 records focused proof and leaves joint proof NOT RUN | same Change commit | focused tests PASS | no grouped production activation claimed | packages/README.md known limitations |

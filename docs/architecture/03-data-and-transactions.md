@@ -2,7 +2,7 @@
 
 **Storyteller evolution data boundary:** scene publication atomically selects an immutable Library root and semantic fictional-state frontier. Workdesk drafts and search indexes are provisional/derived; provider attempts, worker leases and billing remain operational records outside forked fiction.
 
-**Reader question:** which bytes form the story's truth and how do we prevent partial scenes? **Baseline:** 584b594. Canonical [data/persistence](../technical/platform/data-and-persistence.md), [canonical documents](../technical/storyteller/canonical-documents-and-packages.md), [execution](../technical/platform/execution-and-delivery.md).
+**Reader question:** which bytes form the story's truth and how do we prevent partial scenes? **Baseline:** 584b594, with the checkpoint and adoption routes re-pointed to the present source tree below. Canonical [data/persistence](../technical/platform/data-and-persistence.md), [canonical documents](../technical/storyteller/canonical-documents-and-packages.md), [execution](../technical/platform/execution-and-delivery.md).
 
 ## The three different persistence jobs
 
@@ -108,9 +108,11 @@ sequenceDiagram
     end
 ```
 
-**CURRENT SOURCE pattern:** packages/application/src/stories/scene-checkpoint.ts:stageSceneCheckpointObject writes/verifies, and insertStagedSceneCheckpointSelector checks story revision/root and passage identity in SQL; storyteller publication similarly stages then adopts under a later SQL lock. The system does **not** promise an ACID transaction across S3 and SQL. A missing or corrupt referenced object must fail the historical read, not silently substitute the latest state.
+**CURRENT SOURCE pattern (route corrected from the deleted `packages/application`):** packages/story-engine/src/stories/scene-checkpoint.ts:stageSceneCheckpointObject writes/verifies, and insertStagedSceneCheckpointSelector checks story revision/root and passage identity in SQL; storyteller publication similarly stages then adopts under a later SQL lock. The system does **not** promise an ACID transaction across S3 and SQL. A missing or corrupt referenced object must fail the historical read, not silently substitute the latest state.
 
 ## A critical unimplemented bridge: custody is not generation success
+
+Heading retained for inbound links; the section's current reading is at the end (custody versus adoption).
 
 ```mermaid
 stateDiagram-v2
@@ -136,9 +138,9 @@ stateDiagram-v2
 
 **Additional CURRENT SQL invariant:** the same schema has `generation_repair_shape`: a successful generation must **not** keep a repairCandidate or repairDiagnostic. A future saved-result adoption must reject a pending generation with unresolved repair metadata, not clear evidence silently to satisfy the check. This is a separate negative proof from ordinary attempt/result idempotence.
 
-**STORY02 custody proof (2026-11-20).** `createStorytellerTaskCustody` plus private Game Authority routes persist one scripted attempt and validated `attribution.custody.result` when two HTTP clients race the same generation on disposable PostgreSQL. The same seam refuses a provider-mode task and a non-scripted attempt with `unsupported-execution` (**27/27** current-head provider-free tests; earlier **10/10** at `ec73a535` did not include that refusal). See [STORY02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/storyteller/2026-11-19--story02-private-task-and-result-custody/CHANGE.md). The generation row still does **not** gain `attemptId`, `output`, or `succeeded` from custody save; that bridge remains **GAP/TARGET** for [STORY03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/storyteller/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md). **Not proved:** cross-Pod executors.
+**Custody is not adoption (the authority line this section guards).** `createStorytellerTaskCustody` plus private Game Authority routes persist one scripted attempt and its validated `attribution.custody.result` when two HTTP clients race the same generation on disposable PostgreSQL. The seam refuses a provider-mode task and a non-scripted attempt with `unsupported-execution` (**27/27** current-head provider-free tests at that closure; the earlier **10/10** at `ec73a535` did not include the refusal). A custody save alone leaves the generation row without `attemptId`, `output` or `succeeded`: saving a result is not the model or worker declaring committed truth. See [STORY02](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/storyteller/2026-11-19--story02-private-task-and-result-custody/CHANGE.md) and [remote task custody](../technical/storyteller/generation-and-publication.md#remote-task-custody). **Not proved:** cross-Pod executors.
 
-**GAP/TARGET (unchanged):** saved-attempt → succeeded-generation adoption must remain transactionally fenced and idempotent before `publishStorytellerResult`. Duplicate adoption or a conflicting legacy attempt must not overwrite a result.
+**Baseline gap and present source.** At 584b594 the saved-attempt to succeeded-generation adoption was a GAP/TARGET for [STORY03](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/storyteller/2026-11-19--story03-separate-temporal-executor-and-publication/EXECUTION.md). Source now has `adoptSavedStorytellerGeneration` in `packages/story-engine/src/storyteller/generation-adoption.ts`, returning `adopted`, `idempotent`, `held` (for example `repair-pending`) or `refused`, and Game Authority adopts the saved attempt inside its publication route. The requirements remain the selected guarantees: adoption stays transactionally fenced and idempotent before `publishStorytellerResult`; duplicate adoption or a conflicting legacy attempt must not overwrite a result; and a generation with unresolved repair metadata is held, not silently cleared. Source existence and the local scripted runs do not prove adoption under a Pod race.
 
 ## The durability chain has independent guarantees
 

@@ -14,48 +14,110 @@ export function diagnosticExcerpt(value) {
     .join('\n').slice(-MAX_DETAIL);
 }
 
-/** Bounded subprocess; on Linux the child owns a separate process group. */
-export function runCommand(command, args, { cwd, timeoutMs = 15000, env = process.env } = {}) {
+/**
+ * Bounded subprocess. On Linux the child owns a separate process group.
+ * Optional signal, monotonic clock, byte cap and close grace do not change
+ * callers that omit them. A group kill covers only this process group.
+ * If this parent is hard-killed, the group can survive; pending custody
+ * remains the mutation authority.
+ * @param {string} command
+ * @param {string[]} args
+ * @param {{ cwd?: string, timeoutMs?: number, env?: NodeJS.ProcessEnv, signal?: AbortSignal, now?: () => number, maxCaptureBytes?: number, closeGraceMs?: number, spawnImpl?: typeof spawn }} [options]
+ */
+export function runCommand(command, args, options = {}) {
+  const {
+    cwd,
+    timeoutMs = 15000,
+    env = process.env,
+    signal,
+    now = () => performance.now(),
+    maxCaptureBytes = MAX_CAPTURE,
+    closeGraceMs = 0,
+    spawnImpl = spawn,
+  } = options;
   return new Promise(resolve => {
+    const empty = { stdout: '', stderr: '', code: null, signal: null };
+    if (signal?.aborted) {
+      resolve({ ...empty, reason: 'aborted' });
+      return;
+    }
+    const started = now();
+    const deadline = started + timeoutMs;
+    const grace = Math.max(0, Math.min(closeGraceMs, timeoutMs));
     let child;
-    let stdout = '', stderr = '', reason = null, timer, settled = false;
+    let stdout = '', stderr = '', reason = null, killTimer, graceTimer, settled = false;
+    let spawned = false;
     const group = process.platform !== 'win32';
     function finish(result) {
       if (settled) return;
       settled = true;
-      clearTimeout(timer);
+      clearTimeout(killTimer);
+      clearTimeout(graceTimer);
+      signal?.removeEventListener?.('abort', onAbort);
       resolve({ stdout, stderr, ...result });
     }
     function kill(why) {
-      if (reason) return;
+      if (reason || !spawned) return;
       reason = why;
       try {
         if (group && child.pid) process.kill(-child.pid, 'SIGKILL');
         else child.kill('SIGKILL');
-      } catch { /* close/error provides actual outcome */ }
+      } catch { /* close provides the actual outcome */ }
+    }
+    function unconfirmed() {
+      try { child.unref?.(); } catch { /* already closed */ }
+      try { child.stdout?.destroy?.(); child.stderr?.destroy?.(); } catch { /* pipes already gone */ }
+      finish({ code: null, signal: null, reason: 'close-unconfirmed' });
+    }
+    function armCloseWait(why) {
+      kill(why);
+      if (grace === 0) return;
+      const remain = Math.max(0, deadline - now());
+      graceTimer = setTimeout(unconfirmed, remain);
+    }
+    function onAbort() {
+      if (!spawned) {
+        finish({ code: null, signal: null, reason: 'aborted' });
+        return;
+      }
+      armCloseWait('aborted');
     }
     function capture(stream, chunk) {
-      if (stream === 'stdout') stdout += chunk;
-      else stderr += chunk;
-      if (stdout.length + stderr.length > MAX_CAPTURE) {
-        stdout = stdout.slice(-MAX_CAPTURE / 2);
-        stderr = stderr.slice(-MAX_CAPTURE / 2);
-        kill('output-limit');
+      const text = String(chunk);
+      if (stream === 'stdout') stdout += text;
+      else stderr += text;
+      const bytes = Buffer.byteLength(stdout, 'utf8') + Buffer.byteLength(stderr, 'utf8');
+      if (bytes > maxCaptureBytes) {
+        stdout = stdout.slice(-Math.floor(maxCaptureBytes / 2));
+        stderr = stderr.slice(-Math.floor(maxCaptureBytes / 2));
+        armCloseWait('output-limit');
       }
     }
+    if (now() >= deadline) {
+      resolve({ ...empty, reason: 'timeout' });
+      return;
+    }
     try {
-      child = spawn(command, args, { cwd, env, shell: false, detached: group, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+      child = spawnImpl(command, args, { cwd, env, shell: false, detached: group, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     } catch (error) {
       finish({ code: null, reason: error.code ?? 'spawn-error' });
       return;
     }
-    child.stdout.setEncoding('utf8');
-    child.stderr.setEncoding('utf8');
-    child.stdout.on('data', chunk => capture('stdout', chunk));
-    child.stderr.on('data', chunk => capture('stderr', chunk));
-    child.on('error', error => finish({ code: null, reason: error.code ?? 'spawn-error' }));
-    child.on('close', (code, signal) => finish({ code, signal, reason }));
-    timer = setTimeout(() => kill('timeout'), timeoutMs);
+    spawned = true;
+    signal?.addEventListener?.('abort', onAbort, { once: true });
+    child.stdout?.setEncoding?.('utf8');
+    child.stderr?.setEncoding?.('utf8');
+    child.stdout?.on?.('data', chunk => capture('stdout', chunk));
+    child.stderr?.on?.('data', chunk => capture('stderr', chunk));
+    child.on?.('error', error => {
+      reason = reason ?? error.code ?? 'spawn-error';
+      if (grace === 0) finish({ code: null, signal: null, reason });
+    });
+    child.on?.('close', (code, closeSignal) => {
+      finish({ code, signal: closeSignal, reason });
+    });
+    const killDelay = Math.max(0, timeoutMs - grace);
+    killTimer = setTimeout(() => armCloseWait('timeout'), killDelay);
   });
 }
 

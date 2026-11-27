@@ -50,7 +50,52 @@ export const KNOWN_REASON_CODES = new Set([
   'worker-terminated',
   'worker-receipt-missing',
   'worker-receipt-malformed',
+  'upgrade-required',
 ]);
+
+const OBSERVATION_OPERATIONS = new Set(['plan', 'status']);
+const PROFILE_IDS = new Set(['dev', 'release']);
+
+const RECEIPT_CLOSED_KEYS = new Set([
+  'schema',
+  'operation',
+  'profile',
+  'ok',
+  'state',
+  'reasonCode',
+  'pending',
+  'detail',
+  'mutation',
+  'completedPhases',
+]);
+
+/**
+ * @param {unknown} value
+ */
+function isPlainObject(value) {
+  if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
+/**
+ * @param {unknown} phases
+ */
+function exactPhasePrefix(phases) {
+  if (!Array.isArray(phases)) {
+    return null;
+  }
+  const copy = [];
+  for (const phase of phases) {
+    if (typeof phase !== 'string') {
+      return null;
+    }
+    copy.push(phase);
+  }
+  return isValidPhasePrefix(copy) ? copy : null;
+}
 
 /**
  * @param {unknown} result
@@ -182,10 +227,77 @@ function extractReceiptJson(stdout) {
     return { ok: false, reason: 'invalid-receipt' };
   }
   try {
-    return { ok: true, value: JSON.parse(last) };
+    const value = JSON.parse(last);
+    if (!isPlainObject(value)) {
+      return { ok: false, reason: 'invalid-receipt' };
+    }
+    return { ok: true, value };
   } catch {
     return { ok: false, reason: 'invalid-receipt' };
   }
+}
+
+/**
+ * @param {{
+ *   ok: false,
+ *   state: string,
+ *   reasonCode: string,
+ *   mutation: string,
+ *   completedPhases: string[],
+ *   pending: boolean,
+ * }} row
+ */
+function ensureReceipt(row) {
+  return row;
+}
+
+/**
+ * @param {Record<string, unknown>} body
+ * @param {{ expectedProfile?: string }} [options]
+ */
+function validateEnsureReceiptBody(body, options = {}) {
+  if (body.operation !== undefined && body.operation !== 'ensure') {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  if (
+    body.profile !== undefined &&
+    (typeof body.profile !== 'string' || !PROFILE_IDS.has(body.profile))
+  ) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  if (
+    options.expectedProfile &&
+    body.profile !== undefined &&
+    body.profile !== options.expectedProfile
+  ) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  if (typeof body.ok !== 'boolean' || typeof body.pending !== 'boolean') {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  if (body.schema !== 1) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  const state = typeof body.state === 'string' ? body.state : '';
+  const reasonCode = typeof body.reasonCode === 'string' ? body.reasonCode : '';
+  const mutation = typeof body.mutation === 'string' ? body.mutation : '';
+  const completedPhases = exactPhasePrefix(body.completedPhases);
+  if (
+    !STRUCTURAL_STATES.has(state) ||
+    !MUTATION_STATES.has(mutation) ||
+    !KNOWN_REASON_CODES.has(reasonCode) ||
+    completedPhases == null
+  ) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  return {
+    ok: true,
+    state,
+    reasonCode,
+    mutation,
+    pending: body.pending === true,
+    completedPhases,
+  };
 }
 
 /**
@@ -196,151 +308,140 @@ function extractReceiptJson(stdout) {
  *   signal: string | null,
  *   timedOut: boolean,
  * }} command
+ * @param {{ expectedProfile?: string }} [options]
  */
-export function parseEnsureReceipt(command) {
+export function parseEnsureReceipt(command, options = {}) {
   if (command.timedOut || command.signal != null) {
-    return {
+    return ensureReceipt({
       ok: false,
       state: 'unreadable',
       reasonCode: 'unreadable',
       mutation: 'possible',
       completedPhases: [],
-    };
+      pending: true,
+    });
   }
   if (command.exitCode === null) {
-    return {
+    return ensureReceipt({
       ok: false,
       state: 'unreadable',
       reasonCode: 'unreadable',
       mutation: 'possible',
       completedPhases: [],
-    };
+      pending: true,
+    });
   }
 
   const extracted = extractReceiptJson(command.stdout);
   if (!extracted.ok) {
-    return {
+    const uncertain = command.exitCode === 0;
+    return ensureReceipt({
       ok: false,
       state: 'unreadable',
       reasonCode: extracted.reason ?? 'invalid-receipt',
-      mutation: command.exitCode === 0 ? 'possible' : 'none',
+      mutation: uncertain ? 'possible' : 'none',
       completedPhases: [],
-    };
+      pending: uncertain,
+    });
   }
-  const body = /** @type {Record<string, unknown>} */ (extracted.value);
-  if (body.schema !== 1) {
-    return {
+  const validated = validateEnsureReceiptBody(
+    /** @type {Record<string, unknown>} */ (extracted.value),
+    options,
+  );
+  if (!validated.ok) {
+    const uncertain = command.exitCode === 0;
+    return ensureReceipt({
       ok: false,
       state: 'unreadable',
-      reasonCode: 'invalid-receipt',
-      mutation: 'possible',
+      reasonCode: validated.reason ?? 'invalid-receipt',
+      mutation: uncertain ? 'possible' : 'none',
       completedPhases: [],
-    };
-  }
-  if (typeof body.ok !== 'boolean') {
-    return {
-      ok: false,
-      state: 'unreadable',
-      reasonCode: 'invalid-receipt',
-      mutation: 'possible',
-      completedPhases: [],
-    };
-  }
-  const state = typeof body.state === 'string' ? body.state : '';
-  const reasonCode = typeof body.reasonCode === 'string' ? body.reasonCode : '';
-  const mutation = typeof body.mutation === 'string' ? body.mutation : '';
-  const pending = body.pending === true;
-  const completedPhases = Array.isArray(body.completedPhases)
-    ? body.completedPhases.map((phase) => String(phase))
-    : null;
-
-  if (
-    !STRUCTURAL_STATES.has(state) ||
-    !MUTATION_STATES.has(mutation) ||
-    !KNOWN_REASON_CODES.has(reasonCode) ||
-    completedPhases == null ||
-    !isValidPhasePrefix(completedPhases)
-  ) {
-    return {
-      ok: false,
-      state: 'unreadable',
-      reasonCode: 'invalid-receipt',
-      mutation: 'possible',
-      completedPhases: [],
-    };
+      pending: uncertain,
+    });
   }
 
-  if (body.ok !== (command.exitCode === 0)) {
-    return {
+  const { state, reasonCode, mutation, pending, completedPhases } = validated;
+  const bodyOk = /** @type {boolean} */ (
+    /** @type {Record<string, unknown>} */ (extracted.value).ok
+  );
+
+  if (bodyOk !== (command.exitCode === 0)) {
+    return ensureReceipt({
       ok: false,
       state,
       reasonCode: 'invalid-receipt',
       mutation: 'none',
       completedPhases: completedPhases.slice(),
-    };
+      pending: pending || command.exitCode === 0,
+    });
   }
 
   const successfulEnsure =
     command.exitCode === 0 &&
-    body.ok === true &&
+    bodyOk === true &&
     state === 'ready' &&
     !pending &&
     ((mutation === 'none' && completedPhases.length === 0) ||
       (mutation === 'confirmed' &&
         completedPhases.length === OBSERVABILITY_MUTATION_PHASES.length));
 
-  if (command.exitCode === 0 && body.ok === true && !successfulEnsure) {
-    return {
+  if (command.exitCode === 0 && bodyOk === true && !successfulEnsure) {
+    return ensureReceipt({
       ok: false,
       state,
       reasonCode: 'invalid-receipt',
       mutation: mutation === 'none' ? 'none' : 'possible',
       completedPhases: completedPhases.slice(),
-    };
+      pending: pending || mutation !== 'none',
+    });
   }
 
-  if (command.exitCode !== 0 && body.ok === true) {
-    return {
+  if (command.exitCode !== 0 && bodyOk === true) {
+    return ensureReceipt({
       ok: false,
       state,
       reasonCode: 'invalid-receipt',
       mutation: 'none',
       completedPhases: completedPhases.slice(),
-    };
+      pending: false,
+    });
   }
 
   if (
     command.exitCode !== 0 &&
-    body.ok === false &&
+    bodyOk === false &&
     mutation === 'none' &&
     completedPhases.length === 0
   ) {
-    return {
+    return ensureReceipt({
       ok: false,
       state,
       reasonCode,
       mutation: 'none',
       completedPhases: [],
-    };
+      pending,
+    });
   }
 
-  if (command.exitCode !== 0 && body.ok === false && mutation === 'confirmed') {
-    return {
+  if (command.exitCode !== 0 && bodyOk === false && mutation === 'confirmed') {
+    return ensureReceipt({
       ok: false,
       state,
       reasonCode,
       mutation: 'possible',
       completedPhases: completedPhases.slice(),
-    };
+      pending: pending || true,
+    });
   }
 
-  return {
-    ok: body.ok === true && command.exitCode === 0,
+  return ensureReceipt({
+    ok: bodyOk === true && command.exitCode === 0,
     state,
     reasonCode,
     mutation,
     completedPhases: completedPhases.slice(),
-  };
+    pending,
+  });
 }
 
 /**
@@ -378,6 +479,22 @@ export function toObservationReceipt(observation, options = {}) {
       pending: false,
     };
   }
+  if (reasonCode === 'upgrade-required') {
+    return {
+      status: 'FAIL',
+      reason: 'upgrade-required',
+      state: state || 'not-ready',
+      pending,
+    };
+  }
+  if (reasonCode === 'pending' || pending) {
+    return {
+      status: 'FAIL',
+      reason: 'pending',
+      state: state || 'not-ready',
+      pending: true,
+    };
+  }
   const reason = KNOWN_REASON_CODES.has(reasonCode) ? reasonCode : 'unreadable';
   return {
     status: 'FAIL',
@@ -388,8 +505,63 @@ export function toObservationReceipt(observation, options = {}) {
 }
 
 /**
+ * @param {Record<string, unknown>} body
+ * @param {{ expectedProfile?: string }} options
+ */
+function validateObservationReceiptBody(body, options) {
+  for (const key of Object.keys(body)) {
+    if (!RECEIPT_CLOSED_KEYS.has(key)) {
+      return { ok: false, reason: 'invalid-receipt' };
+    }
+  }
+  if (!isPlainObject(body) || body.schema !== 1) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  const operation = typeof body.operation === 'string' ? body.operation : '';
+  if (!OBSERVATION_OPERATIONS.has(operation)) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  if (
+    body.profile !== undefined &&
+    (typeof body.profile !== 'string' || !PROFILE_IDS.has(body.profile))
+  ) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  if (
+    options.expectedProfile &&
+    body.profile !== undefined &&
+    body.profile !== options.expectedProfile
+  ) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  if (typeof body.ok !== 'boolean' || typeof body.pending !== 'boolean') {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  const mutation = typeof body.mutation === 'string' ? body.mutation : '';
+  const completedPhases = exactPhasePrefix(body.completedPhases ?? []);
+  if (
+    mutation !== 'none' ||
+    completedPhases == null ||
+    completedPhases.length !== 0
+  ) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  const state = typeof body.state === 'string' ? body.state : '';
+  const reasonCode = typeof body.reasonCode === 'string' ? body.reasonCode : '';
+  if (!STRUCTURAL_STATES.has(state) || !KNOWN_REASON_CODES.has(reasonCode)) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  return {
+    ok: true,
+    state,
+    reasonCode,
+    pending: body.pending === true,
+  };
+}
+
+/**
  * @param {unknown} result
- * @param {{ allowAbsent?: boolean }} [options]
+ * @param {{ allowAbsent?: boolean, expectedProfile?: string }} [options]
  */
 export function evaluateObservationReceipt(result, options = {}) {
   const normalized = normalizeDiagnosticResult(result);
@@ -436,8 +608,11 @@ export function evaluateObservationReceipt(result, options = {}) {
     };
   }
 
-  const body = /** @type {Record<string, unknown>} */ (extracted.value);
-  if (body.schema !== 1) {
+  const validated = validateObservationReceiptBody(
+    /** @type {Record<string, unknown>} */ (extracted.value),
+    options,
+  );
+  if (!validated.ok) {
     return {
       status: 'FAIL',
       reason: 'invalid-receipt',
@@ -445,30 +620,17 @@ export function evaluateObservationReceipt(result, options = {}) {
       pending: false,
     };
   }
-  for (const key of Object.keys(body)) {
-    if (
-      ![
-        'schema',
-        'operation',
-        'profile',
-        'ok',
-        'state',
-        'reasonCode',
-        'pending',
-        'detail',
-        'mutation',
-        'completedPhases',
-      ].includes(key)
-    ) {
-      return {
-        status: 'FAIL',
-        reason: 'invalid-receipt',
-        state: 'unreadable',
-        pending: false,
-      };
-    }
+
+  const body = /** @type {Record<string, unknown>} */ (extracted.value);
+  if (body.ok !== true) {
+    return {
+      status: 'FAIL',
+      reason: 'unreadable',
+      state: validated.state,
+      pending: validated.pending,
+    };
   }
-  if (body.ok === true && body.state === 'ready' && body.pending === true) {
+  if (validated.state === 'ready' && validated.pending) {
     return {
       status: 'FAIL',
       reason: 'pending',
@@ -478,10 +640,9 @@ export function evaluateObservationReceipt(result, options = {}) {
   }
   return toObservationReceipt(
     {
-      state: typeof body.state === 'string' ? body.state : 'unreadable',
-      reasonCode:
-        typeof body.reasonCode === 'string' ? body.reasonCode : 'unreadable',
-      pending: body.pending === true,
+      state: validated.state,
+      reasonCode: validated.reasonCode,
+      pending: validated.pending,
     },
     options,
   );

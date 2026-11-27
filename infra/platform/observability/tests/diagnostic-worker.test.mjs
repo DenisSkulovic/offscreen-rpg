@@ -54,6 +54,35 @@ test('worker deadline exhaustion fails before observation', () => {
   assert.equal(late.exitCode, 1);
 });
 
+test('readable pending observation uses exit0 with mapped FAIL', () => {
+  const worker = runObservabilityDiagnosticWorker(
+    'dev',
+    {},
+    {
+      observe: () => ({
+        state: 'not-ready',
+        reasonCode: 'pending',
+        pending: true,
+        detail: 'install in flight',
+      }),
+    },
+  );
+  assert.equal(worker.receipt.ok, true);
+  assert.equal(worker.exitCode, 0);
+  const mapped = evaluateObservationReceipt(
+    {
+      code: worker.exitCode,
+      stdout: `${JSON.stringify(worker.receipt)}\n`,
+      stderr: '',
+      reason: null,
+      signal: null,
+    },
+    { expectedProfile: 'dev' },
+  );
+  assert.equal(mapped.status, 'FAIL');
+  assert.equal(mapped.reason, 'pending');
+});
+
 test('cleanup failure in worker observation yields unreadable receipt', () => {
   const worker = runObservabilityDiagnosticWorker(
     'dev',
@@ -115,9 +144,23 @@ test('linux process-group cancellation leaves no surviving descendant', async (t
   );
 });
 
-test('diagnostic-live supervisor uses 360s budget constant', () => {
-  assert.equal(OBSERVABILITY_SUPERVISOR_MS, 360_000);
-  assert.equal(OBSERVABILITY_WORKER_BUDGET_MS, 345_000);
+test('diagnostic-live supervisor aliases shared observation F08 constants', () => {
+  assert.equal(OBSERVABILITY_SUPERVISOR_MS, 1_060_000);
+  assert.equal(OBSERVABILITY_WORKER_BUDGET_MS, 1_000_000);
+});
+
+test('runObservabilityDiagnosticSubprocess rejects timeout above shared cap', () => {
+  assert.throws(
+    () =>
+      runObservabilityDiagnosticSubprocess(
+        repoRoot,
+        ['release', 'observability'],
+        {
+          timeoutMs: OBSERVABILITY_SUPERVISOR_MS + 1,
+        },
+      ),
+    /exceeds shared cap/,
+  );
 });
 
 test('observability subprocess entrypoint remains bounded', async (t) => {

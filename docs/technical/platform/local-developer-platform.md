@@ -25,10 +25,24 @@ Cluster IDs remain offscreen-dev and offscreen-release. The release environment 
 
 ## Developer commands (target, not present yet)
 
-- `pnpm infra:up --env dev --services none|core|all|postgres,redis` (release also supported); cluster create/reuse then explicitly selected platform ensures. `infra:status --env dev|release` read-only. A plan path must expose exact selected operations without mutation. Default stdout for plan/up/status remains JSON; explicit `--human` selects plain presentation (INF56 source); default switch awaits mapped consumers.
-- `pnpm dev --profile api|web|full`, `pnpm dev:new --profile ...`, existing `--instance` selection, reserve/attach/status/stop. Default dev remains full. Change profile by explicit stop then start, not in-place hot profile transitions for first slice. No automatic provision of unselected tenant dependencies.
-- `pnpm stack:up --profile api|web|full --values PATH` uses release build/install authority, with ordinary values overlays, no Tilt release graph. Preserve existing no-arg behavior until new path accepted. Explicitly select release experiment; no default extra replicas.
-- `pnpm infra:verify --suite source|smoke|full` target unified repeatable entry. Source suite no mutation. Live suites require explicit scoped authorization and availability; full means all selected catalog cases, blocked cases report BLOCKED/NOT-RUN, never pass by omission. No production credentials or provider spend.
+The heading is a legacy anchor. It covers two kinds of command, kept apart below: source-present commands that already run, and target-only subcapabilities that no parser or installer accepts yet. Source presence means the entry point exists and parses at reviewed source; it is not live qualification, and the [developer platform runbook](../../runbooks/local-development-platform.md) is the only current quick reference.
+
+### Source-present at the reviewed baseline
+
+- `pnpm infra:plan|up|status --env dev|release --services none|core|all|postgres,redis` (`infra/environments/infra-cli.mjs`): cluster create/reuse, then explicitly selected platform ensures. `infra:status` is read-only. A plan path exposes exact selected operations without mutation. Default stdout for plan/up/status remains JSON; explicit `--human` selects plain presentation (INF56 source); the default switch awaits mapped consumers.
+- `pnpm dev`, `dev:new`, `dev:reserve`, `dev:attach --instance dev-N`, `dev:status`, `dev:stop` (`tools/dev-environments`): all roles, one owned slot. `parseDevCliArgs` accepts only `--instance` and the named commands and refuses every other option, including `--profile`.
+- `pnpm stack:up` (and `stack:status`, `stack:down`): the existing release build/install authority. `infra/environments/release/install.sh` refuses any argument and selects image families through `OFFSCREEN_RELEASE_IMAGES`; it takes no profile and no `--values`.
+- `pnpm infra:verify --suite source|diagnostic`: source and diagnostic are accepted; `smoke` and `full` are in `NOT_IMPLEMENTED_SUITES` of `infra/verification/verify.mjs` and are refused at the reviewed source.
+- `pnpm infra:render:workloads --values PATH` renders release manifests with a Helm values overlay. That is manifest rendering, not release installation support.
+
+### Target-only subcapabilities (not accepted by any current command)
+
+- `pnpm dev --profile api|web|full`, `pnpm dev:new --profile ...`, existing `--instance` selection with reserve/attach/status/stop. Default dev remains full. Change profile by explicit stop then start, not in-place hot profile transitions for the first slice. No automatic provision of unselected tenant dependencies.
+- `pnpm stack:up --profile api|web|full --values PATH`: use release build/install authority with ordinary values overlays and no Tilt release graph. Preserve existing no-arg behavior until the new path is accepted. Explicitly select a release experiment; no default extra replicas.
+- `pnpm infra:verify --suite smoke|full` as the unified repeatable entry. Source suite does no mutation. Live suites require explicit scoped authorization and availability; full means all selected catalog cases, and blocked cases report BLOCKED/NOT-RUN, never pass by omission. No production credentials or provider spend.
+- A future `dev:release` is described under [Future idle reservation retirement](#future-idle-reservation-retirement); no `dev:release` alias exists.
+
+If a later owner has implemented any target above, return the exact source to the planner; do not read this page's target wording as current without that check.
 
 Use normal Helm values files for resource/replica overrides; reserve chart identity, Secret references, selectors and bindings to actual owners. Target per-role replica override with existing scalar default, no autoscaler. Small preset measured on workstation; do not promise capacity or lower existing admission thresholds before measurement.
 
@@ -41,7 +55,7 @@ Use normal Helm values files for resource/replica overrides; reserve chart ident
 | full | web, api, authority, control, executor, relay | SQL + S3 + Temporal; release gateway for browser route | all roles current, story progression separate |
 | ui-only (later) | web | explicit compatible mock or test API binding | UI only; no borrowed slot or real playability |
 
-Current dev graph and Tilt still render all six roles; reconcileDevSlot verifies shared core and provisions SQL/migration/S3/Temporal unconditionally; release installer uses image-family selection, not dependency-closed application profiles. Exact current source anchors: tools/dev-environments/src/rendering/dev-slot-app-graph.mjs::renderDevSlotAppGraph/renderTiltDeploymentDocuments, application/dev-slot-startup.mjs::reconcileDevSlot, application/dev-lifecycle.mjs::runDevTiltLaunch, application/dev-status.mjs::collectSelectedSlotReadiness, root Tiltfile, infra/workloads/render.mjs, infra/workloads/chart/templates/_helpers.tpl, infra/environments/release/install.sh and rollout.mjs. Original DXK10 proposal is cancelled; its selective activation contract is absorbed into INF38.
+As of the reviewed source (dated realization; re-verify before relying on it), the dev graph and Tilt still render all six roles; reconcileDevSlot verifies shared core and provisions SQL/migration/S3/Temporal unconditionally; release installer uses image-family selection, not dependency-closed application profiles. Exact current source anchors: tools/dev-environments/src/rendering/dev-slot-app-graph.mjs::renderDevSlotAppGraph/renderTiltDeploymentDocuments, application/dev-slot-startup.mjs::reconcileDevSlot, application/dev-lifecycle.mjs::runDevTiltLaunch, application/dev-status.mjs::collectSelectedSlotReadiness, root Tiltfile, infra/workloads/render.mjs, infra/workloads/chart/templates/_helpers.tpl, infra/environments/release/install.sh and rollout.mjs. Original DXK10 proposal is cancelled; its selective activation contract is absorbed into INF38.
 
 One profile selection must feed desired chart replicas, Tilt image/resource registration, provisioning, status and rollback. Inactive roles zero, reported INACTIVE not READY; selected roles current and healthy. Existing slot identity, park semantics, no foreign fallbacks remain. Minimal profile must be proven through intended functional flow, not just Pod readiness.
 

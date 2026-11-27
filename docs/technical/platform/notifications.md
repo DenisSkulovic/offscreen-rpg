@@ -2,6 +2,14 @@
 
 Notifications are part of gameplay, not a decorative integration. A player should be able to leave the page and hear about a development, while the system remains coherent if delivery is late or never arrives.
 
+**Status and evidence tiers.**
+
+- **Selected delivery design:** the [Delivery flow](#delivery-flow) (outbox, stable notification ID, Temporal delivery workflow, per-recipient records, relevance and deadline recheck) and the privacy and action rules under [Contact, privacy and actions](#contact-privacy-and-actions).
+- **Recommended, not ratified:** Web Push as the first external channel. The [alternatives](#alternatives) stay open until the [phone acceptance](#what-to-prove-early) passes on the intended devices.
+- **Not demonstrated:** no external channel is deployed, no phone delivery was observed, and no delivery workflow was run on a device. A separate notifications process is not deployed ([runtime shape](./topology.md#runtime-shape)).
+
+**Two different things share the word "notification".** The *internal committed-view hint* is a PostgreSQL `NOTIFY` on the `offscreen_story_view` channel (`packages/story-engine/src/stories/view-notification.ts`) that tells an open browser tab, through authenticated SSE, that a committed story view moved. The client then GETs the snapshot. It carries no private narrative and reaches no device. It is described in [HTTP contract, GET truth and SSE hints](./http-api-and-client-contracts.md#get-truth-and-sse-hints) and the [client Commands and hints](../client/state-and-server-boundary.md#commands-and-hints). *External delivery* is the target on this page: a push, chat or email message to a person who left the page. An SSE hint is not evidence that any device was reached, and neither is a heartbeat.
+
 ## Who owns the boundary
 
 | Boundary | Owner |
@@ -16,8 +24,6 @@ Notifications are part of gameplay, not a decorative integration. A player shoul
 | Selected topology | [Runtime shape](./topology.md#runtime-shape) |
 | Compatibility | [First hosted deployment](./deployment-and-compatibility.md#first-hosted-deployment) |
 
-Notifications stay on this page.
-
 ## Recommended first channel
 
 Start with responsive web plus Web Push, using a service worker and a manifest so the site can be installed as a web app. Notifications open the relevant current story; choices happen in the browser initially. This avoids maintaining a separate native application and a second interaction implementation.
@@ -26,7 +32,7 @@ This is a recommendation to verify on the actual target phones before committing
 
 The product should explain setup when the player wants to leave a running story, offer a test notification and show whether that device is subscribed. Do not request permission on the first landing page before demonstrating value. Declined permission is a supported state; show that the player must return manually or choose another available channel.
 
-Register subscriptions through an authenticated endpoint and associate them with both account and device/browser installation. Multiple devices may receive updates, but a browser endpoint must not remain attached to a previous account after account switching. Recommended logout behavior is to unlink that device's subscription without pausing the story; explicitly tell the user how to keep receiving updates on another device. Subscription expiry, permission revocation and re-registration are supported states, not silent permanent delivery failures.
+Subscription registration, account switching, logout and expiry are specified under [Contact, privacy and actions](#contact-privacy-and-actions).
 
 ## Alternatives
 
@@ -59,6 +65,8 @@ Include a decision timing/version reference on delivery intents. Recheck it befo
 ## Contact, privacy and actions
 
 Quiet hours mute or defer contact; they do not change story time or permissions. Offer a neutral lock-screen preview as a default so potentially graphic or embarrassing story text does not appear at work. Opening the app reveals the scene to an authenticated member.
+
+**Subscriptions and devices.** Register subscriptions through an authenticated endpoint and associate them with both account and device/browser installation. Multiple devices may receive updates, but a browser endpoint must not remain attached to a previous account after account switching. Recommended logout behavior is to unlink that device's subscription without pausing the story; explicitly tell the user how to keep receiving updates on another device. Subscription expiry, permission revocation and re-registration are supported states, not silent permanent delivery failures.
 
 Store push subscriptions and channel tokens as sensitive integration data. Encrypt reusable external credentials, keep tokens out of logs, and make disconnection effective for queued deliveries as well as future ones.
 

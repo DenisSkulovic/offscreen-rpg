@@ -1,12 +1,12 @@
 # Changes | active catalog
 
-**Documentation renewal E1:** [product](open/product-documentation-renewal/README.md) and [technical](open/technical-documentation-renewal/README.md) — both owner-accepted; all sixteen packets PD01–PD07 and TD01–TD08/TD10 READY at `606de3a0a4856eb36ce275bd4bc109ea46d480c0` and owner-authorized for named dispatch; PD07/TD10 dependency-gated, TD09 protected no-op. See group registers for release, findings and dispatch. Joint semantic acceptance NOT RUN; no queue or branch change.
+**Documentation renewal E1:** [product](open/product-documentation-renewal/README.md) and [technical](../designs/archive/technical-documentation-renewal/implementation-record/README.md) — both owner-accepted. Technical: TD01–TD08 and TD10 archived, technical joint semantic acceptance PASS (see the retired group's [implementation record](../designs/archive/technical-documentation-renewal/implementation-record/README.md)); TD09 protected no-op. Product: PD01–PD06 archived; PD07 pending the technical integration on main. Runtime, native and live qualification NOT RUN; no queue change.
 
-[Agent Core E1](open/agent-core-monorepo-map/README.md) — eight current-sprint Changes; final independent READY (all eight) and owner-commissioned for construction/assigned offline proof. Live qualification and final main integration remain held. Grouped workspace compatibility, synthetic-only runtime, joint qualification on `implementation/agent-core-monorepo-map`.
+[Agent Core E1](../designs/archive/agent-core-monorepo-map/README.md) — owner-accepted initial foundation; AC01–AC08 and AC08R archived; full native qualification remains unestablished.
 
 **Change scale:** one preferred measurable outcome, normally 1–5 tasks and 5–10 minutes of active Cursor work. Seven actual tasks, including nested subcards, is a strong default, not an automatic rejection. Document and byte counts are signals. [Planning artifact quality](../../.agents/references/planning-artifact-quality.md) and [finding severity](../../AGENTS.md#finding-severity-and-blocking) govern admission and review. No amendment diaries, contradictory current contracts or unbounded Cursor preload.
 
-[OBSERVABILITY-DEVELOPER](archive/2026-11/observability/2026-11-27--observability-developer/CHANGE.md) — superseded after submission failure, no execution; [recovery roadmap](../designs/open/observability-developer/IMPLEMENTATION-PLAN.md). [OBSERVABILITY-NATIVE](archive/2026-11/observability/2026-11-26--observability-native/CHANGE.md) superseded; outstanding proof transferred. Current batch: [observability-developer](open/observability-developer/README.md) on `implementation/observability-developer`. Independent review and joint certification remain outstanding. None joins main on its own.
+[Developer observability](../designs/archive/observability-developer/README.md) — owner-accepted local foundation, OBS-D01–D11 source archived; original native/developer packets superseded, full A/V certification remains unestablished.
 
 [RABBITMQ-NATIVE](open/2026-11-26--rabbitmq-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and fresh release separately gated.
 
