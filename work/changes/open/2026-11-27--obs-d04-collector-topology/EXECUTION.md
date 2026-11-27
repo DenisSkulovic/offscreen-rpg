@@ -88,7 +88,7 @@ Only operation outage, phase outage-down, restore=null and exact immutable basel
 
 
 ## Installer
-Observation preloads desired/predecessor descriptors once, collects one snapshot, rechecks full identity then classifies. Keep snapshot internal. Use the single ratified deadline contract (planner gate) and Callers below after ratification. Mutation/proof adapters use same frozen descriptors/identity and allocated checks.
+Observation preloads desired/predecessor descriptors once, collects one snapshot, rechecks full identity then classifies. Keep snapshot internal. Use the exact F08 phase schedule below after ratification and D02 constants. Mutation/proof adapters use same frozen descriptors/identity and allocated checks.
 
 Receipt schema1 and closed fields remain; add upgrade-required reason, no new state. Require plain nonnull object, correct operation/profile, explicit boolean ok/pending, known state/reason/mutation, exact string phase prefix (no coercion), byte-capped final line.
 
@@ -104,8 +104,23 @@ Explicit no-mutation refusal requires coherent receipt and empty prefix; actual 
 Status receipt requires operation status, mutation none, empty phases, explicit booleans, expected profile if supplied. Readable observations use exit0/ok=true even if not ready; unreadable uses exit1/ok=false. PASS only ready/ready/clear. Optional absent NOT-RUN only for default release allowAbsent and absent/absent/clear. Predecessor/pending FAIL with specific reason. Invalid/malformed/timeout/nonzero/signal cannot PASS. Keep public installed/not-installed/not-ready/unreadable mapping and specific upgrade-required/pending details. Pass expected profile through plan/diagnostic/provisioning.
 
 
+### Inclusive phase schedule (seconds; F08 candidate)
+
+Start640=artifact390 (six templates x60+local30), capture210, lock10, host30. Inventory120 aggregate, each read <=10, no implicit cleanup or partial classification. Reuse preloaded artifacts and frozen identity. Work deadline subtracts reserve once; full phase must fit, no later command on failure, no hidden full recheck.
+
+| Fresh ensure | Seconds |
+| --- | ---: |
+| Start/admission inventory | 640+120 |
+| Namespace (preinventory120+identity210+intent15+write30+bind/recheck225+postinventory120) | 720 |
+| Secret (120+210+15+30+120) | 495 |
+| Each Helm phase (120+210+15+210+120), five | 675 |
+| Final inventory+identity+normal close/receipt | 120+210+60 |
+| Work sum / work ceiling / reserve / worker / supervisor | 5740 / 5820 / 60 / 5880 / 6000 |
+
+No-op still requires complete admission, final identity and cleanup, no writes. Mutation cap inclusive D03 TERM/KILL/close. Emergency60 only terminal failure handling. Observation start640+inventory120+identity210+closure30=1000 worker,1060 supervisor; no read-only lock requirement. Test exact fit, one-ms short, no launch after expiry. Actual inventory timing remains owner evidence; if >120 fail, never shorten census.
+
 ## Callers
-Selected owner-approved deadline candidate awaiting independent ratification: single constants module within existing identity.mjs owner (D02 adds exports, D04 wires consumers), no second scheduler. Export OBSERVABILITY_ARTIFACT_BUDGET_MS=390000, PREFLIGHT_BUDGET_MS=210000 (identity only), INVENTORY_BUDGET_MS=120000, OBSERVABILITY_OBSERVATION_WORKER_MS=1000000, OBSERVABILITY_OBSERVATION_SUPERVISOR_MS=1060000, OBSERVABILITY_ENSURE_WORKER_MS=5880000, OBSERVABILITY_ENSURE_SUPERVISOR_MS=6000000. OBSERVATION_BUDGET_MS retained as alias of observation worker constant for existing imports, no second value. Observation budget allocation 640000 start (artifact390000+identity210000+custody10000+host30000, unused custody slot for read-only), inventory120000, full final recheck210000, close/receipt30000. No new read-only lock requirement. Install WORKER_BUDGET_MS aliases shared ensure worker constant; retain 60s terminal reserve. Existing unrelated services untouched. These values are candidate authority only until independent review; no actual runtime constants modified in this repair.
+Import D02 F08 constants from identity.mjs. Switch OBSERVATION_BUDGET_MS alias together with all affected consumers, remove inventory implicit cleanup addition, alias install WORKER_BUDGET_MS to ensure worker, retain emergency60. No duplicated supervisor constants, no unrelated service changes. Exact schedule above pending independent ratification.
 
 D04 observeObservability(profileId,deps) is sole owner of read-only phase deadlines: one monotonic start and absolute min(callerDeadline,start+worker), exact phase bounds, real artifact load within own allocation, frozen identity capture, inventory, final full recheck, snapshot cleanup; if caller supplied frozen identity/preloaded descriptors, no duplicate capture/render, explicit supplied phase deadline and ownership contract. All command timeout options clamped to remaining positive time; no command when <=0, late exit0 not success. Caller-supplied deadline cannot extend default absolute cap. Diagnostic worker must pass whole worker deadline, not old inventoryDeadline as global cap. createObservabilityDiagnosticBudget retains existing exported clamp helpers for focused tests but computes preflight boundary from 640000 combined start and inventory boundary +120000, final recheck/cleanup within absolute deadline; no separate clock reset, no duplicate reservation. Remove verifyArchive:false from diagnostic worker and all production observe/load calls; test-only injection may supply already validated descriptor fixture through explicit seam, not production boolean bypass. Diagnostic worker output closed receipt: readable pending/not-ready/absent/foreign/legacy state reports ok=true and exit0 (observation readable, not health PASS); unreadable reports ok=false exit1; pending must never be ready admission. Pass expected profile and operation status to evaluateObservationReceipt, preserve allowAbsent only optional release diagnostic. Timeout/signal/malformed receipt remains FAIL regardless of state. No raw Secret or debug output.
 
@@ -113,4 +128,6 @@ diagnostic-live.mjs OBSERVABILITY_SUPERVISOR_MS aliases shared observation super
 
 
 ## Activation boundary (not accepted)
-D04's source candidate must not expose changed default on main until real A6 authenticated health/repeat, A7 strict synthetic correlation/privacy, V03/V08 developer functionality and safe proof UID cleanup are available on the coordinated candidate. D07/D09/D08 tooling may be developed against reviewed D04 candidate source, not require an unsafe merged default. No public unsafe old route; planner must specify actual entrypoint refusals or safe migration, cross-worktree exclusion and joint acceptance before commission. Until approved, R5 joint gate holds.
+
+Use [coordinated joint candidate](../../../designs/open/observability-developer/ACCEPTANCE.md#proposed-staged-certification-boundary-candidate-not-accepted). Offline source only until complete D02–D11, no live commands or main merge. D07 disables legacy proof and unfinished gates. All A/V proof, especially A6/A7/V03/V08/V06, remains joint before main activation. D04 owns public plan/status/diagnostic/provisioning typed result and exact timeout recognition; D11 alone owns optional outer runCommand cancellation extension.
+

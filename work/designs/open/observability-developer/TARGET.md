@@ -27,7 +27,7 @@ The [canonical technical owner](../../../../docs/technical/platform/observabilit
 
 | Decision | Affected outcome | Resolution before commission |
 | --- | --- | --- |
-| Staged certification/integration | All successor closure; D01 first | Preserve every A/V predicate and final integrated proof, but permit separately safe narrow integrations after their required proof. Proposed only; independent design review and owner acceptance required. Until then the R5 single-candidate gate binds. |
+| Staged certification/integration | All successor closure; D01 first | Preserve every A/V predicate. D01-only offline parity exception; D02–D11 coordinated offline assembly and original joint certification. Exact route in ACCEPTANCE, pending independent defense and explicit owner acceptance. |
 | Absolute deadlines and owned process cancellation | D02–D07, D09–D11 where relevant | Reconcile actual bounded read/process/lock semantics and budgets using existing Linux primitives; verify feasible phase arithmetic and failure behavior. No generic scheduler or success after timeout. |
 | Fresh bounded metric timestamps across retained stores | D08 | Pinned D3/D4 experiments, actual raw query samples and single-writer custody; evaluate proposed durable allocation watermark against rollback and delayed ingestion. Preserve exact freshness and bounded series; no new run label or acceptance weakening. |
 | Isolated A9 failure mechanism | D11 | Accepted real quota failure remains binding unless a separately ratified admission rejection demonstrates the same public installer failure/retained pending/repeat-refusal predicates. Verify actual Helm history and owner-only fixture custody. |
