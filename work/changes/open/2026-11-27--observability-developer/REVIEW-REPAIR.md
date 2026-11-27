@@ -32,3 +32,5 @@ Repair13: freeze exact template/list/history/manifest/install argv arrays and re
 Repair14: consolidated latest candidate deadline selection, owner decision bundle D1–D3 and exact unresolved timestamp evidence D4; corrected cross-task normal/privacy Pod scheduling, create bounds, internal diagnostic binding and Grafana Secret UID inputs. Explicit G0–G7 non-pass disposition, no commission.
 
 Repair15: owner approved D1 deadline candidate for review and D2/D3 isolated evidence planning. Actual environment availability, experiment output and D4 remain unverified. No runtime authorization inferred, no dispatch.
+
+Repair16: exact baseline/current Git tree blob comparison, tracked existing test paths, T01 fixture write ownership and dependency-gated dispatch correction. No tests/live; outside-root reference census and final cold simulation remain pending.

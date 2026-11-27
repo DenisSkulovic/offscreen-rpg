@@ -23,3 +23,33 @@ T08–T10 source check 0e59061d7287713443504a7f58638f44ac0d8bd8: proof.mjs defau
 T11/T12 source check 2e2fd5ca8914abd44662a6bc717ff72dfb505b37: partial-install.mjs::resolvePartialInstallPlans defaults dummy render and disables hash; runPartialInstallProof default wrapper/real Helm/first/repeat absent; dispatchHelmWrapperInvocation suppresses delegated stdout and uses outer identity null namespace; writeHelmPathWrapper filename helm-wrapper not PATH helm; assessPartialInstallEnsureReceipt incorrectly requires failed Loki completed and OR-like state/reason check; repeat helper accepts weak negative. disruptions.mjs symbols and archived A8/A9 exact owner predicates inspected. New detailed recipes and narrow restoration capability; wrapper inherited FD and phase cap unresolved F08. No tests run.
 
 Repair13: actual inventory.mjs lines396–450 global flags precede list/get manifest, artifacts.mjs template loop 550–570, specimens/prometheus.yaml server.otlp resource promotion explicitly three attrs. Prior label assumption incomplete; exact source-derived candidate and shared builders in INTERFACES. No observed render or row evidence.
+
+
+## Repair16 | baseline-to-current content identity and test path verification
+Compared complete recursive Git trees at approved design baseline 5f5750eca2f31d92fac6bfa478d1cae7203e1815 and current integration dccb6610089ccc8e794adffbc084d177390f3b15, blob SHA by exact path under infra/, scripts/repo-tools/ and root package.json. Tree truncated flags: baseline=false, current=false. Changed/added paths (1): infra/verification/CAPABILITIES.md. Removed paths (0): (none). Relevant changed/added subset: (none). This is exact content identity evidence, not a claim that all repository references have been searched. If relevant subset empty and no relevant removals, all previously inspected runtime anchors in these roots retain baseline bytes; do not repeatedly fetch identical source solely for recency. Historical R5-GEOGRAPHY owner baseline named-pattern census remains applicable to unchanged operational files; current docs/outside-root references still require final tracked grep. No proof run.
+
+Actual current tracked focused-test path census:
+- infra/environments/infra-cli-operation.test.mjs
+- infra/environments/infra-cli.test.mjs
+- infra/environments/infra-presentation.test.mjs
+- infra/environments/platform-plan.test.mjs
+- infra/platform/observability/tests/custody-worker.mjs
+- infra/platform/observability/tests/custody.test.mjs
+- infra/platform/observability/tests/diagnostic-worker.test.mjs
+- infra/platform/observability/tests/identity.test.mjs
+- infra/platform/observability/tests/install.test.mjs
+- infra/platform/observability/tests/inventory.test.mjs
+- infra/platform/observability/tests/readiness.test.mjs
+- infra/platform/observability/tests/receipt.test.mjs
+- infra/platform/observability/tests/render.test.mjs
+- infra/platform/observability/tests/snapshot-fixtures.mjs
+- infra/verification/diagnostic.test.mjs
+- infra/verification/provisioning.test.mjs
+- infra/verification/resource-snapshot.test.mjs
+- infra/verification/smoke/observability/tests/proof.test.mjs
+- infra/verification/smoke/observability/tests/test_signal_probe.py
+- infra/verification/verify-operation.test.mjs
+- infra/verification/verify.test.mjs
+- scripts/repo-tools/check-lab-manifests.test.mjs
+- scripts/repo-tools/infra-layout.test.mjs
+New files required by selected design are not baseline missing-test failures: forward.test.mjs, upgrade.test.mjs, proof-resources.test.mjs, test_developer_probe.py, test_resource_observation.py (and corresponding new source). T04 owns creation of forward.test.mjs; T06 extends it. T08 creates proof-resources.test.mjs. T09 and T10 create respective Python tests. T12 aggregate commands only after these predecessors. Every existing test path in aggregate command must match this census; adjust wrong paths in authoritative task card, not silently skip. Tree comparison alone does not prove test semantics.
