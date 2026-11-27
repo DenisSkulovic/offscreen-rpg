@@ -250,7 +250,7 @@ function makeEnsureDeps(options = {}) {
       state: 'ready',
       reasonCode: 'ready',
       pending: false,
-      snapshot: complete,
+      snapshot: buildCompleteDevSnapshot(artifacts),
     }),
     get calls() {
       return calls;
@@ -554,7 +554,7 @@ test('fresh ensure binds namespace UID before secret and persists it under custo
   try {
     const deps = makeEnsureDeps();
     const result = await runObservabilityEnsure('dev', devKind.contextName, deps);
-    assert.equal(result.ok, true);
+    assert.equal(result.ok, true, JSON.stringify(result));
     const uid = snapshotForPhases(['namespace']).namespace.uid;
     assert.equal(deps.pendingWrites[0].tuple.targetNamespaceUid, null);
     assert.equal(deps.pendingWrites[1].phase, 'namespace');
