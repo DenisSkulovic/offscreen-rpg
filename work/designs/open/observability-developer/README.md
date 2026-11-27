@@ -1,11 +1,11 @@
 # Developer observability | evolutionary design workshop
 
-Owner: human owner + ChatGPT planner. Open investigation, 2026-11-27. Baseline main 5f5750eca2f31d92fac6bfa478d1cae7203e1815. Next review: current owner design session; decision: development producer contract and receiver/access topology, followed by occupied-service configuration transition. No implementation, live mutations, spending or release changes commissioned.
+Owner: human owner + ChatGPT planner. Open investigation, 2026-11-27. Baseline main 5f5750eca2f31d92fac6bfa478d1cae7203e1815. Next review: independent defense pass 02, R5. No implementation, live mutations, spending or release changes commissioned.
 
 [Proposed Change](../../../changes/open/2026-11-27--observability-developer/CHANGE.md). Existing OBSERVABILITY-NATIVE remains open, with incomplete acceptance; no concurrent edits to its owned source. Existing canonical authority: [native infrastructure](../../../../docs/technical/platform/observability-native-infrastructure.md). This dossier does not supersede it until defended and promoted.
 
 ## R5 review entry
-[TARGET.md](TARGET.md), [LIFECYCLE.md](LIFECYCLE.md), [proof contract](R5-PROOF-CONTRACT.md), [certification](R5-CERTIFICATION.md), [geography](R5-GEOGRAPHY.md) are normative. [Acceptance](ACCEPTANCE.md), [source map](SOURCE-MAP.md), [self-defense](SELF-DEFENSE.md), [pass 01](committee/pass-01.md). R5 addresses OD-01–04; tracked census remains owner evidence gate before formal resubmission. Earlier sections historical.
+[TARGET.md](TARGET.md), [LIFECYCLE.md](LIFECYCLE.md), [proof contract](R5-PROOF-CONTRACT.md), [certification](R5-CERTIFICATION.md), [geography](R5-GEOGRAPHY.md) are normative. [Acceptance](ACCEPTANCE.md), [source map](SOURCE-MAP.md), [self-defense](SELF-DEFENSE.md), [pass 01](committee/pass-01.md). R5 records designer resolutions for OD-01–04, completed baseline tracked-reference census and passed designer re-defense. Formal independent pass 02 pending. Earlier candidate and investigation sections are historical; R5 normative entry above controls.
 
 ## Target and posture
 Evolutionary, not clean-slate. One shared five-release development stack; preserve pinned charts/images, three retained claims, Grafana credentials, explicit service selection, bounded observation and mutation custody. Make real application-shaped operational telemetry available to WSL experiments and subsequently in-cluster development workers. Telemetry is optional, bounded, and never part of business transaction correctness. No new cluster for ordinary development acceptance.
