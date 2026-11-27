@@ -4,7 +4,7 @@
 
 ## Current source
 
-The public root export is serializable `AgentDefinitionV1`, `MissionV1`, and `MissionOutcomeV1` plus `missionWorkflowId`, which returns `agent-core-e1-${missionId}`. There is no Worker, client, or model import in that closure. The `./workflow` export path is declared; `src/workflow.ts` arrives with the native loop.
+The public root export is serializable `AgentDefinitionV1`, `MissionV1`, and `MissionOutcomeV1` plus `missionWorkflowId`, which returns `agent-core-e1-${missionId}`. There is no Worker, client, or model import in that closure. `src/workflow.ts` exports `executeMission` and the trusted binding types. It runs one `generateText` call through `TemporalLanguageModel` (`maximumAttempts: 1`, 10s start-to-close, 2s heartbeat, wait-for-cancellation). Sticky denial, tool failure, and unfinished calls stop further generation. Cancellation is rethrown. The Workflow log records the workflow id and terminal counts only. Native qualification, including invalid-tool and replay proof, remains **NOT RUN** and belongs to AC08.
 
 Internal admission is `admitMission` and `assembleContext`. `createMissionLedger` / `resolveOutcome` keep a per-run step and tool budget: denial outranks limit, then failure, then a normal nonempty stop. These modules do not import Temporal or the AI SDK. Requested tools are copied and never expanded. The fixture envelope is 1–3 steps, 2 tool attempts, and 4096 UTF-16 code units of instructions or input.
 
