@@ -12,4 +12,4 @@ Run `git diff --check`, `python scripts/check_docs.py`, `node scripts/repo-tools
 
 ## Joint gate
 
-PD07 owns group semantic acceptance and wiki classification. Product transfers: do not remove unique source fact or link to not-landed successor; technical recipient preserves original scoped fact with provenance and stable destination, then product integration verifies actual main. Temporary retained text is not final E1 acceptance. No proof promotion. No independent readiness verdict or commission.
+PD07 owns group semantic acceptance and wiki classification. Product transfers: do not remove unique source fact or link to not-landed successor; technical recipient preserves original scoped fact with provenance and stable destination, then product integration verifies actual main. Temporary retained text is not final E1 acceptance. No proof promotion. Readiness and release recorded in group; actual proof remains NOT RUN.

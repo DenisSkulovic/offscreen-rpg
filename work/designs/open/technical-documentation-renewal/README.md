@@ -1,6 +1,6 @@
 # Technical documentation renewal | E1
 
-**Open · E1 DEFENDED and owner-accepted for Change planning (2026-11-27); implementation not commissioned.** Reviewed main: `c7058958ec3f43fd37ec680d05757561d628926b`; original inspected source: `94808654fdf93e3102469ed3f5d5b2d476ff6f8d`. The intervening commit is documentation-only. Scope: 60 technical pages, affected architecture Atlas, source READMEs, runbook routes and STATUS.
+**Open · E1 DEFENDED and owner-accepted for Change planning (2026-11-27); implementation release authorized for named dispatch.** Reviewed main: `c7058958ec3f43fd37ec680d05757561d628926b`; original inspected source: `94808654fdf93e3102469ed3f5d5b2d476ff6f8d`. The intervening commit is documentation-only. Scope: 60 technical pages, affected architecture Atlas, source READMEs, runbook routes and STATUS.
 
 ## Aim and current evolution
 
@@ -21,6 +21,6 @@ No new application architecture, schema, service, platform behavior, data deleti
 
 The independent committee [DEFENDED verdict](committee/pass-01.md) covers both E1 Designs and their shared integration boundary at `c7058958ec3f43fd37ec680d05757561d628926b` (0 Critical, 0 High, 4 Medium, 2 Low). The owner accepted both and directed finalization and Change planning on 2026-11-27. The selected architecture in TARGET and acceptance criteria are unchanged. Canonical product/technical owners retain their accepted domain meaning; this accepts the editorial evolution, not new game architecture or implementation evidence. The actual canonical reconstruction is the outcome of the documentation Changes, not a status-only promotion.
 
-[Current planning group](../../../changes/open/technical-documentation-renewal/README.md) owns partitions and dispatch prerequisites. Keep this dossier open for incomplete execution/joint semantic acceptance; retire after promotion and reconciliation. No Change is Ready or commissioned by this acceptance. Next review: complete batch implementation readiness; final joint documentation acceptance remains NOT RUN. Later game/Storyteller/UX architecture, unresolved product policies and native contract consolidation remain separate existing owner concerns.
+[Current execution group](../../../changes/open/technical-documentation-renewal/README.md) owns partitions and dispatch prerequisites. Keep this dossier open for incomplete execution/joint semantic acceptance; retire after promotion and reconciliation. The subsequent [independent batch readiness verdict](committee/readiness-01.md) at `606de3a0a4856eb36ce275bd4bc109ea46d480c0` is READY; owner authorizes named dispatch through the group release record. Final joint documentation acceptance remains NOT RUN. Later game/Storyteller/UX architecture, unresolved product policies and native contract consolidation remain separate existing owner concerns.
 
 [Documentation standard](../../../../.agents/rules/documentation.md) · [navigation](../../../../.agents/references/documentation-navigation-standard.md) · [target-driven renewal](../../../../.agents/rules/target-driven-renewal.md).

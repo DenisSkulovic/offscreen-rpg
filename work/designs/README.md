@@ -18,8 +18,8 @@ Existing classifications below are historical starting points, not fresh disposi
 
 | Item | Status |
 | --- | --- |
-| [Product documentation renewal](open/product-documentation-renewal/README.md) | E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b` and owner-accepted for planning; [current Change group](../changes/open/product-documentation-renewal/README.md). Semantic acceptance NOT RUN; no commission. |
-| [Technical documentation renewal](open/technical-documentation-renewal/README.md) | E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b` and owner-accepted for planning; [current Change group](../changes/open/technical-documentation-renewal/README.md). Semantic acceptance NOT RUN; no commission. |
+| [Product documentation renewal](open/product-documentation-renewal/README.md) | E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b` and owner-accepted for planning; [current Change group](../changes/open/product-documentation-renewal/README.md). Batch READY; owner-authorized for named dispatch; semantic acceptance NOT RUN. |
+| [Technical documentation renewal](open/technical-documentation-renewal/README.md) | E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b` and owner-accepted for planning; [current Change group](../changes/open/technical-documentation-renewal/README.md). Batch READY; owner-authorized for named dispatch; semantic acceptance NOT RUN. |
 | [Agent Core and monorepo mapping](open/agent-core-monorepo-map/README.md) | R10 E1 independently DEFENDED; accepted planning scope promoted to [technical owner](../../docs/technical/platform/agent-core.md) and [package map](../../packages/README.md). All eight Changes READY and owner-commissioned; [execution group](../changes/open/agent-core-monorepo-map/README.md). Joint acceptance NOT RUN; live and final main integration held |
 | [repository-agent-workbench/](open/repository-agent-workbench/README.md) | **Mixed historical/remaining study:** HAR01–03/HAR06–08 are Done, HAR09 Cancelled, HAR10 Done, and HAR05 Done. No Cognee/semantic vendor adopted; this is not a current executable Change |
 

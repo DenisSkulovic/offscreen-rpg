@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-**Documentation renewal E1:** [product](open/product-documentation-renewal/README.md) and [technical](open/technical-documentation-renewal/README.md) — both owner-accepted for planning; all sixteen detailed packets PD01–PD07 and TD01–TD08/TD10 Proposed; TD09 protected no-op; complete current-sprint batch in group registers. No readiness verdict, commission, queue or branch change.
+**Documentation renewal E1:** [product](open/product-documentation-renewal/README.md) and [technical](open/technical-documentation-renewal/README.md) — both owner-accepted; all sixteen packets PD01–PD07 and TD01–TD08/TD10 READY at `606de3a0a4856eb36ce275bd4bc109ea46d480c0` and owner-authorized for named dispatch; PD07/TD10 dependency-gated, TD09 protected no-op. See group registers for release, findings and dispatch. Joint semantic acceptance NOT RUN; no queue or branch change.
 
 [Agent Core E1](open/agent-core-monorepo-map/README.md) — eight current-sprint Changes; final independent READY (all eight) and owner-commissioned for construction/assigned offline proof. Live qualification and final main integration remain held. Grouped workspace compatibility, synthetic-only runtime, joint qualification on `implementation/agent-core-monorepo-map`.
 

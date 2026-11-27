@@ -1,6 +1,6 @@
 # TD08 | task queue
 
-Base `4b621ec9708361a2304efdcff4d34bb7da2b6c88`; state Proposed; selected task none. Tasks have disjoint write paths within this Change; at most two isolated workers, otherwise serial. Parent owns staging and final proof; no child runs shared checks. No source predecessor; group frozen transfer facts are available at planning base. Verify active ownership and actual HEAD before dispatch.
+Base `4b621ec9708361a2304efdcff4d34bb7da2b6c88`; state READY; owner-authorized for named dispatch; selected task none. Tasks have disjoint write paths within this Change; at most two isolated workers, otherwise serial. Parent owns staging and final proof; no child runs shared checks. No source predecessor; group frozen transfer facts are available at planning base. Verify active ownership and actual HEAD before dispatch.
 
 ## T01 | Evidence graph and capture | PROPOSED
 

@@ -1,6 +1,6 @@
 # TD10 | task queue
 
-Base `4b621ec9708361a2304efdcff4d34bb7da2b6c88`; state Proposed; selected task none. Tasks have disjoint write paths within this Change; at most two isolated workers, otherwise serial. Parent owns staging and final proof; no child runs shared checks. TD01–TD08 archived on technical implementation target; refresh actual main and active protected ownership before final reconciliation. AC08 owns packages/README and final status; OBS final closure also touches STATUS. Hold only affected shared-file work until actual custody is released and accepted changes are incorporated. Technical successor facts must be on technical target before final main join.
+Base `4b621ec9708361a2304efdcff4d34bb7da2b6c88`; state READY (dependency-gated); owner-authorized for named dispatch; selected task none. Tasks have disjoint write paths within this Change; at most two isolated workers, otherwise serial. Parent owns staging and final proof; no child runs shared checks. TD01–TD08 archived on technical implementation target; refresh actual main and active protected ownership before final reconciliation. AC08 owns packages/README and final status; OBS final closure also touches STATUS. Hold only affected shared-file work until actual custody is released and accepted changes are incorporated. Technical successor facts must be on technical target before final main join.
 
 ## T01 | Front doors and current status | PROPOSED
 

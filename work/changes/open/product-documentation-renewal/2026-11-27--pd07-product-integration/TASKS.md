@@ -1,6 +1,6 @@
 # PD07 | task queue
 
-Base `4b621ec9708361a2304efdcff4d34bb7da2b6c88`; state Proposed; selected task none. Tasks have disjoint write paths within this Change; at most two isolated workers, otherwise serial. Parent owns staging and final proof; no child runs shared checks. PD01–PD06 archived on product target AND accepted technical renewal joined to actual main at a verified SHA; merge/reconcile actual main into product target without overwriting unrelated work before transfer cleanup. No other Change may write these paths after the predecessor receipts.
+Base `4b621ec9708361a2304efdcff4d34bb7da2b6c88`; state READY (dependency-gated); owner-authorized for named dispatch; selected task none. Tasks have disjoint write paths within this Change; at most two isolated workers, otherwise serial. Parent owns staging and final proof; no child runs shared checks. PD01–PD06 archived on product target AND accepted technical renewal joined to actual main at a verified SHA; merge/reconcile actual main into product target without overwriting unrelated work before transfer cleanup. No other Change may write these paths after the predecessor receipts.
 
 ## T01 | Product front door | PROPOSED
 

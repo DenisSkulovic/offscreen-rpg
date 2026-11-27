@@ -16,7 +16,9 @@ Run `git diff --check`, `python scripts/check_docs.py`, `node scripts/repo-tools
 
 ## Downstream gate
 
-Design-level final integration and owner acceptance; no constituent merge directly to main. Product facts remain until exact technical successor on actual main, not branch-only. Technical receivers preserve original scope and provenance. No independent readiness or commission yet.
+DOC-E1-IR-M01/M02: before retiring the technical group preserve its completed register with the frozen transfer rows, exact review SHA and completion receipt in the existing Design dossier; retain it at the archived Design destination and reconcile inbound links from the product group and PD07 on main. Additional incidental TD06/TD07 realization mirrors are not extra deletion authorizations. Record these dispositions in the joint receipt.
+
+Design-level final integration and owner acceptance; no constituent merge directly to main. Product facts remain until exact technical successor on actual main, not branch-only. Technical receivers preserve original scope and provenance. Readiness and release recorded in group; actual proof remains NOT RUN.
 
 ## Technical joint acceptance (M02/M03/M04)
 

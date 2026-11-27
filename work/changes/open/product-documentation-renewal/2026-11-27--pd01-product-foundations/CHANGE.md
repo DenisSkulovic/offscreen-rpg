@@ -1,8 +1,10 @@
 # PD01 | Product foundations and vocabulary
 
-**State:** Proposed — planner-authored first batch; independent Change readiness not performed; not commissioned.
+**State:** READY; owner-authorized for named dispatch.
 
-**Kind:** documentation (DOC). **Approval:** E1 design owner-accepted for planning 2026-11-27; no execution authority. **Target:** `implementation/product-documentation-renewal`. **Source baseline:** `c7058958ec3f43fd37ec680d05757561d628926b` (main); original snapshot `94808654fdf93e3102469ed3f5d5b2d476ff6f8d`, intervening docs only. [Accepted Design](../../../../designs/open/product-documentation-renewal/README.md) · [Group](../README.md).
+**Kind:** documentation (DOC). **Approval:** E1 design owner-accepted 2026-11-27; implementation release recorded in group. **Target:** `implementation/product-documentation-renewal`. **Source baseline:** `c7058958ec3f43fd37ec680d05757561d628926b` (main); original snapshot `94808654fdf93e3102469ed3f5d5b2d476ff6f8d`, intervening docs only. [Accepted Design](../../../../designs/open/product-documentation-renewal/README.md) · [Group](../README.md).
+
+**Release:** [group readiness and dispatch](../README.md#owner-release-and-independent-readiness); exact reviewed candidate `606de3a0a4856eb36ce275bd4bc109ea46d480c0`. Verify named assignment, actual target, branch guard, prerequisites and custody before editing.
 
 ## Implementation first-screen brief
 

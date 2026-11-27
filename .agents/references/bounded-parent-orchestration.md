@@ -16,7 +16,7 @@ Dispatch only selected, commissioned tasks whose frozen prerequisites hold. Read
 
 Undertaking custodian reconciles accepted receipt, STATUS and technical ledger with OVERVIEW.md at the same serialized join. Reestimate overall and major-track completion/remaining with uncertainty only when milestones, risk or priorities actually changed. The planner presents the supervisor recap; that recap is not an implementation task.
 
-## 0a. Budget-first Composer dispatcher contract (2026-11-21)
+## 0a. Budget-first implementation dispatcher contract (2026-11-21)
 
 Read CHANGE.md, the TASKS dispatch index when present, the current branch and worktree, and the first ready T-ID's named anchors. Check [submission scale](planning-artifact-quality.md#4-submission-scale-and-measurement). Return a newly commissioned packet that is incoherent, unsafe or forces architectural invention, and name the exact gap. A count or size signal alone is not that return. Do not audit architecture, preload every source and contract file, enumerate callers or design tests from scratch. Consult the precise linked sections as needed.
 
@@ -24,7 +24,7 @@ Read CHANGE.md, the TASKS dispatch index when present, the current branch and wo
 
 One child at a time normally. Up to two disjoint ready children when the planner's frozen dependency and ownership matrix proves independence, including generated files, test fixtures, resources and the Git index. No wider concurrency without an explicit collision-free schedule. Combining adjacent tiny tasks requires the same frozen contract, write ownership and assigned proof boundary. Count actual assignments. The seven-task default is a planning boundary, not a reason to hide scope in subcards.
 
-Parent validates receipts/diffs, integrates dependency results, then selects next ready task. Child cannot spawn children. No alternate implementations, broad quality sweeps, model comparisons, excessive tuning or unapproved expensive-model escalation. [Model budget](../../.cursor/MODEL-POLICY.md) · [Task format](task-execution-standard.md).
+Parent validates receipts/diffs, integrates dependency results, then selects next ready task. Child cannot spawn children. No alternate implementations, broad quality sweeps, model comparisons, excessive tuning or unapproved expensive-model escalation. Follow the active client’s model-budget policy. [Task format](task-execution-standard.md).
 
 ## 0. Dedicated Change commission owner shorthand
 
@@ -52,7 +52,7 @@ A batch is only an internal scheduling envelope within one Change, not another f
 
 ### Context-isolation delegation
 
-Delegate a bounded deterministic chore when noisy reads or repetitive edits would crowd the coordinator: Git status and ref summaries, exact occurrence or link collection, already decided documentation edits, test counts. Use the client's mechanical utility route when it has one. Cursor uses its Auto utility worker. Claude Code uses its Haiku utility worker. A client without that route does the chore directly. No worker for a trivial two-command operation. No ambiguous bug hunt, architectural, security or transaction decision, and no nested agents. Return concise facts and stop at a nonmechanical contradiction. This does not authorize additional independent task scope.
+Delegate a bounded deterministic chore when noisy reads or repetitive edits would crowd the coordinator: Git status and ref summaries, exact occurrence or link collection, already decided documentation edits, test counts. Use the client's mechanical utility route when it has one. The active client adapter owns the utility worker and model choice. A client without that route does the chore directly. No worker for a trivial two-command operation. No ambiguous bug hunt, architectural, security or transaction decision, and no nested agents. Return concise facts and stop at a nonmechanical contradiction. This does not authorize additional independent task scope.
 
 ## 2. Cheap children; parent owns reconciliation
 

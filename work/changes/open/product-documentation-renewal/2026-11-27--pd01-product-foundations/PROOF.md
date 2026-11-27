@@ -8,4 +8,4 @@
 
 ## Joint gate
 
-PD07 owns group-wide semantic, transfer and navigation acceptance; run `node scripts/repo-tools/wiki-health.mjs` and representative `wiki:find`/`wiki:read` classification checks there. No runtime qualification. Current state: NOT RUN; no commission.
+PD07 owns group-wide semantic, transfer and navigation acceptance; run `node scripts/repo-tools/wiki-health.mjs` and representative `wiki:find`/`wiki:read` classification checks there. No runtime qualification. Current proof state: NOT RUN; readiness and release recorded in group.

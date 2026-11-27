@@ -40,6 +40,8 @@ When the assigned designer, planner or reviewer lacks repository write access, p
 
 **Downloadable Git patches:** Every patch delivery must include a copy-paste-ready terminal command for that exact filename and the owner’s actual shell and download location (state any path assumption). Run from the repository root; include `git apply --check` before `git apply` and make application conditional on a successful check. Include a way to inspect the resulting diff. Never provide a patch download alone. The custodian’s branch, HEAD, dirty-path and drift checks above still apply.
 
+For Windows browser downloads applied in WSL, discover the exact filename with Bash `nullglob` and `matches=(/mnt/c/Users/*/Downloads/"$name")`; require exactly one match, abort on zero or ambiguity, then `git apply --check "${matches[0]}"` before application. Do not hardcode usernames, depend on `cmd.exe`, or store personal machine paths. Adapt to the actual shell and OS when different.
+
 ## Responsibility split
 
 The planner investigates relevant source, settles authority, architecture, interfaces and safety, and records exact mappings and proof. The implementation agent verifies named local facts, performs the decided edit and the assigned checks, and reports contradictions. Local error-directed diagnosis is essential. Heavy acceptance stays with the acceptance lead and the owner.

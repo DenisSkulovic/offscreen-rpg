@@ -14,7 +14,7 @@ Development throughput and continuous flow are first-class objectives, alongside
 
 ## Engineering roles
 
-Roles name responsibilities. One agent may combine them. Independence is required when a review must not reuse the author's context: the independent reviewer is not the author of the reviewed candidate. A fresh chat is one valid independent review context.
+Roles name responsibilities, never a required client, vendor or model. The owner may assign any capable client to any role, including design, planning, review and implementation; client-specific model routing and tool mechanics belong only in the applicable adapter. A historical tool name is provenance, not a dispatch constraint. One agent may combine them. Independence is required when a review must not reuse the author's context: the independent reviewer is not the author of the reviewed candidate. A fresh chat is one valid independent review context.
 
 | Responsibility | Owns |
 | --- | --- |

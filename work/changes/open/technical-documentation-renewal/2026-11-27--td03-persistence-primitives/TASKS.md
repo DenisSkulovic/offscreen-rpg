@@ -1,6 +1,6 @@
 # TD03 | task queue
 
-Base `a28693dcefe80a3242a870ed03a6c144b47f1ac7`; state Proposed; selected task none. All T-IDs independent construction with disjoint exact paths; maximum two isolated workers at once or serial if isolation unavailable. Parent-only staging and final proof. Group target join lock. No sibling/shared files.
+Base `a28693dcefe80a3242a870ed03a6c144b47f1ac7`; state READY; owner-authorized for named dispatch; selected task none. All T-IDs independent construction with disjoint exact paths; maximum two isolated workers at once or serial if isolation unavailable. Parent-only staging and final proof. Group target join lock. No sibling/shared files.
 
 ## T01 | Durable authority and record families | PROPOSED
 

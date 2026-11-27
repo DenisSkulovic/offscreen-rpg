@@ -1,6 +1,8 @@
 # TD04 | Game engine and Game Authority
 
-**State:** Proposed; independent readiness pending; not commissioned. **Kind:** DOC. **Base:** `a28693dcefe80a3242a870ed03a6c144b47f1ac7` main; E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`, owner accepted 2026-11-27. No runtime changes between original snapshot and this planning base. **Target:** `implementation/technical-documentation-renewal`. [Accepted Design](../../../../designs/open/technical-documentation-renewal/README.md) · [Group](../README.md).
+**State:** READY; owner-authorized for named dispatch. **Kind:** DOC. **Base:** `a28693dcefe80a3242a870ed03a6c144b47f1ac7` main; E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`, owner accepted 2026-11-27. No runtime changes between original snapshot and this planning base. **Target:** `implementation/technical-documentation-renewal`. [Accepted Design](../../../../designs/open/technical-documentation-renewal/README.md) · [Group](../README.md).
+
+**Release:** [group readiness and dispatch](../README.md#owner-release-and-independent-readiness); exact reviewed candidate `606de3a0a4856eb36ce275bd4bc109ea46d480c0`. Verify named assignment, actual target, branch guard, prerequisites and custody before editing.
 
 ## Implementation first-screen brief
 

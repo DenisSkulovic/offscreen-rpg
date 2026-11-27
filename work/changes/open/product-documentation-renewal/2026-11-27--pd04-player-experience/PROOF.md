@@ -13,4 +13,4 @@ Run `git diff --check`, `python scripts/check_docs.py`, `node scripts/repo-tools
 
 ## Downstream gate
 
-PD07. Product facts remain until exact technical successor on actual main, not branch-only. Technical receivers preserve original scope and provenance. No independent readiness or commission yet.
+PD07. Product facts remain until exact technical successor on actual main, not branch-only. Technical receivers preserve original scope and provenance. Readiness and release recorded in group; actual proof remains NOT RUN.
