@@ -9,6 +9,8 @@
 | **A. Direct launch** | On `/stories/new`, type a prompt (or choose a prepared preset) and press Play | `useStoryLaunch` → `PUT /api/stories/launch/:operationId` → Game Authority launch service | Current prompt-first UI |
 | **B. Draft + opening** | Edit a draft, choose setup including Storyteller, save, request an opening candidate, then Start | `PUT /api/drafts/:id` → `PUT /api/drafts/:id/openings/:generationId` → `PUT /api/stories/:storyId/start` | Existing authoring journey and provider-free TURN03 golden trace |
 
+**Realized now, not selected.** The product and technical owners select a prompt-first launch with no mandatory preview step. What this chapter draws is the dated source: `/stories/new` shows one Story Prompt; `/stories/launch` is only a compatibility redirect to it; the prepared-preset catalogue renders only when the server supplies presets, and the route passes `presets={[]}`, so none appears ([interaction contracts](../technical/client/interaction-contracts.md#current-launch-realization-dated-source-observed-no-human-ux-proof)); saved drafts stay on the legacy staged creator at `/stories/[id]`.
+
 **Do not silently equate them.** The current UI has both a direct `/stories/new` surface and a persisted draft editor at `/stories/[id]`. TURN03's low-level acceptance fixture takes route B. The choice of which authoring path should be canonical over time requires product review; this documentation does not delete either.
 
 ## A. The direct Play/Story Prompt launch
@@ -42,7 +44,9 @@ sequenceDiagram
 
 **Follow the backend:** [Nest launch controller](../../apps/api/src/modules/stories/controllers/catalogue-and-launch.ts) validates the owner's request and calls `StorySeam.putLaunch` in [game-authority-client.ts](../../apps/api/src/modules/stories/game-authority-client.ts). Under distributed configuration this is a private Game Authority call; embedded configuration uses an in-process seam. The [launch service](../../apps/game-authority/src/launch-put.ts) owns the launch ledger, Library staging, scripted Writer mission and opening publication. PostgreSQL holds identity and launch state; DocumentStore holds immutable source objects.
 
-**Important limit:** This source path currently invokes `runScriptedLaunchWriter`. A target future Writer might conduct multi-round research using real models, but **do not read this as an already enabled paid model launch**.
+**Important limit:** This source path currently invokes `runScriptedLaunchWriter`: a scripted opening, intended as a plumbing proof only. It shows that one frozen launch can reach a published first scene. It does **not** show that an arbitrary prompt yields a meaningful opening, that any live model played, or an enabled paid launch; the selected Writer (multi-round research over a rooted Library) is a different thing.
+
+**Uncertainty never restarts a launch.** If the PUT times out or the status is held or uncertain, the next step is a GET of the same frozen operation. A new operation ID is a new launch the player must choose deliberately; the page's failure table repeats this.
 
 ## B. The saved draft and opening candidate route
 
@@ -83,4 +87,4 @@ For deeper source after these routes, read [Story Engine](../../packages/story-e
 | A scripted Writer ran | A paid LLM request was **not** made |
 | Opening exists but Start fails | A candidate is **not** necessarily an active story |
 
-**Status:** Both paths exist in source. TURN03's route-B local scripted trace and associated fake-only helpers do **not** establish the complete real release player journey. Follow [playing and forking](13-playing-and-forking.md) for the next step.
+**Status:** Both paths exist in source. The route-B local scripted trace (the TURN03 fixture; TURN03 was cancelled 2026-11-27) and associated fake-only helpers do **not** establish the complete real release player journey. Follow [playing and forking](13-playing-and-forking.md) for the next step.

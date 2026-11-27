@@ -1,10 +1,14 @@
 # Client interaction contracts
 
-**Target interaction contract:** creation is prepared **Play / optional Customize** or one Story Prompt. The client may display queued/running/uncertain launch state, but does not require a generated preview/Start ceremony. History controls operate on immutable published scene identities; forking names the selected scene and never pretends that reading history itself mutates the live branch.
+**Owns:** how a player intention, a wait and a draft edit behave on the wire and in client state. **Product honesty** of what the player should understand is [play and decisions](../../product/experience/play-and-decisions.md) and [entry](../../product/experience/entry-and-onboarding.md). This page owns the client mechanism.
 
-**Owns:** how a player intention, a wait and a draft edit behave on the wire and in client state.  
-**Product honesty** of what the player should understand is [play and decisions](../../product/experience/play-and-decisions.md) and [entry](../../product/experience/entry-and-onboarding.md). This page owns the client mechanism.  
-**Status:** selected with the [React/Next architecture](architecture.md). Free-text gameplay actions are not a selected interaction.
+**Status (authority):** selected with the [React/Next architecture](architecture.md). Source-observed realization facts are labeled as such under their heading and never promote the target to demonstrated human UX.
+
+**Selected interaction contract**
+
+- Creation is prepared **Play / optional Customize** or one Story Prompt. The client may display queued, running and uncertain launch state, but does not require a generated preview or a Start ceremony. No mandatory preview.
+- History controls operate on immutable published scene identities. Forking names the selected scene and never pretends that reading history itself mutates the live branch.
+- Free-text gameplay actions are not a selected interaction.
 
 ## Intention
 
@@ -21,6 +25,16 @@ Draft creation, campaign settings and private presets use React Hook Form with Z
 Draft saves use a revision fence. On an ambiguous response, GET the latest draft and preserve dirty edits. Draft save is not a charged Storyteller command. There is no autosave and no local private-draft persistence unless a later product decision says so.
 
 Start keeps `?story=` as the recovery anchor. The frozen candidate id, draft revision, locked flag, speed and optional start package are what may be retried, and only after a GET shows the story is not settled.
+
+### Current launch realization (dated, source-observed; no human-UX proof)
+
+Mirrored with provenance from [product entry, Current POC honesty](../../product/experience/entry-and-onboarding.md#current-poc-honesty); the product text stays in place and still owns what the player should understand. Source reads: `apps/web/app/(authenticated)/stories/new/page.tsx`, `stories/launch/page.tsx`, `src/features/stories/launch/use-story-launch.ts`, `packages/story-engine/src/storyteller/launch-publication.ts`.
+
+- **`/stories/new`** (Stories home, Create story) renders one Story Prompt through `StoryLaunchForm`. There is no env-gated alternate launch route. **`/stories/launch`** is a compatibility entry that redirects to `/stories/new`.
+- **Server presets only.** The prepared catalogue is shown only when the server supplies presets. An empty list must not fake one. At this source reading the route passes `presets={[]}`, so no catalogue appears.
+- **Legacy drafts.** Saved drafts remain on the legacy staged creator at `/stories/[id]`. The Draft and Start contracts above still govern that path.
+- **Launch recovery.** The launch hook freezes the request body, submits it as a `PUT` keyed by operation ID, and reads status by that ID. A 404 on reload means the launch was not submitted. The client returns to a needs-input state and sends nothing automatically.
+- **Scripted opening and continuation.** A published launch opening can carry one server-scripted `observe` choice and no character sheet. Choosing it uses the existing campaign action API. A later scene is a scripted Writer continuation, not a live model evaluation. This is source-observed scripted behavior, not live Storyteller or provider proof.
 
 ## Wait honesty
 

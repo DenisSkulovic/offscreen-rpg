@@ -2,6 +2,8 @@
 
 **Target contract:** context is assembled incrementally from an exact rooted Library view. Cost control is mission-wide and explicit, not a reason to flatten the writer into one shot or preload the whole Library.
 
+**Selected contract (leading).** Budget is one whole-operation envelope: every round, read, repair and optional specialist draws on it, no round or retry is hidden, and the runtime keeps headroom so a final answer can end gracefully or the operation holds with a typed reason ([Bounded work](#bounded-work-not-an-open-ended-agent), [headroom](#context-window-headroom-and-graceful-termination)). Required controlling state outranks decorative lore; active-scene continuity is revision-fenced. The three caches are distinct and none grants truth: a shared or reusable prefix is a potential saving, not a cache hit, and only provider-reported billing shows a hit ([Three different caches](#three-different-caches)). Missing or delayed usage is unknown, never zero spend ([Budget accounting](#budget-accounting)). Money figures on this page are illustrative arithmetic or exact dated historical observations, not entitlements; effective spending is [Usage policy](../platform/spending-and-entitlements.md). This page changes no spend or entitlement and grants no live permission.
+
 **Quick route by question:** [what this page owns](#what-this-page-owns) · [what goes into one request?](#build-context-for-a-specific-decision) · [bounded work and model rounds](#bounded-work-not-an-open-ended-agent) · [continuity summaries](#summaries-without-losing-the-story) · [which cache is which?](#three-different-caches) · [provider budget accounting](#budget-accounting) · [concrete spending envelope](#a-concrete-cost-envelope). This is **in-game Storyteller inference**, not the cost of Claude Code or Cursor developing the repository; see [coding-agent context economics](../../../.agents/references/context-economics.md) for that.
 
 The cost objective is a coherent story within an explicit allowance. We cannot promise a few cents per unattended week without measuring frequency, context size, output length, repair rates and model prices. Ordinary waiting itself needs no model invocation.
@@ -196,6 +198,8 @@ Absolute provider spend caps cannot be guaranteed solely from token estimates if
 
 ## A concrete cost envelope
 
+*Illustrative only: nothing in this section is a measured cost, a price quote or an entitlement.*
+
 The following prices are invented arithmetic inputs, not quotes for any model. Assume $0.50 per million input tokens and $2.00 per million output tokens. An 8,000-input/1,000-output call costs:
 
 ```text
@@ -225,9 +229,13 @@ For live A/B testing, assign a stable variant at story creation or another expli
 
 ## Approved local POC boundaries
 
+*Exact historical approved limits of the local POC as recorded; they are not general policy and not a selected ceiling.*
+
 Capture at most six previous passages, current state, selected intention and up to twenty source-backed notes, with a 48 KiB complete-request limit. Mandatory evidence overflow holds before inference. New tasks produce note patches with the scene; there is no separate summarizer or tool loop. A strict one-shot recipe permits one dispatch. A repairable ordinary recipe permits one initial dispatch plus at most one explicit repair of settled `invalid_output`; both rounds share the task's original cumulative input, generated-token, money and deadline envelope. The repair packet contains the immutable original task, the private invalid candidate and bounded validator findings, and requests one complete replacement under the same output schema. It cannot replay mechanics, switch routes, change creative settings or repair refusal/uncertain delivery. Ambiguous usage stops paid admission globally. The source adapter remains opt-in; provider-free evidence precedes another live repair experiment.
 
 ## Selected private Writer round execution split (WR10, planned 2026-11-22)
+
+*Scope: a historical, planned private split of one Writer-mission round between Game Authority and the executor, proved with a fake provider. It is not generic agent architecture and not Agent Core.*
 
 The distributed execution Worker deliberately rejects broad SQL credentials and has no direct DocumentStore authority. The existing `runDurableWriterMissionModelRound(database,...)` is therefore an **authority-local** Writer interpreter and cannot be moved directly to the execution Worker. The selected next seam is a **private versioned two-phase protocol**: Game Authority verifies a persisted v3 Writer mission, owner/root/budget/step, then obtains the **initial provider model and price policy from a trusted GA-installed fake-only allowlist** validated against the capture and budget; once the first attempt reserves, that exact policy is persisted and fenced on all subsequent replays, compiles a frozen wire, and commits a possibly-dispatched attempt **before** returning a single-use bounded execution envelope. The executor can only authenticate via its private bearer and send bounded provider I/O, then submit result/usage to GA; it cannot choose owner, budget, publication state, source root or SQL row. No key or raw response goes into Temporal workflow history. GA persists the private CAS body off-lock and atomically settles usage and step response pointer with the existing WR09A funding locks. Retry of an already-issued prepare cannot authorize another provider send; lost responses remain uncertain rather than silently charged as free or resent. The existing generation-task `executeFrozenStoryteller(generationId)` pipeline is distinct from v3 Writer missionId/ordinal custody and remains unchanged until a separate, explicitly designed taskQueue/wake Change.
 

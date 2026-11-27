@@ -4,6 +4,8 @@
 
 ## Player login does not give staff powers
 
+**Two things this tour keeps apart.** The *actual narrow staff source* is what the sections below trace: a separate staff session, exact-reference player lookup, case-scoped reads and redacted evidence, each behind a named capability. The *production control-plane goal* (broad Player 360, live operations, a production support-investigator grant with full Turn Capsule disclosure) is selected or proposed in the [admin authority owner](../technical/admin/topology-and-authorization.md) and is not what the source does. Even in the narrow source nothing gives raw database access, player impersonation or a way to act as a player; a staff action runs under a scoped staff session and is audited ([commands and audit](../technical/admin/commands-and-audit.md#1-operational-intent-is-not-a-raw-crud-mutation)). Landed access and the synthetic or disposable-grant proof are recorded at [Authorization claim map](../technical/admin/topology-and-authorization.md#authorization-claim-map).
+
 ```mermaid
 flowchart TD
   A["Player logs in using GitHub"] --> B["Opens /control/enter"]

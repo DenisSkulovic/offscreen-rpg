@@ -1,6 +1,8 @@
 # Chamber laboratory | implementation protocol and authority
 
-**Status:** Selected internal developer-tooling contract. Inspected 2026-11-16: LabRun, chamber lab contracts and `apps/api/src/modules/stories/chamber-lab-controller.ts` exist. The November 12 draft described this protocol before that code landed. Fake-adapter, disposable-database, connected-worker and paid-provider lanes are different proofs; see [STATUS](../../../STATUS.md#capability-coverage). This document chooses shared wire/data/driver boundaries. Browser UI layout, exact class names and general player mechanics are not owned here. The laboratory promise and lane model are [Chamber and fixtures](chamber-and-fixtures.md). The [2026-11-12 gap audit](../../../research/legacy-audits/chamber-gap-2026-11-12.md) is a dated observation, not the current absence claim.
+**Authority:** this page owns the selected shared wire, data and driver boundaries of the Chamber laboratory: identity vocabulary, run lifecycle, command whitelist, lane drivers, fixture isolation, time and fault seams, observations and reports, and run safety. The laboratory promise, lane model and C01-C16 acceptance are in [Chamber and fixtures](chamber-and-fixtures.md). Browser UI layout, exact class names and general player mechanics are not owned here.
+
+**Current realization (source-inspected):** the versioned contracts are in `packages/lab-support/src/interfaces/chamber-lab.ts` and `packages/lab-interface/src/chamber.ts`; the scenario catalogue is `packages/lab-support/src/chamber-lab-catalog.ts`; the orchestrator and adapters are `packages/lab-support/src/lab/` (`lab-run.ts` and siblings); the Bench runner is `tools/chamber/src/lab/bench.ts`; the HTTP routes are `tools/api-lab/src/chamber-lab-controller.ts`, mounted only by API Lab, never by production bootstrap. An earlier draft cited `apps/api/src/modules/stories/chamber-lab-controller.ts`; that path no longer exists. Fake-adapter, disposable-database, connected-worker and paid-provider lanes are different proofs; see [STATUS](../../../STATUS.md#capability-coverage). The [2026-11-12 gap audit](../../../research/legacy-audits/chamber-gap-2026-11-12.md) is a dated observation, not the current absence claim. Module sketches below that name other directories (for example `tools/chamber/src/lab/` adapters beyond Bench) are selected ownership, not present files.
 
 ## Cheap reading route
 
@@ -60,7 +62,7 @@ This is *semantic setup* and must be rejected if a real accepted-shift fixture c
 
 **Dependency direction:** scenario data + command registry -> run orchestration -> lane-specific adapter -> **real production policy/application operation** -> typed observations/contract assertions. Delivery/UI/framework code must not be imported into `@offscreen/game`. One scenario can run in multiple lanes and produce separate evidence.
 
-**Selected source/module ownership (future):**
+**Selected source/module ownership (current files named in the status above; the rest is target):**
 - `packages/lab-support/src/interfaces/chamber-lab.ts`: versioned scenario/run/command/observation public contracts; no Node/DB import.
 - `packages/lab-support/src/lab/`: typed fixture recipe validators, app-boundary command adapter, run orchestration/steps, observation/diff/assertion policy, faults under explicitly local composition. Use separate small modules by responsibility; keep `createChamber` legacy API stable until migration. Application keeps a test-only reexport until MA10.
 - `tools/chamber/src/lab/`: CLI, Bench direct pure evaluator, isolated Sandbox provisioning, Connected/held mode adapters and launch commands. Existing `tools/chamber/src/main.ts` mode flags remain compatible until a controlled launcher Change.
@@ -118,13 +120,7 @@ Test-only `FaultPlan` is a bounded set of **named semantic boundary hooks**, eac
 
 ### Proof tiers
 
-Selected run labels stay `bench-policy`, `sandbox-db`, `connected`, `held-packet` and `authorized-live`. A green link check is not semantic agreement.
-
-- A synthetic Chamber fixture is a `FixtureRecipe` or checkpoint. A Chamber fixture is not a live player proof.
-- Provider-free integration is a sandbox, connected, or held-packet run with no dispatch. A zero-attempt hold is not a completed model call.
-- An actual provider attempt is an `authorized-live` result only when that run is recorded on its own. An actual provider attempt needs its own recorded run and is not authorized by this page.
-- Live player acceptance is a person accepting play. A manual QA mark, a fixture, and a connected smoke do not become that acceptance. General player mechanics are not owned here.
-- Source-verified evidence is an observation whose producer and consumer boundaries were actually read at a named revision. Module presence and a reachable wiki do not replace that reading.
+The tiers themselves are defined once, in [Chamber and fixtures](chamber-and-fixtures.md#proof-tiers). Here they bind to run labels: `bench-policy`, `sandbox-db`, `connected`, `held-packet` and `authorized-live`. A fixture is a `FixtureRecipe` or checkpoint and is not live player proof. Provider-free integration is a sandbox, connected or held-packet run with no dispatch, and a zero-attempt hold is not a completed model call. Only a separately recorded run is `authorized-live`, and this page authorizes none. A manual QA mark, a fixture or a connected smoke never becomes live player acceptance. Source-verified evidence means producer and consumer boundaries were actually read at a named revision; module presence and a reachable wiki do not replace that. A run report states its tested boundary and grants no production permission.
 
 ## 7. Client API and workbench
 
@@ -138,7 +134,7 @@ Selected run labels stay `bench-policy`, `sandbox-db`, `connected`, `held-packet
 
 ## 8. Safety and lifecycle
 
-**Existing critical boundary preserved:** `apps/api/src/app.ts` includes developer controllers only under `options.developerTools===true`, ordinary API `main.ts` omits them, local Chamber launcher intentionally opts in with loopback fixture identity. This is **already an effective local-vs-ordinary registration boundary**; no automatic `DEVELOPER_USER_IDS` hosted RBAC Change. New lab commands need the same conditional registration and resource owner rules.
+**Existing critical boundary preserved:** `apps/api/src/app.ts` registers lab controllers only from `CreateAppOptions.optionalExtension`; production bootstrap leaves it unset, so Chamber and QA routes are not created. `tools/api-lab/src/create-lab-app.ts` (`createLabApp`) supplies the extension and is used by the loopback Chamber launcher, not by ordinary `main.ts`. This is **already an effective local-vs-ordinary registration boundary**; no automatic `DEVELOPER_USER_IDS` hosted RBAC Change. New lab commands need the same conditional registration and resource owner rules. An unknown target never receives a reset: the target guard (`scripts/repo-tools/testlab-target-guard.mjs`) accepts only an explicit `disposable` or `kind-offscreen-release` target.
 
 **Run budget:** per-mode maximum steps, max fixture objects, elapsed wall-time, max captures/bytes, DB and worker namespace, cleanup/TTL. Provider mode offline/held/live is an explicit invariant at **runtime composition**, not a UI toggle only. Presence of credentials does not authorize spend. A held packet must show zero provider dispatch and explicit hash/attempt. Live mode needs fresh signed or operator-confirmed route/model/price/operation cap, with one bounded release and reconciliation. **No generic fault/control endpoint in normal app**.
 

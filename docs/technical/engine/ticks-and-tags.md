@@ -1,6 +1,8 @@
 # Fictional-time and tag contracts
 
-Status: the fictional-second coordinate, exact arithmetic and campaign-owned application clock are implemented. Activity receipts preserve monotonic game time across A → B → A. A scheduler step is one real second; it is not persisted or exposed as fictional authority. Tag correction remains pending. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy the tag contract.
+**Selected contract.** Fictional time is an exact fictional-second coordinate with explicit units. A fixed real-second scheduler step only paces how many eligible fictional seconds are earned, and a calendar only labels the result. A tag is guidance or an annotation of an implemented rule. Neither a tag, a timer nor a wait duration settles world truth, moves the clock or grants progress. A pace change settles earned progress at the old rate first and never awards or removes fictional progress.
+
+**Legacy realization.** Status: the fictional-second coordinate, exact arithmetic and campaign-owned application clock are implemented. Activity receipts preserve monotonic game time across A → B → A. A scheduler step is one real second; it is not persisted or exposed as fictional authority. Tag correction remains pending. Creative settings still contain hard-coded `emphasis` and `surprises` enums and underspecified tags. Renaming those fields or moving those enums into a catalogue would not satisfy the tag contract.
 
 ## What the arithmetic does not do
 
@@ -28,9 +30,20 @@ Settle earned progress at the old rate before changing pace. Preserve the fracti
 
 This pre-POC codebase supports one current clock contract. Obsolete tick-named schemas and compatibility decoders are removed rather than carried forward; development databases may be reset. The fixed real-second scheduler remains distinct from the canonical fictional-second coordinate and optional calendar presentation.
 
+Source anchors: `earnedGameSeconds` in `packages/game/src/time.ts` implements the earned-progress arithmetic and `nextBoundaryGameSecond` in `packages/game/src/activities.ts` the next due boundary; neither is an authority over permission, which stays in [Permission to advance](chronology-and-activities.md#permission-to-advance).
+
 Supported mechanical formats are the current strict schemas in `packages/game/src/activities.ts` and `immediate-actions.ts`; version fields fence malformed or stale local data, not maintained backward compatibility. The next clock/identity slice replaces disposable prototype formats rather than maintaining older versions.
 
 Pace data is `{kind: 'rate', fictionalSeconds, realSeconds}` or `{kind: 'instant'}`. Persist earned whole game seconds plus a reduced rational remainder (decimal integer strings), independently of the resolved-boundary cursor. Integer arithmetic preserves that remainder across any supported rate changes. If a control encounters a backlog beyond one batch, commit that batch, continue catch-up and return a conflict/refresh instead of acknowledging an unapplied control. No speed change can discard that backlog or grant completion effects ahead of it. Only an actual interruption discards earned progress beyond its boundary. Real scheduler wakes may be capped for platform timer limits without capping fictional duration.
+
+### Existing narrative rehearsal adapter (legacy narrative-only path)
+
+Transferred from the product page [Time and autonomy — Existing narrative rehearsal adapter](../../product/gameplay/time-and-autonomy.md#existing-narrative-rehearsal-adapter) (PD02 frozen transfer; the product statement stays in place until the product integration verifies this successor).
+
+- The legacy narrative-only rehearsal maps a proposed interval to **twenty real seconds** and leaves immediate conversation at **zero** duration.
+- Source: `packages/story-engine/src/storyteller/runtime.ts` (`options.realDurationMs ?? (() => 20000)`) and `packages/story-engine/src/storyteller/saved-generation-publish.ts` (`options.realDurationMs ?? (() => 20_000)`). Both default the injected `realDurationMs` callback to 20,000 ms. A composition can inject a shorter wait (tests do). The callback establishes only that the adapter and its injection point exist; it is not evidence that the default is applied for every runtime path.
+- It is a wall-clock wait for the narrative rehearsal. It is **not** canonical time, is **not** converted into fictional seconds and is **not** added to the mechanical campaign clock. A committed-time feature must not stack this timer on top of the mechanical clock, and a mechanical campaign must not inherit its default (see also [Decisions with deadlines](chronology-and-activities.md#decisions-with-deadlines)).
+- It is an isolated existing adapter, not the target time policy for mechanical campaigns.
 
 ## Tag definitions and applications
 

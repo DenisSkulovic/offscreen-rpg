@@ -1,14 +1,16 @@
 # Presentation runtime | a living, declarative visual environment
 
-**Status:** selected frontend design target (2026-11-13). **PX portfolio seams landed**; not yet visually/behaviorally accepted for engine integration. (C3: removed stale “no implementation authorized” present-tense banner.)  
-**Product presentation promises:** [product experience presentation](../../product/experience/presentation.md). **Later selected POC shell:** [Living Book client target](living-book-poc.md) keeps the book recognizable and directs V1 appearance primarily to the *surrounding stage/lighting*. This is a composition priority, not a new appearance schema or a claim that live Storyteller direction is implemented.  
-The selected V1 language is [below](#selected-presentation-language-v1). Media budgets live in that section. Dated PX review notes stay under evidence inspections, not as a second contract.
+**Authority:** selected frontend design target (2026-11-13). The normative contract is the [selected V1 language](#selected-presentation-language-v1) (vocabulary, media budgets, resolution order) together with the boundaries under [Principles](#principles-and-non-negotiable-boundaries). It adds no authority over `StorySnapshot`, Nest or any model schema.
+
+**Dated realization, not authority:** PX portfolio seams landed but are not visually or behaviorally accepted for engine integration. The last section, [Source-grounded baseline](#source-grounded-baseline-inspection-2026-11-13-revalidate-before-px01), holds the dated inspection facts. The absence of a "no implementation authorized" banner is not an implementation claim.
+
+**Product presentation promises:** [product experience presentation](../../product/experience/presentation.md). **Later selected POC shell:** [Living Book client target](living-book-poc.md) keeps the book recognizable and directs V1 appearance primarily to the *surrounding stage/lighting*. This is a composition priority, not a new appearance schema or a claim that live Storyteller direction is implemented.
 
 ## Product promise
 
 Offscreen RPG is a world-neutral, scene-first, text-led game. A quiet apartment, abyssal cave, microscopic organism or distributed consciousness must not inherit fantasy parchment or a generic SaaS dashboard. The *same* accessible player interface can acquire radically different visual atmospheres, while reading, meaningful intentions, honest time and continuity remain recognizable.
 
-**Design target:** a controlled, composable presentation runtime: future authorized public data can change palette, lighting, texture, imagery, typography accents and individual choice treatments without rewriting React compositions. The frontend never needs to know whether directives came from a storyteller model, deterministic rules, human authors or a hand-built fixture. With no directive, the game is fully playable and uses its existing baseline appearance.
+**Design target:** a controlled, composable presentation runtime in which authorized public data can change palette, lighting, texture, imagery, typography accents and individual choice treatments without rewriting React compositions. The frontend never needs to know whether directives came from a storyteller model, deterministic rules, human authors or a hand-built fixture. With no directive, the game is fully playable and uses its existing baseline appearance.
 
 **Reject both extremes:** a small collection of named themes is too rigid; arbitrary model-authored CSS/DOM/React is unsafe, untestable and fragments the interaction grammar. We own an extensible *visual vocabulary*, not an unrestricted UI generator.
 
@@ -26,7 +28,7 @@ Exploration comps for stage, tokens, motion and accessibility are parked studies
 
 ## Stable architecture and dynamic planes
 
-For the original PX V1 work, the Living Situation Stage was the **composition authority**. The later selected [Living Book POC](living-book-poc.md) is authorized to replace its visual reading shell without changing V1's validated appearance language or game authority. Presentation modifies that shell's bounded appearance; it does not decide new page navigation, reorder verified passage content, invent offers, move settings into the fiction or turn a scene into chat bubbles.
+The reading shell (originally the Living Situation Stage, now replaceable by the selected [Living Book POC](living-book-poc.md) without changing V1's validated appearance language or game authority) is the **composition authority**. Presentation modifies that shell's bounded appearance; it does not decide new page navigation, reorder verified passage content, invent offers, move settings into the fiction or turn a scene into chat bubbles.
 
 Five conceptual layers, each with a distinct owner:
 
@@ -64,7 +66,6 @@ Authorized StorySnapshot / PlayScene (unchanged truth owner)
                    existing action callbacks
 ~~~
 
-- **Current-source correction (2026-11-17):** the optional **public appearance read bridge exists**. `packages/story-interface/src/stories.ts` carries `current.appearance`; `packages/story-engine/src/stories/reads.ts` validates source identity on the saved public projection; `apps/web/src/features/play/model/live-presentation.ts` resolves a matching document and `PlayScene` passes it into `StoryFrame`. Missing/stale/corrupt appearance falls back to the normal readable book. **A complete Storyteller-authored/published art-direction producer, guaranteed historical appearance retention, and rich-text score are NOT established by that read bridge.** Earlier PX work originally had only fixture-based tests; do not confuse that historical baseline with today's source.
 - A later bridge may pass only viewer-authorized, versioned presentation tied to a matching story/passage/offer identity. A transport/validation failure preserves last verified fiction and safe visible UI.
 - Presentation resolution is pure and deterministic. It does not trigger effects, mutate the story, consume game time, or re-fetch assets on every render. SSR must render readable HTML before hydration.
 - A scene switch may change atmosphere, but a Query refetch of the same committed scene must not reset effects, reanimate arrival or flash the default theme. A→B navigation must never show A's styling as B.
@@ -107,30 +108,6 @@ The current source contains two *real* option renderers: legacy `StoryFrame` int
 - Asset loading is best-effort, identity-bound and budgeted. Decorative backgrounds do not block interactivity; media failures never unmount action controls. Binding media limits are in [the V1 language](#selected-presentation-language-v1).
 - No global theme effect may restyle a protected session/permission/recovery control into illegibility. The initial scope is the **player's Now/story stage**, not unrelated authenticated navigation, creation wizard, developer Chamber or public demo. Sharing abstractions with them is a later, separately justified choice.
 
-## Source-grounded baseline (inspection 2026-11-13; revalidate before PX01)
-
-The demonstrated tier for this language is [capability coverage](../../../STATUS.md#capability-coverage). The file list below is the 2026-11-13 inspection, not a second contract.
-
-- `apps/web/src/features/play/ui/story-frame.tsx`: stage, prose, legacy intentions, additional stage content; passage entrance keyed to title.
-- `apps/web/src/features/play/ui/story-frame.css`: partial `--sf-*` vars alongside literal backgrounds, borders and control colors; mixes composition, typography, action and motion.
-- `apps/web/src/features/play/view.tsx`: TanStack snapshot, live updates and current verified passage; passes `CampaignPlay` as stage extras.
-- `apps/web/src/features/play/ui/campaign-offer.tsx`: nested offer/path browsing, action dispatch, planning controls; actual campaign options.
-- `apps/web/src/features/play/ui/campaign-activity.tsx`: action execution/commitment/paused semantics to preserve.
-- `apps/web/app/style.css`: broad element globals and independent demo/creation/Chamber concerns.
-- `apps/web/src/stories/story-frame.stories.tsx`: existing deterministic fixtures, suitable first workbench.
-- `apps/web/src/features/play/README.md`: source-adjacent lifecycle map. The non-negotiable framework, SSR, Query, and mutation/a11y contract is [client architecture](architecture.md).
-
-This source is *evidence of current implementation*, not visual-design authority. Reinspect when Cursor starts; do not assume a historical commit is still HEAD.
-
-## Explicit deferrals and decision gates
-
-- **Not now:** LLM prompts, image-generation providers or payment, backend data/schema changes, asset-storage/CDN architecture, persisted theme user preference, novel layout engine, arbitrary rich-text DSL, soundscape, 3D/canvas renderer, model-generated code, or new world/game rules.
-- **Later engine integration:** decide who authors/validates/persists presentation, when it is published, how a versioned public projection references the exact passage/offer, and asset ownership/rights. The frontend capability registry/schema will be the input to that design, not an invitation to hallucinate unsupported instructions.
-- **Later product evaluation:** support additional authored composition templates only when actual gameplay needs them. Preserve the meaning of navigation and choices even in cinematic modes.
-- **Human acceptance:** visually distinct worlds are necessary but not sufficient. Judge readability, intentional composition, scene/action hierarchy, player comprehension and return-to-story continuity in rendered screenshots/keyboard use, not in Markdown alone.
-
-**Proof of the architectural destination:** three clearly different environment fixtures and distinct legitimate options should be renderable by *the same component implementations* with *different validated input documents*, plus a zero-presentation fallback. No CSS/TSX edits to switch between those fixtures.
-
 ## Selected presentation language (V1)
 
 **Selected design contract, 2026-11-13.** This is the normative vocabulary. It is not permission to alter `StorySnapshot`, Nest or any LLM schema. The initial renderer may be fixture-fed. Runtime validation is mandatory even when TypeScript appears to guarantee shapes.
@@ -162,3 +139,31 @@ Resolution is pure and independent of React:
 Invalid vignette, one choice target, one media asset or one gradient falls back locally. Structural or version failure may reject the whole presentation. It must not hide the passage. Unknown effects resolve to `none`. Effects apply only to matched fictional choices, never to recovery, permission or technical controls. `danger` and `red` are not eligibility.
 
 **Negative:** a luminous deceit choice and a red aggressive choice still submit their original commands, or no command when blocked. Blank or unknown-version input leaves the canonical story and original options. Two passages with the same title stay distinct by published passage id. A stale offer id cannot decorate a newly authorized choice, and an accent cannot submit a command. A microbe or bodiless scene may be an abstract field with no inventory and no photograph. Invalid input never changes a command id, path, body, retry or eligibility.
+
+## Explicit deferrals and decision gates
+
+- **Not now:** LLM prompts, image-generation providers or payment, backend data/schema changes, asset-storage/CDN architecture, persisted theme user preference, novel layout engine, arbitrary rich-text DSL, soundscape, 3D/canvas renderer, model-generated code, or new world/game rules.
+- **Later engine integration:** decide who authors/validates/persists presentation, when it is published, how a versioned public projection references the exact passage/offer, and asset ownership/rights. The frontend capability registry/schema will be the input to that design, not an invitation to hallucinate unsupported instructions.
+- **Later product evaluation:** support additional authored composition templates only when actual gameplay needs them. Preserve the meaning of navigation and choices even in cinematic modes.
+- **Human acceptance:** visually distinct worlds are necessary but not sufficient. Judge readability, intentional composition, scene/action hierarchy, player comprehension and return-to-story continuity in rendered screenshots/keyboard use, not in Markdown alone.
+
+**Proof of the architectural destination:** three clearly different environment fixtures and distinct legitimate options should be renderable by *the same component implementations* with *different validated input documents*, plus a zero-presentation fallback. No CSS/TSX edits to switch between those fixtures.
+
+## Source-grounded baseline (inspection 2026-11-13; revalidate before PX01)
+
+**Dated realization, not a contract.** The demonstrated tier for this language is [capability coverage](../../../STATUS.md#capability-coverage). The file list below is the 2026-11-13 inspection, kept so a later reader can see which starting facts the V1 language was selected against. Re-verify it before any PX work. It is not a second contract.
+
+- `apps/web/src/features/play/ui/story-frame.tsx`: stage, prose, legacy intentions, additional stage content; passage entrance keyed to title.
+- `apps/web/src/features/play/ui/story-frame.css`: partial `--sf-*` vars alongside literal backgrounds, borders and control colors; mixes composition, typography, action and motion.
+- `apps/web/src/features/play/view.tsx`: TanStack snapshot, live updates and current verified passage; passes `CampaignPlay` as stage extras.
+- `apps/web/src/features/play/ui/campaign-offer.tsx`: nested offer/path browsing, action dispatch, planning controls; actual campaign options.
+- `apps/web/src/features/play/ui/campaign-activity.tsx`: action execution/commitment/paused semantics to preserve.
+- `apps/web/app/style.css`: broad element globals and independent demo/creation/Chamber concerns.
+- `apps/web/src/stories/story-frame.stories.tsx`: existing deterministic fixtures, suitable first workbench.
+- `apps/web/src/features/play/README.md`: source-adjacent lifecycle map. The non-negotiable framework, SSR, Query, and mutation/a11y contract is [client architecture](architecture.md).
+
+- **Public `/demo` (source-grounded mirror of [product principles, Demo vs live](../../product/experience/principles.md#demo-vs-live)):** `apps/web/app/demo` (`demo-state.ts`, `story-demo.tsx`, `script.ts`) is an authored, scripted browser prototype. Demonstration time advances only through manual controls such as a waiting-advance choice. State lives in the browser and refreshing resets it. It needs no sign-in and makes no provider or model call (the page states "Scripted preview · simulated time · resets when refreshed. No AI"). It does not use the authenticated Query provider. It is not production time or absence behavior and is not evidence for live Storyteller direction or for the V1 resolver. The product page keeps the original wording.
+
+- **Appearance read bridge (dated realization, 2026-11-17 correction):** the optional **public appearance read bridge exists**. `packages/story-interface/src/stories.ts` carries `current.appearance`; `packages/story-engine/src/stories/reads.ts` validates source identity on the saved public projection; `apps/web/src/features/play/model/live-presentation.ts` resolves a matching document and `PlayScene` passes it into `StoryFrame`. Missing, stale or corrupt appearance falls back to the normal readable book. **A complete Storyteller-authored art-direction producer, guaranteed historical appearance retention and rich-text score are NOT established by the bridge.** Earlier PX work had only fixture-based tests; that historical baseline must not be confused with current source. The producer side is [scene direction](scene-direction-production.md).
+
+This source is *evidence of current implementation*, not visual-design authority. Reinspect when an implementer starts; do not assume a historical commit is still HEAD.

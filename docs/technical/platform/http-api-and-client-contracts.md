@@ -1,12 +1,16 @@
 # Cross-route HTTP identity, receipt, and client-read contract
 
-**Storyteller evolution routes:** direct prepared Play and one-Story-Prompt launch are durable operation commands. A 202/queued/running/uncertain response names that same operation; GET returns authoritative current status and eventual committed first scene. Retrying transport never means “start another story.” Historical fork commands similarly name one source scene and produce one child branch identity.
+**Selected topology and authority.** The browser talks only to the Nest API's `/api/...` player routes. Behind that facade, an internal service command is a separate, narrower boundary ([Service calls are not player routes](#service-calls-are-not-player-routes)). This page owns the rules no single controller owns. Five hold on every authenticated player route, and each has one heading below; [error and uncertainty recovery](#error-and-uncertainty-recovery) gives the shared status meanings:
 
-**Owns:** the HTTP rules that apply across player routes and that no single controller owns: authenticated actor scope, frozen operation identity, an accepted `202` versus a committed read, GET truth versus an SSE hint, error and uncertainty recovery, and private DTO projection. [Service calls are not player routes](#service-calls-are-not-player-routes) says a proposed service command is not one of those routes.
+1. The session owner is the only actor scope ([actor](#authenticated-actor-scope)).
+2. A paid or world-changing command is one durable operation. The client supplies its id, the server freezes it, and a retry reuses it ([frozen id](#frozen-operation-identity)). Direct prepared Play and one-Story-Prompt launch follow this; a 202, queued, running or uncertain response names that same operation, and retrying a transport never means "start another story". Historical fork commands likewise name one source scene and produce one child branch identity.
+3. A `202` is acceptance, never a committed world ([202 versus commit](#accepted-response-versus-committed-world)).
+4. GET is the only committed truth. The SSE committed-view hint is a narrow invalidation channel, never full push and never scene content ([GET versus SSE](#get-truth-and-sse-hints)).
+5. A response is a projection for its owner, never a stored row ([projection](#private-dto-projection)).
+
+The launch and fork parts of rule 2 are selected targets for those routes, not source-inspected behavior. Handler headings below were source-inspected at `b3113814`; the named integration tests were read and not re-run, and no provider call was made. This page adds no player right, no retry and no player route.
 
 **Does not own:** the route inventory ([API map](../../../apps/api/README.md), [story routes](../../../apps/api/src/modules/stories/README.md), [draft and opening routes](../../../apps/api/src/modules/drafts/README.md)), Zod shapes ([story-interface](../../../packages/story-interface/package.json) and sibling domain interface packages), session policy ([Authentication and sessions](identities-and-access.md#authentication-and-sessions)), client cache and reload UX ([Commands and hints](../client/state-and-server-boundary.md#commands-and-hints)), Temporal delivery ([Story execution with Temporal](execution-and-delivery.md)), service ownership ([Proposed service ownership](topology.md#proposed-service-ownership)), or staff grants ([Admin topology](../admin/topology-and-authorization.md)).
-
-**Status:** source-inspected at `b3113814` for the headings that describe handlers. Those statements are what those files do. [Service calls are not player routes](#service-calls-are-not-player-routes) records one internal command and still adds no player route. This page adds no player right and no retry. The named integration tests were read and were not re-run. No provider call was made.
 
 **Reader question:** What must a second client respect on every authenticated player route, even when the route list lives in a controller map?
 
@@ -18,15 +22,13 @@
 
 **Normative status:** source-inspected HTTP behavior. It does not widen who may read a story or a draft. Session policy stays on [Authentication and sessions](identities-and-access.md#authentication-and-sessions).
 
-**Owner:** this heading, for the rule that every player handler shares. Each controller remains the route facade.
-
 Stories HTTP handlers call `StoryPlayerIdentity.requireStoryPlayer` through `runStoryRequest` in `apps/api/src/modules/stories/story-http-context.ts` (cookie session or story-only bearer). `DraftsController.run` and `OpeningsController.run` still call `IdentityService.requireUser`. Each path passes that user id in as `ownerId` before the application operation. No session throws Nest `UnauthorizedException` (HTTP 401) and the operation is not called. A driver failure while reading the session throws HTTP 503 `Identity service unavailable`, which is also before the operation.
 
 Story snapshot and resolution-receipt reads require `story.ownerId` to equal that session id. A miss throws `StoryError('not_found')`, which the controller maps to HTTP 404 `{ code: 'not_found' }`. Draft reads and saves use `DraftError('not_found')` and the same status and code. The other-session cases in the resolution, SSE, and draft integration tests assert 404. An empty cookie asserts 401. An unknown resolution id for the owner also asserts 404.
 
 **Normal:** the signed-in owner calls `GET /api/stories/:id` or `GET /api/stories/:id/resolutions/:operationId/receipt` and receives that owner's projection.
 
-**Negative:** HTTP 401 is an authentication failure. 401 is not a reason to retry as a new command. HTTP 404 is the status both for a missing id and for an id the caller does not own. 404 must not be described as a way to infer another user's data, and the body is not that user's row.
+**Negative:** 401 and 404 keep the meanings in [Error and uncertainty recovery](#error-and-uncertainty-recovery). A missing id and an id the caller does not own share the 404, and its body is never that user's row.
 
 `GET /api/me` returns the caller's own `id`, `name`, and `email`. It is the session user, not a directory of players.
 
@@ -37,8 +39,6 @@ Admin staff routes and Chamber routes are outside this verified set. See [Unknow
 **Reader question:** After a lost response, which request may be sent again?
 
 **Normative status:** source-inspected for resolution admission, opening request and retry, and draft save. Other command families are [unknown](#unknowns). The lifecycle rule is [Five owners](../engine/lifecycle-and-compatibility.md#five-owners). This heading is the HTTP consequence.
-
-**Owner:** this heading. The route inventory stays in the module READMEs.
 
 The client supplies the operation id. The server stores that id. A later attempt uses the same id and the same body.
 
@@ -60,15 +60,13 @@ The version field name is part of the frozen body. Resolution and draft save use
 
 **Normal:** the player chose option A under operation id `O` and revision 1. The response was lost. The client sends the same `PUT` with the same id, revision, and option A.
 
-**Negative:** retrying a paid operation must not be described as silently minting a fresh operation id. A 409 from a changed body, a second resolution id, or a busy opening is not permission to invent a new id.
+**Negative:** retrying a paid operation must not be described as silently minting a fresh operation id. This applies to every client of these routes, including the terminal presentation: a second client path has no exemption from the frozen id, the version fence or the conflict rule, and recovering from an ambiguous failure reuses the same operation. A 409 from a changed body, a second resolution id, or a busy opening is not permission to invent a new id.
 
 ## Accepted response versus committed world
 
 **Reader question:** Did this HTTP status publish the next world state?
 
 **Normative status:** source-inspected for the handlers that declare `@HttpCode`. Handlers that omit `@HttpCode` are [unknown](#unknowns) as a class. This section is not a route catalogue.
-
-**Owner:** this heading, for the status meaning. Later worker publication stays on [Story execution with Temporal](execution-and-delivery.md).
 
 | Handler | Declared status | What the handler has done when it returns |
 | --- | --- | --- |
@@ -92,8 +90,6 @@ Interval control is the contrasting case on [Implemented fixed interval](executi
 
 **Normative status:** source-inspected. Client cache keys and polling intervals stay on [Commands and hints](../client/state-and-server-boundary.md#commands-and-hints). This heading says what the HTTP messages are.
 
-**Owner:** this heading.
-
 `GET /api/stories/:id` is the owner-scoped public snapshot. `GET /api/stories/:id/resolutions/:operationId/receipt` is the owner-scoped receipt. The receipt reader selects and returns. Its own comment says it does not enqueue, retry a provider, or update a generation row. The resolution fixture records outbox count and generation `state` / `status_revision` around that GET and asserts they are unchanged. A missing or unowned receipt is 404. An empty cookie is 401.
 
 Receipt fields are `operationId`, `storyId`, `state` (`admitted`, `processing`, `settled`, `failed`, `uncertain`), `viewVersion`, `resolutionVersion`, `reason`, `recovery`, and `requestDigest`. Stored generation `pending` is reported as `admitted`. Stored `running` is reported as `processing`. `admitted` and `processing` are distinct from `settled`. `recovery` is a coarse hint. The attempt-level retry gate remains authoritative. A `retry` hint still names the existing operation.
@@ -114,8 +110,6 @@ Story list pagination uses a `before` story id. Draft list pagination uses a `cu
 
 **Normative status:** source-inspected mapping for the story, draft, and opening controllers. It is not a new recovery right. Explicit player recovery UX stays on [Commands and hints](../client/state-and-server-boundary.md#commands-and-hints).
 
-**Owner:** this heading, for the shared meaning.
-
 | Status | Where it is mapped | What it means here | What it must not mean |
 | --- | --- | --- | --- |
 | 401 | `requireUser` when the session is missing | The application operation was not called. | 401 is not a reason to retry as a new command. |
@@ -131,15 +125,13 @@ An uncertain generation is reported on the receipt as `state: 'uncertain'` and `
 
 **Normal:** on 409 for a draft, GET `/api/drafts/:id`, keep the unsaved local edits, and submit again only against the revision that GET returned, with the same draft id.
 
-**Negative:** 401 is not a reason to retry as a new command. 404 must not be described as a way to infer another user's data. 409 must not be described as permission to overwrite a draft blindly.
+The "must not mean" column is this section's negative.
 
 ## Private DTO projection
 
 **Reader question:** Which stored fields is a player response allowed to contain?
 
 **Normative status:** source-inspected for the public schemas and presenters named here. It is not an audit of every JSON key on every route, and it adds no disclosure.
-
-**Owner:** this heading, for the cross-route projection rule. The Zod objects stay in domain interface packages (for example `@offscreen/story-interface`).
 
 A player response is an authorized projection for the session owner. It is not the stored generation row.
 
@@ -161,30 +153,28 @@ Chamber inspection can read a selected intention through the developer adapter. 
 
 **Normative status:** a review checklist for a future route. Completing the checklist does not authorize the route, the command, or a player right. Product authority and the owning technical contract come first.
 
-**Owner:** this heading.
+| Review | The route is not ready until |
+| --- | --- |
+| Identity | The session user id is the only owner passed in. A missing session is 401 and the operation is not called. Another owner receives the same 404 as a missing id, and the body has no foreign row. |
+| Command admission | The operation id and the route's version field stay frozen. The same id with a different body conflicts. HTTP 202 is used only when the world consequence can still be unsettled after the response. A paid retry names the existing operation id. |
+| Schema and contracts | Request and response use a strict public schema. The response is a projection. A new public field is an explicit projection change. |
+| Client cache | The scene is replaced from GET. An SSE payload, when one exists, is an invalidation hint and has no passage body. A 202 is not stored as a committed scene. |
+| Security | An unowned id and a missing id share 404. The body does not say that another account holds the id. |
+| Error mapping | 400, 401, 404, 409, 429, and 503 keep the meanings in [Error and uncertainty recovery](#error-and-uncertainty-recovery). |
 
-| Review | The route is not ready until | Negative that fails the review |
-| --- | --- | --- |
-| Identity | The session user id is the only owner passed in. A missing session is 401 and the operation is not called. Another owner receives the same 404 as a missing id, and the body has no foreign row. | The 401 path mints a new operation id and retries the command. |
-| Command admission | The operation id and the route's version field stay frozen. The same id with a different body conflicts. HTTP 202 is used only when the world consequence can still be unsettled after the response. A paid retry names the existing operation id. | A lost paid response is recovered by silently minting a fresh operation id. |
-| Schema and contracts | Request and response use a strict public schema. The response is a projection. A new public field is an explicit projection change. | The handler returns a raw generation or story row. |
-| Client cache | The scene is replaced from GET. An SSE payload, when one exists, is an invalidation hint and has no passage body. A 202 is not stored as a committed scene. | The client treats the 202 body or the SSE message as the settled world. |
-| Security | An unowned id and a missing id share 404. The body does not say that another account holds the id. | The notes say 404 means another user owns this id. |
-| Error mapping | 400, 401, 404, 409, 429, and 503 keep the meanings in [Error and uncertainty recovery](#error-and-uncertainty-recovery). | A draft 409 is handled by writing local form text over the server revision. |
+Each row fails by contradicting its owning heading: minting a fresh id after 401 or a lost paid response, returning a raw generation or story row, treating a 202 or SSE message as the settled scene, claiming a 404 means another account holds the id, or overwriting a draft after 409.
 
 ## Service calls are not player routes
 
 **Reader question:** Does naming a service add a player HTTP route, or turn a broker message into one?
 
-**Normative status:** one internal command is implemented. The rest of this heading remains a proposed target from 2026-11-19. This heading adds no player route.
-
-**Owner:** this heading, for the boundary between player HTTP and a service command. The route inventory stays in the module READMEs. Process ownership stays on [Proposed service ownership](topology.md#proposed-service-ownership). Delivery classes stay on [Commands, business events, and workflows](execution-and-delivery.md#commands-business-events-and-workflows).
+**Normative status:** the player-versus-service boundary below is the selected topology. One internal command pair is implemented; the rest is a proposed target from 2026-11-19. This heading adds no player route.
 
 Current runtime: a player command is direct HTTP to the Nest API. The actor, frozen operation id, 202, GET, and error headings above still govern that call. With `GAME_AUTHORITY_MODE=distributed`, Nest forwards only the owned snapshot read and one scripted resolution to Game Authority at `GET /internal/v1/stories/:storyId` and `PUT /internal/v1/stories/:storyId/resolutions/:operationId`. The browser still calls `/api/stories/...`. The internal server does not mount `/api`. A forged service credential is refused. A wrong owner is not found. The same operation id returns the stored admission. Start, campaign commands, and publication are not on that server. Embedded mode (unset `GAME_AUTHORITY_MODE` on host processes) does not make the internal call. The source map is [Game Authority](../../../apps/game-authority/README.md).
 
-Proposed target: a direct HTTP call from one service to another is a command to that owner. It is not a business event, not an SSE hint, and not a player route. A broker message never arrives as a player HTTP body. A Temporal signal is not an HTTP route on this page. Player routes do not accept a notification command or a fictional-market command from the browser. `GET /api/stories/:id/scenes/:sequence` is an owned historical read of that story's checkpoint. It does not assemble the scene from live campaign or item tables, and it does not authorize a command from a historic offer. The live snapshot stays `GET /api/stories/:id`. Start, campaign commands, and publication stay where they are.
+Selected boundary (target, 2026-11-19): a direct HTTP call from one service to another is a command to that owner. It is not a business event, not an SSE hint, and not a player route. A broker message never arrives as a player HTTP body. A Temporal signal is not an HTTP route on this page. Player routes do not accept a notification command or a fictional-market command from the browser. `GET /api/stories/:id/scenes/:sequence` is an owned historical read of that story's checkpoint. It does not assemble the scene from live campaign or item tables, and it does not authorize a command from a historic offer. The live snapshot stays `GET /api/stories/:id`. Start, campaign commands, and publication stay where they are.
 
-Negative: minting a fresh player operation id to recover a lost response stays forbidden on player routes. That fresh id cannot duplicate an admitted roll, a story-item transfer, or another committed effect. An imaginary market is not a service. This page does not add a market endpoint. Effect identity stays on [Proposed service schemas and delivery records](data-and-persistence.md#proposed-service-schemas-and-delivery-records).
+**Negative:** a fresh player operation id never recovers a lost response (see [Frozen operation identity](#frozen-operation-identity)), so it cannot duplicate an admitted roll, a story-item transfer, or another committed effect. An imaginary market is not a service. This page does not add a market endpoint. Effect identity stays on [Proposed service schemas and delivery records](data-and-persistence.md#proposed-service-schemas-and-delivery-records).
 
 ## Contract dependencies
 
@@ -212,19 +202,19 @@ These were not established in the files read for this page.
 
 ## Evidence read
 
-Read at `b3113814`, and not re-executed:
+Read at `b3113814`, and not re-executed (the `packages/story-engine/src` links below are the current owners of what `b3113814` read under the since-removed `packages/application`):
 
 - [identity.ts](../../../apps/api/src/modules/auth/identity.ts)
 - [stories route map](../../../apps/api/src/modules/stories/README.md)
 - [drafts controller](../../../apps/api/src/modules/drafts/controller.ts)
 - [openings controller](../../../apps/api/src/modules/drafts/openings-controller.ts)
 - [story-update hub](../../../apps/api/src/modules/stories/story-update-hub.ts)
-- [resolution admission](../../../packages/application/src/storyteller/admission.ts)
-- [opening request and retry](../../../packages/application/src/storyteller/openings.ts)
-- [generation insert](../../../packages/application/src/generations/service.ts)
-- [scripted opening busy check](../../../packages/application/src/generations/openings.ts)
-- [draft save](../../../packages/application/src/drafts/index.ts)
-- [receipt reader](../../../packages/application/src/stories/resolution-receipt.ts)
+- [resolution admission](../../../packages/story-engine/src/storyteller/admission.ts)
+- [opening request and retry](../../../packages/story-engine/src/storyteller/openings.ts)
+- [generation insert](../../../packages/story-engine/src/generations/service.ts)
+- [scripted opening busy check](../../../packages/story-engine/src/generations/openings.ts)
+- [draft save](../../../packages/story-engine/src/drafts/index.ts)
+- [receipt reader](../../../packages/story-engine/src/stories/resolution-receipt.ts)
 - [story wire shapes](../../../packages/story-interface/src/stories.ts)
 - [opening wire shapes](../../../packages/story-interface/src/openings.ts)
 - [interaction wire shapes](../../../packages/story-interface/src/interactions.ts)

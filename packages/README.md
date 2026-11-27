@@ -10,6 +10,8 @@ Retain `packages/*` and add the five explicit `packages/<family>/*` workspace gl
 
 ## Existing flat packages and possible placement
 
+The former `packages/application` workspace no longer exists; its retained mechanisms live in `packages/story-engine` and its siblings listed below, and the existing Game Authority app owns committed mechanical truth. Treat a path under the deleted package as provenance only. Routes here point to source owners, not to proof; Agent Core has no API or Web consumer.
+
 The inventory below is the 23 flat workspaces observed at the reviewed baseline, not a move order. Verify source before any relocation.
 
 | Family | Existing flat packages |
@@ -32,7 +34,7 @@ Only the E1 activation is selected. Candidate names and splits are hypotheses, n
 | domain | library | Candidate strongly supported by owner | Governed collections, paths, roots, visibility, mounts, document revision references | Generic revision algorithms, game authority |
 | domain | story-engine / story-authority | Candidate, boundary open | Campaign lifecycle, scene/clock/history/fork/publication authority | Generic AI execution |
 | domain | storyteller | Candidate | Creative behavior, domain prompts, skills, mission definitions, domain tools | Generic loop, authoritative world mutation |
-| ai | agent-core | Direction | Generic mission execution, context, tool lifecycle, loop, delegation, bounded execution semantics | Story fiction, storage adapters, billing, concrete provider wire protocols |
+| ai | agent-core | Initial foundation, owner-accepted (E1); further capability remains a candidate | Generic mission execution, context, tool lifecycle, loop, delegation, bounded execution semantics | Story fiction, storage adapters, billing, concrete provider wire protocols |
 | ai | ai-providers | Candidate | Provider protocol adapters, request encoding, normalization, streaming and error semantics | Mission policy, subscription decisions |
 | ai | inference | New R3 candidate | Reusable guarded inference execution, attempt custody coordination, result normalization orchestration for agent and direct calls | Agent loop, route catalog, provider protocols, commercial ledger authority |
 | ai | model-routing | Direction to separate concern; name provisional | Catalog, model/route capability, eligibility and selection for text/image/video etc. | Agent loop, provider request dispatch, granting money |
