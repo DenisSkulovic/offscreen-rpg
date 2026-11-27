@@ -1,8 +1,8 @@
 # TD02 | Topology and deployment
 
-**State:** Done — source joined to implementation/technical-documentation-renewal; joint semantic acceptance pending (PD07/TD10 and Design). **Kind:** DOC. **Base:** `4b621ec9708361a2304efdcff4d34bb7da2b6c88` main; E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`, owner accepted 2026-11-27. **Target:** `implementation/technical-documentation-renewal`. [Accepted Design](../../../../../designs/open/technical-documentation-renewal/README.md) · [Group](../../../open/technical-documentation-renewal/README.md).
+**State:** Done — source joined to implementation/technical-documentation-renewal; joint semantic acceptance pending (PD07/TD10 and Design). **Kind:** DOC. **Base:** `4b621ec9708361a2304efdcff4d34bb7da2b6c88` main; E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`, owner accepted 2026-11-27. **Target:** `implementation/technical-documentation-renewal`. [Accepted Design](../../../../../designs/archive/technical-documentation-renewal/README.md) · [Group](../../../../../designs/archive/technical-documentation-renewal/implementation-record/README.md).
 
-**Release:** [group readiness and dispatch](../../../open/technical-documentation-renewal/README.md#owner-release-and-independent-readiness); exact reviewed candidate `606de3a0a4856eb36ce275bd4bc109ea46d480c0`. Verify named assignment, actual target, branch guard, prerequisites and custody before editing.
+**Release:** [group readiness and dispatch](../../../../../designs/archive/technical-documentation-renewal/implementation-record/README.md#owner-release-and-independent-readiness); exact reviewed candidate `606de3a0a4856eb36ce275bd4bc109ea46d480c0`. Verify named assignment, actual target, branch guard, prerequisites and custody before editing.
 
 ## Implementation first-screen brief
 

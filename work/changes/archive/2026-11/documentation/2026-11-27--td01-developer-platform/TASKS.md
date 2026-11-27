@@ -1,6 +1,6 @@
 # TD01 | task queue
 
-Base SHA: `c7058958ec3f43fd37ec680d05757561d628926b`; latest must recheck. Change state: READY; owner-authorized for named dispatch, no task selected. Shared path lock: group target join only; no shared canonical writes. Contract owners: [accepted Design](../../../../../designs/open/technical-documentation-renewal/README.md), named card anchors. Tasks: T01 → T02 → T03 → T04; selected task: none.
+Base SHA: `c7058958ec3f43fd37ec680d05757561d628926b`; latest must recheck. Change state: READY; owner-authorized for named dispatch, no task selected. Shared path lock: group target join only; no shared canonical writes. Contract owners: [accepted Design](../../../../../designs/archive/technical-documentation-renewal/README.md), named card anchors. Tasks: T01 → T02 → T03 → T04; selected task: none.
 
 ## T01 | Current command versus future profile | PROPOSED
 

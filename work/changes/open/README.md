@@ -1,6 +1,6 @@
 # Open Changes | current sprint / execution horizon
 
-**Documentation renewal E1:** [product](product-documentation-renewal/README.md) and [technical](technical-documentation-renewal/README.md) — both owner-accepted; all sixteen packets PD01–PD07 and TD01–TD08/TD10 READY at `606de3a0a4856eb36ce275bd4bc109ea46d480c0` and owner-authorized for named dispatch; PD07/TD10 dependency-gated, TD09 protected no-op. See group registers for release, findings and dispatch. Joint semantic acceptance NOT RUN; no queue or branch change.
+**Documentation renewal E1:** [product](product-documentation-renewal/README.md) and [technical](../../designs/archive/technical-documentation-renewal/implementation-record/README.md) — both owner-accepted. Technical: TD01–TD08 and TD10 archived, technical joint semantic acceptance PASS (see the retired group's [implementation record](../../designs/archive/technical-documentation-renewal/implementation-record/README.md)); TD09 protected no-op. Product: PD01–PD06 archived; PD07 pending the technical integration on main. Runtime, native and live qualification NOT RUN; no queue change.
 
 
 
