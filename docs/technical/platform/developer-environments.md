@@ -4,7 +4,7 @@
 
 **Source ownership:** [infrastructure atlas](../../../infra/README.md) owns selected directory layout and release/development terminology. INF01–INF05 relocate source without changing current context, tenant or runtime identities. Existing paths below are observed baseline until corresponding Change integrates.
 
-**Owns:** the selected technical invariants for development environment identity, capacity admission, image/deployment authority and safe park/release. **Does not own:** player/game behavior, the release cluster's acceptance tests, executable commands, or empirical proof. **Status:** selected architecture; distinguish observed DXK09 implementation from unimplemented DXK10 target. **Reviewed against:** the owned-slot receipt at `d0e35b63` (2026-11-23). The earlier `e93f33c7` trial is failure evidence, not the current image path.
+**Owns:** the selected technical invariants for development environment identity, capacity admission, image/deployment authority and safe park/release. **Does not own:** player/game behavior, the release cluster's acceptance tests, executable commands, or empirical proof. **Status:** selected architecture; distinguish observed DXK09 implementation (dated, baseline-bound reports) from unimplemented DXK10 target. A report below describes the revision it names, never the latest branch. **Reviewed against:** the owned-slot receipt at `d0e35b63` (2026-11-23). The earlier `e93f33c7` trial is failure evidence, not the current image path.
 
 Human explanation: [Developer environments, illustrated](../../architecture/10-developer-environments.md). Exact operational route: [Dev runbook](../../runbooks/dev-worktree-stacks.md). Evidence: [DXK09 PROOF](../../../work/changes/archive/2026-11/infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md). Resource-lifecycle implementation proposal: [DXK10](../../../work/changes/archive/2026-11/platform-operations/2026-11-23--dxk10-demand-driven-dev-lifecycle/CHANGE.md).
 
@@ -49,7 +49,7 @@ The dev image copies the workspace trees but excludes `tools/dev-environments/sr
 7. Readiness requires actual Pod runtime identity and loaded source/process generation to match the desired selection. `Deployment Available`, HTTP 200 or a Temporal worker's `RUNNING` log alone are insufficient. Startup and status share one slot observation (six roles, node image identity, remote compiled generation, in-pod web). A host URL is announced only after this process owns the forward and host HTTP succeeds on that port. The compile supervisor does not start a replacement runtime until the previous child exit is confirmed; a second stop timeout fails the supervisor and drops the ready receipt.
 8. A failed image load, stale runtime, conflicting writer, or unverifiable identity returns an explicit failure and triggers **only the attempted owner's** bounded rollback when activation already began. Never conceal drift with a successfully returning `pnpm dev`.
 
-**Source ownership map at inspected integration baseline:**
+**Source ownership map (baseline-bound realization, not proof of the latest branch):** the anchors below were inspected at the integration baseline; they locate the realization of each selected owner contract and do not themselves prove behavior.
 
 | Concern | Current source anchor | Selected owner contract |
 | --- | --- | --- |
@@ -67,7 +67,7 @@ These anchors describe the inspected integration baseline and the local conflict
 
 ## Distinct lifecycle operations
 
-Reserve and attach are implemented as registry-only commands with focused tests. Provision, profile activation, release, and destroy remain selected future behavior.
+Selected contract: the operations below are independent and non-destructive unless stated. Realization at the reviewed source: `parseDevCliArgs` accepts `reserve` and `attach`, implemented as registry-only commands with focused tests (reported proof only; no install or live qualification is claimed). Provision, profile activation, release, and destroy remain selected future behavior.
 
 | Operation | Permitted state change | Forbidden side effect |
 | --- | --- | --- |
@@ -88,18 +88,24 @@ Reservation, attachment, provisioning and activation are **independent facts**, 
 
 ## Capacity admission and failed-start rollback
 
-- A successful preflight is **not a reservation of memory**. The observed two-full-stack peak was about 2.64 GiB `MemAvailable` and 3.38 GiB swap consumed on the 20 GiB WSL cap; a third full stack has not been demonstrated. Keep the existing 4 GiB full-start admission threshold pending separate measured evidence.
+**Selected admission and rollback invariants**
+
+- A successful preflight is **not a reservation of memory**. Keep the existing 4 GiB full-start admission threshold pending separate measured evidence; no new capacity claim is made here.
 - Evaluate available capacity and foreign owner/port/context conflicts **before** startup mutation. Source-only/unit tests require no Kubernetes activation.
 - For a requested set of roles, **all required** roles and host endpoints must be current/healthy within a bounded window. Inactive optional roles are `INACTIVE`, not `NOT READY`; a missing required role cannot borrow another environment's service.
 - Ordinary `pnpm dev` refuses a verified running owned session (PID and start ticks) and tells the operator to run `pnpm dev:stop` then `pnpm dev`. It does not replace that session. Occupied ports without a verified owned session refuse; an arbitrary listener is not labeled owned.
 - One kernel flock per slot (`registryRoot/operations/<slot>.lock`) covers admission through initial readiness, and `dev:stop`. A second start or stop on that slot refuses immediately with a retry hint. The foreground launcher releases the lock after the session is published. Cleanup of a touched startup is one owned park; a second exit callback does not scale again. Claim parked only after the existing zero-replica predicate. Live cluster proof of this lock is not part of the source receipt.
-- If startup fails after mutation, stop owned Tilt/forwarders and park the **entire attempted profile**. Claim parked only when desired replicas are observed at zero. If cleanup fails, emit `rollback-incomplete` with exact affected owned resources. Do not signal a foreign process, delete tenant data, leave healthy fragments running, or claim `PARKED`.
+- If startup fails after mutation, stop owned Tilt/forwarders and park the **entire attempted profile**. Claim parked only when desired replicas are observed at zero. If cleanup fails, emit `rollback-incomplete` with exact affected owned resources. Do not signal a foreign process, delete tenant data, leave healthy fragments running, or claim `PARKED`. A stopped or parked slot is not permission to dispose of it: stop never implies release, destroy or tenant deletion.
 - Never reduce the safety threshold, force stop other Cursors, delete the release lab or hammer an unchanged failed admission in a retry loop. Agents defer work or use cheaper proofs until capacity changes.
+
+**Dated observations and reported proof (DXK09, 2026-11-23; not current acceptance)**
+
+- The observed two-full-stack peak was about 2.64 GiB `MemAvailable` and 3.38 GiB swap consumed on the 20 GiB WSL cap; a third full stack has not been demonstrated.
 - Local DXK09 Cursor receipts report implementation of partial-start rollback with focused tests; live autonomous complete acceptance is still pending at this source checkpoint. DXK10 selectively activates only what is requested.
 
 ## Temporal watcher compatibility is separate
 
-The relay on pinned Node 24.19.0 and Temporal SDK 1.24.0 reportedly hit `RangeError: Invalid atomic access index` in a worker-thread callback. The in-flight branch reportedly enabled Temporal's supported `debugMode` only for `OFFSCREEN_DEV_WATCHED_COMPILATION === '1'`, and the worker reached `RUNNING`. **That log is not a workflow-task execution proof.** Main-thread workflow execution changes scheduling/diagnostic behavior and must not be mistaken for release-parity acceptance. Preserve release behavior; prove one real task, stop/restart, and ideally native worker-thread operation independently. Do not treat a worker compatibility issue as an image-generation problem.
+Historical branch report, not a current worker-thread result: the relay on pinned Node 24.19.0 and Temporal SDK 1.24.0 reportedly hit `RangeError: Invalid atomic access index` in a worker-thread callback. The in-flight branch reportedly enabled Temporal's supported `debugMode` only for `OFFSCREEN_DEV_WATCHED_COMPILATION === '1'`, and the worker reached `RUNNING`. **That log is not a workflow-task execution proof.** Main-thread workflow execution (`debugMode`) is a diagnostic aid that changes scheduling behavior and must not be mistaken for release parity. Preserve release behavior. The proof gap remains open: one real workflow task, stop/restart, and ideally native worker-thread operation must each be proved independently. Do not treat a worker compatibility issue as an image-generation problem.
 
 ## Readiness and evidence ladder
 
@@ -113,7 +119,7 @@ The relay on pinned Node 24.19.0 and Temporal SDK 1.24.0 reportedly hit `RangeEr
 | Capacity is adequate | Measured simultaneous workload with memory, swap, CPU and connection headroom |
 | Game/release behavior works | Separate signed-in story, OAuth, cold-kind release and fault evidence; never implied by green Pods |
 
-Current proof belongs in [DXK09 PROOF](../../../work/changes/archive/2026-11/infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) and [STATUS](../../../STATUS.md), **not** in this selected design. If an implementation contradicts a selected invariant, stop and reconcile the owning contract; don't silently edit the contract to excuse the code.
+The ladder is binding. A green Pod is not the current process generation, DXK09/DXK11 focused receipts are not broad application acceptance, and a stopped slot is not disposal permission. Current proof belongs in [DXK09 PROOF](../../../work/changes/archive/2026-11/infrastructure/2026-11-22--dxk09-isolated-parallel-development-stacks/PROOF.md) and [STATUS](../../../STATUS.md), **not** in this selected design. If an implementation contradicts a selected invariant, stop and reconcile the owning contract; don't silently edit the contract to excuse the code.
 
 ## Contract dependencies
 
