@@ -12,6 +12,8 @@ NOT RUN. Commands from repo root; only existing offline Helm/dependencies and sh
 ```bash
 node --test --test-concurrency=1 infra/platform/observability/tests/{custody,forward,install}.test.mjs
 ```
+Feasibility specimen observed 2026-11-27 in the isolated assistant Linux container (kernel 6.18.57, Python 3.13.5, util-linux flock): inherited descriptor held an exclusive flock after the flock subprocess exited and original parent fd closed; independent descriptor refused; direct Python prctl(PR_SET_PDEATHSIG,SIGKILL) + parent-PID check + exec child released last inherited lock after supervisor SIGKILL. Standalone specimen, not repository implementation, not WSL verification. Actual D03 subprocess tests remain mandatory.
+
 Actual subprocess tests: private handshake PID+fd inode, kill only exact owned helper; wrong expected parent PID no side effect; direct child exits after parent death; contender blocked until last inherited FD closes. Simulated close-unconfirmed must retain active registration and fail terminal outcome. Record actual result distinct from close. Existing surviving sleeper test is flock-only evidence.
 
 Parent requires exact source SHA, focused normal/negative results, changed-file formatting/lint and diff review, no unexpected write owner. Fail stops affected integration; report unrun tests and pending program gates. Retain branch/worktree if acceptance pending; no merge without current approved boundary and applicable proof. Full A/V certification remains open.
