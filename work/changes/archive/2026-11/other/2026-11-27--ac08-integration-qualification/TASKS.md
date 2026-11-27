@@ -1,8 +1,8 @@
 # AC08 | task queue
 Base SHA: `1cf22fe0f512b5dd92b5cedaa2d35a3fe27cee7c`; latest: recheck target `implementation/agent-core-monorepo-map`.
 Change state: Proposed; selected task: none; prerequisites: AC01, AC02, AC03, AC04, AC05, AC06, AC07.
-Contract owners: [Agent Core](../../../../../docs/technical/platform/agent-core.md#residual-e1-proof-not-yet-run-for-maintained-source), [package map](../../../../../packages/README.md).
-Tasks: T01 → T02 → T03 → T04 → T05. Serial within this Change; no parallel children required. Cross-Change concurrency in [group schedule](../README.md). Parent owns staging, closure and join. No live/paid operations. All cards are proposed for independent readiness, not dispatch authorization.
+Contract owners: [Agent Core](../../../../../../docs/technical/platform/agent-core.md#residual-e1-proof-not-yet-run-for-maintained-source), [package map](../../../../../../packages/README.md).
+Tasks: T01 → T02 → T03 → T04 → T05. Serial within this Change; no parallel children required. Cross-Change concurrency in [group schedule](../../../../open/agent-core-monorepo-map/README.md). Parent owns staging, closure and join. No live/paid operations. All cards are proposed for independent readiness, not dispatch authorization.
 
 ## T01 | Bind test Workflow and pure preflight | PROPOSED
 
