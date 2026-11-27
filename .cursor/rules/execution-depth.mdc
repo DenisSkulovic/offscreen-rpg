@@ -5,13 +5,13 @@ alwaysApply: true
 
 # Cursor execution adapter
 
-Root [AGENTS.md](../../AGENTS.md) owns permissions, Git, quality and implementation/acceptance split. Read selected CHANGE.md, TASKS dispatch index and [parent policy](../../.agents/references/bounded-parent-orchestration.md), not all planner files.
+This file applies only when Cursor is the selected client. It does not set a universal model or agent count. Root [AGENTS.md](../../AGENTS.md) owns permissions, Git, quality and implementation/acceptance split. Read selected CHANGE.md, TASKS dispatch index and [parent policy](../../.agents/references/bounded-parent-orchestration.md), not all planner files.
 
 **Commission:** one Change and one preferred measurable outcome. Seven actual tasks, including nested assignments, is a strong default. Target 5–10 minutes of active implementation. [Submission standard](../../.agents/references/planning-artifact-quality.md) and [severity](../../AGENTS.md#finding-severity-and-blocking). Return a newly commissioned packet that is incoherent, unsafe or forces architectural invention, and name the exact gap. A count or size signal alone is not that return. No autonomous split, replan or auto-next. An already commissioned batch proceeds through its tasks without another owner confirmation at each routine checkpoint.
 
 **Branch guard:** dedicated Change branch/worktree; never switch primary checkout. Run `node scripts/repo-tools/change-branch-guard.mjs --change <ID> --target <reference-branch>` there before edits.
 
-**Parent:** Composer Standard default. Dispatch one substantive task to Composer; up to two children only for proven independent waves. Tiny obvious mechanical edits may be direct. Continue commissioned bounded tasks across internal checkpoints, no repeated approval. Shared-checkout children do not stage/commit. Parent verifies focused checks/diff and commits; heavy acceptance ChatGPT/owner. Stop at IMPLEMENTED — ACCEPTANCE PENDING when required; no premature merge/retirement. [Delegation policy](../../.agents/references/bounded-parent-orchestration.md#0a-budget-first-composer-dispatcher-contract-2026-11-21).
+**Parent:** Composer Standard default. Dispatch one substantive task to Composer; up to two children only for proven independent waves. Tiny obvious mechanical edits may be direct. Continue commissioned bounded tasks across internal checkpoints, no repeated approval. Shared-checkout children do not stage/commit. Parent verifies focused checks/diff and commits; heavy acceptance stays with the acceptance lead and owner. Stop at IMPLEMENTED — ACCEPTANCE PENDING when required; no premature merge/retirement. [Delegation policy](../../.agents/references/bounded-parent-orchestration.md#0a-budget-first-composer-dispatcher-contract-2026-11-21).
 
 **Child:** one T-ID and direct source/test/contract anchors, decided edit, focused normal/negative check, concise receipt. PATCH/VERIFY or precisely bounded factual investigation; no architecture survey, swarms, paid escalation, unrelated refactors or full suite per child. Local mechanical debugging allowed; report exact contradiction and reproducer.
 

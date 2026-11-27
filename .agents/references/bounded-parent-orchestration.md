@@ -4,7 +4,7 @@
 
 ## Dependency readiness is not a planner blocker
 
-Dispatch only selected, commissioned tasks whose frozen prerequisites hold. Ready (dependency-gated) work may wait for an exact predecessor receipt/source postcondition, without new approval. Verify named symbols against HEAD; allow mechanical reconciliation, stop on changed interface, authority, ownership or safety semantics. Return missing decisions to ChatGPT; no broad rediscovery or invented architecture. Creating a specified new test harness does not require an existing harness.
+Dispatch only selected, commissioned tasks whose frozen prerequisites hold. Ready (dependency-gated) work may wait for an exact predecessor receipt/source postcondition, without new approval. Verify named symbols against HEAD; allow mechanical reconciliation, stop on changed interface, authority, ownership or safety semantics. Return missing decisions to the planner; no broad rediscovery or invented architecture. Creating a specified new test harness does not require an existing harness.
 
 ## Mandatory Change branch policy
 
@@ -14,7 +14,7 @@ Dispatch only selected, commissioned tasks whose frozen prerequisites hold. Read
 4. For parallel Changes name one integration custodian (existing coordinator or owner) before dispatch. Each parent owns its branch and receipts; custodian serializes shared paths, canonical headings, migrations, catalogs, queue/status and joins in designated integration checkout. Single parent is its own custodian by default. Coordinate conflicts before touching shared integration files; no new approval ritual.
 5. At accepted closure refresh actual reference, reconcile safe changes, squash-integrate by default, verify result and retire only clean fully integrated worktree/branch. No forced worktree removal, reset or overwrite. Squash-merged branch deletion with -D is allowed only after verifying its content landed and checkout is clean. Do not create another cleanup automation to guess ownership.
 
-Undertaking custodian reconciles accepted receipt, STATUS and technical ledger with OVERVIEW.md at the same serialized join. Reestimate overall and major-track completion/remaining with uncertainty only when milestones, risk or priorities actually changed. ChatGPT presents supervisor recap; not a child task.
+Undertaking custodian reconciles accepted receipt, STATUS and technical ledger with OVERVIEW.md at the same serialized join. Reestimate overall and major-track completion/remaining with uncertainty only when milestones, risk or priorities actually changed. The planner presents the supervisor recap; that recap is not an implementation task.
 
 ## 0a. Budget-first Composer dispatcher contract (2026-11-21)
 
@@ -32,7 +32,7 @@ Parent validates receipts/diffs, integrates dependency results, then selects nex
 
 ### Finish-to-reference-branch responsibility
 
-Use the [integration checkpoint](#3-integration-checkpoint-do-this-once-per-batch-not-per-child) to commit source and determine acceptance disposition. At heavy-acceptance handoff stop IMPLEMENTED — ACCEPTANCE PENDING, retain worktree/branch and transfer exact source receipt to ChatGPT/owner. Resume closure after accepted evidence, not merely a successful child. Cheap-only Changes proceed to closure autonomously when all required proof passes. Independent post-integration review is normally a follow-up; an explicitly selected pre-merge independent review must pass first. Never waive required evidence or safety failures.
+Use the [integration checkpoint](#3-integration-checkpoint-do-this-once-per-batch-not-per-child) to commit source and determine acceptance disposition. At heavy-acceptance handoff stop IMPLEMENTED — ACCEPTANCE PENDING, retain worktree/branch and transfer the exact source receipt to the acceptance lead and owner. Resume closure after accepted evidence, not merely a successful child. Cheap-only Changes proceed to closure autonomously when all required proof passes. Independent post-integration review is normally a follow-up; an explicitly selected pre-merge independent review must pass first. Never waive required evidence or safety failures.
 
 ### What is *not* a legitimate reason to linger or stop
 

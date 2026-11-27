@@ -33,7 +33,7 @@ No empty companions or duplicate source maps. Refresh stale facts or mark explic
 
 ## Role division and stop rules
 
-[Planner investigation](planner-investigation-standard.md) owns source mapping and frozen decisions; [packet design](packet-design-manual.md) owns task DAG and dispatch construction; [readiness review](packet-readiness-review.md) owns independent admission. [Parent procedure](bounded-parent-orchestration.md) owns implementation, cheap proof and acceptance handoff. ChatGPT/owner own heavy proof. Source contradiction returns to planner; targeted mechanical debugging stays local.
+[Planner investigation](planner-investigation-standard.md) owns source mapping and frozen decisions; [packet design](packet-design-manual.md) owns task DAG and dispatch construction; [readiness review](packet-readiness-review.md) owns independent admission. [Parent procedure](bounded-parent-orchestration.md) owns implementation, cheap proof and acceptance handoff. The acceptance lead and owner own heavy proof. Source contradiction returns to planner; targeted mechanical debugging stays local.
 
 ## Route card format (pasteable; adapt, don't pad)
 

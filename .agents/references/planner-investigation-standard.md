@@ -1,10 +1,46 @@
-# Planner-first investigation | move discovery upstream of Cursor execution
+# Planner investigation | discovery before delegated execution
 
-**Owns:** source-grounded investigation and the facts/decisions needed before delegated implementation. Read current [AGENTS](../../AGENTS.md), [ChatGPT cold start](../../CHATGPT.md#mandatory-cold-start-contract-for-chatgpt-planning) and applicable [design gate](../rules/target-driven-renewal.md). Then [construct packet](packet-design-manual.md) and [review independently](packet-readiness-review.md).
+**Owns:** planner responsibilities, continuous batch completion, source-grounded investigation, and the artifact handoff when the planner cannot write the repository. Read current [AGENTS](../../AGENTS.md) and the applicable [design gate](../rules/target-driven-renewal.md). Then [construct packet](packet-design-manual.md) and [review independently](packet-readiness-review.md). Client adapters such as [CHATGPT.md](../../CHATGPT.md) describe only that client's access. They do not replace this standard.
+
+## Continuous development flow
+
+**The delivery unit is the complete authorized assignment, not one document edit, one finding, one task card or one commit.**
+
+If authorized to prepare eleven Change packets, prepare all eleven. If authorized to address a review containing multiple blocking findings, address the complete known set in one coordinated correction. When blockers span several packets, revise those packets together where that is more efficient and keeps the contracts consistent. Do not repair deferred Medium or Low findings in that correction cycle.
+
+Do not routinely stop after editing one Markdown document, addressing one isolated finding, preparing one packet from a commissioned batch, completing an internal investigation checkpoint, making an intermediate Git commit, discovering a nonblocking improvement, or reaching a routine step in a documented procedure. Internal checkpoints preserve progress. They are not new owner decisions.
+
+Continue until the authorized assignment is complete, or until a genuine stop applies: a consequential unresolved product or architecture decision; a necessary permission boundary; unavailable indispensable source, runtime or evidence; a blocker that prevents further useful work; a material contradiction that requires owner judgment; or completion. When one part is blocked, continue unaffected useful work. Batch owner questions and owner-operated experiments. Do not ask the owner to reauthorize work already commissioned. Do not claim background progress the current environment cannot perform.
+
+For a program of multiple current Changes: establish shared contracts; identify independently executable outcomes and dependencies; prepare the complete authorized batch; review it; resolve Critical and High findings together, then perform an impact-based re-review; make independently ready Changes available for commissioning. Planning and implementation overlap when possible. A blocked Change does not invalidate unrelated ready Changes. A dependency-gated Change may be Ready before its predecessor lands when assumptions and postconditions are specified.
+
+Preserve the separation in [AGENTS.md](../../AGENTS.md#dependency-readiness-is-not-a-planner-blocker). Continuous flow is not permission for unsafe concurrency. Optimize time and cost from owner intent to verified working software. A well-prepared submission normally needs one comprehensive initial review and one focused corrective review. That expectation does not permit a known Critical or High defect to remain. The normal number of Medium and Low findings repaired before initial execution release is zero. Do not create a metrics file or recurring measurement procedure.
+
+Match [investigation depth](../../AGENTS.md#investigation-depth). Material new architecture follows [design-led engineering](../rules/target-driven-renewal.md) before implementation planning. Evolutionary work reuses accepted architecture. Focused settled-contract work needs no Design dossier or independent committee. One delegated Change prefers one measurable outcome. Seven actual tasks is a strong default, not an automatic rejection.
+
+Before promotion or implementation planning of material new architecture, require self-defense, an [independent review](../rules/target-driven-renewal.md#mandatory-independent-design-committee) and separate owner acceptance. The reviewer delivers a verdict bound to the candidate SHA. A complete verdict awaiting persistence is not an incomplete analysis. No self-certification.
+
+## Planner session start
+
+At the beginning of each planning, design, audit or handoff assignment, before drafting a Change:
+
+1. Locate the actual repository, branch and HEAD. Read `AGENTS.md` and this standard. Check the queue, active Undertaking, open work and permissions. If an Undertaking is active, read its overview and ledger and refresh stale progress figures before the next wave. Orientation does not end an authorized assignment.
+2. Read the applicable method at the decision point. Use [submission quality](planning-artifact-quality.md), [work-unit standard](change-work-unit-standard.md), [packet design](packet-design-manual.md), [task format](composer-first-execution.md) when the selected executor uses that card shape, [parent procedure](bounded-parent-orchestration.md), and [readiness](packet-readiness-review.md).
+3. Investigate in the planner context. Inspect exact source symbols, callers, transactions, compatibility, privacy and spend. Distinguish target, implemented code and proven behavior.
+4. Decide algorithms, schemas, transitions, permissions, idempotency, migration and failure behavior before commissioning execution. A Critical or High choice that cannot be settled is PLANNER-BLOCKED for that scope. Continue unaffected work.
+5. Choose direct implementation, delegated Changes or a hybrid from access, cost and proof needs. Material state, contract and release Changes get planner-authored source, execution and proof notes when complexity warrants them. A nontrivial multi-step Change has bounded tasks: decided edit, anchors, normal and negative checks, and a stop. A paragraph of ambitions is not a handoff.
+6. Review the authorized batch. Simulate the first dispatch and each task from its limited anchors, at a depth scaled to risk. Classify findings by severity. Critical and High block only the affected scope.
+7. When delegation is selected, give the implementation coordinator a compact launch: Change and first task, branch, locks, permitted operations, destination, exit proof and stop. The coordinator verifies nearby code, implements, tests and reports. It does not redesign the target or select the next Change.
+
+A capable executor can start its first bounded edit from a few exact anchors. Open-ended system discovery is a planner defect. On correction, repeat task simulation only for affected tasks. Instructions such as "choose", "investigate architecture" or "where appropriate" are not an executor's algorithm.
+
+## Artifact handoff
+
+When the assigned designer, planner or reviewer lacks repository write access, produce a complete scoped artifact locally or inline, or a downloadable ZIP or patch containing repo-relative paths. For a multi-file change identify repository, base branch and full SHA, scope, additions, modifications, explicit removals, assumptions, validation actually run, and remaining limitations. A simple handoff note is sufficient; no mandatory machine manifest. The custodian checks the actual local branch, HEAD and dirty paths, verifies the intended base and drift on affected files, previews changes, preserves unrelated work, refuses ambiguous or destructive overwrites, applies only authorized changes, runs applicable focused checks, commits under existing policy and reports the resulting SHA. An artifact is not integration, owner approval, or permission for live operations. Use a snapshot export or read-only source retrieval where suitable. Do not promise a persistent chat filesystem. No new staging service is required. Never attempt an unavailable or disabled write as a ritual. Analysis, delivered artifact, persisted and verified receipt, owner ratification and implementation commission remain distinct.
 
 ## Responsibility split
 
-Planner investigates broad relevant source, settles authority, architecture, interfaces and safety, records exact mappings and proof. Cursor verifies named local facts, performs decided edit and focused checks, reports contradictions. No claim of zero-search execution; local error-directed diagnosis is essential. Heavy acceptance stays with ChatGPT/owner.
+The planner investigates relevant source, settles authority, architecture, interfaces and safety, and records exact mappings and proof. The implementation agent verifies named local facts, performs the decided edit and focused checks, and reports contradictions. Local error-directed diagnosis is essential. Heavy acceptance stays with the acceptance lead and the owner.
 
 ## Before authoring: settle design, then map the current repo
 

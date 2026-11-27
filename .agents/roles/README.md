@@ -10,14 +10,14 @@ Start with [the independent operating principle](../references/role-orchestratio
 | --- | --- | --- |
 | **Responsibility / role** | What question must be answered and who decides? | UX designer, UI critic, data architect, test strategist, implementer, independent verifier |
 | **Specialization / knowledge** | What expertise is relevant? | React, typography, PostgreSQL, privacy, Temporal, accessibility, observability |
-| **Execution surface** | Where should this role run? | ChatGPT chat, Claude Code main session, Claude/Cursor subagent, independent Cursor chat |
+| **Execution surface** | Where should this role run? | Any capable client session, a native subagent, or an independent review chat. Examples live in that client's adapter |
 | **Authority / permissions** | May it only read, edit documentation, edit code or execute tests? | Read-only investigation, approved spec edit, scoped implementation, disposable-DB check |
 
-A role can use several skills, but loading a skill doesn't grant authority. The same ChatGPT/Claude/Cursor model may fill several roles **sequentially**; each switch needs an explicit output and a new role contract when responsibilities change. Independence is more valuable than repeated model calls that all read the same context.
+A role can use several skills, but loading a skill doesn't grant authority. The same model may fill several roles **sequentially**; each switch needs an explicit output and a new role contract when responsibilities change. Independence is a separate context, not a brand. Independence is more valuable than repeated model calls that all read the same context.
 
 ## Composing an assignment
 
-For significant work, the person or coordinating chat first identifies **the smallest set of roles that eliminate material uncertainty**. Name each role's question, owner of its decision, input authority, permission, deliverable, and who consumes it. Distinguish *role recommendation* from *role launch*: a suggested parallel ChatGPT chat or paid Claude subagent is not automatically launched.
+For significant work, the person or coordinating chat first identifies **the smallest set of roles that eliminate material uncertainty**. Name each role's question, owner of its decision, input authority, permission, deliverable, and who consumes it. Distinguish *role recommendation* from *role launch*: a suggested extra chat or paid subagent is not automatically launched.
 
 **Default:** one responsible agent handles a straightforward task. Add another role when its separate judgment would change the outcome or its isolated context prevents overwhelming the main chat.
 
@@ -25,7 +25,7 @@ For significant work, the person or coordinating chat first identifies **the sma
 | --- | --- | --- |
 | A quick specialized checklist with no independence need | On-demand skill in current chat | Skill body loaded once; no new session |
 | Noisy repo research and only a compact finding matters | Built-in Explore or a bounded read-only subagent | Subagent reads files again; consumes allowance |
-| Truly independent critical design or acceptance judgment | Fresh chat or read-only specialist agent | New context plus potential rediscovery |
+| Truly independent critical design or acceptance judgment | Independent review context or read-only specialist; a fresh chat is one realization | New context plus potential rediscovery |
 | Long-running independent workstreams | Distinct sessions/worktrees, only with explicit authorization | Coordination overhead, duplicated infrastructure, merge conflicts |
 | Complex cross-talk between specialists | Agent team, only when coordination itself pays off | High token spend; experimental/fragile in some clients |
 
@@ -33,7 +33,7 @@ For significant work, the person or coordinating chat first identifies **the sma
 
 ## Optional native subagents: start with only two
 
-The role catalog is conceptual; it is not the native roster. Claude defines two optional read-only critics, design-challenger and test-strategist. Cursor additionally defines scoped implementation, evidence, utility and review roles; [actual model roster](../references/cursor-model-budget-policy.md) owns use. Inherit critics are not approved for automatic dispatch. Check client metadata, permissions and the explicit owner or model gate. Native critics supply bounded consultation. They do not replace the fresh-chat independent committee when material new architecture requires one, and they do not replace a persisted SHA-bound verdict. Do not add an agent for every job title.
+The role catalog is conceptual; it is not the native roster. Claude defines two optional read-only critics, design-challenger and test-strategist. Cursor additionally defines scoped implementation, evidence, utility and review roles; [actual model roster](../references/cursor-model-budget-policy.md) owns use. Inherit critics are not approved for automatic dispatch. Check client metadata, permissions and the explicit owner or model gate. Native critics supply bounded consultation. They do not replace an independent review context when material new architecture requires one, and they do not replace a persisted SHA-bound verdict. Cursor's model roster applies only when Cursor is selected. Do not add an agent for every job title.
 
 ## Three service levels
 

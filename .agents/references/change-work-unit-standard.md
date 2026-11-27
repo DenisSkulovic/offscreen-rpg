@@ -41,7 +41,7 @@ Record compact schedule in existing Change catalog or Undertaking index: Change 
 
 Disjoint ownership includes generated/build outputs, lockfiles, migrations, package exports, test fixtures, ports, Kind contexts/namespaces, cluster operators, DB schemas, PVCs and Helm releases. Separate paths alone do not establish isolation. Read-only research and independent isolated checks may proceed while unrelated install waits. Serialize overlaps; never split atomic work for parallelism.
 
-At join recheck HEAD, dependency receipts, version compatibility, collision-free diff, four-plane reconciliation and relevant link/guard/cross-service checks at assigned tier. ChatGPT/owner own substantial acceptance. Shared-checkout children do not stage/commit; parent owns receipts and integration. Stop on unresolved contract or ownership collision; no auto-next.
+At join recheck HEAD, dependency receipts, version compatibility, collision-free diff, four-plane reconciliation and relevant link/guard/cross-service checks at assigned tier. The acceptance lead and owner own substantial acceptance. Shared-checkout children do not stage/commit; parent owns receipts and integration. Stop on unresolved contract or ownership collision; no auto-next.
 
 ## Documentation-only Change admission and proof
 

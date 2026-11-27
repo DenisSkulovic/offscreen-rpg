@@ -67,7 +67,7 @@ Reject "add saga with correct retries, get it working in Kubernetes": no owner, 
 
 ## Token and tool guidance (soft targets, not enforceable context-window settings)
 
-[Submission budgets](planning-artifact-quality.md#4-submission-scale-and-measurement): 150–350 words per card normally; above 500, reconsider. The child mandatory packet-authored route stays below 1,000 words by default. One Change prefers one outcome. Seven actual tasks is a strong default. Initial reads are 2–5 direct anchors, plus focused reads for necessary facts. Do not prohibit debugging or safety verification. The parent normally uses one child, and up to two with proven isolation. No nested swarms. No model upgrade without approval. Focused normal and negative checks per task, one assigned cheap join, and heavy proof by ChatGPT and the owner.
+[Submission budgets](planning-artifact-quality.md#4-submission-scale-and-measurement): 150–350 words per card normally; above 500, reconsider. The child mandatory packet-authored route stays below 1,000 words by default. One Change prefers one outcome. Seven actual tasks is a strong default. Initial reads are 2–5 direct anchors, plus focused reads for necessary facts. Do not prohibit debugging or safety verification. The parent normally uses one child, and up to two with proven isolation. No nested swarms. No model upgrade without approval. Focused normal and negative checks per task, one assigned cheap join, and heavy proof by the acceptance lead and the owner. Tools without native subagents execute the same bounded task directly.
 
 ## QA economics: cost per accepted correct change
 
@@ -75,4 +75,4 @@ Use [usage evaluation](cursor-usage-evaluation.md) for actual model, read/search
 
 ## Failure boundary and responsibilities
 
-A child may refuse unsafe work, protect user data, check real code and diagnose local errors. Report precise contradiction and reproducer, not redesign. Parent owns sequencing, branch/lock, diff review and factual receipts; ChatGPT owns design, proof architecture and material decisions.
+A child may refuse unsafe work, protect user data, check real code and diagnose local errors. Report precise contradiction and reproducer, not redesign. The coordinator owns sequencing, branch and lock, diff review and factual receipts. The planner owns design, proof architecture and material decisions. When Cursor is the selected client, the model defaults in this file apply.

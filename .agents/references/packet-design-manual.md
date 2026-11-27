@@ -1,4 +1,4 @@
-# Execution-first Change packet design | ChatGPT planner manual
+# Execution-first Change packet design | planner manual
 
 **Owns:** construction of a bounded task DAG and execution routes after settled architecture. [Investigation](planner-investigation-standard.md) supplies source facts; [submission standard](planning-artifact-quality.md) sets scope, files and budgets; [readiness review](packet-readiness-review.md) independently tests the result.
 

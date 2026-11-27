@@ -88,7 +88,7 @@ Normal card 150–350 words; above 500 reconsider. Usually 1–3 source write ow
 
 Parent front door + dispatch index target <=1,500 words. Child mandatory packet-authored route (card plus all required linked sections, including cross-folder references) target below 1,000 words. Count unique required text, not link labels; exclude real source/tests and generally applicable rules, but not planner instructions hidden in source comments. If above target, localize or justify indispensable content and bounded route. Not runtime token limits.
 
-Cursor implements, constructs specified tests, runs cheap focused positive and diagnostic negative checks, reviews changed code and commits. ChatGPT + owner own substantial acceptance, including broad suites, multi-service/live/fault/recovery and long/costly proofs. Keep implementation complete distinct from acceptance complete; no extra Change solely for owner-operated no-diff proof. Required acceptance remains binding before Done/integration under existing acceptance-tier rules.
+The implementation agent implements, constructs specified tests, runs cheap focused positive and diagnostic negative checks, reviews changed code and commits when it has write access. The acceptance lead and owner own substantial acceptance, including broad suites, multi-service, live, fault, recovery and long or costly proofs. Keep implementation complete distinct from acceptance complete; no extra Change solely for owner-operated no-diff proof. Required acceptance remains binding before Done/integration under existing acceptance-tier rules.
 
 ### Measurement receipt (existing checkpoint/review; no new file)
 
