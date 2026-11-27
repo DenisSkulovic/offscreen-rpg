@@ -16,3 +16,5 @@ F05/F06 repair 05 (5ebbe7c67ed6544da573a9362bce4875075cc844): actual common guar
 Repair 06 (d68f938337723e680ba7fd4019195f98091fc61c): T01/T02 exact artifact paths, descriptor metadata, parity commands, immutable generator and variant helper selected. Named census refreshed against inspected sources, full current tracked grep remains open. F01–F03 partially repaired; no commission or test execution.
 
 Repair 07 (d508bb1a0dd7e5f6e361c86dbeefe37f4cbff22d): T06/T07 detailed orchestration, public argv/ports, owned forward lifecycle, exact preservation projection, upgrade/no-op/receipt and focused negative fixtures. F08 aggregate budgets remain planner-blocked; pinned render and exact host admission anchor need verification. No source execution or commission.
+
+Repair 08 (0e59061d7287713443504a7f58638f44ac0d8bd8): T08–T10 detailed session, UID ledger, terminal receipt, signal/developer query predicates, health/resource sampling and negative fixtures. F07/F09 further repaired; F08 and exact developer preflight horizon/label evidence remain open. No dispatch or live execution.
