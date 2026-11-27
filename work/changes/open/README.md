@@ -2,7 +2,7 @@
 
 ## Developer observability | current sprint (2026-11-27)
 
-All eleven Changes are owner-released for isolated offline source implementation. Integration reference `integration/observability-developer`; D01 first, D02–D11 dependency-gated. Independent readiness/changed-authority review outstanding; no real cluster or paid operations, main merge, Done or live certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
+All eleven Changes are owner-released for isolated offline source implementation. Implementation branch `implementation/observability-developer` holds OBS-D01 and OBS-D02. OBS-D03 through OBS-D11 each branch from that branch and merge back into it. Independent readiness/changed-authority review outstanding; no real cluster or paid operations, main merge, Done or live certification. [Release and acceptance](../../designs/open/observability-developer/ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 | Change | Current readiness |
 | --- | --- |
