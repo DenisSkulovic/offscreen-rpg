@@ -4,10 +4,10 @@ Current inspected baseline `ce96b1c405a3f5f21d0f37bf37824edcddd265ef`. Principal
 
 | Source | Existing → target |
 |---|---|
-| P/identity.mjs::captureIdentity/recheckIdentity/readNamespaceUid | existing profile/Docker/snapshot checks → full immutable tuple and bound reads |
+| P/identity.mjs::captureIdentity/recheckIdentity/readNamespaceUid | existing profile/Docker/snapshot checks → full immutable tuple, bound reads and F08 shared exports (D02 T01) |
 | infra/platform/common/commands.mjs::assertPlatformTarget | existing ambient baseline guard; inject bounded runner, no edit |
 | P/install.mjs::runObservabilityEnsure/runWrite | actual namespace create response binds UID before further reads; preserve pending fence |
-| P/artifacts.mjs::loadArtifacts | default trusted Helm read runner; preserve D01 descriptor and render behavior |
+| P/artifacts.mjs::loadArtifacts | default trusted offline Helm runner explicit <=60s, not identity <=15s; preserve D01 descriptor/render behavior |
 | P/tests/identity.test.mjs, install.test.mjs | independent fixture identity and actual create JSON; no partial hand-built tuple |
 | P/inventory.mjs, readiness.mjs and external observation | D04 owns remaining migration; no public claim of complete safety before joint boundary |
 

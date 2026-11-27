@@ -4,8 +4,9 @@ Principal source seams inspected in previous audit and confirmed unchanged throu
 
 | Source | Seam |
 |---|---|
-| V/proof-host.mjs::runProofOperationSession/buildProofReceipt | single terminal path, same frozen identity/locks |
-| V/proof.mjs::runLiveProof | actual safe gate dispatch |
+| V/proof-host.mjs::runProofOperationSession/buildProofReceipt/gateImplemented/GATE_BUDGET_MS/reserveMsForGate | terminal path, shared budgets, exact gate refusal and frozen locks |
+| V/proof.mjs::main/runLiveProof | gate refusal before evidence allocation, safe default gate dispatch |
+| V/partial-install.mjs direct executable block after dispatchHelmWrapperInvocation | T01 replace direct invocation with unconditional exit2; D11 owns full mechanism; no other writes to this module |
 | V/signals.mjs::runSignalsProof/deleteProofResourcesWithUid | current namespace cascade → per-create UID cleanup |
 | V/proof-resources.mjs new | owned namespace/CM/Pod creation, exec and individual delete |
 | V/signal-probe.py::observe_positive_queries/run_probe/metrics_check | duplicate arguments and fresh query oracle |

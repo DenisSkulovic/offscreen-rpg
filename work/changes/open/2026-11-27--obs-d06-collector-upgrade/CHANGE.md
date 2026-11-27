@@ -8,7 +8,7 @@ One authorized exact dev Collector rev1→rev2 transition with preserved storage
 Authority: [R5 canonical contract](../../../../docs/technical/platform/observability-native-infrastructure.md), [design](../../../designs/open/observability-developer/README.md), [acceptance](../../../designs/open/observability-developer/ACCEPTANCE.md), [independent pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/114cc39cf4e1477ac34e24d4a26684ad9f91b8c3/work/designs/open/observability-developer/committee/pass-03.md). Dependencies: D02–D04 frozen safety/classification, D05 forwarding; coordinated D07/D08/D09 capability proof before exposure.. D01-only staged exception defended pending owner acceptance; other boundaries remain subject to joint gate and OD-05–07. No source commission, live operation, spend or merge.
 
 ## Scope
-New P/upgrade.mjs, package.json obs:upgrade, tests/upgrade.test.mjs, operation-specific custody validator only if needed. No generalized installer, rollback/uninstall, release mutation or recovery command.
+New P/upgrade.mjs, package.json obs:upgrade, tests/upgrade.test.mjs, required exact upgrade custody validator and phase. No generalized installer, rollback/uninstall, release mutation or recovery command.
 
 ## Planner gate
 

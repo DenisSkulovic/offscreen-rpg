@@ -4,7 +4,7 @@ P=infra/platform/observability/; V=infra/verification/smoke/observability/; othe
 
 ## T01 | Authenticated Grafana health | PLANNER-BLOCKED
 
-Anchors V/resources.mjs::queryGrafanaDatasourceHealth, proof-host.mjs::extractStableIdentities/stableIdentitiesCompatible, P/forward.mjs, tests/proof.test.mjs, EXECUTION § Health. Write resources/host/proof/tests. Enable health only after complete safe route. Exact datasource UID/type/URL/health and database ok; full before/after identities, auth not argv/output, close before receipt. Root node --test infra/verification/smoke/observability/tests/proof.test.mjs. Negative wrong auth/URL/UID, missing identity, failed cleanup.
+Anchors V/resources.mjs::queryGrafanaDatasourceHealth, proof-host.mjs::extractStableIdentities/stableIdentitiesCompatible, P/forward.mjs, tests/proof.test.mjs, EXECUTION § Health. Write resources/host/proof/tests. Enable health only after complete safe route; replace D07 temporary refusal cases for health wrong cluster UID, changed namespace UID and positive observation trace with actual default adapter command/identity/receipt assertions (not injection-only green). Exact datasource UID/type/URL/health and database ok; full before/after identities, auth not argv/output, close before receipt. Root node --test infra/verification/smoke/observability/tests/proof.test.mjs. Negative wrong auth/URL/UID, missing identity, failed cleanup.
 
 ## T02 | Actual resource cadence and scoped evidence | PLANNER-BLOCKED
 

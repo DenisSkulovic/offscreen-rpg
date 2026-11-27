@@ -4,10 +4,10 @@ Principal source seams inspected in previous audit and confirmed unchanged throu
 
 | Source | Seam |
 |---|---|
-| V/partial-install.mjs::runPartialInstallProof/writeHelmPathWrapper/assessPartialInstallEnsureReceipt/assessRepeatEnsureRefusal | existing quota wrapper; proposed real admission fault not ratified |
+| V/partial-install.mjs::runPartialInstallProof/writeHelmPathWrapper/assessPartialInstallEnsureReceipt/assessRepeatEnsureRefusal | existing quota wrapper direct executable refused by D07; proposed real admission fault not ratified |
 | P/custody.mjs::readPending | bounded read-only inspect, no mutation capability |
 | P/inventory.mjs history argv builder (D04) | exact failed Loki history |
-| infra/verification/diagnostic-engine.mjs::runCommand/commandOutcome | bounded outer group cancellation |
+| infra/verification/diagnostic-engine.mjs::runCommand/commandOutcome | sole D11 owner of bounded outer group cancellation |
 | infra/verification/provisioning.mjs | public CLI caller, unrelated unchanged |
 | V/proof-host.mjs/proof.mjs, tests/proof.test.mjs | isolated no-outer-lock session and actual dispatch |
 | archived a9-admission-fault.yaml | candidate owner specimen only |

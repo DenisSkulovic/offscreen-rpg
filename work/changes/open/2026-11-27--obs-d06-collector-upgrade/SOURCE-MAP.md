@@ -6,7 +6,7 @@ Principal source seams inspected in previous audit and confirmed unchanged throu
 |---|---|
 | P/upgrade.mjs (new) | fixed dev auth, preservation and transition |
 | P/readiness.mjs::classifyInventory/verifyOwnedFinalShape (D04) | exact predecessor/current/final |
-| P/custody.mjs::acquireCustody/runMutation (D03) | exclusive intent and owned record |
+| P/custody.mjs::acquireCustody/runMutation (D03) | exclusive intent and owned record; D06 T02 adds exact collector-upgrade validator and phase to D03 |
 | infra/clusters/kind/manager/host-probe.mjs::MIN_HOST_MEMORY_MIB/parseMeminfoMiB | existing 4096 MiB floor |
 | P/artifacts.mjs::loadObservabilityVariants/helmValuesArgv, forward.mjs::openForwards | same descriptor and transport |
 | P/tests/upgrade.test.mjs, snapshot-fixtures.mjs | real render-derived fixtures |
