@@ -1,5 +1,5 @@
-# R5 verification and acceptance matrix
-R5-PROOF-CONTRACT.md, R5-CERTIFICATION.md and R5-GEOGRAPHY.md are normative refinements. All results are NOT RUN unless explicitly stated in DESIGN-R2. Source checks are assigned to implementer; substantial local proof to ChatGPT/owner. Existing dev cluster is normal target, no full app stack. No paid calls or release mutations.
+# Verification and acceptance matrix
+All successor results are NOT RUN. Historical experiment receipts apply only to their tested scope. Source checks belong to Cursor; substantial proof belongs to ChatGPT/owner. No paid calls or release mutations. The canonical technical contract owns selected behavior; the successor PROOF.md owns execution and deadline candidates.
 
 | ID | Claim | Normal / discriminating negative | Tier and executor | Integration |
 | --- | --- | --- | --- | --- |
@@ -16,11 +16,5 @@ R5-PROOF-CONTRACT.md, R5-CERTIFICATION.md and R5-GEOGRAPHY.md are normative refi
 | V11 | Release nonmutation | both-profile source render/status routing; dev commands refuse release before write, no release context access for dev; old release gate A11 preserved | source Cursor | essential |
 | V12 | Original certification | All original A1–A12 retained, executed on successor per R5-CERTIFICATION after owner ratification; no waiver | Cursor source + owner live/isolated as specified | all original gates assigned to successor, joint closure per R5-CERTIFICATION; no waiver |
 
-## Owner design experiment route
-Existing temporary topology receipt /tmp/offscreen-obs-topology.Hsnwspwm, no live installation. Generate dev overlay from candidate generator; real vendored chart, compare object identities, exact pins, base/release unchanged, validate relay via stdin exact pinned image with --pull=never --network none --read-only. Use local ephemeral Docker Collector + controlled OTLP capture endpoint for actual data-plane behavior if possible; no public host ports, no new Kubernetes cluster. Compare emitted signal JSON/protobuf using a known local decoder or pinned backend proof; do not claim validate is data-path proof. Exact policy specimen and representative processing evidence now PASS, see DESIGN-R2 R3.1/R3.2; full live acceptance remains NOT RUN. 
-## Owner implementation acceptance order
-1. Capture exact tested SHA, clean checkout, memory, dev identity, old config/history/UID projection, no pending/connection, authorized upgrade target. Read-only source and runtime preflight. Existing retained obs-proof-90039b35 namespace is separate cleanup debt: retain; any separately authorized namespace cleanup requires exclusive access to isolated target and contents/identity review per R5-PROOF-CONTRACT; never routine namespace deletion.
-2. Offline render/test receipts; source quality and negative fixtures. No live mutation before proof and owner authorization.
-3. Run guarded upgrade once; capture sanitized operation receipt; failure retains pending, stop; no retry or rollback. No other service changes. Verify repeated no-op.
-4. Run owned connection, WSL developer proof, Grafana health, resources and diagnostic probe; exact query successes and canary windows, close children. Preserve identities, report resource pressure and actual data observed. 
-5. Execute the explicit successor A1–A12 ledger in R5-CERTIFICATION before integration; no terminal Done on partial evidence. Source implementation and heavy acceptance separate; independent review precedes commission. No new cluster for V01–V11, V12 isolation per original authority.
+## Execution route
+Use the [successor verification specification](../../../changes/open/2026-11-27--observability-developer/PROOF.md) for precommission evidence, implementation tests, existing development qualification and isolated certification. See [certification continuity](R5-CERTIFICATION.md) for the transferred A1–A12 obligations. Historical design experiments and owner evidence are preserved in DESIGN-R2.md and [prior acceptance text](https://github.com/DenisSkulovic/offscreen-rpg/blob/d4a2fa4307e5484f1520efa31954f7e7d240de27/work/designs/open/observability-developer/ACCEPTANCE.md). No namespace deletion, live authorization or certification implied.

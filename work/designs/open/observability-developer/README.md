@@ -19,10 +19,10 @@ No actual application instrumentation, public exposure, generic upgrade engine, 
 
 | Document | Responsibility |
 | --- | --- |
-| [TARGET.md](TARGET.md) | Selected architecture and telemetry contract |
-| [LIFECYCLE.md](LIFECYCLE.md) | Admission, identity, custody, upgrade and connection lifecycle |
+| [TARGET.md](TARGET.md) | Architecture rationale and selected contract routes |
+| [LIFECYCLE.md](LIFECYCLE.md) | Links to canonical lifecycle sections |
 | [R5-GEOGRAPHY.md](R5-GEOGRAPHY.md) | Source and artifact placement |
-| [R5-PROOF-CONTRACT.md](R5-PROOF-CONTRACT.md) | Proof ownership and freshness |
+| [R5-PROOF-CONTRACT.md](R5-PROOF-CONTRACT.md) | Links to canonical proof safety and freshness |
 | [R5-CERTIFICATION.md](R5-CERTIFICATION.md) | Original acceptance obligations |
 | [ACCEPTANCE.md](ACCEPTANCE.md) | Acceptance matrix |
 | [SOURCE-MAP.md](SOURCE-MAP.md) | Source investigation |
