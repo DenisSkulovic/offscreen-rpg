@@ -29,7 +29,7 @@ Drafted by the implementer at `024c05b5`. This is not an independent review and 
 | 23 | future | `AGENTS.md` | React/Next architecture is selected. | The engine, application, and database own rules, time, permissions, publication, and provider costs. | author-checked |
 | 24 | future | `docs/product/experience/navigation-and-stories.md` | The page owns the player’s mental map of spaces. | It does not own a flows, patterns, or spaces taxonomy. | author-checked |
 | 25 | navigation | `AGENTS.md` | An unknown question starts with `pnpm wiki:find` and then one `pnpm wiki:read`. | Stop when the rule, the source, and a negative case are known. | author-checked |
-| 26 | navigation | `.agents/skills/cursor-handoff/SKILL.md` | Frontend handoffs use the frontend-engineering skill. | The 2026-11 execution playbook is dated evidence. | author-checked |
+| 26 | navigation | `.agents/skills/implementation-handoff/SKILL.md` | Frontend handoffs use the frontend-engineering skill. | The 2026-11 execution playbook is dated evidence. | author-checked |
 | 27 | navigation | `docs/technical/storyteller/operation-and-controller.md` | The opening has a one-line question-to-heading route. | The long sections were not split. | author-checked |
 | 28 | navigation | `docs/product/experience/presentation.md` | The page owns atmosphere, honest media, and illustration that does not block the text. | The body was not rewritten. | author-checked |
 | 29 | navigation | `docs/product/experience/settings-and-accessibility.md` | The page owns player-facing controls that are not Storyteller creative presets, plus accessibility obligations. | The DOC01 owner line is gone. The body was not rewritten. | author-checked |

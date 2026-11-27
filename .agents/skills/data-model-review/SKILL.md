@@ -14,4 +14,4 @@ description: Choose or review persistent data models, relational versus document
 5. Provide one adversarial access/concurrency/migration example that could reverse your choice; identify query plan or backfill evidence needed.
 6. Output: `source and domain facts | options/decision criteria | chosen truth/identity/constraints | query/read plan | migration phases and reversibility | falsifying proof | unresolved approval`.
 
-**Permission:** design/read-only by default. Never execute schema push, migrate, baseline, data repair or test-DB resets without explicit separate authorization. Cursor implementation comes only after approved technical docs.
+**Permission:** design/read-only by default. Never execute schema push, migrate, baseline, data repair or test-DB resets without explicit separate authorization. Implementation comes only after approved technical docs.

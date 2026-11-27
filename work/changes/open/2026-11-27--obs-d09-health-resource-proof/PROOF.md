@@ -1,6 +1,6 @@
 # OBS-D09 proof
 
-NOT RUN. All Cursor commands repo-root, local/offline focused tests only; no live cluster or paid operations. Heavy proof ChatGPT/owner with explicit target authorization and exact tested SHA.
+NOT RUN. All implementation commands are repo-root, local/offline focused tests only; no live cluster or paid operations. Heavy proof belongs to the acceptance lead and the owner with explicit target authorization and exact tested SHA.
 
 V10/A10: exact authenticated datasource UID/type/URL/health plus database ok; complete stable identity, five nonempty roles, 12 samples at 10s elapsed >=110s, >=3 advancing memory times per role, scoped CPU/memory min/max/mean and Collector scrape. Missing families not zero, invalid auth/port/cadence/query/identity/cleanup fail. A6 owner actual health and repeat no writes, distinct occupied upgrade.
 

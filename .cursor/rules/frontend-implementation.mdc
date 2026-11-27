@@ -6,7 +6,7 @@ alwaysApply: false
 
 **One Change, one source map, only relevant code.** Read selected `CHANGE.md` first screen/required acceptance, then its linked source-adjacent `README.md`. Open exact source symbols and tests, not entire targets/manuals/old minutes. Current source ≠ future target.
 
-**No redesign or recursive research.** ChatGPT already selected architecture, source owners and failure semantics. Stop with a concise file/symbol contradiction if actual code materially differs; do not spend cheap-model tokens building a second plan or spawning review agents.
+**No redesign or recursive research.** The planner already selected architecture, source owners and failure semantics. Stop with a concise file/symbol contradiction if actual code materially differs. Do not spend cheap-model tokens building a second plan or spawning review agents. Model choice follows [.cursor/MODEL-POLICY.md](../MODEL-POLICY.md).
 
 **Fast checks at boundaries.** Warm pnpm/Next/Vitest/TypeScript caches; diff/IDE feedback during edits, targeted negative test at coherent seam, larger build/DB/browser only at agreed integration gate. `test:focus` resets the named disposable DB; never run paid providers or deployment automatically.
 

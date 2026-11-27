@@ -5,7 +5,7 @@ description: Prepare, execute or reconcile one independently tracked operational
 
 # Standalone Task workflow
 
-**Start:** [work taxonomy](../../../work/WORK-TAXONOMY.md) → [single selection queue](../../../work/QUEUE.md) → [Task catalog/template](../../../work/tasks/README.md). This procedure is for one **independently tracked operational run** with no intended lasting source or normative-document diff. A Change's internal Composer `TASKS.md#Txx` stays in that Change, not here.
+**Start:** [work taxonomy](../../../work/WORK-TAXONOMY.md) → [single selection queue](../../../work/QUEUE.md) → [Task catalog/template](../../../work/tasks/README.md). This procedure is for one **independently tracked operational run** with no intended lasting source or normative-document diff. A Change's internal `TASKS.md` T-ID stays in that Change, not here.
 
 ## 1. Classify and prepare
 
@@ -15,7 +15,7 @@ Create `work/tasks/open/YYYY-MM-DD--slug/TASK.md` from [TEMPLATE.md](../../../wo
 
 ## 2. Execute with bounded context
 
-The default Cursor coordinator and normal subagent are Composer Standard. Provide this one `TASK.md` and 2–5 needed source/command anchors. Reverify exact target identity and resource permission before a mutating command, use a dry-run/read-only preflight when available, and stop rather than guess if its contract is stale. No provider spend, valuable DB reset, Pod deletion, cloud mutation or unapproved migration merely because a Task says to run one.
+Provide this one `TASK.md` and 2–5 needed source or command anchors. The selected client's model policy chooses the coordinator and any worker. Reverify exact target identity and resource permission before a mutating command, use a dry-run/read-only preflight when available, and stop rather than guess if its contract is stale. No provider spend, valuable DB reset, Pod deletion, cloud mutation or unapproved migration merely because a Task says to run one.
 
 When a Task reveals a required source change, **stop and propose a Change** in `work/changes/`; it is not a license to implement the fix in the operational Task. Do not retry an ambiguous irreversible operation without a documented idempotency/reconciliation rule.
 

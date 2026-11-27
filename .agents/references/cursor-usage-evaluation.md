@@ -1,6 +1,6 @@
 # Cursor usage and integrated-outcome measurement | lightweight protocol
 
-**Selected November 20, 2026.** This is a measured experiment adjunct to [bounded parent orchestration](bounded-parent-orchestration.md) and [Composer budget policy](cursor-model-budget-policy.md), not another queue, mandatory reporting system, or permission to change models. Hold the current model policy stable while evaluating the new compact child-return pattern.
+**Selected November 20, 2026.** This is a measured experiment adjunct to [bounded parent orchestration](bounded-parent-orchestration.md) and [Cursor model policy](../../.cursor/MODEL-POLICY.md), not another queue, mandatory reporting system, or permission to change models. Hold the current model policy stable while evaluating the new compact child-return pattern.
 
 ## One comparable trial
 

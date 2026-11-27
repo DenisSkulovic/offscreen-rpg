@@ -4,7 +4,7 @@
 
 ## Principle
 
-Plan the complete relevant source and failure surface upstream; expose only exact execution routes to Cursor. Optimize accepted correct outcomes including rework, not raw tokens. No savings claim without measurement.
+Plan the complete relevant source and failure surface upstream; expose only exact execution routes to the implementation agent. Optimize accepted correct outcomes including rework, not raw tokens. No savings claim without measurement.
 
 ## Two axes; do not invent a third Change kind
 
@@ -23,7 +23,7 @@ Apply multiple lenses if necessary, not extra packet layers. INTEGRATE is a coor
 
 ### The executor's real unit is a microtask
 
-Use [Composer task format](composer-first-execution.md#tasksmd-format). One narrow decided T-ID. Seven actual assignments per Change is a strong default, with the exception in the submission standard. One parent per Change. A tiny direct edit may need only CHANGE.md. A large STATE or RELEASE scope is repartitioned when its size prevents reliable execution, not by switching to a larger model.
+Use the [task format](task-execution-standard.md#tasksmd-format). One narrow decided T-ID. Seven actual assignments per Change is a strong default, with the exception in the submission standard. One parent per Change. A tiny direct edit may need only CHANGE.md. A large STATE or RELEASE scope is repartitioned when its size prevents reliable execution, not by switching to a larger model.
 
 ## Files and ownership
 
@@ -37,11 +37,11 @@ No empty companions or duplicate source maps. Refresh stale facts or mark explic
 
 ## Route card format (pasteable; adapt, don't pad)
 
-Use canonical [TASKS card](composer-first-execution.md#tasksmd-format), or for one tiny route in CHANGE.md include ID/HEAD/selection, outcome, authority, anchors, exact edit/constraints, normal and negative command/cwd, stop and receipt. No duplicate card in companions or pasted research.
+Use canonical [TASKS card](task-execution-standard.md#tasksmd-format), or for one tiny route in CHANGE.md include ID/HEAD/selection, outcome, authority, anchors, exact edit/constraints, normal and negative command/cwd, stop and receipt. No duplicate card in companions or pasted research.
 
 ## Read budget, escalation, and quality loop
 
-Use [submission budgets](planning-artifact-quality.md#4-submission-scale-and-measurement), [task format](composer-first-execution.md) and actual named anchors. Additional reads must resolve necessary local facts. If relevant contract drifts, stop for planner refresh. Keep measured evidence and limits; no Done with missing required acceptance or reconciliation.
+Use [submission budgets](planning-artifact-quality.md#4-submission-scale-and-measurement), [task format](task-execution-standard.md) and actual named anchors. Additional reads must resolve necessary local facts. If relevant contract drifts, stop for planner refresh. Keep measured evidence and limits; no Done with missing required acceptance or reconciliation.
 
 ## Example: distributed Storyteller
 

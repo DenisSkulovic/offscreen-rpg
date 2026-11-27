@@ -13,7 +13,7 @@ A direct named Change assignment authorizes that Change's routine lifecycle, not
 
 ## 1. Select a measurable documentation or code outcome
 
-Check [QUEUE](../../../work/QUEUE.md), the [Change catalog](../../../work/changes/README.md), existing work and the actual target and HEAD. Use the [submission standard](../../references/planning-artifact-quality.md): one preferred measurable outcome, normally 5–10 minutes of active Cursor work. Seven actual assignments is a strong default. Consolidate, simplify or split work whose size prevents reliable execution. Do not split a coherent bounded Change merely to satisfy a count. A tiny settled edit needs no invented packet. Do not create a duplicate active folder.
+Check [QUEUE](../../../work/QUEUE.md), the [Change catalog](../../../work/changes/README.md), existing work and the actual target and HEAD. Use the [submission standard](../../references/planning-artifact-quality.md): one preferred measurable outcome, normally 5–10 minutes of active implementation. Seven actual assignments is a strong default. Consolidate, simplify or split work whose size prevents reliable execution. Do not split a coherent bounded Change merely to satisfy a count. A tiny settled edit needs no invented packet. Do not create a duplicate active folder.
 
 ## 2. Resolve intent and authority before implementation
 
@@ -23,9 +23,9 @@ Use `planned-impact.v1`: Product, Technical, Code, Related rows, each changed wi
 
 ## 3. Write a self-contained executor handoff
 
-Use the [CHANGE template](assets/CHANGE.md) in `work/changes/open/YYYY-MM-DD--slug/`. Material delegated work requires TASKS, SOURCE-MAP, PROOF and exact execution contracts where necessary. An optional [PLAN](assets/PLAN.md) is only a current resumable checkpoint. [Packet construction](../../references/packet-design-manual.md) and [submission roles](../../references/planning-artifact-quality.md#3-execution-packet-shape) own the details. The planner writes source-grounded decisions. Cursor does not. Independently review the [readiness dimensions](../../references/packet-readiness-review.md) on the actual candidate. Document completeness is not Ready. Only Critical and High findings block the affected scope. [Handoff](../cursor-handoff/SKILL.md) formats a short launch after commission.
+Use the [CHANGE template](assets/CHANGE.md) in `work/changes/open/YYYY-MM-DD--slug/`. Material delegated work requires TASKS, SOURCE-MAP, PROOF and exact execution contracts where necessary. An optional [PLAN](assets/PLAN.md) is only a current resumable checkpoint. [Packet construction](../../references/packet-design-manual.md) and [submission roles](../../references/planning-artifact-quality.md#3-execution-packet-shape) own the details. The planner writes source-grounded decisions. The implementation agent does not invent them. Independently review the [readiness dimensions](../../references/packet-readiness-review.md) on the actual candidate. Document completeness is not Ready. Only Critical and High findings block the affected scope. [Implementation handoff](../implementation-handoff/SKILL.md) formats a short launch after commission.
 
-### Bundle scheduling and parallel Cursor execution
+### Bundle scheduling and parallel execution
 
 Use [parallel Change standard](../../references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). Map the Design's Change edges before task cards. Each commissioned Change has its own coordinator, branch and linked worktree and joins the recorded design implementation branch. No whole Change as a child assignment. Internal checkpoints follow the parent procedure. They are not new approvals.
 

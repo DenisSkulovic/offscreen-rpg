@@ -1,6 +1,6 @@
 # ChatGPT | client adapter
 
-Follow [AGENTS.md](AGENTS.md) for roles, severity, investigation depth, safety and lifecycle. Portable planner procedure lives in the [planner investigation standard](.agents/references/planner-investigation-standard.md), including [continuous development flow](.agents/references/planner-investigation-standard.md#continuous-development-flow) and the [artifact handoff](.agents/references/planner-investigation-standard.md#artifact-handoff). This file does not duplicate that procedure.
+Follow [AGENTS.md](AGENTS.md) for roles, severity, investigation depth, safety and lifecycle. This adapter does not make ChatGPT the exclusive designer, planner or reviewer. Another capable client may hold those roles. Portable planner procedure lives in the [planner investigation standard](.agents/references/planner-investigation-standard.md), including [continuous development flow](.agents/references/planner-investigation-standard.md#continuous-development-flow) and the [artifact handoff](.agents/references/planner-investigation-standard.md#artifact-handoff). Implementation launches use [implementation handoff](.agents/skills/implementation-handoff/SKILL.md). This file does not duplicate that procedure.
 
 ## Continuous development flow
 

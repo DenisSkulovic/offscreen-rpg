@@ -1,6 +1,6 @@
 # Developer observability
 
-**State:** R5 architecture accepted and promoted; all eleven Changes OWNER-RELEASED for offline candidate source implementation, dependency-gated. Independent readiness/changed-authority defense outstanding, no PASS asserted. Human custodian; ChatGPT planner. [Joint release boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification). No live permission, main merge or Done. All original A/V obligations retained.
+**State:** R5 architecture accepted and promoted; all eleven Changes OWNER-RELEASED for offline candidate source implementation, dependency-gated. Independent readiness/changed-authority defense outstanding, no PASS asserted. Human custodian and planner. [Joint release boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification). No live permission, main merge or Done. All original A/V obligations retained.
 
 ## Objective
 

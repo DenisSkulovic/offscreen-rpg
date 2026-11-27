@@ -42,7 +42,7 @@ Every Critical or High row states the material consequence. Medium and Low rows 
 ## Final disposition
 - Verdict: READY / READY (dependency-gated) / READY WITH EXPLICIT LIMITS / PLANNER-BLOCKED / UNVERIFIED / NOT AUTHORIZED.
 - Analysis completed, verdict delivered, and whether persistence is verified or pending.
-- **First Cursor action:** guard plus the first eligible T-ID or wave. No independent design preflight.
+- **First implementation action:** branch guard plus the first eligible T-ID or wave. No independent design preflight.
 - Blocking corrections owned by the planner, as exact edits.
 - Deferred findings, retained here. No new Change per finding.
 - Proofs the reviewer did not execute.

@@ -12,6 +12,6 @@ description: Evaluate a consequential software security or privacy boundary in O
 3. Trace one real input through browser/API/application/DB or provider. Separate transport authentication, object authorization, property projection and business-state permission. Include worker/cache/search/log exposure where it affects the result.
 4. Challenge the design against one realistic attacker/abuse case. Prefer a counterexample at the **actual authoritative boundary**, not “validate input” slogans. The test should demonstrate prevention of cross-owner access or unintended effects.
 5. Deliver a narrow security contract/review: `asset and actor | plausible designs and criteria | chosen enforcement owner | trust crossings | permission/revocation | negative proof | remaining uncertainty`. A reviewer may block with evidence but cannot silently alter product behavior.
-6. For execution, send a separate bounded Cursor packet with precise spec anchors; avoid external scans, new dependencies, rotations or deployments without explicit authorization.
+6. For execution, send a separate bounded implementation packet with precise spec anchors; avoid external scans, new dependencies, rotations or deployments without explicit authorization.
 
 This is coding-agent engineering expertise, not in-game Storyteller prompt security. A skill invocation does **not** authorize access to secrets, production systems or personal data.

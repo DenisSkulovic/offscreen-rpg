@@ -18,7 +18,7 @@
 
 **Documented externally:** the listed client file-discovery semantics, memory loading, rules/skills distinction, supported context/cost commands and spec-driven procedure.
 
-**Our independent design:** ChatGPT decides and challenges, Claude grounds difficult questions in source when necessary, Cursor executes a settled slice. This allocation is plausible and matches the owner's costs/preferences; it is not an empirically established universal best practice.
+**Our independent design:** engineering roles are separate from the client that performs them. A planner decides and challenges. An implementation agent executes a settled slice. ChatGPT, Claude Code and Cursor are adapters, and each client keeps its own model policy. That split is a repository choice. It is not an empirically established universal best practice.
 
 **Unverified:** whether Cursor de-duplicates same-named portable and Claude-adapter skills; which skills its current version autoloads; whether our handbook saves actual tokens; whether any chosen skill improves code quality. These require task-scoped smoke tests, not more theory.
 

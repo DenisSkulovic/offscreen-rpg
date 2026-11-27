@@ -9,7 +9,7 @@ description: Review or design React 19 and Next.js App Router implementation dec
 
 **For an area-wide React/Next.js renewal:** start from the agreed [target-driven renewal process](../../rules/target-driven-renewal.md), define the intended render/state/data/auth/accessibility/testing architecture before scoring existing components, and audit source against that target. Keep visual art direction as a separate but compatible design track. For a narrow bug, use the current technical contract directly.
 
-**Cheap Cursor executor default:** a selected Change already carries the architecture decision and source-adjacent README route. Read **those two first** and open a professional manual **only if a real source/contract discrepancy demands independent judgment**. ChatGPT does deep design review upstream; do not re-run the entire role workshop per feature edit.
+**Implementation default:** a selected Change already carries the architecture decision and source-adjacent README route. Read **those two first** and open a professional manual **only if a real source or contract discrepancy demands independent judgment**. The designer reviews upstream. Do not re-run the entire role workshop per feature edit.
 
 ## Read narrowly
 

@@ -22,7 +22,7 @@ Permanent product and technical truth lives under [docs/product](../docs/product
 | `.agents/skills/<name>/SKILL.md` | Repeatable procedure | Discover description; load body on demand |
 | [`.agents/knowledge/`](knowledge/README.md) | Deep professional manuals | One relevant domain when warranted |
 | `docs/product`, `docs/technical` | Product bible and technical guarantees | Read the relevant owner/section |
-| `work/changes/…/CHANGE.md` | Bounded implementation or substantive documentation diff | Only when selected; Composer `TASKS.md` is subordinate |
+| `work/changes/…/CHANGE.md` | Bounded implementation or substantive documentation diff | Only when selected; a Change-local `TASKS.md` is subordinate |
 | `work/tasks/…/TASK.md` | Independent operational verification, migration or controlled run | Only when selected and explicitly authorized for its environment |
 | `work/designs/open`, `evidence`, `research` | Named proposals, proof, nonbinding studies | On demand; never silent product authority |
 | Tests, fixtures, scripts | Executable evidence | Run selectively |

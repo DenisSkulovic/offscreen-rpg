@@ -14,7 +14,7 @@
 | [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md) | **Current priority order and release gates**, not a second selected work pointer. |
 | [QUEUE.md](QUEUE.md) | **Only selected work item** (Change, standalone Task or none); no duplicate selectors. |
 | [WORK-TAXONOMY.md](WORK-TAXONOMY.md) | Definitions and routing for Initiative, Design, Investigation, Change, Task, Experiment and Evidence. |
-| [changes/](changes/README.md) | Which lasting implementation/documentation Change packets are open or archived? Composer Txx remain subordinate. |
+| [changes/](changes/README.md) | Which lasting implementation/documentation Change packets are open or archived? Change-local T-IDs remain subordinate. |
 | [tasks/](tasks/README.md) | Which independent verification, operation or experiment runs are open or archived? |
 | [designs/](designs/README.md) | Which design investigations are still open, dormant, or retained as historical reference? |
 | [sessions/](sessions/README.md) | Short rolling continuity, not a second status or implementation authority. |

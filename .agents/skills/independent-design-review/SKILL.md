@@ -1,6 +1,6 @@
 ---
 name: independent-design-review
-description: Challenge a proposed Offscreen RPG feature or technical design independently against product intent, external expert knowledge, current repo evidence and failure cases before Cursor implements it. Read-only for informal critique. A formal committee, when the investigation depth requires one, delivers a SHA-bound verdict that the reviewer or the local custodian persists.
+description: Challenge a proposed Offscreen RPG feature or technical design independently against product intent, external expert knowledge, current repo evidence and failure cases before an implementation agent implements it. Read-only for informal critique. A formal committee, when the investigation depth requires one, delivers a SHA-bound verdict that the reviewer or the local custodian persists.
 ---
 
 # Independent design challenge (architect / adversarial reviewer)

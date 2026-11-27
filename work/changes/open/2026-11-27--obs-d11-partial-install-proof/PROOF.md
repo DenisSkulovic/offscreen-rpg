@@ -1,6 +1,6 @@
 # OBS-D11 proof
 
-NOT RUN. All Cursor commands repo-root, local/offline focused tests only; no live cluster or paid operations. Heavy proof ChatGPT/owner with explicit target authorization and exact tested SHA.
+NOT RUN. All implementation commands are repo-root, local/offline focused tests only; no live cluster or paid operations. Heavy proof belongs to the acceptance lead and the owner with explicit target authorization and exact tested SHA.
 
 A9 actual public ensure fresh isolated normal target, exact Prometheus success and Loki failed rev1/fault, retained namespace/Secret/claims/PV/Prometheus/pending, no later releases; repeat typed none/empty prefix unchanged state. A4/A5/V05 no outer lock recursion, actual namespace UID pending corroborated GET, cancellation/unknown possible, no retry or clear. Negative wrong cluster/auth/occupied, changed fault/history, malformed record, repeat timeout, changed retained state. Owner independently verifies isolated UID/permission and pinned fault feasibility before live authorization/main merge, no automatic deletion.
 

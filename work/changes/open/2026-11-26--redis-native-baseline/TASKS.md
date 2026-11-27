@@ -25,4 +25,4 @@ After T06. Remove dev-install.mjs, release-install.mjs, observations.mjs, reconc
 
 
 ## Acceptance corrective tasks (current execution)
-Read [ACCEPTANCE-CORRECTIONS.md](ACCEPTANCE-CORRECTIONS.md) for ordered T08a–d tasks and source/owner proof split. These supersede the original completion receipt, not the selected design. No heavy live proof by Cursor.
+Read [ACCEPTANCE-CORRECTIONS.md](ACCEPTANCE-CORRECTIONS.md) for ordered T08a–d tasks and source/owner proof split. These supersede the original completion receipt, not the selected design. No heavy live proof by the implementation agent.

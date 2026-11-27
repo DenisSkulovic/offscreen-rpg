@@ -1,6 +1,6 @@
 # OBS-D05 proof
 
-NOT RUN. All Cursor commands repo-root, local/offline focused tests only; no live cluster or paid operations. Heavy proof ChatGPT/owner with explicit target authorization and exact tested SHA.
+NOT RUN. All implementation commands are repo-root, local/offline focused tests only; no live cluster or paid operations. Heavy proof belongs to the acceptance lead and the owner with explicit target authorization and exact tested SHA.
 
 V07/V05: actual local child/FD proof, owned startup and clean SIGINT; negative invalid binding/foreign port/child exit, parent death, pending/identity change and contention; no foreign kill. V11 fixed dev only. Owner real dev HTTP and authenticated Grafana, gRPC transport only, optional query endpoints and clean release of ports/locks. No auto-ensure.
 

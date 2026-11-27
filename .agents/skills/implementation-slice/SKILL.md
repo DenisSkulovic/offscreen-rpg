@@ -5,7 +5,7 @@ description: Implement one already-approved, bounded Offscreen RPG task or featu
 
 # Implementation slice (executor mode)
 
-Use one approved T-ID or tiny selected Change. Follow root instructions, [task contract](../../references/composer-first-execution.md) and [parent procedure](../../references/bounded-parent-orchestration.md). Do not preload all planning manuals or guard internals. Inspect nearby source for necessary facts; no architectural rediscovery.
+Use one approved T-ID or tiny selected Change. Follow root instructions, [task contract](../../references/task-execution-standard.md) and [parent procedure](../../references/bounded-parent-orchestration.md). Do not preload all planning manuals or guard internals. Inspect nearby source for necessary facts; no architectural rediscovery.
 
 ## Input packet
 
