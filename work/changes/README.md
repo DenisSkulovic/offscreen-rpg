@@ -1,5 +1,7 @@
 # Changes | active catalog
 
+[OBSERVABILITY-DEVELOPER](open/2026-11-27--observability-developer/CHANGE.md) — Proposed, active design workshop; not commissioned; serial with OBSERVABILITY-NATIVE.
+
 [OBSERVABILITY-NATIVE](open/2026-11-26--observability-native/CHANGE.md) — Ready with explicit limits; source-only commissioned, T01 artifact gate first, heavy acceptance owner-operated.
 
 [RABBITMQ-NATIVE](open/2026-11-26--rabbitmq-native/CHANGE.md) — Ready, owner-commissioned source only; heavy acceptance and fresh release separately gated.
