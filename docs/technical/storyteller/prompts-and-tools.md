@@ -2,8 +2,10 @@
 
 **Target contract:** prompts describe a writer mission; tools provide scoped capabilities. Neither prompt text, Library content nor a writing skill can mint permissions. The authoritative tool surface is provider-independent and rooted in the mission's captured Library/state view.
 
+**Selected contract (leading).** Authorities are orthogonal ([Orthogonal authorities](#orthogonal-authorities)): profile, task recipe, model route and account entitlement intersect only at admission. Each task role is a separate bounded recipe ([Task roles](#task-roles)); every run ends in a named stop state, never an open "still thinking" ([Stopping](#stopping)); and a prompt, Library document, writing skill or model text can never grant a tool, permission, allowance, dice outcome or payer ([What the prompt must not grant](#what-the-prompt-must-not-grant)). A prompt that appears to name a forbidden tool does not mint it: the application's captured tool surface is the only grant.
+
 **Owns:** task recipes, what a model may read, when it must stop, and what a prompt is forbidden to grant.  
-**Selected target** below. Task roles stay separate, and the compilation heading records the 2026-11-19 task pack. **Not implemented.** The landed runtime still uses versioned task artifacts and a narrower tool surface; see [step status](operation-and-controller.md#step-status) and [request context and cost](request-context-and-cost.md). Tool rights, versioned input capture, stopping, and refusal stay the sections below. This page adds no tool entitlement. This page does not implement the packer.  
+**Realization status.** The selected compilation below, with its semantic tool facade, is not implemented as one packer. Task roles stay separate, and the compilation heading records the 2026-11-19 task pack. The landed runtime still uses versioned task artifacts and a narrower tool surface; see [step status](operation-and-controller.md#step-status) and [request context and cost](request-context-and-cost.md). Tool rights, versioned input capture, stopping, and refusal stay the sections below. This page adds no tool entitlement. This page does not implement the packer.
 **Product:** [behavior](../../product/storyteller/behavior-and-quality.md), [memory](../../product/storyteller/memory-and-continuity.md).
 
 ## Orthogonal authorities
@@ -86,11 +88,19 @@ The facade must not expose arbitrary shell, SQL, host filesystem or unrestricted
 
 No fixed `maxReads=6`, `maxRounds=3`, 2–5 option count or mandatory child agent is part of the target contract. Numeric limits are route/resource policy and can evolve without redefining the Storyteller.
 
+### Executable rules library shape (bounded mechanism)
+
+*Provenance: transferred from [Rules, Executable library shape](../../product/gameplay/rules.md#executable-library-shape) (PD02). The product page keeps its own copy until the product successor step. This is the selected bounded mechanism for how the rules library reaches a task; the landed realization of the manifest is in [Reusable rule libraries](canonical-documents-and-packages.md#reusable-rule-libraries) and of section selection in [What source enters this task](context-selection-and-recall.md#what-source-enters-this-task).*
+
+The rules library is a compact game-master reference, not one giant prompt attachment. A small orientation identifies the executable adapter (adapter identity and version), important topics and navigation handles. Each rule page and heading carries deterministic topic metadata such as `ability-check`, `advantage`, `time` or `contribution`. A task recipe selects mandatory sections from its known mechanics without a routing-model call. The Storyteller receives the compact applicable rules and may inspect another exact section under the same bounded operation allowance (a bounded additional read, not a free one). The whole rulebook is never injected merely because it exists.
+
+Editing prose can change interpretation, examples and campaign rulings. Changing a formula, supported effect or state transition requires a supported adapter or schema change. Low-cost recipes include the mechanical kernel and the exact sections needed for the current operation. Richer (rich) recipes may add examples and edge cases, but they use the same pinned sources and executable authority. Storage stays complete across tiers; only the bounded working set changes. Imported rule material must be licensed for the product or privately supplied by an authorized user, with source and license provenance retained (licensing scope).
+
 ### Detailed pre-refoundation pack and transport baseline retained
 
 The following 2026-11-19 contract remains the implementation/migration baseline for current code. Where it names fixed one-shot/two-or-three-round behavior or no subagents, those are current realization facts explicitly superseded by the target capability model above, not deleted history.
 
-**Selected task pack, 2026-11-19.** This heading records how one Storyteller task is packed, and which tools that pack may use. This page does not implement the packer. Today's code does not assemble P0–P3 this way. `prepareStorytellerTask` still builds a `bounded-scene.v3` request from the caller-supplied snapshot, the task rules, and the profile. Ordinary admission still captures `single-turn.v1` or `repairable-turn.v1` with tools disabled. A funded `memory-exploration.v1` recipe can ask and read inside one operation. That recipe is the landed exploration controller. The runtime description is [Current prototype runtime](operation-and-controller.md#current-prototype-runtime).
+**Selected task pack, 2026-11-19.** The pack this section compiles is owned by [Task pack](context-selection-and-recall.md#task-pack--selected-target-2026-11-19); this page owns only its P0-P4 layer vocabulary and the tool facade. Landed admission still captures `single-turn.v1` or `repairable-turn.v1` with tools disabled (`prepareStorytellerTask` builds a `bounded-scene.v3` request), plus a funded `memory-exploration.v1` where policy allows ([Current prototype runtime](operation-and-controller.md#current-prototype-runtime)).
 
 That pack is what a future remote worker would receive: injected current state, a short orientation, and one intention-level memory query. The worker proposes. The engine publishes. A possible paid send is not retried from this pack, and custody adds no model round. Today's code does not assemble the remote worker. Who holds the task is [Remote task custody](generation-and-publication.md#remote-task-custody).
 
@@ -106,7 +116,7 @@ The 2026-11-14 compile list numbered world truth, the task contract, creative id
 
 A bloated universal system prompt is not justified by cache overlap.
 
-**Fork packing negative.** At scene 10 the king is alive and the hero holds a sword. At parent scene 20 the king is dead and the sword is gone. A fork from scene 10 is packed with the living king and the held sword, from that scene's mechanical checkpoint and canon root. An `ask_memory` lookup on that fork must not return the scene-20 death, including through a stale global index. A rumor that the king died is an attributed rumor, not a committed fact. The same negative is the source rule in [Task pack](context-selection-and-recall.md#task-pack--selected-target-2026-11-19). Search indexes are not authority.
+**Fork packing negative.** A fork from scene 10 is packed from scene 10's checkpoint and canon root (living king, held sword) and an `ask_memory` on that fork never returns the scene-20 death, even through a stale global index; the worked case is [Task pack](context-selection-and-recall.md#task-pack--selected-target-2026-11-19), and search indexes are not authority.
 
 Prompt defects to remove from common authority: a blanket “never end the character's life” is the present nonlethal gap, not eternal policy; a compulsory 2–5 options rule contradicts a quiet or single-attempt scene; “cannot execute tools” forbids game mutations, not an explicitly admitted read-only memory phase. The model still cannot reach SQL, the shell, the web, or another player's account.
 
