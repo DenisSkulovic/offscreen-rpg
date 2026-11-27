@@ -4,3 +4,5 @@ Independent verdict 91a2770c22104f626311c6f9e392cb7ecf853896 on review/observabi
 - F08: exact budget allocation to be committed in PROOF.md after checking gate phase accounting.
 - F01–F03/F09: detailed cards, fixture migration and proof commands outstanding.
 No claim of closure until full re-audit G0–G7 and independent pass 02. No architecture expansion or live permission.
+
+F08 repair 02: exact health/signals/developer/resources/partial-install allocations and owner sequence selected in PROOF.md. Persistence arithmetic exposes real conflict with per-Pod full bounds under original gate; outage Pod schedule also requires explicit final allocation. T11 remains blocked, no unsafe reserve reduction. No test execution.
