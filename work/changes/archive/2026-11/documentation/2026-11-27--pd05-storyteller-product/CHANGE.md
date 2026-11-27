@@ -57,3 +57,12 @@ Why: the first pass (38790b75e) mostly inserted status labels and disclaimers; t
 - Checks: git diff --check clean; check_docs.py identical to baseline (96); docs-health differs from baseline only by other Changes' register links.
 - Semantic: tool count not quality (Investigative writing); child never publishes (same); private plans not fact (What it must not do, Narrative initiative); quiet day needs no danger (Multi-day evaluation family, Ordinary life); no search across parent future/sibling (Branch-scoped knowledge); stale identity cannot select similar name (Selected retrieval routes); invention not recall (Creative exploration is not retrieval); tone change does not reroll or invalidate plan (Changes during play); tag creates no mechanics (Tags and custom content); lock is not anti-cheat or permadeath (Free and locked campaigns).
 - Deferred Low: behavior page still carries some overlap between the principles table and prose sections.
+
+## Reconciliation ledger
+
+| Affected claim/heading | Authority | Target delta | Source delta & SHA | Status/evidence tier | Negative proof | Map/link update |
+| --- | --- | --- | --- | --- | --- | --- |
+| `docs/product/storyteller/behavior-and-quality.md` | product | changed: role/may/must-not/investigative writing consolidated; selected meaning unchanged | pages `38790b75e`, R2 `7d628516f`; no executable edits | source-inspected docs diff | answered in Closure receipt and R2 | headings unchanged |
+| `docs/product/storyteller/memory-and-continuity.md` | product | changed: opening rebuilt around branch scope, canon vs past, promotion, attachment | same | source-inspected docs diff | answered | headings unchanged |
+| `docs/product/storyteller/profiles-and-settings.md` | product | changed: lock and boundary reorganised; TD05 transfer facts retained verbatim | same; lock and 20-revision limit seen in `packages/story-engine/src/campaign/settings.ts` | source-inspected | answered | TD05 receiver `versioned-settings.md#current-adapters` |
+| Joint semantic acceptance | product/technical | unchanged | none | NOT RUN (PD07/TD10 and Design) | n/a | group register |
