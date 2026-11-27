@@ -17,24 +17,8 @@
 
 ## 2. Where should a new document go?
 
-```mermaid
-flowchart TD
-  A["New information or work"] --> Q{"What is the expected result?"}
-  Q -->|"Accepted product behavior"| P["Existing docs/product owner"]
-  Q -->|"Accepted technical guarantee"| T["Existing docs/technical owner"]
-  Q -->|"Consequence / decision rationale"| D["docs/decisions linked to one normative owner"]
-  Q -->|"Operator instructions"| R["Existing docs/runbooks owner"]
-  Q -->|"Agent process / reusable skill"| G[".agents canonical owner; thin adapters only"]
-  Q -->|"Undecided product or architecture"| O["work/designs/open"]
-  Q -->|"Persistent code or normative document diff"| C["work/changes/open"]
-  Q -->|"Independent run or cleanup with no intended diff"| K["work/tasks/open"]
-  Q -->|"Actual test, observation or screenshot proof"| E["evidence"]
-  Q -->|"Concluded nonbinding study"| S["research"]
-  Q -->|"Session handoff only"| N["work/sessions"]
-  Q -->|"Several Changes, one integration outcome"| U["work/undertakings"]
-  Q -->|"Source change, test or infra code"| X["Owning code package"]
-  Q -->|"Generated local scratch"| Y["Ignored output; curate into evidence if needed"]
-```
+Choose the existing owner using the permanent, temporary and evidence tables below. Accepted behavior belongs to product/technical docs; rationale to decisions; operations to runbooks; unresolved choices to Design; lasting diff to Change; independent no-diff action to Task; actual proof to evidence; concluded study to research; handoff to sessions. Code belongs to its owning package; local generated scratch is ignored unless curated as evidence.
+
 
 **Before creating a new directory:** (1) inspect this map and the nearest existing README; (2) search for an existing owner or sibling artifact; (3) decide *selected vs proposed vs observed*; (4) prefer a file or section in an established home; (5) specify maintainer, entry link and terminal condition if a new folder is truly needed. A new root-level folder needs a genuinely distinct responsibility and a discovery link. Avoid `misc/`, `old/`, `new-docs/`, duplicate `plans/` and per-agent work silos.
 
@@ -79,7 +63,7 @@ The detailed classification lives in [work taxonomy](work/WORK-TAXONOMY.md). The
 | [`work/designs/open/`](work/designs/README.md) | Active unresolved decision, owner, next choice and review trigger | Promote accepted meaning to canon; move terminal dossiers to archive or worthwhile deferred investigations to backlog with ledger and link reconciliation |
 | [`work/designs/backlog/`](work/designs/backlog/README.md) | Deferred worthwhile design, unratified or unresolved, with reactivation trigger | Owner selects and refreshes before returning to open; terminal disposition to archive |
 | [`work/designs/archive/`](work/designs/archive/README.md) | Terminal design review cache, not canon | Record full-SHA provenance, preserve unique evidence, repair links; review after seven days and prune only when authorized |
-| [`work/changes/open/`](work/changes/README.md) | **Current or realistically near-term** independently verifiable *lasting* code/config/test **or substantive normative-doc** diff. `CHANGE.md` front door; complex Changes may have `SOURCE-MAP.md`, `EXECUTION.md`, `PROOF.md`, `TASKS.md` and optional `PLAN.md` | Only real Done/Cancelled closure; impact and proof ledger → short [archive](work/changes/archive/README.md) → compact [ledger](work/changes/ledger/2026-11.md) and exact Git recovery after retention review. No terminal Changes lingering open |
+| [`work/changes/open/`](work/changes/README.md) | **Current or realistically near-term** independently verifiable *lasting* code/config/test **or substantive normative-doc** diff. `CHANGE.md` front door; material multi-task delegation requires TASKS, SOURCE-MAP and PROOF; exact execution contracts and optional checkpoints as needed | Only real Done/Cancelled closure; impact and proof ledger → short [archive](work/changes/archive/README.md) → compact [ledger](work/changes/ledger/2026-11.md) and exact Git recovery after retention review. No terminal Changes lingering open |
 | [`work/tasks/open/`](work/tasks/README.md) | Independently tracked operational run, test, approved migration or housekeeping action with its own `TASK.md` and **no intended lasting diff** | Record factual run/blocked outcome in evidence; archive terminal Task. Do not turn every Change-local Composer T-ID into a standalone Task |
 | [`work/sessions/`](work/sessions/README.md) | Temporary concise handoff continuity and decisions pending promotion | Move accepted decisions to product/technical owners and observations to evidence; retire old minutes, no transcript landfill |
 | [`work/changes/backlog/`](work/changes/backlog/README.md) | **Future/deferred named outcomes** grouped by agent-runtime, experience-admin, policy-finance, quality-evaluation, platform-operations. Proposals are not commissioned by placement; source-readiness is revalidated when selected | Promote selected work into `open/` with repaired links and current source map; rejected/cancelled work needs a disposition, not endless accumulation |
@@ -87,13 +71,13 @@ The detailed classification lives in [work taxonomy](work/WORK-TAXONOMY.md). The
 | `work/designs/ledger/` / `work/changes/ledger/` | Compact historical disposition and source locators | Keep navigable and durable, **not** a reprinted packet archive |
 | `work/IMPLEMENTATION-ROADMAP.md` | Short-term implementation priorities and gates | Update when implementation strategy changes, not a new selector |
 
-**Undertaking navigation rule:** `work/undertakings/<slug>/OVERVIEW.md` is the **first human/supervisor orientation page**, maintained while Active or Landing. `UNDERTAKING.md` is the technical scope, evidence and acceptance dossier. The [shared overview template](work/undertakings/OVERVIEW-TEMPLATE.md) specifies **mandatory rough numeric progress with uncertainty**, visual, nontechnical content and update/retirement cadence. This page is required, not a free-floating roadmap, another selected-work queue, or permanent product documentation. Its current link belongs at the top of the dossier and in `work/undertakings/README.md`.
+**Undertaking navigation:** link required human OVERVIEW and technical UNDERTAKING bidirectionally and in catalog. [Template](work/undertakings/OVERVIEW-TEMPLATE.md) and [lifecycle](WORKFLOW.md#3-undertaking-group-a-real-transformation) own numeric progress and cadence.
 
-**Active Design and Change folder quality:** Design scale flexible; Changes strict one-outcome units with at most seven actual tasks. Scope, size and inventory in shared standard. [the planning artifact standard](.agents/references/planning-artifact-quality.md) defines distinct flexible design and standardized execution roles, mandatory whole-folder review and current-state editing. Archives are evidence/history, not current normative owners.
+**Active planning artifacts:** [submission standard](.agents/references/planning-artifact-quality.md) owns flexible Design and strict Change scale, file roles, measurements and committee gate. Archives are history, not current authority.
 
 **Every backlog folder needs a reason to exist:** one desired outcome, explicit remaining prerequisite/decision and domain index. Avoid stale duplicates; review deferred work when its dependency changes. **Every open folder needs an exit.** “Blocked” still belongs in open while the desired outcome is active; do not hide it to clear backlog. Conversely, a Design whose choice has been ratified can retire even while a *separate code Change* remains unfinished. Its selected behavior has moved to the wiki; implementation work has moved to the Change.
 
-**Temporary Git branches are not work folders.** A commissioned implementation Change uses a dedicated short-lived `change/<id>-<slug>` branch from the actual recorded reference branch (main is current trunk). Parent/children work there; parent squash-integrates accepted work back and deletes the branch. No per-T-ID branches. See the [branch procedure](WORKFLOW.md#7-git-one-integration-branch-one-temporary-branch-per-commissioned-implementation-change).
+**Branches are not work folders.** See [branch procedure](.agents/references/bounded-parent-orchestration.md#mandatory-change-branch-policy) for ownership and safe retirement.
 
 ## 5. Durable history, evidence, and concluded research
 
@@ -168,18 +152,7 @@ Do **not** place `AUDIT-*.md`, `HANDOFF-*.md`, `ROADMAP-*.md`, `PROGRAM-*.md`, `
 
 ## 8. Inspected tree snapshot (dated evidence, not a second status index)
 
-**Baseline:** `undertaking/storyteller-workshop` HEAD `0025370d5859c50c4dae53b7aff9fdfe616bde69` (2026-11-21), GitHub recursive tree. **2,183 tracked blobs, 652 Git tree directories**. This is a structural audit, not a deep read of every document or Cursor's uncommitted checkout.
-
-| Tracked area | Observed footprint | Review inference (not deletion approval) |
-| --- | ---: | --- |
-| `work/changes/` | **2026-11-22 reclassification:** 10 open Change folders; 35 domain-backlogged folders, plus the separately managed archive | Open is current or pending genuine terminal reconciliation; backlog is not Ready by location. This count is a dated navigation fact, not a live health metric |
-| `work/designs/` | 151 files: 149 under `open/`, 21 first-level open entries | The Designs index itself identifies promoted, completed, dormant and historical candidates; audit them individually |
-| `evidence/` | 149 files: 114 under `inspections/`, 32 under `runs/` | Large retained snapshot batches may contain unique proof; inspect provenance before deduplication |
-| `research/` | 32 files, including 15 under `authored-scenarios/` | Curated studies and authored scenarios are not automatically active Design folders |
-| `docs/` | 114 files, split among normative docs, diagrams, decisions and runbooks | Maintain semantic ownership and distinguish current implementation from selected target |
-| `.agents/` | 67 files in rules, skills, references, roles and knowledge | Curate overlapping instructions and adapters, do not preload all agent material |
-
-**Concrete risk examples:** some `work/designs/open/` index rows label their own dossiers promoted/completed/historical; the Change archive is already far larger than the open queue; `evidence/inspections/doc01-retained-observations/` holds a large preserved snapshot collection. None has been removed or reclassified by this inspection. Revisit with exact source, incoming links and unique-evidence checks rather than speculative cleanup.
+The [21 November structural audit](https://github.com/DenisSkulovic/offscreen-rpg/blob/af30d67c9c1eb73f9d240e16917b1a0cfc65f58d/REPOSITORY-STRUCTURE.md#8-inspected-tree-snapshot-dated-evidence-not-a-second-status-index) is historical evidence (original inspected tree: `0025370d5859c50c4dae53b7aff9fdfe616bde69`). It is not a current inventory or deletion authority. Measure the actual current Git tree and inspect owners, inbound references and unique evidence when auditing a zone.
 
 ## 9. Specialized references
 

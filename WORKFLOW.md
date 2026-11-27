@@ -1,202 +1,125 @@
 # How we work | engineering lifecycle and agent handbook
 
-**Owner decision 2026-11-26: implementation and heavy acceptance have different owners.** Cursor implements the selected design, constructs specified deterministic proof tools, runs focused unit/contract tests, changed-file quality checks and proportionate cheap local integration checks, and commits a coherent implementation receipt. The design/planning ChatGPT and human owner own heavy acceptance: broad builds/suites, infrastructure lifecycle and fault/recovery runs, multi-service/browser/end-to-end exercises, release upgrades, long-running or costly probes and other substantial operational proof. ChatGPT selects exact commands, target, prerequisites, expected outcomes, timeouts, stop/cleanup and evidence; the human runs the bounded batch in their terminal and returns results for ChatGPT to interpret and record. Prefer one reproducible scripted batch over repeated paid-agent terminal orchestration. No heavy acceptance by Cursor unless the owner explicitly delegates that named proof; elapsed time alone is not a hard cutoff, and essential focused negative tests are not skipped to save tokens. The planner partitions the existing acceptance matrix by executor before commission (or at the next checkpoint of an in-flight Change). This changes who runs proof, not its required tier, safety, or integration gate.
+This is the human and agent navigation map for the sequence of engineering work. [AGENTS.md](AGENTS.md) owns shared permissions and role entrypoints; [repository structure](REPOSITORY-STRUCTURE.md) owns placement and retention; [engineering tour](ENGINEERING.md) explains the system. Follow detailed standards by decision point, not as universal preload.
 
-See [shared execution, acceptance and integration policy](AGENTS.md).
+**Principle:** decide what must be true, ratify it in canonical documentation, plan against actual source, implement the smallest sufficient delta, verify and retire temporary work. Proposed, selected, implemented and proven are distinct.
 
 ## Dependency readiness is not a planner blocker
 
-Owner direction (2026-11-24): distinguish design readiness, execution dependency order, commission, and live-resource permission. A settled packet with frozen interfaces, selected algorithm, scope and proof is **Ready (dependency-gated)** even when predecessors have not landed. An explicitly commissioned batch may dispatch each named packet as soon as its recorded predecessor receipts and source postconditions hold, without further planner promotion, certification, or owner approval. A parent may verify those postconditions and mechanically reconcile import paths, manifests, symbols and test paths under a frozen mapping; this is execution, not delegated architecture discovery. Do not require a pre-existing test harness when creating it is the selected task. Source implementation and deterministic tests proceed independently of separately gated live proof. Use **PLANNER-BLOCKED** only for a named material unresolved design, algorithm, authority, safety, or semantic contradiction that prevents correct execution; state exact missing decision/evidence and affected task, not a generic readiness disclaimer. Unfinished predecessors, normal integration sequencing, or absent future source implementing an already frozen contract are not planner blockers. Preserve all actual safety, correctness and resource permission gates. Before recommending `do ID`, ChatGPT must ensure the repository packet is actually commissioned and executable now or explicitly dependency-gated, and verify the push. No repeated approval for an unchanged commissioned contract. This rule clarifies all readiness/review language below; it does not waive source-grounded planning or permit uncommissioned sibling work.
-
-**Companion map:** [REPOSITORY-STRUCTURE.md](REPOSITORY-STRUCTURE.md) owns the *where and how-long* of each folder, including permanent vs transient zones, admission and retirement, and safe housekeeping. This page owns the *sequence of work*. Consult both before reorganizing the repository.
-
-**For ChatGPT packet authoring:** use [execution-first design](.agents/references/packet-design-manual.md); before calling a packet Ready apply the separate [adversarial readiness review](.agents/references/packet-readiness-review.md) and [compact worksheet](.agents/references/packet-review-checklist.md). This is a planner-only route, **not** a mandatory Cursor/Composer preload.
-
-**Start here for the development method.** This is the **one navigational front door** for humans, ChatGPT planners and coding agents. It explains the sequence and where each decision belongs; it is **not** a second product specification, task queue, or replacement for the linked detailed standards. Read this page by role, then follow only relevant links. The short compulsory entrypoint is [AGENTS.md](AGENTS.md); [CHATGPT.md](CHATGPT.md) adds planner obligations; [.agents/HARNESS.md](.agents/HARNESS.md) governs the coding-agent harness.
-
-> **Operating principle:** Decide what must be true; ratify it in product/technical documentation; let ChatGPT do expensive source-grounded planning; let cheaper Cursor agents execute small predecided edits; verify with real evidence; reconcile and retire temporary work. **Never confuse proposed, selected, implemented and proven.**
+Follow [the shared readiness rule](AGENTS.md#dependency-readiness-is-not-a-planner-blocker): frozen prerequisites can gate execution without reopening settled architecture. Commission and live permissions are separate from readiness. Return changed material assumptions to the planner.
 
 ## 1. Five-minute map
 
 ```mermaid
 flowchart TD
-  Intent["Goal / request"] --> Scope{"The work needs a themed multi-Change transformation?"}
-  Scope -->|Yes| U["Undertaking dossier + undertaking branch"]
-  Scope -->|No| Classify["Classify the work"]
-  U --> Classify
-  Classify --> Unknown{"Unknown facts or contested decisions?"}
-  Unknown -->|Yes| Design["Investigate / Design: compare alternatives, decide"]
-  Unknown -->|No| Authority["Check selected product + technical authority"]
-  Design --> Defense{"Formal design defense passed?"}
-  Defense -->|No: revise or obtain evidence| Design
-  Defense -->|Yes| Committee{"Fresh-chat committee passes?"}
-  Committee -->|No: revise and re-defend| Design
-  Committee -->|Yes| Approve{"Owner accepts decision?"}
-  Approve -->|No| Hold["Keep Proposed; investigate or retire"]
-  Approve -->|Yes| Authority
-  Authority --> Docs["Reconcile canonical product/technical docs FIRST"]
-  Docs --> Packet["ChatGPT inspects actual source and creates bounded Changes"]
-  Packet --> DAG["Dependency DAG: parallel waves + ownership + proof"]
-  DAG --> Ready{"Planner-ready and explicitly commissioned?"}
+  Intent["Goal / request"] --> Classify["Classify work; group into Undertaking if useful"]
+  Classify --> Unknown{"Material design decisions unresolved?"}
+  Unknown -->|Yes| Design["Design workshop: research, specimens, experiments"]
+  Design --> Defense{"Self-defense and independent committee pass?"}
+  Defense -->|No| Design
+  Defense -->|Yes| Owner{"Owner accepts?"}
+  Owner -->|No| Hold["Keep Proposed, revise or retire"]
+  Owner -->|Yes| Canon["Promote accepted guarantees to canonical owners"]
+  Unknown -->|No| Canon
+  Canon --> Route{"Implementation needed?"}
+  Route -->|No| Other["Record decision, evidence or operational receipt"]
+  Route -->|Yes| Plan["Inspect source; choose bounded outcome and proof"]
+  Plan --> Exec{"Direct, delegated or hybrid?"}
+  Exec -->|Delegated| Ready{"Packet review passed and commissioned?"}
   Ready -->|No| Hold
-  Ready -->|Yes| Branch["Each Change: branch from actual reference branch"]
-  Branch --> Execute["Cursor parent dispatches small T-ID subagents"]
-  Execute --> Verify["Focused tests + negative cases + receipts"]
-  Verify --> Gate{"Accepted and reconciled?"}
-  Gate -->|No: code defect| Execute
-  Gate -->|No: design defect| Design
-  Gate -->|Yes| Join["Close Change, squash-integrate, retire temporary branch"]
-  Join --> More{"Undertaking complete?"}
-  More -->|No| DAG
-  More -->|Yes| Land["Integrated acceptance; merge undertaking to main; retire dossier"]
+  Ready -->|Yes| Work["Dedicated Change branch and bounded tasks"]
+  Exec -->|Direct / hybrid| Work
+  Work --> Focus["Focused checks and committed implementation"]
+  Focus --> Accept{"Required acceptance passes?"}
+  Accept -->|Heavy proof pending| Heavy["ChatGPT + owner acceptance"]
+  Heavy --> Accept
+  Accept -->|Implementation defect| Work
+  Accept -->|Design defect| Design
+  Accept -->|Yes| Close["Reconcile, integrate to recorded target, retire"]
 ```
 
-**This is a typical *substantial* delivery path, not mandatory ceremony for every small operation.** An ordinary isolated Change does not need an Undertaking. Already-accepted, current product/technical contracts need no artificial rewrite. A test-only operation need not create code or design packets.
+An Undertaking is optional and does not imply a separate integration branch. Already-settled small fixes need neither a Design nor a manufactured rewrite of canonical docs. Pure evaluation or operational work follows its own evidence/Task route.
 
 ### Roles and read budgets
 
-| Who / situation | First reads | Owns | Does **not** own |
-| --- | --- | --- | --- |
-| **Any repository agent** | `AGENTS.md`, this page's relevant section, actual branch/HEAD, [QUEUE](work/QUEUE.md) | Safe navigation and truthful source status | Inventing missing permissions or active work |
-| **ChatGPT designing Changes** | [CHATGPT.md](CHATGPT.md), [planner standard](.agents/references/planner-investigation-standard.md), applicable owners and source/tests | Deep investigation, architecture, decisions, docs alignment, dependency/parallel design, proof plan, microscopic Cursor tasks | Sending unresolved architecture to paid executor |
-| **Cursor parent commissioned on a Change** | Change `CHANGE.md`, `TASKS.md`, [parent orchestration](.agents/references/bounded-parent-orchestration.md) | Dedicated Change branch, economical dispatch, integration checkpoints, docs/proof, closure and join | New architecture surveys, unselected Changes |
-| **Cursor Composer child** | **One** T-ID plus its 2–5 exact source/test anchors | One patch and focused normal/negative check, short factual receipt | Whole repo scans, parallel research swarms, own Change selection, own branch per T-ID |
-| **Reviewer / investigator** | Claim/Change, actual current source, acceptance evidence | Challenge assumptions and missed cases; propose precise correction | Calling unrun tests PASS or silently broadening acceptance |
-
-**Cost strategy:** Spend planning effort in ChatGPT; minimize Cursor context, redundant tests, agents and speculative polish. Cheap does not mean compromising authorization, data integrity, privacy, idempotency or financial safety. See [Composer task policy](.agents/references/composer-first-execution.md) and [Cursor budget](.agents/references/cursor-model-budget-policy.md).
+| Role | Responsibility and route |
+| --- | --- |
+| All agents | [AGENTS](AGENTS.md), actual branch/HEAD, [QUEUE](work/QUEUE.md), relevant owners |
+| Designer/planner | [CHATGPT](CHATGPT.md), [design method](.agents/rules/target-driven-renewal.md), [source investigation](.agents/references/planner-investigation-standard.md); settle expensive decisions |
+| Cursor parent | Selected CHANGE + TASKS index, [parent procedure](.agents/references/bounded-parent-orchestration.md); one commissioned Change |
+| Composer child | One T-ID, exact anchors, [task format](.agents/references/composer-first-execution.md); focused edit and checks |
+| Reviewer | [Design committee](.agents/rules/target-driven-renewal.md#mandatory-independent-design-committee) or [packet readiness](.agents/references/packet-readiness-review.md), actual evidence; no self-certification |
+| Acceptance owner | ChatGPT + human for substantial proof; exact tested revision, actual result and limitations |
 
 ## 2. What kind of work is this?
 
-```mermaid
-flowchart TD
-  Q["What outcome do we need?"] --> O{"Expected result"}
-  O -->|Temporary multi-work transformation| U["Undertaking: integration envelope"]
-  O -->|Unknown truth / cause| I["Investigation: research / evidence"]
-  O -->|Unselected behavior / competing architectures| D["Design: decide and ratify"]
-  O -->|Persistent code or normative documentation diff| C["Change: CHANGE.md"]
-  O -->|Independent run, check, migration, housekeeping action; no planned lasting diff| T["Standalone Task: TASK.md"]
-  C --> M["Change-local Composer Txx: small edit / test"]
-  I --> E["Research / evidence; possibly Design or Change"]
-  D --> W["Approved outcomes → canonical wiki"]
-  T --> R["Actual operation receipt / evidence"]
-```
+| Desired output | Unit and home | Exit |
+| --- | --- | --- |
+| Coordinated transformation | [Undertaking](work/undertakings/README.md) | Accepted integrated outcome; retire dossier |
+| Unsettled architecture/product decision | [Design](work/designs/README.md) | Defend, ratify, promote or defer/retire |
+| Lasting executable or substantive normative-doc diff | [Change](work/changes/README.md) | Required proof, reconciliation and integration |
+| Independent operation with no planned lasting diff | [Task](work/tasks/README.md) | Actual operation receipt |
+| Small assignment inside a Change | T-ID in TASKS.md | Child receipt, parent owns closure |
+| Unknown fact or hypothesis | Investigation/experiment in appropriate Design, [research](research/README.md) or [evidence](evidence/README.md) | Actual finding, limitations and decision if applicable |
 
-| Unit | Where it lives | Use when | Exit |
-| --- | --- | --- | --- |
-| **Undertaking** | [`work/undertakings/`](work/undertakings/README.md) | Several thematically related work units need one integration identity | Active → Landing → Closed; land or abandon, record disposition, retire branch/dossier |
-| **Design / open investigation** | [`work/designs/open/`](work/designs/README.md) | A real product/architecture choice or unknown remains | Promote accepted decisions to canon; defer to [backlog](work/designs/backlog/README.md) or retire to [archive](work/designs/archive/README.md) with [design ledger](work/designs/ledger/2026-11.md) and Git provenance |
-| **Change** | [future backlog](work/changes/backlog/README.md) → [`open/YYYY-MM-DD--slug/CHANGE.md`](work/changes/README.md) | Produce independently verifiable **lasting source/config/test or authoritative-doc diff** | Prove + reconcile; archive briefly and ledger/Git retire |
-| **Standalone Task** | [`work/tasks/open/YYYY-MM-DD--slug/TASK.md`](work/tasks/README.md) | An independent run, cleanup action, scheduled verification or explicit resource gate merits its own receipt | Record actual action/evidence; archive |
-| **Composer T-ID** | `<Change>/TASKS.md#Txx` | Tiny implementation step **inside** one Change | Child receipt; parent Change owns acceptance |
-| **Experiment / evidence / research** | [lab protocols](docs/technical/lab/chamber-and-fixtures.md), [evidence](evidence/README.md), [research](research/README.md) | Test a hypothesis, preserve what happened, or explain a finding | Dated facts and reproducibility, not automatic product authority |
+Classify by result, not verbs. "Test the Storyteller" may mean add a maintained assertion (Change), run an existing check (Task or acceptance), or discover a cause (investigation). A small link correction or read-only inspection needs no manufactured packet. [Work taxonomy](work/WORK-TAXONOMY.md) and [repository geography](REPOSITORY-STRUCTURE.md) own details.
 
-**The classifier is the *desired output*, not the wording.** “Test the Storyteller” can mean a Change adding a new assertion, a standalone Task running a previously defined test, or an Investigation discovering why a test fails. “Audit the wiki” is normally an Investigation; a verified structural/semantic repair is a documentation Change, while running `pnpm wiki:health` may simply be part of an existing Change. Avoid folder creation as a substitute for decisions.
-
-**Global selection:** [`work/QUEUE.md`](work/QUEUE.md) is the **only** primary Current work selector; catalogs are not queues. Direct owner commissioning of an individual Change or explicitly approved parallel batch is a scoped authorization, not permission to autonomously start its siblings. `Ready`, `Selected`, and **permission for provider/production/destructive actions** are separate gates.
+[QUEUE](work/QUEUE.md) is the sole global selection. Named owner commission can authorize independent concurrent Changes; catalogs, Ready status and roadmap proximity cannot. Separate spend, production, destructive and resource permissions remain required.
 
 ## 3. Undertaking: group a real transformation
 
-Create an Undertaking **only when several Changes/Designs genuinely share a transformation and should land as one reviewed program**. Name the *outcome* (`Storyteller Workshop`, not `phase-2-consolidated`). Create `work/undertakings/<slug>/UNDERTAKING.md` with purpose, included/excluded work, known dependencies, status and exit/acceptance conditions. **At the same time create `OVERVIEW.md`** from [the Undertaking overview template](work/undertakings/OVERVIEW-TEMPLATE.md). It is the **first read for a human supervisor** and a required ChatGPT cold-start read; the technical dossier remains the evidence/acceptance owner. Link both bidirectionally and from the Undertakings index. Track `Active → Landing → Closed`.
+Use only for genuinely related work with shared outcome. Create technical UNDERTAKING.md and required human-first OVERVIEW.md from [template](work/undertakings/OVERVIEW-TEMPLATE.md), link both and catalog. Record included/excluded work, dependencies, acceptance, actual target and base SHA. Main is current trunk; a separate integration branch requires explicit authorization.
 
-Record the integration target and base SHA. `main` is the current trunk; an Undertaking is a coordination dossier and does not automatically create a branch. A different dedicated integration branch requires explicit owner authorization. Ratified planning and accepted Changes join the recorded target; each implementation Change uses its own branch/worktree.
+Read both at planner cold start. At kickoff, meaningful joins, changes to scope/risk or next wave, and before closure, reconcile overview against actual receipts, STATUS and technical ledger. Maintain 5%-rounded overall and major-track completion/remaining estimates, uncertainty, reasons and visual human-readable summary. These estimate effort/risk, not packet count. Custodian serializes edits; ChatGPT shares progress and link at meaningful milestones.
 
-**Human-progress loop:** At kickoff, after a material Change integration, changed scope/roadmap, major milestone, next-wave planning handoff and before landing, refresh the undertaking `OVERVIEW.md` from current integrated code/receipts + `STATUS.md` + the technical `UNDERTAKING.md` ledger. Show achieved, active, remaining, blockers and a human-observable next milestone in plain language. **Always maintain a 5%-rounded overall completion/remaining percentage, plus major-track estimates, visual bars, uncertainty and reasons** under the [required overview template](work/undertakings/OVERVIEW-TEMPLATE.md). Treat these as subjective engineering-effort/risk judgments, never as a fraction of completed Changes; revise downward when new integration work appears. **Proactively give the owner a concise accessible overview, including numeric progress estimates and a link,** at meaningful checkpoints; not after every T-ID. Assign a named integration custodian to serialize shared overview edits while Change parents submit factual receipts. Keep the overview visual and short, without a shadow queue or false Done claims. A standalone new ChatGPT planning session must read the current overview before setting the next wave.
-
-When all selected child outcomes are complete, review integrated docs, source, tests, evidence, queue/status and permissions on the recorded target. If a separately authorized Undertaking branch exists, merge it after accepted proof and safe reconciliation. Retire the dossier with concise historical disposition; no extra branch promotion when Changes already joined main. This is **not** the end of every individual Change.
-
-[Undertaking lifecycle owner](work/undertakings/README.md) · [current example](work/undertakings/storyteller-workshop/UNDERTAKING.md).
+When selected integrated outcome passes, provide final before/after overview, reconcile and retire dossier. Merge/retire a separate authorized integration branch only if it exists. No extra program merge for work already joined main. [Undertaking lifecycle](work/undertakings/README.md).
 
 ## 4. Design first; documentation before implementation
 
-For substantial work, choose an [adaptive design workshop](.agents/rules/target-driven-renewal.md#adaptive-design-workshop-choose-the-investigation-not-a-universal-sequence) suited to the domain. An explicit redesign request commissions scoped design investigation and dossier work; kickoff orientation leads directly into substantive investigation, not a second approval request. Meaningful owner checkpoints support learning, decisions and experiments; implementation and live permissions remain separate. Keep speculative specimens and experiments isolated; converge through evidence and the [mandatory formal architecture defense](.agents/rules/target-driven-renewal.md#mandatory-formal-architecture-defense-and-convergence) before projecting the design into implementation. Establish the [verification architecture and acceptance matrix](.agents/rules/target-driven-renewal.md#design-verification-with-the-system) alongside the target. A material objection requires revision and re-defense; decisive unavailable evidence gates the affected scope. Record the designer's verdict, then require a [fresh-chat independent committee verdict](.agents/rules/target-driven-renewal.md#mandatory-independent-design-committee) on the exact candidate revision before owner acceptance and implementation planning. Every committee outcome must be committed to the reviewed design branch and the commit verified before the review is complete; chat-only outcomes do not count, including rejection or an early consultation. Consultation is not formal acceptance; formal submission follows passed self-defense. Direct implementation, Cursor or hybrid are execution choices, not design methods. Heavy acceptance is normally ChatGPT/owner-operated regardless of implementation route.
+For substantial design, follow [adaptive workshop](.agents/rules/target-driven-renewal.md), including posture, real source/upstream research, alternatives, specimens, feasible proof and self-defense. Apply [submission-quality gate](.agents/references/planning-artifact-quality.md), then independent committee on exact candidate. Every completed committee verdict is committed and verified. Only passed defense plus separate owner acceptance permits promotion of the selected scope. Decisive missing evidence gates affected scope. No packet wave as a substitute for Design.
 
-**Product docs decide what should happen** ([`docs/product/`](docs/product/README.md)). **Technical docs decide what must be guaranteed** ([`docs/technical/`](docs/technical/README.md)), including identity, permissions, schemas, transaction fences, concurrency, failure/retry, spend and backward compatibility. **Code/tests/STATUS/evidence show what has actually been realized.**
+[Product docs](docs/product/README.md) own intent; [technical docs](docs/technical/README.md) own guarantees (including authority, identity, transactions, retry/failure and compatibility). Source, tests, STATUS and evidence show realization. Promote newly accepted behavior/architecture to canonical owners before commissioning implementation. Existing accepted small-fix contracts need only citation. Reconcile realized claims after code and proof; no premature implemented claim or silent product rewrite to match code.
 
-For new behavior or changed guarantees:
-1. For substantial design or renewal, follow the [design-led renewal rule](.agents/rules/target-driven-renewal.md). Establish intent, research credible alternatives, build concrete specimens, independently challenge and revise, and run authorized experiments before Change planning. Clean-slate design may deliberately exclude legacy internals until the target is coherent; inspect integration and preservation constraints before implementation. Work in [Designs](work/designs/README.md); do not manufacture a dossier for a settled small fix.
-2. Obtain necessary owner product/technical authority. Mark proposals, selected-but-unimplemented behavior and observed implementation distinctly.
-3. **For newly accepted product behavior or changed architecture/authority, reconcile the canonical documents on the reference/Undertaking branch *before* commissioning Cursor.** A substantive doc revision can itself be a [documentation Change](.agents/references/change-work-unit-standard.md), with normal lifecycle/negative review. A small editorial adjustment need not become a packet.
-4. Only then choose direct planner implementation, bounded Cursor Changes, or a hybrid against that selected target. Packet generation is optional; scope, branch ownership, proof and permission gates are not. Existing accepted contracts for bug fixes or implementation details may simply be cited, with any discovered drift reconciled before Change closure; no-op rewrites are not a quality gate.
-
-After implementation, update realized-state claims, source mappings, proofs and any necessary technical details **again**. Documentation-first does **not** imply falsely labeling future behavior implemented. If reality challenges the selected design, return the decision to ChatGPT/owner, rather than silently changing the product bible to match code.
-
-[Documentation ownership](docs/README.md) · [documentation reconciliation skill](.agents/skills/documentation-reconciliation/SKILL.md) · [Change workflow](.agents/skills/change-workflow/SKILL.md).
-
-**Submission quality and scale are admission gates, not polish.** One Design may produce multiple Changes. One delegated Change has one measurable outcome, target 5–10 minutes active implementation, at most seven actual tasks. Excess scope requires repartition, not nested IDs. [The common design/Change artifact standard](.agents/references/planning-artifact-quality.md) requires coherent current statements, separate evidence/history, flexible design research and bounded execution packets. Independent reviews reject bad submissions before expensive technical review; a repair replaces obsolete text and reconciles dependents.
+[Documentation ownership](docs/README.md) · [reconciliation](.agents/skills/documentation-reconciliation/SKILL.md).
 
 ## 5. Plan Changes for genuine parallel execution
 
-**Default preference for *future* multi-Change planning: parallelizable outcomes.** ChatGPT should identify the dependency graph and cut Changes along real independent behavior/authority seams, not arbitrary file counts. Freeze shared interfaces, migrations and cross-service algorithms **before** launching parallel Cursor chats. Each independent Change must have its own observable outcome, source owner, positive/negative tests, permission boundary, branch and integration receipt.
-
-For every substantial program, write a compact execution schedule answering:
-- **Can start together:** independent, explicitly authorized Changes with frozen interfaces and nonconflicting write/resource ownership.
-- **Must wait:** exact predecessor output or accepted schema/API/contract required.
-- **Serial owner:** shared DB migrations, package exports, lockfile, root configuration, canonical docs headings, Game Authority or cluster resources.
-- **Join:** when and in what order the branches integrate into the same reference branch, and which tests validate the joined state.
+Planner selects independently useful outcomes, freezes common contracts and maps dependency order, disjoint write/resource ownership and join proof. Prefer real parallelism across separate authorized Change parents; serialize shared migrations, package exports, lockfiles, canonical headings, clusters and data. Do not split atomic safety boundaries or manufacture concurrency.
 
 ```mermaid
 flowchart TD
-  S["Accepted documentation + shared contracts"] --> A["Change A"]
+  S["Accepted Design / shared contracts"] --> A["Change A"]
   S --> B["Change B"]
-  S --> C["Change C"]
-  A --> J["Controlled integration / cross-boundary proof"]
-  B --> J
-  C --> J
+  A --> C["Dependent Change C"]
+  B --> C
+  C --> J["Accepted integrated outcome"]
 ```
 
-Do not fabricate concurrency by splitting an atomic transaction or introducing repeated merge conflicts. Parallelism saves elapsed time only when it doesn't multiply Cursor tokens. **No retroactive change to WR02–WR08 is implied by this guide.** [Parallel Change scheduling standard](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19).
+One custodian serializes joins and shared ledgers. [Parallel scheduling standard](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19) owns schedule format and isolation checks.
 
 ## 6. After design convergence: cheap execution, with or without Cursor
 
-The direct route can use ChatGPT-authored source/configuration and iterative owner terminal feedback, especially for disposable local infrastructure. Do not generate a Cursor packet solely to transfer a task the planner can execute competently. Record exact scope, decisions and actual proof; do not relax the Git or permission rules. A commission remains active through the agreed scope across checkpoints, regardless of execution route. Continue actual work rather than requesting another approval for settled steps; batch owner-operated checks when local execution is necessary. The packet layers below apply when delegation is selected.
+Choose direct planner work, bounded Cursor implementation or hybrid by actual access, scope, cost and proof needs. All routes retain Git ownership, permission and acceptance. Batch necessary owner-terminal checks; no hidden manual prerequisites or invented execution results.
 
-For a **nontrivial implementation Change**, ChatGPT verifies current branch/HEAD and current agent rules first, then inspects real entrypoints, owners, affected source/tests, interfaces, schema and migration conventions, concurrency and failure paths, security/privacy/spend and the dependency graph. Explicitly **decide** the algorithm, input/output contract, transaction/lock/CAS, error/negative behavior and compatibility. Mark any genuinely unsettled design **not ready**.
+For delegation, apply [source investigation](.agents/references/planner-investigation-standard.md), [packet construction](.agents/references/packet-design-manual.md), [task format](.agents/references/composer-first-execution.md), then [independent readiness](.agents/references/packet-readiness-review.md). One Change is one measurable outcome, normally 5–10 minutes active Cursor work and 1–5 tasks, at most seven actual assignments. [Submission standard](.agents/references/planning-artifact-quality.md) owns folder roles, scale, actual mandatory context, measurements and rejection. Tiny work needs no empty companions. Repartition excessive scope safely; do not delegate missing architecture.
 
-Packet layers (not all mandatory for tiny work):
-
-```text
-work/changes/backlog/<domain>/YYYY-MM-DD--change-name/   # future, Proposed, not dispatchable
-work/changes/open/YYYY-MM-DD--change-name/                 # active or realistically next few days
-  CHANGE.md        # mandatory front door: desired outcome, authority, readiness, branch, acceptance and reconciliation
-  SOURCE-MAP.md    # planner's verified source symbols, call/data ownership and observed baseline (complex work)
-  EXECUTION.md     # planner's selected step-by-step algorithm / contracts and failure cases (complex work)
-  PROOF.md         # planner's focused normal, negative, crash/permission and join checks (complex work)
-  TASKS.md         # tiny sequential T01...Txx dispatch cards for Cursor (nontrivial implementation)
-  PLAN.md          # optional *execution checkpoint*, not a duplicated architecture essay
-```
-
-A usable T-ID gives: **specific source SHA and affected functions, 2–5 read anchors, 1–3 primary write owners plus focused tests, exact delta/algorithm, preconditions/dependencies, normal + discriminating negative proof, cwd/command, stop condition and compact receipt**. One T-ID is a patch, not a clandestine subsystem-design assignment. Future dependent tasks must be refreshed by ChatGPT against predecessor code when contracts change.
-
-**Planning acceptance gate:** a capable inexpensive executor can begin the defined edit *without choosing architecture*. If it cannot, fix the packet in ChatGPT, rather than paying Cursor to search for the missing answer. [Planner investigation standard](.agents/references/planner-investigation-standard.md) · [packet profiles](.agents/references/change-packet-profiles.md) · [Composer microtask standard](.agents/references/composer-first-execution.md) · [Change template/skill](.agents/skills/change-workflow/SKILL.md).
+A ready packet supplies selected algorithm, authority, exact source owners, prerequisites, task-specific anchors, focused normal/negative checks and acceptance owner. Ready is not commission.
 
 ## 7. Git: one integration branch, one temporary branch per commissioned implementation Change
 
 ```text
-main                              # current integration trunk
-  ├── change/<id>-<slug>           # one commissioned Change, dedicated worktree
-  ├── change/<other-id>-<slug>     # separately authorized, disjoint ownership
-  └── ...                          # accepted Changes join main, then retire
+main (current trunk)
+  ├── change/<id>-<slug>        # dedicated linked worktree
+  └── change/<other-id>-<slug>  # separately commissioned, disjoint owners
 ```
 
-1. Parent verifies **actual recorded reference branch** and HEAD; current trunk is main, with another target only if explicitly authorized.
-2. **Before the first implementation edit**, create `change/<id>-<slug>` from that reference branch's current HEAD; record base SHA and target. The Change branch is **mandatory**. A dedicated linked Git worktree is **mandatory for every commissioned Cursor Change**, including when it is the only active chat. The primary checkout stays on its existing integration branch. Never `git switch` it to the Change branch.
-3. The Cursor parent and its bounded children work on the **same Change branch**. No per-T-ID branches, no child commit ceremony. Parent commits coherent batch milestones.
-4. On actual accepted Change completion, parent refreshes the reference branch, reconciles changed shared ownership, runs proportionate join checks, **squash-integrates into that same reference branch** by default, records final SHA, closes/retires packet and deletes the temporary branch/worktree.
-5. If the Undertaking has a dedicated reference, land it after acceptance; when owner selects main, Changes join main directly while the dossier remains active. Do not leave temporary Change branches as permanent graveyards.
-
-**Protect existing work:** inspect status/branch before edits. Never hard-reset, force-push, discard uncommitted changes or rewrite published history merely for cosmetic hygiene. If a Change began directly on its reference branch, preserve it and isolate future edits at the next safe checkpoint. For active parallel sessions, assign source and resource owners up front.
-
-[Canonical parent/branch orchestration](.agents/references/bounded-parent-orchestration.md#mandatory-change-branch-policy) · [Git commit rule](.agents/rules/git-commits.md).
+Verify actual recorded target and HEAD. Dedicated branch/worktree before implementation; never switch primary checkout, discard existing work or create per-T-ID branches. Parent owns commits, named custodian serializes shared changes and accepted joins. On acceptance refresh target, reconcile safely, squash-integrate by default, verify and retire clean branch/worktree. Alternative target only by explicit authorization; preserve in-flight work. Exact guard, commands and cleanup rules: [branch policy](.agents/references/bounded-parent-orchestration.md#mandatory-change-branch-policy) · [commit rule](.agents/rules/git-commits.md).
 
 ## 8. Cursor execution: dispatcher, bounded children, real receipts
 
-**Cursor parent:** read selected `CHANGE.md` and `TASKS.md`, verify git status/reference/base, choose **first unfinished ready** T-ID, dispatch one inexpensive Composer child, consume the compact receipt, integrate the patch and repeat. Normally **one child at a time within a Change**; separate **independent Change chats** may run concurrently when owner authorized. Two children within one Change only if truly disjoint.
+Parent reads selected front door/index, verifies branch and prerequisites, dispatches first bounded ready T-ID. Normally one Composer child, up to two with proven independence. Child reads card and exact anchors/required sections, implements decided change, runs focused normal/negative and reports actual receipt. No broad survey, nested agents or auto-next Change.
 
-**Child:** read only its T-ID and 2–5 named source/test anchors, implement the specified change, run focused positive/negative tests, send six-line receipt. No architecture reconnaissance, paid provider calls without approval, large regression sweeps, research swarms, speculative refactor, roleplaying a reviewer or spawning additional children.
-
-**Exception:** a real contradiction gets one focused diagnosis and one materially changed retry at most; for cross-service design/schema/fencing problems, stop promptly and return `T-ID | file:symbol | failed assumption | reproducer | planner question` to ChatGPT. Minor local syntax/type repairs can be handled directly. Parent owns batch commits/closure, not every child. Avoid repeatedly running the full repo test suite for unchanged code. **No test run → NOT RUN, not PASS.**
-
-[Budget-first parent protocol](.agents/references/bounded-parent-orchestration.md) · [Composer execution](.agents/references/composer-first-execution.md).
+Local mechanical diagnosis is allowed; material source/authority contradiction returns to planner with exact symbol, failed assumption and reproducer. Parent owns review, staged paths, commits and acceptance handoff. No full-suite run per child. [Parent procedure](.agents/references/bounded-parent-orchestration.md) owns checkpoints, retries and receipts.
 
 ## 9. Verification, review and the next loop
 
@@ -206,23 +129,17 @@ At each bounded checkpoint: inspect changed files, test affected normal and nega
 
 At a full Change close: demonstrate its accepted Goal; reconcile the Change's product/technical/code/related ledgers; update canonical docs as needed; update `STATUS.md` and evidence without overstating implementation; run applicable link/maintenance/close guards; archive and record the terminal disposition; integrate into the reference branch. **For Changes inside an Undertaking, the integration custodian also refreshes its `OVERVIEW.md` and checks/updates its required rough percentages when the completed outcome materially changes the human big picture; otherwise records that it remains accurate.** A passing subagent task alone is **not** a completed Change.
 
-**Independent review is normally post-merge, not a general Change completion gate.** A full Change commission authorizes its parent to complete assigned cheap tests and inspect the focused diff; reconcile and integrate after all required acceptance, including ChatGPT/owner heavy proof, is recorded. An explicit owner-selected pre-merge review is exceptional. Failed required negative tests, credible unresolved authorization/financial/data integrity issues and unsafe Git/resource operations still stop integration. **ChatGPT reviews source/evidence deeply when valuable:** challenge what could fail, audit interfaces/permissions and acceptance holes, create a *new bounded Change* for a genuine persistent fix, or revise remaining T-IDs. Do not force paid Cursor to perform repeated duplicate audits. A review result is not a permission grant or a claim of passed live tests.
+**Independent implementation-diff review beyond required acceptance is normally post-merge.** Precommission design defense and packet readiness are distinct mandatory gates where applicable. A full Change commission authorizes its parent to complete assigned cheap tests and inspect the focused diff; reconcile and integrate after all required acceptance, including ChatGPT/owner heavy proof, is recorded. An explicit owner-selected pre-merge review is exceptional. Failed required negative tests, credible unresolved authorization/financial/data integrity issues and unsafe Git/resource operations still stop integration. **ChatGPT reviews source/evidence deeply when valuable:** challenge what could fail, audit interfaces/permissions and acceptance holes, create a *new bounded Change* for a genuine persistent fix, or revise remaining T-IDs. Do not force paid Cursor to perform repeated duplicate audits. A review result is not a permission grant or a claim of passed live tests.
 
 **Standalone operational Tasks** handle genuinely independent verification, approved one-off migrations, environment acceptance, cleanup/housekeeping runs or scheduled experiments where the outcome is an *action receipt* rather than persistent new code/docs. If a missing runner or permanent repair is needed, create a separate Change. [Tasks standard](work/tasks/README.md) · [Task workflow](.agents/skills/task-workflow/SKILL.md) · [evidence](evidence/README.md).
 
 ## 10. Maintenance, audits and retirement
 
-The working tree should describe **what is actionable today**, not keep an endlessly growing graveyard.
+[Repository structure](REPOSITORY-STRUCTURE.md#6-housekeeping-procedure-by-zone) owns triage and promotion/deletion gates. Active Designs and Changes have real owners/outcomes; deferred worthwhile work has a trigger; terminal artifacts move to archive after actual reconciliation. Promote accepted meaning, preserve unique evidence, full-SHA/path ledger and repair links. Seven-day archive review is not deletion authorization. Undertakings require final human overview and acceptance.
 
-- **Design:** **Design lifecycle (owner decision 2026-11-27):** `work/designs/open/` holds active investigations with a named owner, unresolved decision and review trigger; `work/designs/backlog/` holds deferred worthwhile investigations with a reason and reactivation trigger; `work/designs/archive/` holds terminal accepted, completed, rejected, cancelled or superseded dossiers as a browsable review cache. Placement never authorizes implementation, live mutation or spending. Accepted decisions must be promoted to canonical owners; implementation and acceptance remain with their Changes. Record disposition, exact original full SHA/path, canonical successor, unique evidence and repaired references in the design ledger. Review archive retention after seven days by default; preserve unique evidence and require explicit authorized pruning, never age-only removal. Git remains permanent recovery; archive is not canon or a shadow queue.
-- **Deferred Change:** place in [domain backlog](work/changes/backlog/README.md) while unselected, retain explicit owner/dependency; promote into `open/` only after current branch/source/readiness reconciliation and owner commission. **Do not mislabel backlog placement as Done or Ready.**
-- **Change:** after actual Done/Cancelled reconciliation, move to [Change archive](work/changes/archive/README.md) for short review. The normal seven-day age is a **review signal, not deletion permission**. Move unique proof to evidence, store full-SHA recovery pointer in [Change ledger](work/changes/ledger/2026-11.md), repair inbound links, then prune only after an authorized review.
-- **Undertaking:** close only after integrated acceptance and consistent status/queue/docs, **including a final supervisor-readable before/after view in `OVERVIEW.md` and a human handoff**; retire active dossier and integration branch with compact record.
-- **Source architecture and code growth:** code quality receives the same lifecycle attention as documentation. At every code-bearing Change's closure, inspect the changed code for understandable responsibilities, runtime trust boundaries and size/growth signals, and run `pnpm repo:code-health --base <actual-integration-branch>`. Use `--strict-new` only for newly crossed severe bands. Review repo-wide hotspots roughly **every two weeks** during heavy development and before Undertaking integration. Numeric warnings trigger manual source/owner investigation, not automatic directory moves or new packets. Top confirmed findings belong in the appropriate individually scoped Design or Change under the [code-quality standard](.agents/rules/code-quality.md). This is a practice cadence, not an installed background automation.
-- **Audit / documentation health:** audit is a method, not necessarily another work type. Use [wiki index](docs/README.md), `pnpm wiki:find`, `pnpm wiki:read`, `pnpm wiki:health`, `pnpm repo:docs-health`, `pnpm repo:maintenance`, `pnpm repo:retirement`, and a focused manual semantic/claim-owner review as relevant. A graph-clean wiki can still be factually misleading. Use documentation Changes for durable repairs; evidence/research for findings.
-- **Housekeeping:** a small safe maintenance edit needs no huge ceremony. A reusable script/fix is a Change; a meaningful independent cleanup run may be a Task; a plain read-only check need not create either.
+At code-bearing Change closure inspect craftsmanship and run `pnpm repo:code-health --base <actual-integration-branch>`; use --strict-new for newly crossed severe bands. Review repository hotspots roughly every two weeks during heavy development and before Undertaking integration. Warnings trigger source investigation, not automatic refactoring. [Code quality](.agents/rules/code-quality.md) owns details. [Documentation navigation](.agents/references/documentation-navigation-standard.md) and [maintenance](.agents/references/repository-maintenance.md) own checks; graph-clean does not mean semantically correct. No background automation implied.
 
-Do not delete history, downgrade tests, falsely close blockers or run destructive infrastructure operations to achieve cosmetic tidiness.
+Read-only triage or trivial safe correction needs no new packet. Reusable tooling or substantial maintained repairs are Changes; independent no-diff operations may be Tasks. Never tidy by deleting unique history, weakening proof or falsifying Done.
 
 ## 11. Quick start by intent
 
