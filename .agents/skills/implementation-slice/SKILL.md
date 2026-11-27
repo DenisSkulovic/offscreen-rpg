@@ -9,13 +9,13 @@ Use one approved T-ID or tiny selected Change. Follow root instructions, [task c
 
 ## Input packet
 
-Selected outcome, authority, baseline, exact permitted paths and anchors, decided edit, normal/negative checks, constraints and stop/receipt. If absent, report precise gap rather than invent requirements.
+Selected outcome, authority, baseline, exact permitted paths and anchors, decided edit, assigned checks or an explicit source-only gate, constraints and stop/receipt. If absent, report the precise gap. Do not invent a test.
 
 ## Execution
 
 1. Verify assigned worktree/status, prerequisites and named source/contract. Preserve unrelated edits; material contradiction goes to planner.
 2. Implement smallest coherent delta under [code quality](../../rules/code-quality.md). Preserve trust, state, retry, finance and permissions. Local mechanical fixes permitted; no speculative wrappers, unrelated formatting or unapproved live/spend/destructive work.
-3. Inspect diff and run assigned focused normal/negative tests plus diff/changed-file checks. Use [verification](../../rules/verification.md) for relevant tier and [frontend engineering](../frontend-engineering/SKILL.md) if triggered. Heavy acceptance is not a child task by default. No global build per save.
+3. Inspect the diff and run only the assigned checks. Use [verification](../../rules/verification.md) for the proof boundary and [frontend engineering](../frontend-engineering/SKILL.md) if triggered. Do not build, typecheck, lint or test beyond that assignment. Heavy acceptance is not a child task by default. No global build per save. Do not debug an intermediate failure the packet already expected.
 4. Report affected canonical claims; parent reconciles documentation and acceptance. No shared-checkout child staging/commit or Done claim.
 
 ## Output contract

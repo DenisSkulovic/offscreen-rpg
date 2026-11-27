@@ -1,6 +1,6 @@
 ---
 name: implementation-handoff
-description: Format one approved Change into a bounded implementation launch with exact authority, files, negative proof and no implicit product decisions. No implementation.
+description: Format one approved Change into a bounded implementation launch with exact authority, files, the assigned proof boundary and no implicit product decisions. No implementation.
 ---
 
 # Implementation handoff
@@ -21,7 +21,7 @@ TARGET/BASE: <branch, SHA, worktree/guard>
 COMMISSION: <actual authorized scope and prerequisites>
 FIRST: <T-ID or exact eligible wave; task-specific contract/anchors>
 BOUNDARIES: <write/resource owners, excluded/forbidden actions>
-CHECKS: <assigned focused positive + negative, command/cwd>
+CHECKS: <assigned command/cwd, or none — source gate and downstream proof owner>
 ACCEPTANCE: <acceptance lead, remaining proof, stop/closure>
 RETURN: <committed SHA, actual results, precise blocker or handoff>
 ```

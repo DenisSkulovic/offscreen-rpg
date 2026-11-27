@@ -52,4 +52,4 @@ Inspect Git status before broad editing and before a commit. Preserve unrelated 
 
 ## Verification and spend
 
-Use [proportionate verification](verification.md); code and docs checks have no live-provider permission. Review of a diff is still needed even if checks pass. Paid calls, cloud deployment and credentials are governed by [spending](spending.md) and task-specific explicit authority. Recorded historical credit amounts are not a current balance. End each material slice with outcome, evidence and spending status.
+Use [staged verification](verification.md). Construction work follows the assigned proof boundary and does not become a qualification campaign. Code and docs checks have no live-provider permission. Review of a diff is still needed even if checks pass. Paid calls, cloud deployment and credentials are governed by [spending](spending.md) and task-specific explicit authority. Recorded historical credit amounts are not a current balance. End each material slice with outcome, evidence and spending status.

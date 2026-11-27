@@ -12,7 +12,7 @@ Kind: documentation or implementation per [work-unit standard](change-work-unit-
 
 | Profile | Use | Required emphasis |
 | --- | --- | --- |
-| PATCH | Narrow known correction | Exact edit, focused positive/negative |
+| PATCH | Narrow known correction | Exact edit. Executable checks only at the assigned proof boundary. A construction edit may have none |
 | CONTRACT | API/wire/schema/package/trust boundary | Callers, public exports, compatibility, authority |
 | STATE | Persistence, replay, workflow, fork, money | State/identity, transaction, fences, crash/replay negatives |
 | RELEASE | Images, network, secrets, migration, cluster | Artifact identity, resource/lifecycle, refusal, recovery, proof ownership |
@@ -37,7 +37,7 @@ No empty companions or duplicate source maps. Refresh stale facts or mark explic
 
 ## Route card format (pasteable; adapt, don't pad)
 
-Use canonical [TASKS card](task-execution-standard.md#tasksmd-format), or for one tiny route in CHANGE.md include ID/HEAD/selection, outcome, authority, anchors, exact edit/constraints, normal and negative command/cwd, stop and receipt. No duplicate card in companions or pasted research.
+Use canonical [TASKS card](task-execution-standard.md#tasksmd-format), or for one tiny route in CHANGE.md include ID/HEAD/selection, outcome, authority, anchors, exact edit/constraints, the assigned check or an explicit source-only gate, stop and receipt. No duplicate card in companions or pasted research.
 
 ## Read budget, escalation, and quality loop
 

@@ -17,13 +17,13 @@ An implementation agent may be capable of planning. During a commissioned implem
 A task is **PLANNER-READY** only if all of the following are demonstrably supplied. There is no separate client or model gate. Change readiness, selection and commission remain distinct and are not granted by a task card.
 
 1. **Known target:** base SHA and exact existing symbol or field names, whether an edit is new or already landed, and whether conflicting agent branches touch its files.
-2. **One observable delta:** ideally 1–3 write-owning files (plus targeted tests or docs) and a visible pass or fail. Not a generic "wire the service" or "make it robust".
+2. **One observable delta:** ideally 1–3 write-owning files (plus targeted tests or docs when this boundary owns them) and a visible source or check outcome. Not a generic "wire the service" or "make it robust".
 3. **Fully settled algorithm:** precise expected inputs, outputs, validation, transaction and fencing identity, permissions, rejected alternatives and retry behavior. For a database transition, name the actual schema check, lock order, allowed state rows and compare-and-swap condition. For a worker, name the task queue, version and crash replay behavior. If the design is undecided, the task is **PLANNER-BLOCKED**.
 4. **Ordered steps:** sequential edits, not "investigate the architecture and then decide." The writer may use ordinary judgment on syntax and local refactors, and may not take product authority or cross-service ownership.
-5. **Proof route:** an existing test anchor or an exact new test file, an executable command with working directory and disposable prerequisites, one normal case and one **discriminating negative**. Code-review impression is not the only test.
+5. **Proof boundary:** either the assigned executable check, with command, working directory, disposable prerequisites, one normal case and one discriminating negative where that negative discriminates, or an explicit statement that this task has no executable check. In the second case name the source postcondition and the downstream owner of the behavioral obligation. Do not invent a test to make the card look complete. Source inspection is not a test result. [Staged verification](../rules/verification.md) owns when a check is required early.
 6. **Resource authority:** the selected Change, the allowed file owner and branch, one writer for shared migrations, workflow and Game Authority files, forbidden paid or destructive actions, and an explicit rollback or stop.
 7. **Permanent-doc consequences:** which canonical technical or product section changes if code behavior changes. No premature implemented claims.
-8. **Receipt:** actual diff and status, exit and test counts, the negative, any unexpected source mismatch, and cost or model when the client can observe them.
+8. **Receipt:** actual diff and status, any assigned command with its real result, NOT RUN when a required check did not run, any unexpected source mismatch, and cost or model when the client can observe them. Do not report an unassigned or unrun test as PASS.
 
 The task **type** can be CODE, TEST, WIRING, DOCUMENT or VERIFY. These are task purposes, not new Change kinds or specialist agent roles. Do not create a novel specialist for each. **DEPTH** is `PATCH` (a decided edit), `VERIFY` (specified evidence) or `INVESTIGATE` (a tightly bounded factual question, not delegated design). Add an execution responsibility only when the card must distinguish implementation, evidence, investigation or utility work. Do not add a mandatory role field when type and depth already say that.
 
@@ -56,8 +56,8 @@ May write: <exact permitted paths>
 Must not write: <excluded ownership>
 Read: <2-5 exact files and symbols, not an unbounded glob>
 Algorithm: <settled implementation recipe>
-Test: <focused command, cwd, and expected result>
-Negative: <discriminating negative case>
+Test: <assigned command, cwd, and expected result; or none — source gate only>
+Negative: <discriminating negative; or none assigned, with the downstream proof owner>
 Stop: <material contradiction or unsafe condition>
 Receipt: <required implementation evidence>
 ```
@@ -74,7 +74,7 @@ Reject "add a saga with correct retries and get it working in Kubernetes": no ow
 
 ## Token and tool guidance (soft targets, not enforceable context-window settings)
 
-[Submission budgets](planning-artifact-quality.md#4-submission-scale-and-measurement): 150–350 words per card normally; above 500, reconsider. The worker's mandatory packet-authored route stays below 1,000 words by default. One Change prefers one outcome. Seven actual tasks is a strong default. Initial reads are 2–5 direct anchors, plus focused reads for necessary facts. Do not prohibit debugging or safety verification. Where the client supports delegation, the coordinator normally uses one worker, and up to two with proven isolation. No nested swarms. No model upgrade without the client's explicit exception path. Focused normal and negative checks per task, one assigned cheap join, and heavy proof by the acceptance lead and the owner. A client without native subagents executes the same bounded task directly.
+[Submission budgets](planning-artifact-quality.md#4-submission-scale-and-measurement): 150–350 words per card normally; above 500, reconsider. The worker's mandatory packet-authored route stays below 1,000 words by default. One Change prefers one outcome. Seven actual tasks is a strong default. Initial reads are 2–5 direct anchors, plus focused reads for necessary facts. Do not prohibit debugging or safety verification. Where the client supports delegation, the coordinator normally uses one worker, and up to two with proven isolation. No nested swarms. No model upgrade without the client's explicit exception path. Run only assigned checks. A construction task may have none. One assigned inexpensive join where the packet requires it, and heavy proof by the acceptance lead and the owner at the boundary that owns it. A client without native subagents executes the same bounded task directly.
 
 ## Cost of an accepted correct change
 

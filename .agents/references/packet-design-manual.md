@@ -35,7 +35,7 @@ A coordinator may run **two** independent implementation workers concurrently un
 
 ## 4. Write two audiences, one source of truth
 
-Parent: CHANGE + TASKS index, recorded reference/HEAD, scope, constraints, prerequisite DAG/waves and shared locks, first dispatch, assigned proof and acceptance handoff, closure. Child: [canonical task card](task-execution-standard.md#tasksmd-format) with precise permitted writes, anchors, selected edit, prerequisites, exact focused normal/negative and stop. Planner: [file roles](planning-artifact-quality.md#3-execution-packet-shape), current source facts and selected contracts, direct section anchors. No raw history, multiple normative owners or universal preload.
+Parent: CHANGE + TASKS index, recorded reference/HEAD, scope, constraints, prerequisite DAG/waves and shared locks, first dispatch, assigned proof and acceptance handoff, closure. Child: [canonical task card](task-execution-standard.md#tasksmd-format) with precise permitted writes, anchors, selected edit, prerequisites, the assigned check or an explicit source-only gate, and stop. Planner: [file roles](planning-artifact-quality.md#3-execution-packet-shape), current source facts and selected contracts, direct section anchors. No raw history, multiple normative owners or universal preload.
 
 ## 5. Test dispatchability while writing
 
@@ -43,7 +43,7 @@ For every task, perform a paper execution with **only** the task and listed anch
 - Can I locate the exact code and apply the edit without searching the full repository?
 - Does the first source read supply the types/fixtures promised? Are caller edits explicit rather than "find all uses"?
 - Are outputs from dependencies available at dispatch time, including generated types?
-- Is a normal and *diagnostic negative* test specified with expected outcome and a runnable command?
+- If this task owns an executable check, are the command, expected outcome and discriminating negative specified? If it does not, is the downstream proof owner named? Absence of an unnecessary intermediate test is not a defect.
 - Could two proposed parallel tasks race on files, generated output, DB fixtures, test ports, lockfile, Git or docs?
 - Can a child know when to stop, rather than quietly changing architecture?
 - Can the parent assess the child receipt and finish the **whole** Change without a new design meeting?

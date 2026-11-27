@@ -22,13 +22,13 @@ Use [independent readiness review](packet-readiness-review.md) for meanings and 
 | G3 affected child dry-runs | | |
 | G4 parent first dispatch | | |
 | G5 dependency and isolation | | |
-| G6 positive and diagnostic negative proof | | |
+| G6 assigned proof boundary | | |
 | G7 execution cost and closure | | |
 
 On a correction pass, repeat affected dimensions. Reuse unaffected evidence and say which prior evidence still applies.
 
 ## Dispatch route
-| T-ID / wave | Anchors | Exclusive writes / resources | Depends on | Negative observation | Parallel status |
+| T-ID / wave | Anchors | Exclusive writes / resources | Depends on | Assigned check or downstream proof owner | Parallel status |
 | --- | --- | --- | --- | --- | --- |
 | | | | | | |
 

@@ -18,8 +18,8 @@
 > **Current-source map:** [nearest document hub or source README; inspected SHA/date].  
 > **Primary governing heading:** [exact selected product/technical claim with Markdown link/fragment; distinguish proposals].  
 > **Known trap / contrary case:** [one explicit reason a plausible edit would be wrong].  
-> **Scope/permission:** [for documentation: named canonical heading edits and links only; for implementation: source/tests/config files; both require negative proof and no unapproved side effects].
-> **Route card:** [2–5 source or test paths, one negative case, and the verification commands]. The executor reads this card and the primary heading. It does not preload the change-workflow skill or guard source.
+> **Scope/permission:** [for documentation: named canonical heading edits and links only; for implementation: source/tests/config files; no unapproved side effects]. A construction Change names its source gate and downstream proof owner. It does not invent a negative test.
+> **Route card:** [2–5 source or test paths, and either the assigned verification commands or an explicit source-only gate]. The executor reads this card and the primary heading. It does not preload the change-workflow skill or guard source.
 
 The parent reads the front door and dispatch index; each child reads its selected card and exact mandatory contract/source/test anchors. The full packet remains binding but is not mandatory preload. Permanent product/technical owners, not this handoff, hold authority. Avoid copying whole historical audits or lengthy research.
 
@@ -29,7 +29,7 @@ The parent reads the front door and dispatch index; each child reads its selecte
 - Source-grounded gap, exact affected section(s), inspected revision and evidence: [...]
 - Contribution to the selected architecture and what remains: [...]
 - Alternative considered (including leaving good text or code alone): [...]
-- **Readiness:** no Ready without owner-reviewed intent, bounded actual delta, side effects and falsifiable proof.
+- **Readiness:** no Ready without owner-reviewed intent, a bounded actual delta, side effects, and either falsifiable proof at this boundary or a named downstream owner for that proof.
 
 ## Outcome and motivation
 
@@ -51,11 +51,11 @@ One coherent, independently reviewable outcome. For `documentation`, specify *wh
 - **Preserve:** [non-negotiable product, technical, accessibility, privacy, time, spending and provenance constraints].
 - **Exclude:** [all unratified decisions, unrelated rewrites/refactors, provider/DB/deployment side effects].
 
-## Acceptance and discriminating negative proof
+## Acceptance and assigned proof
 
-- **Normal:** [a fresh reader or safe test correctly infers behavior and status from the revised local claims].
-- **Negative:** [a plausible competing interpretation the revision must **not** permit; ideally an adversarial scenario].
-- **Verification:** [before/after claim-equivalence ledger, exact links and anchors, real source/fixture checks only when material; independent reviewer for consequential meaning changes].
+- **Normal:** [the source postcondition, or a fresh reader or safe test that correctly infers the revised behavior].
+- **Negative:** [a discriminating failure at this boundary, or none assigned because a named later Change owns it]. Documentation Changes still name the interpretation the revision must not permit.
+- **Verification:** [source diff and postcondition, or the assigned command; before/after claim-equivalence for documentation; independent reviewer for consequential meaning changes]. Record NOT RUN rather than PASS when a required check did not run.
 - **Human decision gate:** [exact normative question and blocked section, or none].
 
 ## Planned specification and implementation delta | planned-impact.v1
@@ -66,7 +66,7 @@ This is a *prospective design*, mandatory before Ready and separate from the ret
 | --- | --- | --- | --- |
 | Product | changed: [exact docs/product/...#heading] and scope, **or** unchanged because [specific unaffected promise] | [dependent claims or none because...] | [owner review / negative] |
 | Technical | changed: [exact docs/technical/...#heading] and contract consequence, **or** unchanged because [specific unaffected contract] | [dependent claims or none because...] | [source or assertion proof] |
-| Code | changed: [exact source/test/config path]; negative: [disproving case], **or** unchanged because [no executable modification authorized and why] | [source map or no impact because...] | [test or inspected no-code diff] |
+| Code | changed: [exact source/test/config path]; negative: [disproving case, or the downstream Change that owns it], **or** unchanged because [no executable modification authorized and why] | [source map or no impact because...] | [assigned test, source inspection, or inspected no-code diff] |
 | Related | changed: [exact inbound or hub Markdown path] and routing, **or** unchanged because [reviewed dependents do not change] | [actual reverse dependency/heading set] | [links/negative independent review] |
 
 `N/A` and `docs updated` are not dispositions. For a documentation Change, the negative semantic proof remains mandatory even though its Code row says unchanged. A proposal may not be promoted merely by residing under `docs/product`.

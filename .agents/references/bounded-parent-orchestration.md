@@ -22,7 +22,7 @@ Read CHANGE.md, the TASKS dispatch index when present, the current branch and wo
 
 **Default:** one implementation coordinator and, where the client can delegate, one substantive implementation worker. For multiple substantive PATCH tasks, delegate the first substantive task and continue bounded dispatch. The coordinator edits directly only for a truly mechanical, locally understood change that is cheaper than delegation. One file can still contain substantive authorization, transaction or state work. Record a brief reason for a direct edit. No delegation ritual for routine Git, closure, pure VERIFY or a tiny single edit. A client without native subagents executes the same bounded task directly and says so. Model choice belongs to that client's execution policy. Cursor's policy is [.cursor/MODEL-POLICY.md](../../.cursor/MODEL-POLICY.md). Claude Code's policy is [.claude/MODEL-POLICY.md](../../.claude/MODEL-POLICY.md).
 
-One child at a time normally. Up to two disjoint ready children when the planner's frozen dependency and ownership matrix proves independence, including generated files, test fixtures, resources and the Git index. No wider concurrency without an explicit collision-free schedule. Combining adjacent tiny tasks requires the same frozen contract and write ownership and a shared proof. Count actual assignments. The seven-task default is a planning boundary, not a reason to hide scope in subcards.
+One child at a time normally. Up to two disjoint ready children when the planner's frozen dependency and ownership matrix proves independence, including generated files, test fixtures, resources and the Git index. No wider concurrency without an explicit collision-free schedule. Combining adjacent tiny tasks requires the same frozen contract, write ownership and assigned proof boundary. Count actual assignments. The seven-task default is a planning boundary, not a reason to hide scope in subcards.
 
 Parent validates receipts/diffs, integrates dependency results, then selects next ready task. Child cannot spawn children. No alternate implementations, broad quality sweeps, model comparisons, excessive tuning or unapproved expensive-model escalation. [Model budget](../../.cursor/MODEL-POLICY.md) · [Task format](task-execution-standard.md).
 
@@ -40,7 +40,7 @@ A completed child, clean intermediate commit, passing focused test, finished sou
 
 ### Genuine early-stop conditions
 
-Stop the affected work for actual unresolved design/authority/transaction or safety contradiction, ungranted paid/destructive/live permission, missing indispensable prerequisite/environment, unsafe collision, failing required proof, or repeated unexplained failure. Ordinary compiler/import/fixture errors are local debugging: one focused diagnosis and one materially changed retry per unexplained invariant, not a global two-error quota. If still failing, return T-ID, file:symbol, failed assumption, smallest reproducer and concrete planner/owner question. No repeated timeout tuning or expensive-model upgrade. A dirty or uncertain ownership state stops further writes until reconciled.
+Stop the affected work for actual unresolved design/authority/transaction or safety contradiction, ungranted paid/destructive/live permission, missing indispensable prerequisite/environment, unsafe collision, failing required proof, or repeated unexplained failure. A compiler, import or fixture failure that the packet already declared as unfinished downstream work is not a debugging campaign. An unexpected local compiler, import or fixture error gets one focused diagnosis and one materially changed retry, not a global two-error quota. If still failing, return T-ID, file:symbol, failed assumption, smallest reproducer and concrete planner/owner question. No repeated timeout tuning or expensive-model upgrade. A dirty or uncertain ownership state stops further writes until reconciled.
 
 ## Diagnosis and end-state
 
@@ -56,13 +56,13 @@ Delegate a bounded deterministic chore when noisy reads or repetitive edits woul
 
 ## 2. Cheap children; parent owns reconciliation
 
-Give one T-ID, 2–5 real source/test anchors, exact mandatory contract sections, permitted write paths, decided edit, normal/negative test commands and stop condition. Child verifies nearby source, implements, runs focused checks and returns:
+Give one T-ID, 2–5 real source or test anchors, exact mandatory contract sections, permitted write paths, the decided edit, the assigned checks or an explicit source-only gate, and the stop condition. Child verifies nearby source, implements, runs only assigned checks and returns:
 
 ```text
 <ID> | PATCH/VERIFY/INVESTIGATE | PASS/FAIL/NOT-RUN | achieved outcome
 Files: owned changed paths; worktree/commit or none
-Proof: exact command/result/exit; evidence tier
-Negative: observed refusal or NOT RUN with reason
+Proof: exact command/result/exit, source inspection, or NOT RUN; evidence tier
+Negative: observed refusal, none assigned, or NOT RUN with reason
 Docs: affected canonical owner or none
 Blocker/next: precise missing condition or none
 ```
@@ -72,7 +72,7 @@ INVESTIGATE is only a precisely bounded factual assignment, not design. Six line
 ## 3. Integration checkpoint: do this once per batch, not per child
 
 1. Inspect HEAD, status, relevant diff and receipts; identify unrelated changes/collisions. Stage exact owned paths only; inspect staged diff, whitespace and obvious secrets. No blind add -A, reset, clean, forced stash, amend or force-push.
-2. Inspect changed code against [code craftsmanship](../rules/code-quality.md): meaningful responsibilities, trust-boundary validation, safe types, readable phases and invariant comments. Run changed-file Prettier and eslint.quality.config.mjs where available, assigned focused normal/diagnostic negative tests and necessary cheap boundary checks. Broader typechecks/suites/maintenance/guards only at required tier/join, not every child. Reuse trustworthy unchanged evidence; skipped checks NOT RUN.
+2. Inspect changed code against [code craftsmanship](../rules/code-quality.md): meaningful responsibilities, trust-boundary validation, safe types, readable phases and invariant comments. Run changed-file Prettier and eslint only when the gate assigns them or the files are expected to pass. Run assigned normal and diagnostic negative tests. Do not add a build, typecheck, lint or test the packet left to a later boundary. Broader suites and maintenance guards run at the qualification boundary or a join to main, not after every child. Reuse trustworthy unchanged evidence. An unassigned or skipped check is NOT RUN. An expected failure from unfinished downstream work is a recorded limitation, not a new defect.
 3. Commit the coherent source milestone, not one commit per child. If remaining commissioned tasks are ready, continue. If indispensable Change-level proof is still pending, record IMPLEMENTED — ACCEPTANCE PENDING and keep the worktree. Do not join or archive. If the Change-level gate passed, archive this packet in the same commission even when design-level acceptance remains. Transfer those obligations onto the Design first and do not mark them passed. Reconcile the catalog, inbound references and ledger, then commit that closure on the Change branch. If blocked, keep the work open, preserve safe work, and record the specific residual test, permission, or decision. Never claim Done from a structural proof alone.
 4. Join with `scripts/repo-tools/change-lifecycle.mjs`, passing `--leaf` and, when design acceptance is still pending, `--obligations-transferred`. Refresh the recorded target, check predecessor postconditions, merge without rewriting history, rerun the smallest affected checks, and verify the new target SHA. The same command refuses completion unless the archived packet is on the target and the open packet is absent. Use a merge commit on a design implementation branch and squash on a standalone direct join. A constituent Change cannot name main. Before starting a constituent, `lookup` that target so an already archived Change is not executed again. Main may still show the open packet. If the source changed after the accepted proof, rerun the affected proof before claiming acceptance.
 5. Then retire the clean integrated worktree with `--leaf`. The design-level closure, not this Change, integrates the finished implementation branch into main. New independent ambitions belong in a separately selected Change, not appended to this one.
@@ -86,7 +86,7 @@ Checkpoint after five dispatches, risky join or ownership transition; these are 
 ```text
 Change / target / starting HEAD / committed SHA
 Tasks: completed; failed/NOT-RUN + reason
-Proof: commands/cwd/results/negative/evidence tier
+Proof: assigned commands/cwd/results, source inspection, or NOT RUN; evidence tier
 Disposition: Done+archive | IMPLEMENTED — ACCEPTANCE PENDING | open blocker
 Docs/guards: owners and run/pass/fail/not-run
 Resources/Git: ownership, uncommitted paths, worktree/branch, final target SHA if integrated

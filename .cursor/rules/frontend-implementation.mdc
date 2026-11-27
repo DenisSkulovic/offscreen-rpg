@@ -8,6 +8,6 @@ alwaysApply: false
 
 **No redesign or recursive research.** The planner already selected architecture, source owners and failure semantics. Stop with a concise file/symbol contradiction if actual code materially differs. Do not spend cheap-model tokens building a second plan or spawning review agents. Model choice follows [.cursor/MODEL-POLICY.md](../MODEL-POLICY.md).
 
-**Fast checks at boundaries.** Warm pnpm/Next/Vitest/TypeScript caches; diff/IDE feedback during edits, targeted negative test at coherent seam, larger build/DB/browser only at agreed integration gate. `test:focus` resets the named disposable DB; never run paid providers or deployment automatically.
+**Fast checks at boundaries.** Warm pnpm/Next/Vitest/TypeScript caches; diff and IDE feedback during edits. Run a targeted negative test when that seam is the assigned proof boundary. Keep a larger build, database or browser check at the agreed integration or qualification gate. `test:focus` resets the named disposable DB; never run paid providers or deployment automatically.
 
 **Return:** diff/paths, checks run or skipped, one discriminating negative case, blocker and next dependency. Full instructions: selected Change; deeper [owner maps](../../apps/web/README.md) only as needed.
