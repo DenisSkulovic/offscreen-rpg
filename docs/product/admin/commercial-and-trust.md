@@ -1,7 +1,12 @@
 # Commercial operations and trust
 
-**Owns:** how staff explain money, allowances and privacy, and which of those actions stay conditional.  
-**Status: proposed, 2026-11-14.** Owner review is still required. Legal review is still required before a privacy or enforcement workflow is operational. Nothing on this page is a production grant to refund, export, delete, or read private narrative. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.
+**Owns:** how staff explain money, allowances and privacy, and which of those actions stay conditional.
+
+**Status:** proposed, 2026-11-14.
+
+**Selected intent.** Entitlement, funding, usage and external payment or refund are separate objects with separate histories. Money and trust or privacy are two mandates with two evidence audiences.
+
+**Current realization.** Owner review is still required. Legal review is still required before a privacy or enforcement workflow is operational. Nothing on this page is a production grant to refund, export, delete, or read private narrative. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked. No production billing or LiveOps capability is asserted.
 
 Companion: [Player 360](player-360-and-support.md), [authority](authority-and-governance.md).
 
@@ -45,7 +50,7 @@ Prices, SLA numbers, exact monetary thresholds and the ledger schema are not dec
 
 **Normal.** Support sees valid payment evidence, a stale entitlement, and a separate platform stop. Revenue Operations reconciles or issues a narrowly bounded provisional remedy, then checks effective gameplay permission. If the provider is late, the case stays pending.
 
-**Negative.** A goodwill allowance is not a refund, and a refund is not an allowance. Retrying a lost acknowledgement does not create a second grant. Fictional gold is not an editable commercial balance.
+**Negative.** A goodwill allowance is not a refund, and a refund is not an allowance. Retrying a lost acknowledgement does not create a second grant. Fictional gold is not an editable commercial balance. An active subscription does not imply unlimited sponsored usage: subscription status is a provider billing lifecycle, entitlement is a named capability, and remaining allowance and the platform spending stop are checked separately.
 
 ## Trust and privacy are a different mandate
 

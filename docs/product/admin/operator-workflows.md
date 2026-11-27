@@ -1,7 +1,12 @@
 # Operator workflows
 
-**Owns:** the interaction contract for a staff action that crosses workspaces, from finding a subject to a verified effect.  
-**Status: proposed journeys, 2026-11-14.** Pending owner acceptance. This is not a route map and not permission to perform the writes in the examples. Gated writes stay gated. Where a landed Admin slice already records a case or a read, that slice does not expand into these journeys.
+**Owns:** the interaction contract for a staff action that crosses workspaces, from finding a subject to a verified effect.
+
+**Status:** proposed journeys, 2026-11-14, pending owner acceptance.
+
+**Selected intent.** A staff action is a lifecycle with an accountable actor, a bounded scope and a visible status, ending in verified success, verified failure, or an honestly partial or unknown result. Clicked, approved, provider-accepted and job-queued are never completion.
+
+**Current realization.** This page is not a route map and not permission to perform the writes in the examples. Gated writes stay gated. Where a landed Admin slice already records a case or a read, that slice does not expand into these journeys.
 
 ## Surfaces
 
@@ -39,6 +44,8 @@ Clicked, approved, provider-accepted and job-queued are not verified completion.
 
 ## Journeys
 
+The journeys below illustrate the lifecycle, scoped action and status contract above with product sequences, not implemented flows.
+
 These are product sequences. Each powerful step still needs the grant named on [authority](authority-and-governance.md), [commercial and trust](commercial-and-trust.md), or [AI investigation](ai-engineering-and-investigation.md).
 
 **Normal — ordinary access complaint.** Support finds the account, reads effective entitlement and a separate restriction, and answers from the safe status. If the mismatch needs Revenue Operations, Support files the case with both sources linked. Nobody retries a grant because the first screen was slow.
@@ -59,3 +66,5 @@ These are product sequences. Each powerful step still needs the grant named on [
 - An unknown provider result is not completed, and it is not retried into a duplicate credit or a second state repair.
 - Customer-visible notes do not contain raw prompts, complainant identity, or another participant's private text.
 - Closing a case to satisfy a count, when the evidence is insufficient, is not a finding.
+- Resolving or closing a support case is not evidence that a refund or a repair happened. Only the target's authoritative state shows the intended effect (see the Completed state above).
+- Finding a player does not reveal a raw prompt. Lookup shows the access-filtered subject, freshness and safe status; raw model context needs its own grant on [AI investigation](ai-engineering-and-investigation.md).
