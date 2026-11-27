@@ -1,8 +1,6 @@
 # Change: bounded authoritative documentation or executable implementation outcome
 
-**Owner decision 2026-11-26: implementation and heavy acceptance have different owners.** Cursor implements the selected design, constructs specified deterministic proof tools, runs focused unit/contract tests, changed-file quality checks and proportionate cheap local integration checks, and commits a coherent implementation receipt. The design/planning ChatGPT and human owner own heavy acceptance: broad builds/suites, infrastructure lifecycle and fault/recovery runs, multi-service/browser/end-to-end exercises, release upgrades, long-running or costly probes and other substantial operational proof. ChatGPT selects exact commands, target, prerequisites, expected outcomes, timeouts, stop/cleanup and evidence; the human runs the bounded batch in their terminal and returns results for ChatGPT to interpret and record. Prefer one reproducible scripted batch over repeated paid-agent terminal orchestration. No heavy acceptance by Cursor unless the owner explicitly delegates that named proof; elapsed time alone is not a hard cutoff, and essential focused negative tests are not skipped to save tokens. The planner partitions the existing acceptance matrix by executor before commission (or at the next checkpoint of an in-flight Change). This changes who runs proof, not its required tier, safety, or integration gate.
-
-See [shared execution, acceptance and integration policy](../../../../AGENTS.md).
+**Execution/acceptance ownership:** [apply root AGENTS.md]; record exact cheap checks and heavy acceptance owner below. Remove template instructions when filling the packet.
 
 **Create under:** `work/changes/open/YYYY-MM-DD--slug/`. After **Done/Cancelled** and completing reconciliation, `git mv` to `work/changes/archive/YYYY-MM/<program>/YYYY-MM-DD--slug/`; repair all inbound links and update the queue. Existing legacy code-bearing packets retain their original meaning.
 
@@ -11,11 +9,11 @@ See [shared execution, acceptance and integration policy](../../../../AGENTS.md)
 **Approval and owner:** [owner ratification of any changed selected meaning, execution authorization and executor; no implied approval from historical notes].
 **Parent initiative (optional):** [link to one program, not a copied dossier].
 
-**Planner-to-executor admission (when this is an implementation Change for Cursor):** The authoring assistant, preferably ChatGPT, must first follow [planner-first investigation](../../../references/planner-investigation-standard.md). Do the expensive source/architecture research *before* preparing the first-screen brief. For a material multi-task delegated Change, use the [required packet roles](../../../references/planning-artifact-quality.md#3-execution-packet-shape), including TASKS.md, SOURCE-MAP.md and PROOF.md. The planner source map records: inspected SHA/date; concrete functions/callers and tests; current vs selected authority; entrypoint→data state/writes→consumers; accepted state/ID/root and retry/failure decisions; exact files/ownership/dependencies; normal and negative acceptance; unresolved facts. If a material algorithm, transaction, mapping or interface remains to be chosen by the executor, mark **Proposed / PLANNER BLOCKER**, not Ready. Keep the final route card short; do not make the executor read all planner research. For VERIFY and one-line mechanical fixes use a short equivalent, not ceremony.
+**Planner admission:** [verify actual source/authority, apply .agents/references/planning-artifact-quality.md and packet-readiness-review.md; material multi-task work requires TASKS, SOURCE-MAP, PROOF and selected contracts. Record current disposition; do not leave this instruction in a completed packet.]
 
 ## Cursor first-screen brief
 
-[Submission scale](../../../references/planning-artifact-quality.md#4-submission-scale-and-measurement): one outcome; actual task count, current planning count/KiB, parent/largest child mandatory words, rough active implementation minutes, heavy acceptance owner. Record compact measurements in existing readiness/review receipt, not another ledger.
+[Actual task count; current planning count/KiB; parent/largest child required words; estimated active implementation minutes; heavy acceptance owner. Use existing readiness/review receipt, not another ledger.]
 
 > **Current-source map:** [nearest document hub or source README; inspected SHA/date].  
 > **Primary governing heading:** [exact selected product/technical claim with Markdown link/fragment; distinguish proposals].  

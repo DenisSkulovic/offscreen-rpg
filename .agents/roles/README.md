@@ -33,14 +33,7 @@ For significant work, the person or coordinating chat first identifies **the sma
 
 ## Optional native subagents: start with only two
 
-The canonical role catalog is larger than the installed **native** subagent roster. The first two deliberately opt-in, read-only specialists are:
-
-- **`design-challenger`**: independently challenges a proposed design against product/technical contracts before implementation. Canonical procedure: `independent-design-review`.
-- **`test-strategist`**: proposes a falsifiable, risk-weighted unit/integration/E2E plan before anyone writes or executes tests. Canonical procedure: `test-strategy`.
-
-Claude uses `.claude/agents/` definitions with `tools: Read, Glob, Grep` and `permissionMode: plan`; Cursor uses `.cursor/agents/` definitions with `readonly: true`. Both inherit the selected parent model rather than silently pinning an expensive one. They do **not** automatically authorize model calls or additional agents. Cursor may also discover compatible Claude definitions; its documented project precedence resolves same-name collisions, but actual discovery should be tested in the installed version.
-
-**Why not create twenty?** Built-in Explore already handles ordinary source searches; most catalog roles need only a role assignment plus an existing skill or a fresh ChatGPT conversation. Each custom subagent advertises instructions and consumes tokens when invoked, so native roles must earn their place through repeated usefulness. Do not confuse availability with a requirement to delegate.
+The role catalog is conceptual; it is not the native roster. Claude defines two optional read-only critics, design-challenger and test-strategist. Cursor additionally defines scoped implementation, evidence, utility and review roles; [actual model roster](../references/cursor-model-budget-policy.md) owns use. Inherit critics are not approved for automatic dispatch. Check client metadata/permissions and explicit owner/model gate. Native critics supply bounded consultation, never replace the mandatory fresh-chat committed architecture committee. Do not add an agent for every job title.
 
 ## Three service levels
 
@@ -67,7 +60,7 @@ Use the [assignment/receipt shape](assignments.md). Pass **approved decisions an
 
 **Gate failure:** if a downstream role finds a contradiction in its input contract, return it to the **owning upstream role** and pause dependent implementation. It must not independently choose a new product direction, quietly weaken acceptance or request ten more agents.
 
-**Convergence:** owner/architect decides among documented alternatives; update the authoritative product/technical heading; then release a fresh bounded packet. No indefinite peer-review tennis. After an initial review and one corrective pass, persistent disagreement goes to the human with evidence and options, not another automatic debate.
+**Convergence:** owner/architect decides among documented alternatives; update the authoritative product/technical heading; then release a fresh bounded packet. No indefinite peer-review tennis. For informal reviews, escalate persistent disagreement to owner with evidence rather than automatic debate. Formal design and packet re-review follow their mandatory convergence protocols; no arbitrary one-pass cap.
 
 **Parallel writes:** a user-approved Change batch may be orchestrated concurrently, but never allow two agents to edit the same owned files simultaneously in one checkout. Read-only comparisons may run in parallel. Independent writes need disjoint ownership, a separate Git worktree/branch, and explicit merge responsibility.
 
