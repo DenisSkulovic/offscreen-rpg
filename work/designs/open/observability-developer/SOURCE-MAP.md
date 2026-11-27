@@ -1,4 +1,4 @@
-# R4 source and integration map
+# R5 source and integration map
 Inspected integration baseline 5f5750eca2f31d92fac6bfa478d1cae7203e1815. This is design integration evidence, not executable task commission.
 
 | Existing owner | Actual seam | Proposed delta / preserved behavior |
@@ -21,4 +21,4 @@ Inspected integration baseline 5f5750eca2f31d92fac6bfa478d1cae7203e1815. This is
 | work/changes/open/2026-11-26--observability-native | active acceptance and path references | serial ownership, old proof ledger not silently waived; path amendment not historical rewrite |
 | Agent Core design branch d58c19775c74631290fa562daf69a1b2f552fe5a | P0/P1 README no telemetry export | unchanged; no dependency or provider traffic |
 
-R4 LIFECYCLE.md freezes history schema, live projection, custody and direct-exec supervisor. Full tracked reference census, exact new module paths, proof-host cancellation seams and final task anchors remain packet-phase work after committee approval; no claim of completed implementation planning. Unexpected normalization contradictions return to planner.
+R5-GEOGRAPHY.md freezes new module paths and dependency direction; R5-PROOF-CONTRACT.md freezes proof-host custody and cancellation. R4 LIFECYCLE.md freezes history schema, live projection, custody and direct-exec supervisor. Full tracked reference census remains an owner-operated evidence gate; final task anchors remain packet-phase work after committee approval; no claim of completed implementation planning. Unexpected normalization contradictions return to planner.
