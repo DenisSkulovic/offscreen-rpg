@@ -4,6 +4,7 @@
 import json
 import os
 import stat
+import sys
 import time
 from decimal import Decimal
 
@@ -265,3 +266,199 @@ def allocate_metrics(state_dir, lock_fd, transport, clock, sleep=time.sleep):
             raise ProbeError("unknown-post")
         allocated.append(now)
     return {"ok": True, "scans": scans, "allocated": allocated, "posts": len(posts)}
+
+
+def attr(key, value):
+    typed = {"intValue": str(value)} if type(value) is int else {"stringValue": value}
+    return {"key": key, "value": typed}
+
+
+def build_envelopes(identity):
+    """Application-shaped OTLP JSON. Canaries are present so a query can prove they were stripped."""
+    trace_id = identity["traceId"]
+    parent = identity["parentSpanId"]
+    child = identity["childSpanId"]
+    run_id = identity["runId"]
+    now = str(identity["timeUnixNano"])
+    start = str(identity["timeUnixNano"] - 1_000_000_000)
+    resource = [
+        attr("service.name", "offscreen-developer-proof"),
+        attr("service.namespace", "offscreen"),
+        attr("deployment.environment.name", "development"),
+        attr("service.instance.id", "drop_resource_canary"),
+    ]
+    scope = {"name": "offscreen.operational.v1", "version": "drop_scope_canary"}
+    parent_span = {
+        "traceId": trace_id,
+        "spanId": parent,
+        "name": "developer.parent",
+        "kind": 1,
+        "startTimeUnixNano": start,
+        "endTimeUnixNano": now,
+        "attributes": [attr("offscreen.candidate", "probe"), attr("offscreen.run", run_id)],
+        "status": {"code": 1, "message": "drop_status_canary"},
+    }
+    child_span = {
+        "traceId": trace_id,
+        "spanId": child,
+        "parentSpanId": parent,
+        "name": "developer.child",
+        "kind": 1,
+        "startTimeUnixNano": start,
+        "endTimeUnixNano": now,
+        "attributes": [attr("offscreen.outcome", "ok"), attr("offscreen.retry", 2)],
+        "status": {"code": 1},
+    }
+    log_record = {
+        "timeUnixNano": now,
+        "observedTimeUnixNano": now,
+        "severityNumber": 9,
+        "severityText": "drop_severity_canary",
+        "traceId": trace_id,
+        "spanId": child,
+        "body": {"stringValue": "developer.completed"},
+        "attributes": [attr("offscreen.run", run_id), attr("offscreen.candidate", "probe")],
+    }
+    metric_points = []
+    for row in expected_series():
+        metric_points.append(row["__name__"])
+    traces = {"resourceSpans": [{"resource": {"attributes": resource}, "scopeSpans": [
+        {"scope": scope, "spans": [parent_span, child_span]}
+    ]}]}
+    logs = {"resourceLogs": [{"resource": {"attributes": resource}, "scopeLogs": [
+        {"scope": scope, "logRecords": [log_record]}
+    ]}]}
+    return {"traces": traces, "logs": logs, "metricNames": metric_points}
+
+
+def assess_trace(payload, identity):
+    batches = payload.get("batches") or []
+    names = []
+    for batch in batches:
+        for span in batch.get("spans") or []:
+            if span.get("traceId") != identity["traceId"]:
+                return {"ok": False, "reason": "wrong-trace"}
+            names.append(span.get("name"))
+            blob = json.dumps(span)
+            if "drop_" in blob or "canary" in blob:
+                return {"ok": False, "reason": "canary-visible"}
+    if names != ["developer.parent", "developer.child"]:
+        return {"ok": False, "reason": "wrong-spans"}
+    return {"ok": True, "reason": None}
+
+
+def assess_log(payload, identity):
+    streams = payload.get("data", {}).get("result") or []
+    if not streams:
+        return {"ok": False, "reason": "log-absent"}
+    line = streams[0].get("line")
+    if line != "developer.completed":
+        return {"ok": False, "reason": "wrong-body"}
+    if streams[0].get("traceId") != identity["traceId"]:
+        return {"ok": False, "reason": "wrong-trace"}
+    if "drop_" in json.dumps(streams[0]):
+        return {"ok": False, "reason": "canary-visible"}
+    return {"ok": True, "reason": None}
+
+
+def fresh_window(timestamp_ms):
+    """Exact 5s raw check centered so the sample at t is inside [t-1s, t+4s] queried at t+1s."""
+    return timestamp_ms - 1000, timestamp_ms + 4000
+
+
+def run_signal_cycle(identity, transport, negative_complete=True):
+    envelopes = build_envelopes(identity)
+    posts = []
+    for signal in ("traces", "logs"):
+        result = transport.post(signal, envelopes[signal])
+        posts.append(signal)
+        if result.get("known") is False:
+            raise ProbeError("unknown-post")
+        if posts.count(signal) != 1:
+            raise ProbeError("post-retried")
+    trace = assess_trace(transport.query_trace(identity["traceId"]), identity)
+    if not trace["ok"]:
+        raise ProbeError(trace["reason"])
+    log = assess_log(transport.query_log(identity), identity)
+    if not log["ok"]:
+        raise ProbeError(log["reason"])
+    start, end = fresh_window(identity["timestampMs"])
+    fresh = assess_fresh_metrics(transport.query_metrics(start, end), identity["timestampMs"])
+    if not fresh["ok"]:
+        raise ProbeError(fresh["reason"])
+    if not negative_complete:
+        raise ProbeError("negative-window-incomplete")
+    for kind, payload in transport.negative_queries():
+        if kind == "tempo" and payload.get("batches"):
+            raise ProbeError("negative-trace-visible")
+        if kind != "tempo" and (payload.get("data") or {}).get("result"):
+            raise ProbeError("negative-visible")
+    second = assess_fresh_metrics(
+        transport.query_metrics(start, end), identity["secondTimestampMs"]
+    )
+    if not second["ok"]:
+        raise ProbeError("second-" + second["reason"])
+    return {
+        "ok": True,
+        "posts": posts,
+        "identities": {
+            "traceId": identity["traceId"],
+            "runId": identity["runId"],
+            "timestampMs": identity["timestampMs"],
+        },
+    }
+
+
+def parse_args(argv):
+    expected = [
+        "--developer-http-port",
+        "--diagnostic-http-port",
+        "--prometheus-port",
+        "--loki-port",
+        "--tempo-port",
+        "--state-directory",
+        "--budget-ms",
+    ]
+    if len(argv) != len(expected) * 2:
+        raise ProbeError("developer-args")
+    values = {}
+    seen = set()
+    for flag, value in zip(argv[0::2], argv[1::2]):
+        if flag not in expected or flag in seen:
+            raise ProbeError("developer-args")
+        seen.add(flag)
+        values[flag] = value
+    if seen != set(expected):
+        raise ProbeError("developer-args")
+    return values
+
+
+def main(argv):
+    try:
+        parsed = parse_args(argv)
+        for flag in (
+            "--developer-http-port",
+            "--diagnostic-http-port",
+            "--prometheus-port",
+            "--loki-port",
+            "--tempo-port",
+            "--budget-ms",
+        ):
+            port = int(parsed[flag])
+            if port < 1:
+                raise ProbeError("developer-args")
+        if not os.path.isabs(parsed["--state-directory"]):
+            raise ProbeError("developer-args")
+    except (ProbeError, ValueError):
+        print(json.dumps({"ok": False, "reasonCode": "developer-args"}))
+        return 1
+    print(json.dumps({
+        "ok": False,
+        "reasonCode": "retained-store-not-run",
+        "stateDirectory": parsed["--state-directory"],
+    }))
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

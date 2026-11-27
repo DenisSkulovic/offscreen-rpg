@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 import stat
 import tempfile
@@ -138,6 +139,82 @@ class Allocation(unittest.TestCase):
         with self.assertRaises(probe.ProbeError):
             probe.allocate_metrics(state, bad, Transport(), lambda: 3000)
         os.close(bad)
+
+
+class Signals(unittest.TestCase):
+    def identity(self):
+        return {
+            "traceId": "ab" * 16,
+            "parentSpanId": "cd" * 8,
+            "childSpanId": "ef" * 8,
+            "runId": "12" * 8,
+            "timeUnixNano": 5_000_000_000,
+            "timestampMs": 5000,
+            "secondTimestampMs": 8000,
+        }
+
+    def test_envelopes_keep_linkage_and_canaries(self):
+        envelopes = probe.build_envelopes(self.identity())
+        spans = envelopes["traces"]["resourceSpans"][0]["scopeSpans"][0]["spans"]
+        self.assertEqual([span["name"] for span in spans], ["developer.parent", "developer.child"])
+        self.assertEqual(spans[1]["parentSpanId"], spans[0]["spanId"])
+        self.assertIn("drop_resource_canary", json.dumps(envelopes["traces"]))
+        self.assertTrue(all("run" not in row for row in probe.expected_series()))
+
+    def test_cycle_accepts_one_post_per_signal_and_refuses_a_short_negative_window(self):
+        identity = self.identity()
+        rows = probe.expected_series()
+
+        class HTTP:
+            def __init__(self):
+                self.posts = []
+
+            def post(self, signal, _payload):
+                self.posts.append(signal)
+                return {"known": True}
+
+            def query_trace(self, _trace_id):
+                return {"batches": [{"spans": [
+                    {"traceId": identity["traceId"], "name": "developer.parent"},
+                    {"traceId": identity["traceId"], "name": "developer.child"},
+                ]}]}
+
+            def query_log(self, _identity):
+                return {"data": {"result": [{
+                    "line": "developer.completed",
+                    "traceId": identity["traceId"],
+                }]}}
+
+            def query_metrics(self, _start, _end):
+                return [
+                    {"labels": labels_for(row), "timestamp_ms": identity["timestampMs"], "value": row["value"]}
+                    for row in rows
+                ] + [
+                    {"labels": labels_for(row), "timestamp_ms": identity["secondTimestampMs"], "value": row["value"]}
+                    for row in rows
+                ]
+
+            def negative_queries(self):
+                return [("tempo", {"batches": []}), ("loki", {"data": {"result": []}})]
+
+        http = HTTP()
+        result = probe.run_signal_cycle(identity, http)
+        self.assertEqual(result["posts"], ["traces", "logs"])
+        self.assertEqual(http.posts, ["traces", "logs"])
+        with self.assertRaises(probe.ProbeError) as caught:
+            probe.run_signal_cycle(identity, http, negative_complete=False)
+        self.assertEqual(caught.exception.reason, "negative-window-incomplete")
+
+    def test_cli_rejects_a_relative_state_directory(self):
+        self.assertEqual(probe.main([
+            "--developer-http-port", "1",
+            "--diagnostic-http-port", "2",
+            "--prometheus-port", "3",
+            "--loki-port", "4",
+            "--tempo-port", "5",
+            "--state-directory", "relative",
+            "--budget-ms", "10",
+        ]), 1)
 
 
 if __name__ == "__main__":
