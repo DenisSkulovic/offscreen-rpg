@@ -1,6 +1,11 @@
 # Account usage policy, windows and recovery
 
-Status: B1 and the first B2 quota slice implement pure policy resolution, fail-closed task admission and durable per-attempt window allocations. A provider task captures its complete resolved authority, route match and narrowed envelope; started stories retain that authority for later tasks. Reservation atomically covers every captured fixed/rolling request, token, money and background-job window; unsent work releases it, known settlement records actual consumption, and uncertainty retains the conservative allocation. Commercial account selection, operation-wide multi-attempt aggregation, player holds/recovery and billing remain prepared work. This page owns selected usage policy; the [historical bounded-cost proposal](../../../work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-storyteller-effort-and-cost) is research for remaining delivery options, not current authority. [Context and cost](../storyteller/request-context-and-cost.md) owns request construction and operation accounting. Commercial prices, tier names and payment processing are not chosen here.
+This page owns the selected account usage policy: how entitlement, funding allowance, task recipe and usage windows combine into one admission decision, and how held or uncertain work recovers. [Context and cost](../storyteller/request-context-and-cost.md) owns request construction and operation accounting. Commercial prices, tier names and payment processing are not chosen here. The [historical bounded-cost proposal](../../../work/designs/archive/legacy-initiatives-index/PARKED-2026-11-15.md#bounded-storyteller-effort-and-cost) is research for remaining delivery options, not current authority.
+
+**Realization status (B1 and the first B2 quota slice).**
+- **Implemented in source:** pure policy resolution, fail-closed task admission and durable per-attempt window allocations. A provider task captures its complete resolved authority, route match and narrowed envelope; started stories retain that authority for later tasks. Reservation atomically covers every captured fixed/rolling request, token, money and background-job window; unsent work releases it, known settlement records actual consumption, and uncertainty retains the conservative allocation.
+- **Prepared, not implemented:** commercial account selection, operation-wide multi-attempt aggregation, player holds/recovery and billing.
+- **Source routes (read-only, 2026-11-27):** schemas, funding modes and the effective-policy shape are in `packages/usage-policy/src/usage-policy.ts` (the funding-mode enum `sponsored | prepaid | on-demand` is a schema vocabulary, not a payment-provider qualification, and no subscription or payment processor is integrated); resolution is `resolveEffectiveUsagePolicy` in `packages/story-engine/src/storyteller/usage-policy-resolution.ts`; the disabled development preset (`development-disabled.v1`, `enabled: false`, route `openrouter:unconfigured`, prepaid, explicit resume) and baseline limits are in `usage-policy-defaults.ts` in the same folder. Existence of source is not live billing evidence.
 
 ## Who owns the boundary
 
@@ -16,19 +21,19 @@ Status: B1 and the first B2 quota slice implement pure policy resolution, fail-c
 | Selected topology | [Runtime shape](./topology.md#runtime-shape) |
 | Compatibility | [First hosted deployment](./deployment-and-compatibility.md#first-hosted-deployment) |
 
-Entitlement, funding allowance, and task recipe stay distinct on this page. The usage window stays distinct beside them.
-
-**OBS00-B provider-free custody (2026-11-20):** Independent current dispatch authority and an atomic `budget.dispatch` SQL recheck are [Done in source](../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-live-provider-custody/CHANGE.md). That security capability does **not** authorize operator-approved paid activation, a production grant seed, or TURN04 live send.
-
 ## Distinct authorities
 
 An **entitlement profile** says which capabilities an account may use. A **usage window** limits consumption over real time. A **funding allowance** authorizes actual provider spending. A **task recipe** limits the work needed for one purpose. A **creative Storyteller profile** controls tone/pacing, not any of these permissions. More available funds do not automatically unlock a model, and an unlocked model does not imply permission to fill its context window.
 
 A **funding balance** and a captured `story.usage_policy` are **not** entitlements. They may reserve or attest work already captured on a task; they do not replace current dispatch authority. **Current dispatch authority** is an independent disabled-by-default platform-policy row plus an owner grant keyed to the verified user, funding account, and run. `budget.dispatch` reloads both under the existing funding, run, attempt, and operation locks and rechecks them in the **same transaction** before `reserved` becomes `dispatched`. An empty database denies. A local mocked dispatch proved with synthetic grants is not operator-approved paid activation.
 
+### Current dispatch authority
+
+**OBS00-B provider-free custody (2026-11-20):** Independent current dispatch authority and an atomic `budget.dispatch` SQL recheck are [Done in source](../../../work/changes/archive/2026-11/observability/2026-11-15--obs00-live-provider-custody/CHANGE.md). That security capability does **not** authorize operator-approved paid activation, a production grant seed, or TURN04 live send.
+
 A creative setting does not grant model budget or account entitlement. Creative settings stay on [Settings with distinct meanings](../../product/storyteller/profiles-and-settings.md#settings-with-distinct-meanings).
 
-Compute effective policy on the server from versioned platform safety limits, verified account entitlements, payer/funding restrictions, user/account and story caps, task recipe and provider capability. Numeric ceilings intersect by taking the strictest applicable value; allowlists intersect; a disabled capability stays disabled. Cross-field validation then checks total input + generated/reasoning capacity, price bounds and required final-answer capacity. Remaining usage/funding is an additional admission check, not a reason to mutate the saved entitlement. Missing required configuration fails closed; zero is disabled, not unlimited. Do not implement ambiguous precedence with object spreads.
+Compute effective policy on the server from versioned platform safety limits, verified account entitlements, payer/funding restrictions, user/account and story caps, task recipe and provider capability. Numeric ceilings intersect by taking the strictest applicable value; allowlists intersect; a disabled capability stays disabled. Cross-field validation then checks total input + generated/reasoning capacity, price bounds and required final-answer capacity. Remaining usage/funding is an additional admission check, not a reason to mutate the saved entitlement. Missing required configuration fails closed; zero is disabled, not unlimited. A subscription or entitlement profile is permission and quota, not proof that any payment provider charged or will charge anyone. Do not implement ambiguous precedence with object spreads.
 
 Record contributing versions and limiting reasons in an effective-policy snapshot. Storyteller text, client-supplied tier names and canonical documents cannot change it. A model sees only its bounded work allowance and relevant capabilities, not account secrets or the whole commercial policy. Validate administrative configuration and audit changes without logging private story content.
 
@@ -61,19 +66,31 @@ Do not encode product geometry such as `free | standard | premium` into gameplay
 
 Free use needs a sponsor funding allocation and platform-wide ceiling: a per-user quota cannot protect the sponsor against many accounts. Paid entitlements likewise do not remove operator caps. Pin the payer; story ownership/membership changes cannot move an in-flight charge. Shared-party charging and actual checkout remain separate product work.
 
+### Funding modes
+
 Separate prepaid spending permission from subscription quota. Default on-demand overage is off. Enabling it requires explicit payer consent, an independently capped funded grant, eligible routes and a clear admission mode; running out of subscription quota cannot silently start charging a card or consuming another wallet. Initial POC does not support split-paying one operation or automatically switching funds. No auto-top-ups, billing integration, taxes or invented subscription prices in this feature.
+
+### Policy changes mid-flight
 
 Upgrades/downgrades/revocations take effect for future dispatches after a policy recheck. Capture the policy used for each attempt. A started request remains liable under its original funding identity; do not rebill it under a new tier. Unsent work can be cancelled/released or explicitly recaptured against a new policy; never alter a captured request silently. Toggling tiers does not reset usage, reservations or the current window anchor. A less restrictive tier still cannot auto-enable paid inference in development.
 
 ## Window accounting and admission
 
+### Window definitions and the admission rule
+
 Support explicitly configured fixed anchored windows and rolling windows in the same usage policy. Every definition names its metric, scope, duration, anchor when fixed, limit and version. Use authoritative server UTC time, half-open intervals and immutable dispatch timestamps; client clocks/timezones never grant quota. A fixed window has a known boundary. A rolling window regains capacity as older debits age out; expose the earliest estimated eligible time, not a fictitious global reset. Subscription billing periods, when introduced, require explicit entitlement grants rather than guessing a calendar month from a plan name.
 
 All applicable windows must pass: a short burst limit can coexist with a daily budget and nonrenewing development cap. Reserve conservative input/output/money capacity before dispatch under the same serialized admission boundary as operation/run/account limits. Include all outstanding allocations, including ones originating before a reset, so unresolved work never disappears at a time boundary. Operation money is reserved once; window allocations reference it and do not create a second balance. A settlement that exceeds the attempt's reserved provider money or usage-window allocation stops the **liable funding account**, not every account in the database. Platform-scoped windows still block further admissions through their shared allocation ledger; a single account's billability defect is not a global operator shutdown. Settle actual usage once and release only known-unused capacity. A dispatched malformed or discarded answer still consumes usage. Refund known-unsent token/money allocations; retain an admitted-attempt counter where its separate purpose is preventing retry loops.
 
+### Implemented allocation ledger
+
 The implemented one-shot runtime persists one allocation per captured window and attempt under the existing global accounting lock. Fixed windows store their anchored half-open period; rolling windows retain their dispatch attribution time. Settled allocations count only in their applicable period, while reserved/dispatched/uncertain allocations continue to constrain admission across a boundary. Story-scoped windows currently require an existing story identity, so pre-story opening work must use applicable platform/account windows rather than silently minting a temporary story scope.
 
-For quota attribution, use the persisted dispatch timestamp, not settlement time. Late settlement updates its original window/debit; unresolved reservations still constrain admission until resolved. Retransmitted context is fresh input usage. Define input usage as all provider input tokens including cached input; record cache savings separately in monetary usage. Normalize reasoning already included in completion rather than counting it twice. Required metering absent means unknown: retain the conservative allocation and stop further paid admission until reconciled, even if total monetary cost alone was reported. The dispatch claim that has to keep that stop is [Attempt custody and an unknown call](../storyteller/provider-boundary.md#attempt-custody-and-an-unknown-call).
+### Attribution, settlement and uncertainty
+
+For quota attribution, use the persisted dispatch timestamp, not settlement time. Late settlement updates its original window/debit; unresolved reservations still constrain admission until resolved. Retransmitted context is fresh input usage. Define input usage as all provider input tokens including cached input; record cache savings separately in monetary usage. Normalize reasoning already included in completion rather than counting it twice. Required metering absent means unknown (unknown delivery or usage never refunds capacity automatically): retain the conservative allocation and stop further paid admission until reconciled, even if total monetary cost alone was reported. The dispatch claim that has to keep that stop is [Attempt custody and an unknown call](../storyteller/provider-boundary.md#attempt-custody-and-an-unknown-call).
+
+### Later dispatch, concurrency and reset
 
 At each later dispatch, recheck current entitlement, account stop flags and every current window; prior operation admission does not bypass newly exhausted windows or revoked access. A new window does not reset per-operation rounds, retries, token totals or lifetime/run funding. Expiring window counters is not funding replenishment. Outstanding uncertainty blocks automatic recovery across boundaries. Fix window configuration through an explicit versioned transition; do not grant a fresh full allowance merely by editing its duration or anchor.
 
@@ -91,7 +108,7 @@ At window recovery, a durable version-fenced wake-up rechecks availability and m
 
 ### Historical recovery evidence — September 2026
 
-An explicit B2c repair was demonstrated using fake-provider paths and one live Sol opening. A billed, semantically invalid candidate retained its operation and exact evidence; one deliberate retry completed under its existing captured envelope (21,554 + 7,902 microusd, matched settlement), with exactly one published opening. See [full dated investigation in Git history](https://github.com/DenisSkulovic/offscreen-rpg/blob/07c2067b272023a6f45bae61cd0f2279cb8cd08a/docs/features/PARKED-2026-11-15.md#bounded-storyteller-effort-and-cost). This is **case evidence**, not blanket permission for retries.
+An explicit B2c repair was demonstrated using fake-provider paths and one live Sol opening. A billed, semantically invalid candidate retained its operation and exact evidence; one deliberate retry completed under its existing captured envelope (21,554 + 7,902 microusd, matched settlement), with exactly one published opening. See [full dated investigation in Git history](https://github.com/DenisSkulovic/offscreen-rpg/blob/07c2067b272023a6f45bae61cd0f2279cb8cd08a/docs/features/PARKED-2026-11-15.md#bounded-storyteller-effort-and-cost). This is dated **case evidence** from September 2026, not blanket permission for retries and not certification of current live billing or provider balances.
 
 Separately, a stopped-account incident occurred after two fully settled requests despite no persisted uncertain liability. The identified duplicate/racing uncertainty callback could produce that shape and the stop scope was repaired; retained rows **do not prove causality**. If the symptom returns, capture durable account/operation/attempt-scoped stop provenance, not a guessed cause or global reset. September provider balances are not current.
 
@@ -110,7 +127,7 @@ This is a proposed maximum, not authorization or a claim the current opening sch
 
 ## Evidence required before live evaluation
 
-Maintain manual QA for intersecting profiles, lower user overrides, model allowlists, oversize required context, window exhaustion, fixed/rolling recovery, concurrent last allowance, late settlement, uncertain usage across reset, profile downgrade, explicit on-demand consent, manual pause surviving reset, no clock catch-up and a reset backlog. Record no-call evidence for rejected/held work and actual usage certainty for injected responses. Offline tests establish enforcement, not provider billing accuracy or narrative quality. See the feature plan for the nearest implementation slice.
+Maintain manual QA for intersecting profiles, lower user overrides, model allowlists, oversize required context, window exhaustion, fixed/rolling recovery, concurrent last allowance, late settlement, uncertain usage across reset, profile downgrade, explicit on-demand consent, manual pause surviving reset, no clock catch-up and a reset backlog. Record no-call evidence for rejected/held work and actual usage certainty for injected responses. Offline tests establish enforcement only. They are not evidence of provider billing accuracy, live billing or narrative quality, and no such evidence is claimed on this page.
 
 ## Future provider billing evidence and reconciliation (planning only, 2026-11-22)
 
