@@ -15,3 +15,16 @@ V/resources.mjs, resource-observation.py, proof-host identity projection, proof.
 F08 health/resources schedule and gate enablement selected; actual Grafana port, exact node profile, independent ratification and readiness remain.
 
 Candidate cards below are NOT PLANNER-READY. Before commission reconcile predecessor source/receipts and exact contract, settle named decisions, verify local worktree/custody exclusion, independently review G0–G7 and child contexts, obtain commission. No unresolved mechanism delegated. Active Cursor estimate 5–10 min; not measured, reconsider excessive atomic scope. [TASKS](TASKS.md) (2 assignments) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). Parent owns exact diff, focused proof and commit; owner/ChatGPT own heavy proof. No auto-next or early integration.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | unchanged because local observability does not alter player behavior, authorization, persistence or paid model policy | docs/product/README.md | no SDK enrollment or gameplay changes |
+| Technical | changed: docs/technical/platform/observability-native-infrastructure.md#proof-ownership-and-safety; record real authenticated datasource and role-scoped sampling path; no capacity claim | docs/runbooks/kubernetes-observability.md | [PROOF](PROOF.md), selected authority only; no invented live PASS |
+| Code | changed: infra/verification/smoke/observability/resources.mjs, resource-observation.py, proof-host.mjs, proof.mjs and mapped tests; negative: missing/zero/stale samples or failed authentication yields green | [SOURCE-MAP](SOURCE-MAP.md) | [TASKS](TASKS.md), [PROOF](PROOF.md) |
+| Related | changed: docs/runbooks/kubernetes-observability.md; reconcile only affected operational instructions and realization status at accepted closure | work/changes/open/README.md, STATUS.md | no premature operational advertisement; parent records actual changed/unchanged dispositions |
+
+## Conditional first dispatch
+
+Proposed target integration/observability-developer (explicit owner authority required; otherwise held). Dedicated branch change/obs-d09-health-resource-proof. Prerequisite: D08 source join; D07 session and D05 forwards receipts. After ratification, READY/dependency-gated review and explicit bundle commission, check predecessor receipt and source postconditions, run branch guard `node scripts/repo-tools/change-branch-guard.mjs --change OBS-D09 --target integration/observability-developer`, dispatch T01, continue serial own cards. No actual cluster operations in source assembly. Custodian joins offline source receipt to candidate only under approved joint route, never marks Done before final acceptance.

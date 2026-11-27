@@ -15,3 +15,16 @@ V/proof-host.mjs, proof.mjs, signals.mjs, new proof-resources.mjs, signal-probe.
 F08 proof schedule, public dispatcher quarantine and direct legacy wrapper refusal specified; independent ratification, UID proxy feasibility and source readiness remain. Actual A7/V09 later on coordinated candidate.
 
 Candidate cards below are NOT PLANNER-READY. Before commission reconcile predecessor source/receipts and exact contract, settle named decisions, verify local worktree/custody exclusion, independently review G0–G7 and child contexts, obtain commission. No unresolved mechanism delegated. Active Cursor estimate 8–12 min; not measured, reconsider excessive atomic scope. [TASKS](TASKS.md) (3 assignments) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). Parent owns exact diff, focused proof and commit; owner/ChatGPT own heavy proof. No auto-next or early integration.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | unchanged because local observability does not alter player behavior, authorization, persistence or paid model policy | docs/product/README.md | no SDK enrollment or gameplay changes |
+| Technical | changed: docs/technical/platform/observability-native-infrastructure.md#proof-ownership-and-safety; record individual UID cleanup and truthful terminal receipt; no namespace cascade | docs/runbooks/kubernetes-observability.md | [PROOF](PROOF.md), selected authority only; no invented live PASS |
+| Code | changed: infra/verification/smoke/observability/proof-host.mjs, proof.mjs, signals.mjs, proof-resources.mjs, signal-probe.py, partial-install.mjs direct guard and mapped tests; negative: foreign child deleted or disabled gate allocates evidence/writes | [SOURCE-MAP](SOURCE-MAP.md) | [TASKS](TASKS.md), [PROOF](PROOF.md) |
+| Related | changed: docs/runbooks/kubernetes-observability.md; reconcile only affected operational instructions and realization status at accepted closure | work/changes/open/README.md, STATUS.md | no premature operational advertisement; parent records actual changed/unchanged dispositions |
+
+## Conditional first dispatch
+
+Proposed target integration/observability-developer (explicit owner authority required; otherwise held). Dedicated branch change/obs-d07-synthetic-proof. Prerequisite: D06 source join; D04 exact classifier, D03 custody, D05 forwarding receipts. After ratification, READY/dependency-gated review and explicit bundle commission, check predecessor receipt and source postconditions, run branch guard `node scripts/repo-tools/change-branch-guard.mjs --change OBS-D07 --target integration/observability-developer`, dispatch T01, continue serial own cards. No actual cluster operations in source assembly. Custodian joins offline source receipt to candidate only under approved joint route, never marks Done before final acceptance.

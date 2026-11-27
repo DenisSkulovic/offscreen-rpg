@@ -18,3 +18,16 @@ These are candidate implementation cards, not PLANNER-READY. Before commission r
 
 ## Route
 [TASKS](TASKS.md) (3 serial assignments); [SOURCE-MAP](SOURCE-MAP.md); [EXECUTION](EXECUTION.md); [PROOF](PROOF.md). Estimated active Cursor work 10–15 min, not measured; reconsider partition before commission if over ceiling or nonbounded context. Parent verifies owned diff and focused tests, commits exact receipt. Heavy acceptance ChatGPT/owner. No next Change automatically.
+
+## Planned specification and implementation delta | planned-impact.v1
+
+| Plane | Selected authority and exact change/no-op | Related documents/maps to inspect | Evidence/decision |
+| --- | --- | --- | --- |
+| Product | unchanged because local observability does not alter player behavior, authorization, persistence or paid model policy | docs/product/README.md | no SDK enrollment or gameplay changes |
+| Technical | changed: docs/technical/platform/observability-native-infrastructure.md#identity-and-lock; record stable lock, exact ensure record, bounded child custody realization; no new authority | docs/runbooks/kubernetes-observability.md | [PROOF](PROOF.md), selected authority only; no invented live PASS |
+| Code | changed: infra/platform/observability/custody.mjs, forward.mjs, exec-owned.py, install.mjs and mapped tests; negative: foreign/replaced pending, cancelled or unclosed child allows clear/write | [SOURCE-MAP](SOURCE-MAP.md) | [TASKS](TASKS.md), [PROOF](PROOF.md) |
+| Related | changed: docs/runbooks/kubernetes-observability.md; reconcile only affected operational instructions and realization status at accepted closure | work/changes/open/README.md, STATUS.md | no premature operational advertisement; parent records actual changed/unchanged dispositions |
+
+## Conditional first dispatch
+
+Proposed target integration/observability-developer (explicit owner authority required; otherwise held). Dedicated branch change/obs-d03-operation-custody. Prerequisite: D02 complete tuple and namespace-binding receipt. After ratification, READY/dependency-gated review and explicit bundle commission, check predecessor receipt and source postconditions, run branch guard `node scripts/repo-tools/change-branch-guard.mjs --change OBS-D03 --target integration/observability-developer`, dispatch T01, continue serial own cards. No actual cluster operations in source assembly. Custodian joins offline source receipt to candidate only under approved joint route, never marks Done before final acceptance.
