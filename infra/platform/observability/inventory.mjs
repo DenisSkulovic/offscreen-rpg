@@ -227,29 +227,30 @@ function readNamespaceObservation(identity, run, deadline, now) {
  */
 function listNamespacedObjects(identity, resource, run, deadline, now) {
   const endpoints = {
-    serviceaccount: ['/api/v1', 'serviceaccounts'],
-    configmap: ['/api/v1', 'configmaps'],
-    secret: ['/api/v1', 'secrets'],
-    service: ['/api/v1', 'services'],
-    deployment: ['/apis/apps/v1', 'deployments'],
-    statefulset: ['/apis/apps/v1', 'statefulsets'],
-    persistentvolumeclaim: ['/api/v1', 'persistentvolumeclaims'],
-    replicaset: ['/apis/apps/v1', 'replicasets'],
-    pod: ['/api/v1', 'pods'],
-    endpointslice: ['/apis/discovery.k8s.io/v1', 'endpointslices'],
-    resourcequota: ['/api/v1', 'resourcequotas'],
-    limitrange: ['/api/v1', 'limitranges'],
-    job: ['/apis/batch/v1', 'jobs'],
-    cronjob: ['/apis/batch/v1', 'cronjobs'],
-    daemonset: ['/apis/apps/v1', 'daemonsets'],
-    role: ['/apis/rbac.authorization.k8s.io/v1', 'roles'],
-    rolebinding: ['/apis/rbac.authorization.k8s.io/v1', 'rolebindings'],
-    ingress: ['/apis/networking.k8s.io/v1', 'ingresses'],
-    networkpolicy: ['/apis/networking.k8s.io/v1', 'networkpolicies'],
+    serviceaccount: ['/api/v1', 'serviceaccounts', 'ServiceAccount'],
+    configmap: ['/api/v1', 'configmaps', 'ConfigMap'],
+    secret: ['/api/v1', 'secrets', 'Secret'],
+    service: ['/api/v1', 'services', 'Service'],
+    deployment: ['/apis/apps/v1', 'deployments', 'Deployment'],
+    statefulset: ['/apis/apps/v1', 'statefulsets', 'StatefulSet'],
+    persistentvolumeclaim: ['/api/v1', 'persistentvolumeclaims', 'PersistentVolumeClaim'],
+    replicaset: ['/apis/apps/v1', 'replicasets', 'ReplicaSet'],
+    pod: ['/api/v1', 'pods', 'Pod'],
+    endpointslice: ['/apis/discovery.k8s.io/v1', 'endpointslices', 'EndpointSlice'],
+    resourcequota: ['/api/v1', 'resourcequotas', 'ResourceQuota'],
+    limitrange: ['/api/v1', 'limitranges', 'LimitRange'],
+    job: ['/apis/batch/v1', 'jobs', 'Job'],
+    cronjob: ['/apis/batch/v1', 'cronjobs', 'CronJob'],
+    daemonset: ['/apis/apps/v1', 'daemonsets', 'DaemonSet'],
+    role: ['/apis/rbac.authorization.k8s.io/v1', 'roles', 'Role'],
+    rolebinding: ['/apis/rbac.authorization.k8s.io/v1', 'rolebindings', 'RoleBinding'],
+    ingress: ['/apis/networking.k8s.io/v1', 'ingresses', 'Ingress'],
+    networkpolicy: ['/apis/networking.k8s.io/v1', 'networkpolicies', 'NetworkPolicy'],
   };
   const endpoint = endpoints[resource];
   if (!endpoint) throwUnreadable('unknown-resource');
-  const [api, plural] = endpoint;
+  const [api, plural, kind] = endpoint;
+  const apiVersion = api.replace(/^\/apis?\//, '');
   const path = `${api}/namespaces/${encodeURIComponent(identity.namespace)}/${plural}`;
   const items = [];
   const seenTokens = new Set();
@@ -282,7 +283,16 @@ function listNamespacedObjects(identity, resource, run, deadline, now) {
     if (items.length + body.items.length > TOTAL_OBJECT_LIMIT) {
       throwUnreadable('pagination-overflow');
     }
-    items.push(...body.items);
+    for (const item of body.items) {
+      if (!item || typeof item !== 'object' ||
+          (item.kind != null && item.kind !== kind) ||
+          (item.apiVersion != null && item.apiVersion !== apiVersion) ||
+          typeof item.metadata?.name !== 'string' ||
+          item.metadata.namespace !== identity.namespace) {
+        throwUnreadable('inventory-item-shape');
+      }
+      items.push({ ...item, kind, apiVersion });
+    }
     continueToken = body.metadata?.continue ?? '';
     if (typeof continueToken !== 'string' || seenTokens.has(continueToken)) {
       throwUnreadable('pagination-invalid');
