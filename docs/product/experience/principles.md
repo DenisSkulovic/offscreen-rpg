@@ -5,7 +5,7 @@
 
 ## Core promise
 
-The player follows a character's life through scenes, choices and periods of waiting. Opening the website should feel like **returning to a situation**, not administering a simulation. The reader is owed a situation to read, intentions to choose from, time that moves only when something was accepted, and honest states while the world works.
+The player follows a character’s life through scenes, choices and periods of waiting. Opening the website should feel like **returning to a situation**, not administering a simulation. The reader is owed a situation to read, intentions to choose from, time that moves only when something was accepted, and honest states while the world works.
 
 ## Who owns each reader promise
 
@@ -32,7 +32,7 @@ Reader rights, grouped by what the reader is owed.
 
 **Choices are intentions**
 
-- A player chooses **intentions**, not guaranteed outcomes. The rules engine, not the UI or model prose, decides committed consequences.
+- A player chooses **intentions**, not guaranteed outcomes. The rules engine—not the UI or model prose—decides committed consequences.
 
 **Time is accepted, not ambient**
 

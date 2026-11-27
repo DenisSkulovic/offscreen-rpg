@@ -1,7 +1,7 @@
 ﻿# Entry and onboarding
 
 **Owns:** arriving, signing in, and creating a life. **Does not own:** a platform-ecosystem umbrella; that remains proposed.  
-**Unsettled:** full platform-ecosystem umbrella remains proposed. Do not treat it as silently accepted.
+**Unsettled:** full platform-ecosystem umbrella remains proposed—do not treat as silently accepted.
 
 ## First contact
 
@@ -11,9 +11,9 @@ OAuth provides a quick route to durable stories and paid generation. The UI may 
 
 ## Stories home
 
-Returning users enter a Stories space showing their stories and an obvious way to create another. Each story should be recognizable by premise and current situation, with an indication whether it needs attention, is progressing, is paused or has ended (useful descriptions, not a prescribed DB status enum here).
+Returning users enter a Stories space showing their stories and an obvious way to create another. Each story should be recognizable by premise and current situation, with an indication whether it needs attention, is progressing, is paused or has ended (useful descriptions—not a prescribed DB status enum here).
 
-For an empty account, lead directly toward story creation. Do not strand the player on an empty dashboard.
+For an empty account, lead directly toward story creation—do not strand the player on an empty dashboard.
 
 ## Creation information architecture
 
@@ -61,7 +61,7 @@ The first scene should establish only what it needs. Consequential identities an
 
 ## Initiative, invention ceilings and progressive entities
 
-Creation establishes how much narrative initiative the Storyteller has, independently of incident frequency and danger. The player may ask for a cultivated direction, occasional proactive developments, or an emergent ordinary life with no grand narrative. "No grand narrative" can still contain consequences. "Directed" does not promise a railroad or a particular ending.
+Creation establishes how much narrative initiative the Storyteller has, independently of incident frequency and danger. The player may ask for a cultivated direction, occasional proactive developments, or an emergent ordinary life with no grand narrative. “No grand narrative” can still contain consequences. “Directed” does not promise a railroad or a particular ending.
 
 A prepared world declares ceilings for characters, places, groups, world elements and deep lore. The story may choose stricter values and cannot exceed them. Simple presets come first. This setting governs factual authorship, not prose quality: a canon-bound Storyteller may be highly proactive using supplied material, while an open-world Storyteller may remain quiet.
 

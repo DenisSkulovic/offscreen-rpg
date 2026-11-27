@@ -1,8 +1,6 @@
 # Living Book | Selected player experience for the first POC
 
-**Status:** SELECTED **POC experience target**, 2026-11-17, based on owner review of the book-geometry, decision-flow and source-composition prototypes. This file does not implement the UI. Final visual design, typography, motion, button styling and illustrated art direction are **not accepted**. What source currently contains is recorded in [STATUS](../../../STATUS.md) and [BOOK01 shell](../../technical/client/living-book-poc.md#book01-book-shell-and-current-now-composition). Authority is intentionally limited to the first POC, not the eventual full Living Journal.
-
-**Historical selected POC.** This page records the first-POC player experience as selected on 2026-11-17. It does not establish the final player experience, which stays deferred (see [Deferred](#deferred-deliberately-not-authorized-by-poc-acceptance)); no future layout choice is made here.
+**Status:** the **historical selected POC experience**, chosen 2026-11-17 after owner review of the book-geometry, decision-flow and source-composition prototypes. It selects a recognizable book with Now and Journal, original published passages, natural flow without premature pagination, a deliberately modest Journal, and a human acceptance walkthrough. It is not the final player experience and makes no future layout choice: final visual design, typography, motion, button styling and illustrated art direction are **not accepted** ([Deferred](#deferred-deliberately-not-authorized-by-poc-acceptance)). Authority is limited to the first POC, not the eventual full Living Journal. This page does not implement the UI; what source contains is recorded in [STATUS](../../../STATUS.md) and [BOOK01 shell](../../technical/client/living-book-poc.md#book01-book-shell-and-current-now-composition).
 
 **Owns:** the player-visible book-reading metaphor and basic in-story Now/Journal behaviors during the initial React implementation. **Other owners:** [navigation](navigation-and-stories.md) owns all story spaces; [play/decisions](play-and-decisions.md) owns action honesty; [return/journal](return-and-journal.md) owns long history; [presentation](presentation.md) owns imagery/atmosphere; [technical POC](../../technical/client/living-book-poc.md) owns client integration. Earlier alternatives and research remain [historical research dossier](https://github.com/DenisSkulovic/offscreen-rpg/blob/7694d4124e6227e7b6b5092ada4067a63df4b4fb/work/designs/open/player-experience-refoundation/README.md).
 
@@ -36,7 +34,7 @@ There is **no POC requirement for realistic 3D curl, automatic word-level page b
 
 The first POC reuses the **existing authenticated paginated history** and original title/paragraphs. A minimal contents/list → full source passage reading path is enough. Preserve original publication sequence and passage identity; no required new index/search API, summarized "moments", historic art fidelity or arbitrary past-choice forking.
 
-Where the current 20-record newest-first API cannot seek a remote passage directly, **do not pretend to have random access or a complete 2,000-passage index**. The reader can offer "Load older" until available. An unimplemented deep link must not masquerade as a working historical reference. Any preview derived from original paragraphs must remain clearly a preview; no AI synopsis is included in this POC.
+The contract is honesty about reach. The current API returns 20 records newest-first and cannot seek a remote passage directly, so the reader **does not pretend to have random access or a complete 2,000-passage index**: it offers "Load older" until a seek exists, and an unimplemented deep link never masquerades as a working historical reference. A preview derived from original paragraphs stays clearly a preview; this POC includes no AI synopsis.
 
 ## What the player does *not* see
 
@@ -57,10 +55,16 @@ These remain unratified in the historical [design program](https://github.com/De
 
 ## Human POC acceptance walkthrough
 
-**Status: NOT RUN.** This is the acceptance procedure a person would perform. No human run is recorded here as passed, and acceptance of the POC would establish only the POC behavior above, not the final UX.
+The POC is accepted only when a person performs this walkthrough, and acceptance would establish the POC behavior above, never the final UX. **No human run is recorded; the walkthrough is NOT RUN and nothing here counts as passed.** The person:
 
-A person can open a short Greywater-like story, read the entire published passage, see all current options and submit only one authorized intention; refresh without duplicate outcomes; observe a legitimate wait or blocked/uncertain narration; navigate to a saved prior passage and back; read a long paragraph with enlarged text; and navigate the same book on a phone without losing words/controls.
+1. opens a short Greywater-like story and reads the entire published passage;
+2. sees all current options and submits only one authorized intention;
+3. refreshes without duplicate outcomes;
+4. observes a legitimate wait or a blocked/uncertain narration;
+5. navigates to a saved prior passage and back;
+6. reads a long paragraph with enlarged text;
+7. uses the same book on a phone without losing words or controls.
 
-The atmosphere or illustration may be absent. The experience must still be legibly a book rather than a dashboard. If the "book" hides a choice, blocks a screen reader, confuses published prose with pending work, or requires a model to style HTML, **the POC fails** regardless of attractive screenshots.
+Atmosphere or illustration may be absent, but the experience must still be legibly a book rather than a dashboard. If the "book" hides a choice, blocks a screen reader, confuses published prose with pending work, or requires a model to style HTML, **the POC fails** regardless of attractive screenshots.
 
-**Implementation authorization is separate.** This file selects the POC product behavior. Only a separately selected bounded [Change](../../../work/changes/README.md) permits Cursor to modify code.
+Implementation authorization is separate. This page selects POC product behavior; only a separately selected bounded [Change](../../../work/changes/README.md) permits Cursor to modify code.
