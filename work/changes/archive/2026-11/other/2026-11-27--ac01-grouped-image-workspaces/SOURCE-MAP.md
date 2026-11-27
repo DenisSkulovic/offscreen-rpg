@@ -18,4 +18,4 @@ Repository `DenisSkulovic/offscreen-rpg`, source baseline `1cf22fe0f512b5dd92b5c
 - `infra/images/release/select-affected-images.mjs`
 - `infra/images/release/test/warm-path.test.mjs`
 
-All app/legacy package source, migrations, deployments and production registrations remain unchanged. No source extraction or legacy reorganization in E1. Parent owns only its own packet closure and serialized target updates; no broad rename. [Group schedule](../README.md) governs cross-Change locks.
+All app/legacy package source, migrations, deployments and production registrations remain unchanged. No source extraction or legacy reorganization in E1. Parent owns only its own packet closure and serialized target updates; no broad rename. [Group schedule](../../../../open/agent-core-monorepo-map/README.md) governs cross-Change locks.

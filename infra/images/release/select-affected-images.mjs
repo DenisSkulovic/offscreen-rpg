@@ -44,7 +44,8 @@ const ALL_IMAGE_FILES = new Set([
   'infra/images/development/tilt/build-release-images.sh',
 ]);
 
-const WORKSPACE_MANIFEST_RE = /^(apps|packages|tools)\/[^/]+\/package\.json$/;
+const WORKSPACE_MANIFEST_RE =
+  /^(?:(?:apps|packages|tools)\/[^/]+\/package\.json|packages\/(?:domain|ai|commerce|platform|foundation)\/[^/]+\/package\.json)$/;
 
 export function selectImagesFromPaths(paths, workspacesByImage) {
   const selected = new Set();
