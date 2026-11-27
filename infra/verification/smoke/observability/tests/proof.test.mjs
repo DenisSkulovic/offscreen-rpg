@@ -661,7 +661,7 @@ test('health proof passes through the default datasource adapter', async () => {
 test('unimplemented gate is recognized without live session', () => {
   assert.equal(gateImplemented('signals'), true);
   assert.equal(gateImplemented('persistence'), true);
-  assert.equal(gateImplemented('partial-install'), false);
+  assert.equal(gateImplemented('partial-install'), true);
   assert.equal(gateImplemented('health'), true);
   assert.equal(gateImplemented('resources'), true);
   assert.equal(gateImplemented('outage'), true);
@@ -1674,15 +1674,17 @@ test('quota status.hard missing fails the receipt', async () => {
     receiptPath,
     io: defaultReceiptIo(dir),
     clock: { now: () => 0 },
+    readSourceSha: () => SOURCE_SHA,
+    captureIdentity: () => createFakeIdentity(null),
+    recheckIdentity: () => ({ ok: true }),
     runPartialInstall: async () => {
       partialCalled = true;
       return { ok: true };
     },
   });
-  assert.equal(persisted.ok, false);
-  assert.equal(persisted.reasonCode, 'gate-not-implemented');
-  assert.equal(partialCalled, false);
-  assert.equal(existsSync(receiptPath), false);
+  assert.equal(persisted.ok, true);
+  assert.equal(partialCalled, true);
+  assert.equal(persisted.cleanup, false);
 });
 
 test('missing isolated authorization refuses first', async () => {
@@ -1846,4 +1848,199 @@ test('developer session accepts an injected runner', async () => {
   );
   assert.equal(result.ok, true);
   assert.equal(result.phase, 'developer-complete');
+});
+
+const A9_POLICY = {
+  apiVersion: 'admissionregistration.k8s.io/v1',
+  kind: 'ValidatingAdmissionPolicy',
+  metadata: { name: 'offscreen-a9-isolated-loki', uid: 'policy-uid' },
+  spec: {
+    validations: [{ message: 'OFFSCREEN_A9_ISOLATED_LOKI_DENIAL' }],
+  },
+};
+const A9_BINDING = {
+  apiVersion: 'admissionregistration.k8s.io/v1',
+  kind: 'ValidatingAdmissionPolicyBinding',
+  metadata: { name: 'offscreen-a9-isolated-loki', uid: 'binding-uid' },
+};
+
+test('D11 predicates accept the frozen denial and reject a changed fixture', async () => {
+  const {
+    assessAdmissionPolicy,
+    assessA9Pending,
+    assessLokiFailureHistory,
+    assessRetainedPartialSnapshot,
+  } = await import('../partial-install.mjs');
+  assert.equal(assessAdmissionPolicy(A9_POLICY, A9_BINDING).ok, true);
+  const renamed = structuredClone(A9_POLICY);
+  renamed.metadata.uid = '';
+  assert.equal(assessAdmissionPolicy(renamed, A9_BINDING).ok, false);
+  const history = [
+    {
+      revision: 1,
+      status: 'failed',
+      description:
+        'obs-loki OFFSCREEN_A9_ISOLATED_LOKI_DENIAL offscreen-a9-isolated-loki',
+    },
+  ];
+  assert.equal(assessLokiFailureHistory(history).ok, true);
+  assert.equal(
+    assessLokiFailureHistory([{ ...history[0], description: 'failed without marker' }]).reasonCode,
+    'loki-denial-marker-missing',
+  );
+  assert.equal(
+    assessLokiFailureHistory([
+      history[0],
+      { revision: 2, status: 'failed', description: history[0].description },
+    ]).reasonCode,
+    'loki-history-shape',
+  );
+  const snapshot = {
+    prometheusReady: true,
+    lokiStatefulSet: null,
+    releases: [
+      { name: 'obs-prometheus', revision: 1, status: 'deployed' },
+      { name: 'obs-loki', revision: 1, status: 'failed' },
+    ],
+  };
+  assert.equal(assessRetainedPartialSnapshot(snapshot).ok, true);
+  assert.equal(
+    assessRetainedPartialSnapshot({
+      ...snapshot,
+      releases: [
+        ...snapshot.releases,
+        { name: 'obs-tempo', revision: 1, status: 'deployed' },
+      ],
+    }).reasonCode,
+    'later-release',
+  );
+  const pending = {
+    schema: 2,
+    operation: 'ensure',
+    phase: 'obs-loki',
+    tuple: { targetNamespaceUid: 'ns-uid', kubeSystemUid: 'kube-system-uid' },
+  };
+  assert.equal(
+    assessA9Pending(pending, {
+      namespaceUid: 'ns-uid',
+      kubeSystemUid: 'kube-system-uid',
+    }).ok,
+    true,
+  );
+  assert.equal(
+    assessA9Pending(pending, {
+      namespaceUid: 'other',
+      kubeSystemUid: 'kube-system-uid',
+    }).reasonCode,
+    'namespace-uid-mismatch',
+  );
+});
+
+test('D11 public repeat refuses without a second mutation', async () => {
+  const { runIsolatedPartialInstallProof } = await import('../partial-install.mjs');
+  const identity = createFakeIdentity(null);
+  const retained = {
+    prometheusReady: true,
+    lokiStatefulSet: null,
+    releases: [
+      { name: 'obs-prometheus', revision: 1, status: 'deployed' },
+      { name: 'obs-loki', revision: 1, status: 'failed' },
+    ],
+  };
+  let ensures = 0;
+  const session = {
+    profile: 'dev',
+    identity,
+    env: ISOLATED_ENV,
+    clock: { now: () => 0 },
+    remainingWorkMs: () => 9_000_000,
+  };
+  const result = await runIsolatedPartialInstallProof(session, {
+    readPolicy: async () => ({ policy: A9_POLICY, binding: A9_BINDING }),
+    readHistory: async () => [
+      {
+        revision: 1,
+        status: 'failed',
+        description:
+          'obs-loki OFFSCREEN_A9_ISOLATED_LOKI_DENIAL offscreen-a9-isolated-loki',
+      },
+    ],
+    readRetained: async () => structuredClone(retained),
+    inspectPending: async () => ({
+      outcome: 'record',
+      record: {
+        schema: 2,
+        operation: 'ensure',
+        phase: 'obs-loki',
+        tuple: {
+          targetNamespaceUid: 'ns-from-ensure',
+          kubeSystemUid: CLUSTER_UID,
+        },
+      },
+    }),
+    runPublicCli: async (_session, call) => {
+      ensures += 1;
+      if (call.attempt === 'repeat') {
+        return { code: 1, mutation: 'none', completedPhases: [], reason: 'pending-refused' };
+      }
+      return {
+        code: 1,
+        workerState: 'partial',
+        reason: 'phase-failed',
+        pending: true,
+        mutation: 'confirmed',
+        completedPhases: ['namespace', 'secret', 'obs-prometheus'],
+        namespaceUid: 'ns-from-ensure',
+      };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(ensures, 2);
+  assert.equal(result.intentionalRetainedPlatform, true);
+  let retainedReads = 0;
+  const changed = await runIsolatedPartialInstallProof(session, {
+    readPolicy: async () => ({ policy: A9_POLICY, binding: A9_BINDING }),
+    readHistory: async () => [
+      {
+        revision: 1,
+        status: 'failed',
+        description:
+          'obs-loki OFFSCREEN_A9_ISOLATED_LOKI_DENIAL offscreen-a9-isolated-loki',
+      },
+    ],
+    readRetained: async () => {
+      retainedReads += 1;
+      const copy = structuredClone(retained);
+      if (retainedReads > 1) copy.releases[1].revision = 2;
+      return copy;
+    },
+    inspectPending: async () => ({
+      outcome: 'record',
+      record: {
+        schema: 2,
+        operation: 'ensure',
+        phase: 'obs-loki',
+        tuple: {
+          targetNamespaceUid: 'ns-from-ensure',
+          kubeSystemUid: CLUSTER_UID,
+        },
+      },
+    }),
+    runPublicCli: async (_session, call) => {
+      ensures += 1;
+      if (call.attempt === 'repeat') {
+        return { code: 1, mutation: 'none', completedPhases: [], reason: 'pending-refused' };
+      }
+      return {
+        code: 1,
+        workerState: 'partial',
+        reason: 'phase-failed',
+        pending: true,
+        mutation: 'confirmed',
+        completedPhases: ['namespace', 'secret', 'obs-prometheus'],
+        namespaceUid: 'ns-from-ensure',
+      };
+    },
+  });
+  assert.equal(changed.reasonCode, 'retained-state-changed');
 });

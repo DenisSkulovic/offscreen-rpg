@@ -25,6 +25,7 @@ import {
   acquireCustody,
   acquireProofCustody,
   custodyPaths,
+  inspectPendingRecord,
   readPending,
   resolveProductionStateRoot,
   runMutation,
@@ -85,6 +86,31 @@ function ensureRequest(phase = 'namespace', targetNamespaceUid = null) {
     },
   };
 }
+
+test('inspectPendingRecord reports absent and legacy without mutation', () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-inspect-'));
+  const absent = inspectPendingRecord(devKind.contextName, { stateRoot });
+  assert.equal(absent.outcome, 'absent');
+  assert.equal(absent.record, null);
+  const paths = prepareState(stateRoot);
+  writeFileSync(
+    paths.pendingPath,
+    `${JSON.stringify({
+      operationId: 'op',
+      service: 'observability',
+      context: devKind.contextName,
+      phase: 'namespace',
+      tuple: { contextName: devKind.contextName },
+      start: '2026-01-01T00:00:00.000Z',
+    })}\n`,
+    { mode: 0o600 },
+  );
+  const legacy = inspectPendingRecord(devKind.contextName, { stateRoot });
+  assert.equal(legacy.outcome, 'legacy');
+  assert.equal(legacy.record, null);
+  assert.equal(typeof legacy.identity?.ino, 'number');
+  rmSync(stateRoot, { recursive: true, force: true });
+});
 
 test('readPending missing file is absent and valid without creating paths', () => {
   const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-read-'));

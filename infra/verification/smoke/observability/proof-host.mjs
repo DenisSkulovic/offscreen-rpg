@@ -188,6 +188,7 @@ const IMPLEMENTED_GATES = new Set([
   'resources',
   'persistence',
   'outage',
+  'partial-install',
 ]);
 
 export function gateImplemented(gate) {

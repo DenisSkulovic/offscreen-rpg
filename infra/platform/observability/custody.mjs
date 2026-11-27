@@ -1096,6 +1096,36 @@ export function readPending(contextName, deps = {}) {
 }
 
 /**
+ * Read-only schema-2 pending inspection. Does not create directories, take
+ * the lock, or mutate. A legacy record stays a fence and is not proof.
+ * @param {string} contextName
+ * @param {{ stateRoot?: string }} [deps]
+ */
+export function inspectPendingRecord(contextName, deps = {}) {
+  assertProfileContext(contextName);
+  const stateRoot = deps.stateRoot ?? resolveProductionStateRoot();
+  const { pendingPath } = custodyPaths(stateRoot, contextName);
+  const inspected = inspectPending(pendingPath, contextName);
+  const identity = inspected.identity
+    ? { dev: inspected.identity.dev, ino: inspected.identity.ino }
+    : null;
+  if (!inspected.pending) {
+    return { outcome: 'absent', record: null, identity: null };
+  }
+  if (inspected.kind === 'legacy') {
+    return { outcome: 'legacy', record: null, identity };
+  }
+  if (!inspected.valid || inspected.record?.schema !== 2) {
+    return { outcome: 'invalid', record: null, identity };
+  }
+  return {
+    outcome: 'record',
+    record: globalThis.structuredClone(inspected.record),
+    identity,
+  };
+}
+
+/**
  * @param {number} fd
  * @param {string} lockPath
  */
