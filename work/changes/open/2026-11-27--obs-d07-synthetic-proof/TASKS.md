@@ -4,7 +4,7 @@ P=infra/platform/observability/; V=infra/verification/smoke/observability/; othe
 
 ## T01 | Terminal proof session | PLANNER-BLOCKED
 
-Anchors V/proof-host.mjs::runProofOperationSession/buildProofReceipt, V/proof.mjs::runLiveProof, tests/proof.test.mjs, EXECUTION § Session. Write host/proof/tests. Auth and exact dev/context/clean source before evidence, one deadline, correct lock order, one frozen identity, terminal receipt and cleanup. Disable unfinished public gates before writes. Root node --test infra/verification/smoke/observability/tests/proof.test.mjs. Negative wrong target/auth/pending/failed cleanup, disabled route zero writes.
+Anchors V/proof-host.mjs::runProofOperationSession/buildProofReceipt, V/proof.mjs::runLiveProof, tests/proof.test.mjs, EXECUTION § Session, Public dispatch containment and Shared proof budgets. Write host/proof/tests and only the bottom direct-executable guard in partial-install.mjs (D11 owns mechanism). Auth and exact dev/context/clean source before evidence, one deadline, correct lock order, one frozen identity, terminal receipt and cleanup. Disable every unfinished public gate before evidence or reads/writes; direct legacy wrapper exit2. T03 enables signals only. Root node --test infra/verification/smoke/observability/tests/proof.test.mjs. Negative wrong target/auth/pending/failed cleanup, disabled route zero writes.
 
 ## T02 | Owned resource lifecycle | PLANNER-BLOCKED
 
@@ -12,4 +12,4 @@ Requires T01. Anchors V/signals.mjs::runSignalsProof/deleteProofResourcesWithUid
 
 ## T03 | Strict synthetic queries | PLANNER-BLOCKED
 
-Requires T02. Anchors V/signal-probe.py::observe_positive_queries/run_probe/metrics_check, signals.mjs, tests/test_signal_probe.py, EXECUTION § Synthetic. Fix duplicate argument, raw timestamp and bounded HTTP/control/privacy checks, replay zero POST. Root python3 -m unittest discover -s infra/verification/smoke/observability/tests -p 'test_signal_probe.py'; node --test infra/verification/smoke/observability/tests/{proof,proof-resources}.test.mjs. Negative stale-only, query error not absence, malformed evidence, privacy failure.
+Requires T02. Anchors V/signal-probe.py::observe_positive_queries/run_probe/metrics_check, signals.mjs, tests/test_signal_probe.py, EXECUTION § Synthetic. Fix duplicate argument, raw timestamp and bounded HTTP/control/privacy checks, replay zero POST; enable signals only in proof-host after complete safe route (add proof-host/proof.test.mjs to T03 writes). Root python3 -m unittest discover -s infra/verification/smoke/observability/tests -p 'test_signal_probe.py'; node --test infra/verification/smoke/observability/tests/{proof,proof-resources}.test.mjs. Negative stale-only, query error not absence, malformed evidence, privacy failure.

@@ -4,7 +4,7 @@ All paths rooted at repository root; P=infra/platform/observability/, V=infra/ve
 
 ## T01 | Stable lock and pending record | PLANNER-BLOCKED
 
-Anchors P/custody.mjs::custodyPaths/readPending/acquireCustody; P/tests/custody.test.mjs; EXECUTION § Lock and pending. Preserve context/service path; private inode checks; legacy/unknown records fence; shared handle no mutation; exclusive compare-own durable begin/advance/clear. Candidate schema2 exact operation-specific details; future operation refuses until its validator supplied. Root node --test infra/platform/observability/tests/custody.test.mjs. Negatives replaced inode/content, stale pending, symlink, failed fsync/rename, shared mutation, no unlink lock.
+Anchors P/custody.mjs::custodyPaths/readPending/acquireCustody; P/tests/custody.test.mjs; EXECUTION § Lock and pending. Preserve context/service path; private inode checks; legacy/unknown records fence; shared handle no mutation; exclusive compare-own durable begin/advance/clear. Schema2 envelope + exact ensure validator only; upgrade/persistence/outage refuse until D06/D10 adds validators; no permissive details. Root node --test infra/platform/observability/tests/custody.test.mjs. Negatives replaced inode/content, stale pending, symlink, failed fsync/rename, shared mutation, no unlink lock.
 
 ## T02 | Owned child and bounded cancellation | PLANNER-BLOCKED
 
