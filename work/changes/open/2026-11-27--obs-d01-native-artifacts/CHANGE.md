@@ -1,6 +1,6 @@
 # OBS-D01 | Normalize native observability artifacts
 
-**State:** Proposed (current sprint); independent readiness and explicit commission pending. **Kind:** PATCH, behavior-preserving source migration. **Baseline:** main `40b44b3909f0226e075dad70fe053aba55e37a88`. **Integration:** main; dedicated `change/obs-d01-native-artifacts` worktree after commission. Human integration custodian; ChatGPT planner.
+**State:** Proposed (current sprint); independent readiness and explicit commission pending. **Kind:** PATCH, behavior-preserving source migration. **Baseline:** main `627ed819dbae86bee934700f50ee879682bc0b12`. **Integration:** main; dedicated `change/obs-d01-native-artifacts` worktree after commission. Human integration custodian; ChatGPT planner.
 
 ## Outcome
 
@@ -14,4 +14,4 @@ Authority: [accepted artifact ownership](../../../../docs/technical/platform/obs
 
 ## Closure
 
-Require exact parity, all eight moves, five unchanged chart archives, unchanged lock semantics, zero template calls for corrupt final archive/missing or malformed final YAML, exact install argv and passing affected suites. Reconcile infra README and canonical realization only after proof. No live acceptance claim. Existing R5 joint certification remains binding until the [staged boundary](../../../designs/open/observability-developer/ACCEPTANCE.md#proposed-staged-certification-boundary-candidate-not-accepted) is independently defended and owner accepted; no merge by this packet alone. Local worktree collision and independent G0–G7 review remain outstanding; global queue unchanged.
+Require exact parity, all eight moves, five unchanged chart archives, unchanged lock semantics, zero template calls for corrupt final archive/missing or malformed final YAML, exact full installer argv parity across five releases × two profiles (only the eight-path migration's five values paths normalized) and passing affected suites. Reconcile infra README and canonical realization only after proof. No live acceptance claim. The [independent pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/114cc39cf4e1477ac34e24d4a26684ad9f91b8c3/work/designs/open/observability-developer/committee/pass-03.md) defends this D01-only integration exception, not the broader staged boundary. Explicit owner acceptance, independent G0–G7 readiness, local collision/caller census, commission and actual offline proof remain required. Until accepted, the R5 joint rule binds. After acceptance and successful parity, the custodian may integrate this slice alone, without claiming any live certification or authorizing legacy proof execution. No auto-next; global queue unchanged.
