@@ -1,6 +1,15 @@
 # Admin frontend, navigation and interaction contracts
 
-**Status:** Selected technical target, 2026-11-14. Product owners: [Command Center](../../product/admin/command-center-and-insights.md), [Personas](../../product/admin/charter-and-personas.md), [Player 360](../../product/admin/player-360-and-support.md), [Authority](../../product/admin/authority-and-governance.md). Control-plane topology and grants: [topology and authorization](topology-and-authorization.md). Respect the [selected React/Next target](../client/architecture.md) and the [source baseline](./investigation-and-privacy.md).
+**Status:** Selected technical target, 2026-11-14, for the staff shell, navigation and interaction contracts; a narrow shell is realized (see [Current realization](#current-realization-source-verified-2026-11-27)) and the full navigation, components and states below remain target. Product owners: [Command Center](../../product/admin/command-center-and-insights.md), [Personas](../../product/admin/charter-and-personas.md), [Player 360](../../product/admin/player-360-and-support.md), [Authority](../../product/admin/authority-and-governance.md). Control-plane topology and grants: [topology and authorization](topology-and-authorization.md). Respect the [selected React/Next target](../client/architecture.md) and the [source baseline](./investigation-and-privacy.md).
+
+## Current realization (source-verified, 2026-11-27)
+
+Read-only source facts, separate from the selected contracts below.
+
+- Route group `apps/web/app/(control)/control/` implements `enter/page.tsx` and a `(staff)` layout with a home page and `players/page.tsx`. Of the ten logical destinations in section 3, only this minimal subset has any source; the rest are not built.
+- `apps/web/src/server/admin-actor.ts` `requireAdminActor` (server-only, request-cached) calls `/api/admin/me`: 401 redirects to player sign-in with a safe return path, 403 redirects to `/control/enter`, other failures raise a transient error. A signed-in player without a staff session therefore never reaches the staff shell. It authorizes the shell only; each page's data call is re-authorized by the Nest Admin endpoints.
+- `apps/web/src/features/admin/` holds `admin-query-provider.tsx` and `admin-query-keys.ts` (the Admin-scoped browser Query namespace), `safe-control-destination.ts` (return-path safety), `enter-admin-session.tsx`/`exit-admin-session.tsx`, and panels for player lookup, usage lookup, case queue, governance and the support situation view.
+- Storybook states, the shared interaction table and most of section 8 are targets, not evidence that tests exist.
 
 ## 1. One staff shell with isolated authentication and data
 
@@ -21,7 +30,7 @@ Choose `/control` as the initial reserved staff URL family, implemented through 
 - An expired/revoked staff session causes **server denial**, visible sign-out/permission-ended state and cleared Admin browser cache. Logout/role change in another tab must invalidate cached sensitive projections before reuse.
 - Player user-switch and staff-switch must not show prior person's account or story. Soft navigation, back-forward cache, SSR hydration and refresh must all honor current staff access.
 - Admin responses, SSR/RSC, CDN/proxy and EventSource hints are private/no-store; do not persist sensitive admin state to localStorage, IndexedDB or a service worker.
-- A staff badge, hidden menu, `useCan()` client helper or cached policy summary is only presentation. Every Nest read/mutation rechecks policy.
+- A staff badge, hidden menu, role-aware navigation, `useCan()` client helper or cached policy summary is only presentation and never authorization. A visible menu item or enabled button does not grant the operation; every Nest read/mutation rechecks policy against the resource and any scope is taken from the server actor's assignments, never from a browser field such as `ownerId`.
 - Deep links preserve a safe return path after explicit Admin reauthentication; arbitrary open redirects, external callback URLs and command resubmission are prohibited.
 
 ## 3. Logical navigation and roles

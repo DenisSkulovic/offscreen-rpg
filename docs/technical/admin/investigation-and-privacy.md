@@ -1,6 +1,6 @@
 # Admin read projections, search, provenance and privacy boundaries
 
-**Status:** Selected technical target, 2026-11-14; **first-wave projections implemented** (AD03/05/06/08 + OBS01/OBS06 synthetic). Product owners: [Player 360](../../product/admin/player-360-and-support.md), [Gameplay](../../product/admin/gameplay-and-liveops.md), [AI Operations](../../product/admin/ai-engineering-and-investigation.md), [Trust & Privacy](../../product/admin/commercial-and-trust.md). Source reality: [baseline + post-AD appendix](./investigation-and-privacy.md). Wire shapes: [core-v1-contracts](./topology-and-authorization.md). Raw narrative / full capsule remain gated.
+**Status:** Selected technical target, 2026-11-14, for read projections, search, provenance and privacy. A first wave of scoped projections is realized in source (AD03/05/06/08 and OBS01/OBS06 synthetic; see [Current realization](#current-realization-source-verified-2026-11-27)); everything beyond it, including broad search and the full evidence hierarchy, is selected target, not implementation. Product owners: [Player 360](../../product/admin/player-360-and-support.md), [Gameplay](../../product/admin/gameplay-and-liveops.md), [AI Operations](../../product/admin/ai-engineering-and-investigation.md), [Trust & Privacy](../../product/admin/commercial-and-trust.md). Source reality: [baseline + post-AD appendix](./investigation-and-privacy.md). Wire shapes: [core-v1-contracts](./topology-and-authorization.md). Raw narrative / full capsule remain gated.
 
 ## 1. The problem to solve
 
@@ -45,11 +45,23 @@ A field exposed at all must have an explicit authorization/sensitivity policy. F
 
 ## 3. Relationship semantics and current single-owner source
 
+**Status mirror (provenance).** Mirrored from product [Player 360 and support, Status](../../product/admin/player-360-and-support.md) and [authority and governance, Status](../../product/admin/authority-and-governance.md), 2026-11-14, whose scope restrictions stay in place: player-safe reads and case anchors exist from the Admin wave; OBS06/07 Situation UI is synthetic or disposable-grant proof only; no production `support-investigator` grant for live workers and no full Turn Capsule disclosure is implemented. This records realization status only. It adds no grant and no disclosure, and does not widen what [topology and authorization](topology-and-authorization.md#authorization-claim-map) withholds.
+
 The player profile is not identical to the payer or campaign owner. The target records account identity, participation/controlled character, campaign, payer, sponsor and allowance beneficiary as separate relationships.
 
 **Current audited DB:** `story.ownerId` exists and normal story reads are owner-scoped. There is no observed generalized membership table in the audited composition. The V1 Admin campaign list may say `relationship: legacy-owner` and display verified metadata, but must not expose invented invites/characters or infer that `story.ownerId` pays the AI bill.
 
 **Upgrade rule:** future multiplayer membership is a separately authorized source with visibility per viewer; adding it cannot retroactively treat every existing story as public to any staff who can see a related player.
+
+## Current realization (source-verified, 2026-11-27)
+
+Read-only source facts that separate what exists from the selected target in the sections around it.
+
+- **Player reads** (`packages/admin/src/player-reads.ts`): `PlayerSummaryV1` is projected from authorized rows only and never carries email, OAuth tokens, passages or payment fields; its source is `story.legacy-owner` with an `unsupported` limitation, and the campaign figure is `legacyOwnedCampaignCount` derived from `story.ownerId`. Player search is an exact-reference finder: an unauthorized, missing or empty reference returns an empty page, not a distinguishable denial, and the page size is clamped. HTTP: `admin/players`, `admin/players/:playerId` (privacy 404 on deny), `admin/players/:playerId/campaigns`.
+- **Audit reads** (`audit-reads.ts`): page size 20; a closed allowlist of safe event kinds (session enter/denied/exit, bootstrap, access denied/checked, case created/assigned/status); unknown kinds are omitted rather than echoed with raw payload. HTTP: `admin/audit` (`audit.events.read`).
+- **Other scoped reads**: usage (`usage-reads.ts`), campaign operations and operation detail (`diagnostics-reads.ts`) and the case-scoped campaign situation (`situation-reads.ts`, OBS06 gate).
+- **Case storage** (`case-writes.ts`): `admin_case` and link rows with a caller-supplied idempotency key (replay returns the original case); create, assign and status changes append an `admin_audit_event`. In this realization the audit append follows the domain insert as a separate statement, not inside one explicit transaction, so the section 4 same-transaction guarantee in [commands and audit](commands-and-audit.md#4-state-owners-and-transaction-guarantees) is a target for these paths, not demonstrated here.
+- **Absent**: free-text/fuzzy search, exact email/contact lookup, raw narrative or prompt reads, export, membership-aware relationships and any write beyond case create/assign/status.
 
 ## 4. Read model ownership, assembly and missing data
 
