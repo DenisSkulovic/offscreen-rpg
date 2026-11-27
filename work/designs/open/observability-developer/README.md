@@ -1,51 +1,39 @@
-# Developer observability | evolutionary design workshop
+# Developer observability
 
-Owner: human owner + ChatGPT planner. Open investigation, 2026-11-27. Baseline main 5f5750eca2f31d92fac6bfa478d1cae7203e1815. Pass 02 DEFENDED; owner accepted, canon promoted. No implementation, live mutations, spending or release changes commissioned.
+**Status:** Accepted architecture (R5, independent defense pass 02); implementation pending. The Change packet is not commissioned.
 
-[Proposed Change](../../../changes/open/2026-11-27--observability-developer/CHANGE.md). OBSERVABILITY-NATIVE is archived as superseded; outstanding acceptance transferred to successor. Existing canonical authority: [native infrastructure](../../../../docs/technical/platform/observability-native-infrastructure.md). The canonical owner now includes selected R5.
+## Objective
 
-## R5 review entry
-[TARGET.md](TARGET.md), [LIFECYCLE.md](LIFECYCLE.md), [proof contract](R5-PROOF-CONTRACT.md), [certification](R5-CERTIFICATION.md), [geography](R5-GEOGRAPHY.md) are normative. [Acceptance](ACCEPTANCE.md), [source map](SOURCE-MAP.md), [self-defense](SELF-DEFENSE.md), [pass 01](committee/pass-01.md). R5 records designer resolutions for OD-01–04, completed baseline tracked-reference census and passed designer re-defense. Formal independent pass 02 DEFENDED. Earlier candidate and investigation sections are historical; R5 normative entry above controls.
+Make the existing optional development observability stack useful for local application experiments while retaining its diagnostic, storage and security guarantees.
 
-## Target and posture
-Evolutionary, not clean-slate. One shared five-release development stack; preserve pinned charts/images, three retained claims, Grafana credentials, explicit service selection, bounded observation and mutation custody. Make real application-shaped operational telemetry available to WSL experiments and subsequently in-cluster development workers. Telemetry is optional, bounded, and never part of business transaction correctness. No new cluster for ordinary development acceptance.
+- Keep the five pinned Helm releases and three persistent claims.
+- Normalize maintained Helm values and locks; retain experimental specimens only in design evidence.
+- Separate strict synthetic diagnostics from trusted local developer telemetry.
+- Provide foreground, loopback-only WSL connectivity with owned process cleanup.
+- Support an explicit, identity-checked Collector-only configuration upgrade; ordinary ensure remains install-only.
+- Repair functional signal, datasource and resource proofs and retain all outstanding native infrastructure acceptance obligations.
 
-## Evidence at kickoff
-- Owner terminal: 118/118 JS focused tests on f243c373; third installation completed seven mutation phases but final observer rejected normal ContainerStatus.image. Corrected observer, owner reconciled pending under lock, public status installed, repeat ensure mutation none in 3.619s. Not a clean fresh A6 PASS.
-- All five pods ready, zero restarts at observation, three 5Gi claims Bound, all five imageIDs match canonical pins. WSL host 10GiB available of 19GiB at observation, not capacity proof.
-- Grafana authenticated datasources offscreen-logs, offscreen-metrics, offscreen-traces all OK; backend HTTP health positive.
-- Collector specimen binds Pod IP; runtime HTTP listener 10.244.1.42:4318, port-forward tries 127.0.0.1:4318 and fails. In-cluster probe accepted all three OTLP requests, then Python logs_check argument collision prevented storage query proof. Probe namespace obs-proof-90039b35 UID ad9c2f16-5a8a-44ec-bef3-dd03f36ea871 retained; owner cleanup pending. Evidence directory .offscreen/verification/incluster-signals.1Sm41k9C.
-- Source: resources.mjs queryGrafanaDatasourceHealth returns probe-not-wired without injection; runResourcesProof defaults port 0 and interval 0; resource-observation.py writes broad node summaries before filtering. signals.mjs creates Pod but invokes host Python with cluster DNS. signal-probe.py output directory fix at baseline. Do not count injected proof tests as real execution.
-- Current canonical admission accepts only synthetic vocabulary. Agent telemetry enrollment is explicitly excluded. No claim of general confidentiality or authenticated producers.
+No actual application instrumentation, public exposure, generic upgrade engine, release changes, paid calls or destructive operations are authorized.
 
-## Candidate direction (not ratified)
-1. Keep backend/storage topology. Dev Collector OTLP bind all interfaces inside Pod, ClusterIP and loopback-only host forwards; no hostPort, NodePort, public ingress or release change.
-2. Prefer one Collector with clearly separated synthetic and development application admission. Compare separate receiver IDs/ports against conditional routing; retain synthetic privacy coverage. Resource service name is not authentication. Explicitly trusted local producers only; backend network access is not an adversarial boundary.
-3. Application contract: stable resource identity, bounded operation names, typed safe attributes and structured events; no prompts/completions, tool arguments/results, credentials, SQL parameters, raw exception bodies. Keep trace/run identifiers out of metric labels; define per-metric vocabulary and bounded label values. Producer-side suppression plus fail-closed Collector validation; arbitrary strings are not intrinsically safe.
-4. Explicit dev-only occupied Collector configuration transition under identity/custody. Compare bounded Helm upgrade (revision history, rollback and failure fence) against disposable observability-only reinstallation; choose after examining ownership, configuration identity and retained credentials/claims. No generic infra upgrade engine assumed. Repeated ensure must not implicitly upgrade.
-5. WSL connection ownership: loopback HTTP 14318, gRPC 14317, Grafana 13000; backend query ports optional and scoped. Prefer foreground session with deterministic cleanup over background daemon unless demonstrated need. Reuse existing owned lifecycle primitives where compatible.
-6. Repair real proof paths, retain original acceptance obligations or explicitly transfer with owner-approved reconciliation. Separate quick health, developer qualification, and isolated destructive certification. No new cluster as prerequisite for current POCs.
+## Specification
 
-## Investigation and decision sequence
-- D1 producer/telemetry envelope: actual POC SDK and Temporal emission shapes, safe fields/value vocabularies, producer trust, correlation, bounded cardinality; upstream pinned OTel 0.165.0 processor syntax and metric semantics. Decide safe minimal application pipeline.
-- D2 connectivity: verify receiver binding specimen and actual loopback forwarding; inspect existing dev lifecycle/session interfaces; select foreground or owned session, port and identity rules.
-- D3 occupied transition: inspect install.mjs, custody.mjs, identity.mjs, inventory.mjs, readiness.mjs, artifacts.mjs and public CLI; resolve revision/history admission, desired config identity, failure/rollback, resource preservation. Harden existing identity gaps before mutation.
-- D4 executable verification: fix query signatures, real network execution, Grafana exact UID/URL health, filtered resource sampling, UID-preconditioned cleanup. No raw secrets or broad node stats in evidence. Distinguish actual data acceptance from HTTP success.
-- D5 version-matched specimens and discriminating experiments, formal self-defense then fresh independent committee. Promote only accepted scope into canon and finalize packet. Owner review after D1/D2, then D3, then candidate proof.
+| Document | Responsibility |
+| --- | --- |
+| [TARGET.md](TARGET.md) | Selected architecture and telemetry contract |
+| [LIFECYCLE.md](LIFECYCLE.md) | Admission, identity, custody, upgrade and connection lifecycle |
+| [R5-GEOGRAPHY.md](R5-GEOGRAPHY.md) | Source and artifact placement |
+| [R5-PROOF-CONTRACT.md](R5-PROOF-CONTRACT.md) | Proof ownership and freshness |
+| [R5-CERTIFICATION.md](R5-CERTIFICATION.md) | Original acceptance obligations |
+| [ACCEPTANCE.md](ACCEPTANCE.md) | Acceptance matrix |
+| [SOURCE-MAP.md](SOURCE-MAP.md) | Source investigation |
+| [Canonical technical contract](../../../../docs/technical/platform/observability-native-infrastructure.md) | Permanent selected authority |
 
-## Provisional acceptance
-Quick: structural installed, Grafana auth and exact datasource health, query all three synthetic signals.
-Developer: actual WSL scripted application-shaped parent/child trace, correlated structured log, counter/gauge/histogram and bounded labels; positive query and negative sensitive-field canary; no telemetry dependence for business results; connection cleanup and collisions; resource measurements.
-Transition: same cluster, namespace, Grafana Secret UID, three claim/PV identities; only intended Collector changes, pinned images preserved; repeat upgrade/no-op semantics; failed/foreign/pending identities refuse, no unapproved rollback or destructive cleanup.
-Extended: clean fresh clone/install, isolated injected failure, persistence/outage and release-specific policy retain their own gates. No certification claim until corresponding proof. 
+## Evidence and implementation
 
-## D0 | Runtime artifact terminology and Helm ownership (owner checkpoint)
-Owner explicitly rejects specimens terminology in maintained infrastructure. Retain it only in historical/design experiments. Source inspection: artifacts.mjs loadArtifacts reads specimensRoot, pins.yaml, image-lock-candidate.tsv, expected-inventory.json and release.specFile; renders each vendored chart using helm template -f valuesPath plus ordered helmValueArgs. install.mjs helmInstallArgv consumes those same inputs; namespace and generated admin Secret are intentionally installer-owned create operations, not chart resources. Therefore the five application workloads already use native Helm, not kubectl-applied handwritten workload YAML. Do not replace upstream charts with a wrapper merely to remove YAML.
-Selected naming direction: values/{collector,prometheus,loki,tempo,grafana}.yaml; locks/{charts.yaml,images.tsv}; expected-inventory.json at platform root; vendor/ unchanged. Rename specimensRoot/specFile to valuesRoot/valuesFile or explicit equivalent. Remove obsolete DESIGN ONLY/candidate/unverified comments from maintained inputs, retaining accurate provenance. Inspect all consumers, tests, active docs and tooling before finalizing exact path map; historical immutable dossiers unchanged. First implementation slice is path-only, byte-identical Helm render for both profiles (normalize only nondeterministic output if identified and justified), identical immutable references and inventory, no live writes. No duplicate values files or compatibility fallback. Distinct dev/release values overlays only where actual policy differs; render/install/upgrade must use identical ordered descriptors. D0 naming ratified; exact layout proposed pending cross-reference census.
+The existing workloads and authenticated datasource health were observed, but clean fresh installation and complete backend signal queries were not certified. Preserve the distinction between observed health and unrun acceptance.
 
-## D1 | Narrow application contract, first design direction
-Do not make infrastructure a schema registry for every application operation. Prefer two trust classes (synthetic diagnostic and trusted local dev producer), not one allowlist of every span or metric name. Candidate: independent receiver IDs and distinct ports only if chart-native service wiring supports them without unnecessary complexity; alternative one ingress with mutually exclusive resource predicates, no duplicate fan-out. Dev producers must opt in to safe metadata instrumentation; no automatic SDK payload recording. Service identity is routing metadata, not authentication. Release remains unchanged.
-First useful application contract: spans with bounded static operation names, trace/span/parent IDs, durations, outcome enum, bounded retry count; structured event names and severity, trace correlation; metrics counter/gauge/histogram with finite dimension vocabularies. No raw log bodies, exception messages, prompts/completions, tool inputs/outputs, SQL parameters or arbitrary attribute maps. Keep raw run IDs out of metric labels and Loki indexed labels. Numeric estimates such as cost must be labeled as estimates and never financial authority. Explicitly validate value types, lengths, enums and cardinality; regex alone cannot guarantee confidentiality. SDK-specific payload capture disabled at producer. Application evidence remains a separate store and authorization problem. Need inspect actual POC code and pinned upstream configuration before choosing exact OTTL and metrics policy. No general-purpose authentication/privacy guarantee.
+[Historical R2 investigation](DESIGN-R2.md), [designer self-defense](SELF-DEFENSE.md), and [committee pass 01](committee/pass-01.md) are evidence, not execution instructions. Independent pass 02 accepted R5; the owner promoted the architecture.
 
-## R2 checkpoint
-[Concrete local telemetry and upgrade candidate](DESIGN-R2.md): separates infrastructure qualification from P0/P1 telemetry-free contract, selects foreground connection direction, proposes separate receiver lanes, defines candidate data contract and exact occupied transition/source gaps. Next review: owner read-only chart/history/reference evidence; validate pinned Collector configuration before selecting topology. No defense submitted.
+[Implementation Change](../../../changes/open/2026-11-27--observability-developer/CHANGE.md) owns execution planning and unresolved packet-level decisions. OBSERVABILITY-NATIVE is archived as superseded; its outstanding acceptance obligations belong to this successor.
+
+Original investigation and superseded README text are preserved in [the pre-consolidation revision](https://github.com/DenisSkulovic/offscreen-rpg/blob/dee29c6653b873b741197b04f84761d64b35824e/work/designs/open/observability-developer/README.md).
