@@ -2,6 +2,8 @@
 
 **Status:** SELECTED **POC experience target**, 2026-11-17, based on owner review of the book-geometry, decision-flow and source-composition prototypes. This file does not implement the UI. Final visual design, typography, motion, button styling and illustrated art direction are **not accepted**. What source currently contains is recorded in [STATUS](../../../STATUS.md) and [BOOK01 shell](../../technical/client/living-book-poc.md#book01-book-shell-and-current-now-composition). Authority is intentionally limited to the first POC, not the eventual full Living Journal.
 
+**Historical selected POC.** This page records the first-POC player experience as selected on 2026-11-17. It does not establish the final player experience, which stays deferred (see [Deferred](#deferred-deliberately-not-authorized-by-poc-acceptance)); no future layout choice is made here.
+
 **Owns:** the player-visible book-reading metaphor and basic in-story Now/Journal behaviors during the initial React implementation. **Other owners:** [navigation](navigation-and-stories.md) owns all story spaces; [play/decisions](play-and-decisions.md) owns action honesty; [return/journal](return-and-journal.md) owns long history; [presentation](presentation.md) owns imagery/atmosphere; [technical POC](../../technical/client/living-book-poc.md) owns client integration. Earlier alternatives and research remain [historical research dossier](https://github.com/DenisSkulovic/offscreen-rpg/blob/7694d4124e6227e7b6b5092ada4067a63df4b4fb/work/designs/open/player-experience-refoundation/README.md).
 
 ## POC promise
@@ -54,6 +56,8 @@ A new current passage can receive restrained arrival treatment **only when truly
 These remain unratified in the historical [design program](https://github.com/DenisSkulovic/offscreen-rpg/blob/7694d4124e6227e7b6b5092ada4067a63df4b4fb/work/designs/open/player-experience-refoundation/README.md). POC acceptance does not ratify all 15 Phase 2 studies as permanent law.
 
 ## Human POC acceptance walkthrough
+
+**Status: NOT RUN.** This is the acceptance procedure a person would perform. No human run is recorded here as passed, and acceptance of the POC would establish only the POC behavior above, not the final UX.
 
 A person can open a short Greywater-like story, read the entire published passage, see all current options and submit only one authorized intention; refresh without duplicate outcomes; observe a legitimate wait or blocked/uncertain narration; navigate to a saved prior passage and back; read a long paragraph with enlarged text; and navigate the same book on a phone without losing words/controls.
 

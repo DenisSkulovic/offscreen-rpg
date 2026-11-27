@@ -14,7 +14,9 @@ At a meaningful decision, present a small set of **distinct** contextual options
 
 Selecting an option commits an intention. Show that it was received; do not leave an apparently clickable choice while its result is being prepared. Some consequences follow immediately; others begin an interval during which the player can leave.
 
-**Negatives:** neither repeated clicks nor reloading should produce free rerolls, duplicate actions or endless regeneration. Rate limits protect resources but must not disguise whether a meaningful action is available. The POC uses pre-generated contextual options with no free-text gameplay intervention; free-intent paths remain explicitly deferred product design.
+**Negatives:** neither repeated clicks nor reloading should produce free rerolls, duplicate actions or endless regeneration. Rate limits protect resources but must not disguise whether a meaningful action is available.
+
+**Current POC scope.** The POC uses pre-generated contextual options with no free-text gameplay intervention; free-intent paths remain explicitly deferred product design.
 
 ## Choice honesty
 
@@ -31,7 +33,9 @@ The Storyteller and the application authorize choices. The UI may organize and d
 
 ## Waiting
 
-Authenticated live stories at `/play/:id` show a saved journey wait against the server deadline, including Pause/Resume when the interval is controllable. Reloading does not restart that wait. Agency between offered decisions needs deliberate limits—the player should understand whether they can change course now and what that means.
+**Promise.** A wait shown to the player is the server's wait. Reloading does not restart it, and an interruption is shown as an interruption rather than a success. Agency between offered decisions needs deliberate limits: the player should understand whether they can change course now and what that means.
+
+**Current realization.** Authenticated live stories at `/play/:id` show a saved journey wait against the server deadline, including Pause/Resume when the interval is controllable.
 
 See [time and autonomy](../gameplay/time-and-autonomy.md) for when fiction advances; this doc owns only the player-facing honesty of the wait UI.
 
@@ -41,11 +45,13 @@ See [time and autonomy](../gameplay/time-and-autonomy.md) for when fiction advan
 - **Waiting.** A received intention shows that it was received. The waiting label is not a completed world consequence.
 - **Error.** Validation failure, provider rejection, timeout, and uncertain billing stay different states. Creation uses the same split in [Create the opening](entry-and-onboarding.md#creation-information-architecture).
 - **Lost connection.** The last published passage remains readable. A missing response is not a new success.
-- **Stale offer.** A choice from an older situation is not the current command. Reloading does not turn it into a second accepted action.
+- **Stale offer.** A choice from an older situation is not the current command. Reloading does not resend it or turn it into a second accepted action; the reader recovers by reading the current situation and its current offers.
 - **Uncertain submit.** An uncertain submit stays uncertain. It is not presented as success.
 
 Command identity stays in [Choice honesty](#choice-honesty). The current passage stays in [Reader jobs](living-book-poc.md#reader-jobs-and-non-negotiable-outcomes).
 
 ## Terminal access is a second presentation, not a second authority
 
-A player can use `@offscreen/terminal` to list stories, launch, play, choose, inspect history, fork, and resume. **The Web remains the primary interface.** Terminal is a distinct input/rendering presentation over the same public StorySnapshot and command/receipt APIs, with no private Writer prompts, SQL rows, provider secrets, or alternate fictional clock. Campaign nested options are exploration until an action-bearing leaf commits; interaction responses preserve the existing frozen operationId, digest and expectedRevision. After ambiguous network failure, recover the same operation instead of inventing a second action. Sign-in is browser-approved one-time device pairing. The issued bearer scope is `player-story` only. Copying a browser session cookie or granting Admin rights is not acceptable. Machine-readable `--json` is only the authorized player view. Disposable SQL pairing and fixture-driven terminal play are proved. A live browser click-through of `/terminal/connect` is not. [CL01 Change](../../../work/changes/archive/2026-11/experience/2026-11-22--cl01-terminal-player-client/CHANGE.md).
+**Promise.** The terminal client is another way to read and choose, over the same authority as the Web. It adds no second source of truth, no private prompts or data, and no alternate fictional clock.
+
+**Implementation notes (kept here until the technical destination for the terminal client is on main).** A player can use `@offscreen/terminal` to list stories, launch, play, choose, inspect history, fork, and resume. **The Web remains the primary interface.** Terminal is a distinct input/rendering presentation over the same public StorySnapshot and command/receipt APIs, with no private Writer prompts, SQL rows, provider secrets, or alternate fictional clock. Campaign nested options are exploration until an action-bearing leaf commits; interaction responses preserve the existing frozen operationId, digest and expectedRevision. After ambiguous network failure, recover the same operation instead of inventing a second action. Sign-in is browser-approved one-time device pairing. The issued bearer scope is `player-story` only. Copying a browser session cookie or granting Admin rights is not acceptable. Machine-readable `--json` is only the authorized player view. Disposable SQL pairing and fixture-driven terminal play are proved. A live browser click-through of `/terminal/connect` is not. [CL01 Change](../../../work/changes/archive/2026-11/experience/2026-11-22--cl01-terminal-player-client/CHANGE.md).

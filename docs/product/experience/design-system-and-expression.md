@@ -4,6 +4,8 @@
 
 ## The product experience we are building
 
+This section and the next two state an **intended aesthetic and vocabulary**. They are selected requirements for a future implementation program, not evidence that any component has rolled out.
+
 Offscreen RPG is a **reader's stable book surrounded by the fictional world**. A cave, bus, spacecraft and microscopic consciousness have the same recognizable reading object and reliable controls. The scene can change the visual field **around** the book and cast measured lighting across it, but it must not replace it with four genre-specific UI designs. The story remains source text, not a chat UI disguised as a book.
 
 **Foundation must be designed once:** surface roles, readable typography, spacing, focus, disabled/pending/uncertain controls, panels, menus, notifications, motion and no-art fallbacks share a deliberate identity across Welcome, Stories, Create, Now and Journal. An isolated clever component that contradicts the rest of the platform is a design failure.
@@ -21,6 +23,8 @@ Offscreen RPG is a **reader's stable book surrounded by the fictional world**. A
 Platform behavior and system status do not inherit arbitrary Storyteller accent colors. Scene styling does not recolor system danger, focus, or command identity. The page may catch blue light but its text must remain readable. An image failure cannot prevent reading or leave an empty obligatory picture pane. How the client keeps those roles apart is [Ownership and CSS architecture](../../technical/client/semantic-design-foundation.md#ownership-and-css-architecture). This page does not accept a final palette or art direction.
 
 ## Product component vocabulary to design and then implement incrementally
+
+Intended vocabulary only: each row is a semantic job to design, not a shipped component.
 
 | Need | User-facing job | Explicit constraint |
 | --- | --- | --- |
@@ -52,4 +56,4 @@ For each component: document usage, states (idle/hover/focus/selected/disabled/p
 - Product identity is consistently observable on Welcome, Stories and Play without reusing literal story book mechanics where they do not fit.
 - No style-only user action triggers game mutation, provider charge, false wait or synthetic plot event.
 
-**Non-claims:** these requirements do not certify existing BOOK01/02 visuals, nor select a component or animation package. Next implementation targets are in [semantic design foundation](../../technical/client/semantic-design-foundation.md) and the recorded UI/DIR Change receipts; remaining creative design is deferred.
+**Non-claims:** the vocabulary and quality bar above are intent, not rollout evidence. These requirements do not certify existing BOOK01/02 visuals, nor select a component or animation package. Next implementation targets are in [semantic design foundation](../../technical/client/semantic-design-foundation.md) and the recorded UI/DIR Change receipts; remaining creative design is deferred.

@@ -1,7 +1,7 @@
 ﻿# Entry and onboarding
 
 **Owns:** arriving, signing in, and creating a life. **Does not own:** a platform-ecosystem umbrella; that remains proposed.  
-**Unsettled:** full platform-ecosystem umbrella remains proposed—do not treat as silently accepted.
+**Unsettled:** full platform-ecosystem umbrella remains proposed. Do not treat it as silently accepted.
 
 ## First contact
 
@@ -11,13 +11,13 @@ OAuth provides a quick route to durable stories and paid generation. The UI may 
 
 ## Stories home
 
-Returning users enter a Stories space showing their stories and an obvious way to create another. Each story should be recognizable by premise and current situation, with an indication whether it needs attention, is progressing, is paused or has ended (useful descriptions—not a prescribed DB status enum here).
+Returning users enter a Stories space showing their stories and an obvious way to create another. Each story should be recognizable by premise and current situation, with an indication whether it needs attention, is progressing, is paused or has ended (useful descriptions, not a prescribed DB status enum here).
 
-For an empty account, lead directly toward story creation—do not strand the player on an empty dashboard.
+For an empty account, lead directly toward story creation. Do not strand the player on an empty dashboard.
 
 ## Creation information architecture
 
-Creation has two primary paths, intentionally shallower than the legacy staged wizard.
+Creation has two primary paths, intentionally shallower than the legacy staged wizard: **Prepared Play** and **one verbatim Story Prompt**. Customization is optional on either, and neither path passes through a mandatory preview. The sections below take the paths in order, then the launch they share.
 
 ### Prepared experience: Play first
 
@@ -31,11 +31,17 @@ A custom story begins with one freeform **Story Prompt**. It may be a paragraph,
 
 Submitting Play or a Story Prompt creates one durable launch operation. The UI shows honest queued/running/uncertain/failed states and can reconnect after reload. Successful publication moves directly into the first playable scene. There is **no mandatory generated preview and separate Start approval** in the target flow. A saved prompt draft may exist for convenience, but opening generation is not a five-step ceremony.
 
-Provider/model latency does not advance fictional time. Retrying after an uncertain response must recover the same launch identity rather than create duplicate stories or duplicate spend.
+Provider/model latency does not advance fictional time. Retrying after an uncertain response must recover the same launch identity rather than create duplicate stories or duplicate spend. A lost acknowledgement is recovered by reading the existing launch, never by submitting a second launch.
 
 ### Current POC honesty
 
-Stories home Create story opens `/stories/new`: one Story Prompt via `StoryLaunchForm`, with no env-gated alternate launch route (`/stories/launch` redirects here). The prepared catalogue appears only when the server supplies presets; an empty list must not fake one. Saved drafts remain on the legacy staged creator at `/stories/[id]`. A published opening can carry one server-scripted `observe` choice with no character sheet. Choosing it uses the existing campaign action API. A later scene is a scripted Writer continuation, not a live model evaluation.
+What the source does today, separate from the target above (source: `apps/web/src/features/stories/launch/story-launch-form.tsx`, `use-story-launch.ts`).
+
+- **Route.** Stories home Create story opens `/stories/new`: one Story Prompt via `StoryLaunchForm`, with no env-gated alternate launch route (`/stories/launch` redirects here).
+- **Prepared catalogue.** It appears only when the server supplies presets. An empty list must not fake one or invent a catalogue.
+- **Launch identity.** The client mints one operation id per launch and keeps a pointer so a reload reconnects. A lost or ambiguous submit is followed by one status read, never a second submit.
+- **Legacy drafts.** Saved drafts remain on the legacy staged creator at `/stories/[id]`.
+- **Scripted opening.** A published opening can carry one server-scripted `observe` choice with no character sheet. Choosing it uses the existing campaign action API. A later scene is a scripted Writer continuation, not a live model evaluation.
 
 ## Drafts vs playable stories
 
@@ -55,7 +61,7 @@ The first scene should establish only what it needs. Consequential identities an
 
 ## Initiative, invention ceilings and progressive entities
 
-Creation establishes how much narrative initiative the Storyteller has, independently of incident frequency and danger. The player may ask for a cultivated direction, occasional proactive developments, or an emergent ordinary life with no grand narrative. “No grand narrative” can still contain consequences. “Directed” does not promise a railroad or a particular ending.
+Creation establishes how much narrative initiative the Storyteller has, independently of incident frequency and danger. The player may ask for a cultivated direction, occasional proactive developments, or an emergent ordinary life with no grand narrative. "No grand narrative" can still contain consequences. "Directed" does not promise a railroad or a particular ending.
 
 A prepared world declares ceilings for characters, places, groups, world elements and deep lore. The story may choose stricter values and cannot exceed them. Simple presets come first. This setting governs factual authorship, not prose quality: a canon-bound Storyteller may be highly proactive using supplied material, while an open-world Storyteller may remain quiet.
 
@@ -63,6 +69,6 @@ When a start contains a hoped-for arc, antagonist move or reveal, preserve it as
 
 Creation seeds stable records for the player and for immediate places and people whose participation is part of the selected start. Incidental mentions may remain prose until the player interacts meaningfully, a later turn depends on them, or a supported mechanic needs current state. A spoken name alone does not invent combat statistics. A nonhuman story may register organisms, signals, collectives, or nothing analogous.
 
-Generating a playable candidate requires a selected profile. An admitted candidate captures the exact profile and execution policy. Start freezes that captured configuration onto the story. Later catalogue edits do not alter it.
+**Legacy candidate path.** Where the legacy staged creator still generates a playable candidate, that candidate requires a selected profile, and an admitted candidate captures the exact profile and execution policy. In that path, Start freezes the captured configuration onto the story, and later catalogue edits do not alter it. This describes the legacy path only; it does not add a mandatory Start step or approval to Prepared Play or a Story Prompt.
 
 Shared-story invitations, readiness and who may start remain an explicit open design. There is no requirement for public matchmaking, and those rules are not accepted by this page.
