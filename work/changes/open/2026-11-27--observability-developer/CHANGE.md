@@ -1,6 +1,6 @@
 # OBSERVABILITY-DEVELOPER | practical developer telemetry
 
-**State:** Proposed / EVIDENCE-GATED (R3 designer self-defense; developer policy, metric identity, upgrade projection and session cancellation).
+**State:** Proposed / independent architecture committee pending (R4 designer DEFENDED).
 **Kind:** implementation.
 **Approval and owner:** Owner requested packet creation and active planning 2026-11-27. ChatGPT planner + human owner; no implementation commission or live mutation authority.
 **Baseline:** main 5f5750eca2f31d92fac6bfa478d1cae7203e1815. Planning branch design/observability-developer. Implementation branch/worktree to be selected after defense and promotion.
@@ -8,7 +8,7 @@
 **Parallel execution:** serial with OBSERVABILITY-NATIVE on shared observability source, proofs, and live dev target. Human owner integration custodian. No global queue change.
 
 ## Cursor first-screen brief
-NOT DISPATCHABLE. Existing authority is native observability infrastructure, synthetic-only admission and install-only lifecycle. Proposed outcome is developer-accessible application-shaped telemetry without destructive reinstall. Do not reinterpret this proposal as permission to remove privacy filters, upgrade live Helm releases or enroll producers. Planner must resolve D1–D3 and finish source mapping, tests, defense and owner ratification first.
+NOT DISPATCHABLE. Existing authority is native observability infrastructure, synthetic-only admission and install-only lifecycle. Proposed outcome is developer-accessible application-shaped telemetry without destructive reinstall. Do not reinterpret this proposal as permission to remove privacy filters, upgrade live Helm releases or enroll producers. R4 design is frozen for independent defense; planner must finish implementation mapping, tests and packet after committee approval and owner ratification.
 
 ## Outcome and motivation
 Enable safe application-shaped traces/logs/metrics from WSL into the existing dev platform, query them in Grafana/backends, and disconnect cleanly. P0/P1 currently exports no telemetry by its own contract; do not change that dossier or block base runs on full observability certification. Preserve the existing five services, three PVCs and Grafana credentials. Retain synthetic diagnostics and explicitly track the older acceptance debt rather than asserting it passed.
@@ -17,7 +17,7 @@ Enable safe application-shaped traces/logs/metrics from WSL into the existing de
 - Product: no player-facing change.
 - Technical: [native observability](../../../../docs/technical/platform/observability-native-infrastructure.md), existing [OBSERVABILITY-NATIVE](../2026-11-26--observability-native/CHANGE.md). Proposed amendments only.
 - Evidence: see design dossier for actual observed health, installation, image identity, transport failure, admitted OTLP and broken query/harness paths.
-- Unknowns: safe producer vocabulary, pipeline topology, session API, config revision identity, upgrade failure/rollback semantics, actual POC instrumentation compatibility.
+- R4 selects producer vocabulary, topology, session API, revision identity and failure semantics. Actual implementation/live acceptance NOT RUN; actual POC instrumentation excluded.
 
 ## Candidate scope
 - Owner-required retirement of executable specimens terminology: values/, locks/, root expected-inventory.json, unchanged vendor/; no behavioral delta in naming slice.
@@ -40,8 +40,8 @@ Enable safe application-shaped traces/logs/metrics from WSL into the existing de
 ## Acceptance and discriminating negative proof
 Provisional gates in design dossier. Required: WSL actual application-shaped all-signal query and correlated trace, no secret content or high-cardinality labels, repeat no-op, preserve exact storage/credential identities, unauthorized/wrong target/foreign pending refusal, cleanup only owned session. Existing original gate debts remain open. Focused source tests Cursor; heavy acceptance ChatGPT/owner. No destructive or release permission.
  
-## R3 consolidated design
-[Target](../../../designs/open/observability-developer/TARGET.md) · [Source map](../../../designs/open/observability-developer/SOURCE-MAP.md) · [Acceptance](../../../designs/open/observability-developer/ACCEPTANCE.md) · [Self-defense](../../../designs/open/observability-developer/SELF-DEFENSE.md). These supersede earlier conflicting candidates; no formal submission or commission until evidence gates close.
+## R4 consolidated design
+[Target](../../../designs/open/observability-developer/TARGET.md) · [Source map](../../../designs/open/observability-developer/SOURCE-MAP.md) · [Acceptance](../../../designs/open/observability-developer/ACCEPTANCE.md) · [Self-defense](../../../designs/open/observability-developer/SELF-DEFENSE.md). [Lifecycle](../../../designs/open/observability-developer/LIFECYCLE.md). These supersede earlier conflicting candidates; formal architecture review pending, no commission.
 
 ## Planning checkpoint
-[R2 design checkpoint](../../../designs/open/observability-developer/DESIGN-R2.md) records narrowed producer scope, foreground access, occupied upgrade state machine and source gaps. Resolve chart-port/render and OTTL evidence, predecessor identity and exact history semantics before defense. Freeze precise source anchors/algorithm/ordered T-IDs and proof commands only after defense. No TASKS.md with speculative Ready work. Reconciliation ledger not yet applicable: no source edits, no acceptance claim.
+[R2 design checkpoint](../../../designs/open/observability-developer/DESIGN-R2.md) records narrowed producer scope, foreground access, occupied upgrade state machine and source gaps. Chart-port/render, OTTL behavior and predecessor evidence recorded; R4 lifecycle selected and designer defended. Independent review next. Freeze precise source anchors/algorithm/ordered T-IDs and proof commands only after defense. No TASKS.md with speculative Ready work. Reconciliation ledger not yet applicable: no source edits, no acceptance claim.
