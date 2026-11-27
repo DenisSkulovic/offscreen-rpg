@@ -1,5 +1,7 @@
 # Open Changes | current sprint / execution horizon
 
+**Documentation renewal E1:** [product](product-documentation-renewal/README.md) and [technical](technical-documentation-renewal/README.md) — both owner-accepted for planning; first detailed packets PD01, PD03, TD01 Proposed, remaining current-sprint partitions in group registers. No readiness verdict, commission, queue or branch change.
+
 ## Agent Core E1 | current sprint (2026-11-27)
 
 [Eight Changes](agent-core-monorepo-map/README.md) implement the accepted E1 foundation. Final independent READY (all eight) and owner-commissioned for construction/assigned offline proof; the group owns dependency scheduling and joint qualification.

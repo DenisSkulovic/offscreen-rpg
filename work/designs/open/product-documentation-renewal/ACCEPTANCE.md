@@ -21,8 +21,21 @@ The reviewer should sample high-risk claims and reject an apparent improvement t
 
 ## Shared delivery boundary
 
-These are Designs only. Independent committee review of the selected E1 documentation architecture comes first, followed by separate owner acceptance. No Change packet, Ready status, queue entry, implementation commission, branch creation, code edit, live operation, migration, permission, paid call or new proof credit is authorized by this dossier. After acceptance the planner prepares the bounded Change batch against refreshed main. At commission use `implementation/<design-slug>` per the current standard; each constituent branch joins its own design integration branch, and Done packets retire there before reporting. Main receives the Design only after joint acceptance.
+Both E1 Designs and the shared integration boundary were independently DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b` and owner-accepted for Change planning on 2026-11-27. This authorizes planning only. No Ready status, queue selection, implementation commission, branch creation, code edit, live operation, migration, permission, paid call or new proof credit is authorized by this dossier. The planner prepares the bounded Change batch against refreshed main. At commission use `implementation/<design-slug>` per the current standard; each constituent branch joins its own design integration branch, and Done packets retire there before reporting. Main receives the Design only after joint acceptance.
 
 Independent preparation and disjoint domain edits are allowed after commission, subject to actual ownership. The technical Design is the first publication dependency: product realization facts that leave product must already survive in a technical/source owner on main before product integration removes them. Both branches may be prepared concurrently. Do not merge a product branch that points at unmerged headings or loses unique facts; a temporary retained paragraph is an acceptable intermediate state, not an E1 end state. Freeze the transfer set during planning, including non-obvious transfers from UI, staff and scenarios, not just gameplay and Storyteller. If an active technical owner is protected, keep the fact in place with its current scope until the owner has accepted and integrated its successor; do not force a cross-branch write. Product integration rechecks technical owner routes on actual main. No circular dependency: technical renewal may link stable existing product headings, never require the product rewrite to land first.
 
-The exact current integration SHA, concurrent ownership and changed files must be rechecked before packet planning and again before integration. The frozen snapshot proves neither the present live HEAD nor an active branch's uncommitted state. Medium and Low findings are retained in durable owners; only material Critical/High issues block affected work.
+Main was verified at the exact reviewed SHA at the start of planning. Recheck current target, affected files and concurrent ownership before dispatch and integration; a committed snapshot cannot establish uncommitted worktree ownership. Medium and Low findings are retained in durable owners; only material Critical/High issues block affected work.
+
+## Committee findings and durable follow-through
+
+All six are nonblocking. Preserve the original verdict; the table assigns follow-through, not completion.
+
+| Finding | Severity | Selected planning disposition / durable destination |
+| --- | --- | --- |
+| DOC-E1-M01 | Medium | TD04: preserve mechanical truth/authority independently from historical modular-monolith choice. `docs/technical/engine/selected-architecture.md` and `docs/decisions/D-0001--modular-engine.md`; historical selection remains dated, no new architecture selected. |
+| DOC-E1-M02 | Medium | TD10 and PD07: representative `wiki:find`/`wiki:read` classification negatives; keep selected, legacy realization, evidence, and proposal lanes distinct. Durable owners: existing navigation standard and affected headings. No new registry. |
+| DOC-E1-M03 | Medium | TD10: targeted root `README.md`, `docs/README.md`, `STATUS.md` and decision-route reconciliation; PD07 owns product index only. No unrelated repository-wide audit. |
+| DOC-E1-M04 | Medium | TD03 and TD07: component-specific source/proof tier for documents, DB, cache, identity and spend; permanent persistence/trust/spending owners and STATUS. No extra live qualification. |
+| DOC-E1-L01 | Low | Both ACCEPTANCE files: synchronize shared delivery boundary; no new common document. |
+| DOC-E1-L02 | Low | Both front doors: actual reviewed SHA and original source SHA retained separately. Corrected in acceptance handoff. |

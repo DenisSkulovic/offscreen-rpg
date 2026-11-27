@@ -1,6 +1,6 @@
 # Product documentation renewal | E1
 
-**Open · design candidate for independent committee review · not accepted or commissioned.** Owner: human owner and designer. Frozen inspected main: `94808654fdf93e3102469ed3f5d5b2d476ff6f8d`, with the preceding local documentation reality reset and reactivation draft reconstructed for editing. No claim about live HEAD. Scope: 31 product pages, existing five domain directories and product index.
+**Open · E1 DEFENDED and owner-accepted for Change planning (2026-11-27); implementation not commissioned.** Reviewed main: `c7058958ec3f43fd37ec680d05757561d628926b`; original inspected source: `94808654fdf93e3102469ed3f5d5b2d476ff6f8d`. The intervening commit is documentation-only. Scope: 31 product pages, existing five domain directories and product index.
 
 ## Aim and current evolution
 
@@ -16,8 +16,10 @@ Product rules remain selected where ratified; no new game rules, MVP, art direct
 - [Acceptance](ACCEPTANCE.md): falsifiable semantic checks, proof, protected ownership, cross-Design sequencing and exclusions.
 - [Historical editorial audit](../../archive/documentation-editorial-audit/README.md): original findings and evidence, not current authority.
 
-## Decision now
+## Accepted decision and next gate
 
-Recommend independent review of this E1 candidate, then owner ratification. Review the selected documentation outcome, not a proposed final game architecture. Deliberately leave actual Change packet count, bounded tasks, exact per-claim edit routes and implementation dispatch until after review. No implementation packets are present. Later game/Storyteller/UX architecture, unresolved product policies and native contract consolidation after active ownership ends remain separate existing owner concerns.
+The independent committee [DEFENDED verdict](../technical-documentation-renewal/committee/pass-01.md) covers both E1 Designs and their shared integration boundary at `c7058958ec3f43fd37ec680d05757561d628926b` (0 Critical, 0 High, 4 Medium, 2 Low). The owner accepted both and directed finalization and Change planning on 2026-11-27. The selected architecture in TARGET and acceptance criteria are unchanged. Canonical product/technical owners retain their accepted domain meaning; this accepts the editorial evolution, not new game architecture or implementation evidence. The actual canonical reconstruction is the outcome of the documentation Changes, not a status-only promotion.
+
+[Current planning group](../../../changes/open/product-documentation-renewal/README.md) owns partitions and dispatch prerequisites. Keep this dossier open for incomplete execution/joint semantic acceptance; retire after promotion and reconciliation. No Change is Ready or commissioned by this acceptance. Next review: complete batch implementation readiness; final joint documentation acceptance remains NOT RUN. Later game/Storyteller/UX architecture, unresolved product policies and native contract consolidation remain separate existing owner concerns.
 
 [Documentation standard](../../../../.agents/rules/documentation.md) · [navigation](../../../../.agents/references/documentation-navigation-standard.md) · [target-driven renewal](../../../../.agents/rules/target-driven-renewal.md).
