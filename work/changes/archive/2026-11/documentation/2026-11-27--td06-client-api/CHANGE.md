@@ -55,3 +55,18 @@ Once separately Ready and commissioned, branch from verified `implementation/tec
 **Semantic negatives (controlling heading):** cached prior actor data refused (architecture 1 Data ownership invariants; state Negative); accepted 202 is not the committed scene (http Accepted response versus committed world); new PUT after uncertain ACK refused (architecture 3, http Frozen operation identity Negative); SSE payload is not authority (http GET truth and SSE hints; state Dated realization); terminal bypassing identity refused (http Frozen operation identity Negative; state Commands and hints); stale revision never overwrites (architecture 2 Snapshot and update policy); rewritten recap never replaces saved prose (living-book Data and command invariants); snapshot test is not human comprehension (accessibility Status; living-book acceptance bar); POC selects no design system (living-book What this spec does not select); unknown presentation token runs no code (presentation-runtime V1 language); art direction never changes gameplay (scene-direction Authority; semantic Tokens); deterministic fixture is not live authoring (scene-direction link C and dated sections); SSE hint is not device delivery, expired push admits no old action, logout unlinks subscription (notifications Status, Delivery flow, Contact).
 
 **Deferred findings (destination: group register, custodian):** Medium: state-and-server-boundary Topology and Ownership still overlap architecture sections 1 and 2 (unique facts retained in both); accessibility-and-performance and interaction-contracts received lighter restructuring than other pages. Low: terminal source package not inspected, the historical-scene reader consumer in apps/web not verified. Acceptance NOT RUN.
+
+## Reconstruction pass (R2)
+
+**Why:** the first pass was mostly annotative; the audit left T03 (accessibility) not done and T02 (HTTP/state) partial. **Page commit:** `c7a771d225b6bd0485d9573de23007e719016fad`.
+
+**Algorithm now executed:** T03 accessibility-and-performance organized by evidence tier (selected requirement, source-present vitest-axe/focus/refetch checks, measured NOT RUN), body rewritten, status paragraph removed. T02 http page opens with the selected topology as five owned authority rules, per-heading Owner lines removed, 401/404/409/202 negatives consolidated into the error table, review table shortened to one failure sentence; state-and-server-boundary Topology and Ownership reduced to the boundary plus pointers to architecture 1 and 2. T04 presentation-runtime reordered (selected V1 before the dated baseline, lead tightened, /demo transfer facts verbatim); semantic-design-foundation duplicate path line and direction words fixed (already ordered per card).
+
+**Survival check:** every number, threshold (2 s, about 30 s, 4.5:1 and 3:1 where present), status, heading and anchor kept; removed text is duplicate with surviving copy in architecture 1 to 2 (state page) or the error table (http page).
+
+**Checks:** `git diff --check` clean; check_docs 80 problems and docs-health 3 violations, identical to the worktree base, none in changed pages except the pre-existing packages/application links in the http Evidence read list.
+
+**Semantic answers:** SSE payload is not authority (http GET truth and SSE hints); terminal bypasses no identity (http Frozen operation identity); stale revision never overwrites (architecture Snapshot and update policy); a snapshot test is not human comprehension and no WCAG claim (accessibility Evidence tiers).
+
+**Deferred:** Low: interaction-contracts not restructured further; terminal source package still not inspected.
+
