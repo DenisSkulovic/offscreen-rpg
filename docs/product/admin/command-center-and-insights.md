@@ -1,7 +1,12 @@
 # Command center and insights
 
-**Owns:** the shift-start surface for a multi-role employee, and the analytical vocabulary for arrival, activation, value and experiments.  
-**Status: proposed, 2026-11-14.** These are not live dashboards. Portfolio demos are not this product. No widget framework, search index, realtime transport or numerical target is selected.
+**Owns:** the shift-start surface for a multi-role employee, and the analytical vocabulary for arrival, activation, value and experiments.
+
+**Status:** proposed, 2026-11-14.
+
+**Selected intent.** The home answers what needs this employee's attention, composed only from the sections their grants allow. It is a set of scoped jobs, not a monitoring wall over staff or players. Insights state population, basis, window and freshness, and never treat a chart as a cause.
+
+**Current realization.** These are not live dashboards, and the page does not claim exhaustive current analytics. Portfolio demos are not this product. No widget framework, search index, realtime transport or numerical target is selected.
 
 ## A home for my work, not a panopticon
 
@@ -20,7 +25,7 @@ Overlapping grants add sections. They do not recombine into a stronger action. A
 
 ### Freshness and search
 
-A delayed aggregate is labeled delayed, not live. An unknown metric is unknown, not zero. Saved searches, recent items and pins re-check access after revocation. A link from a coworker does not reveal a protected record through a search suggestion. Global search is specified on [the charter](charter-and-personas.md).
+A delayed aggregate is labeled delayed, not live. An unknown or missing metric is unknown, not zero. Saved searches, recent items and pins re-check access after revocation. A link from a coworker does not reveal a protected record through a search suggestion. Global search is specified on [the charter](charter-and-personas.md).
 
 **Normal.** The morning after a provider incident, Engineering opens one incident from the home. Support opens the customer cases tied to that same incident. Each person sees the fields their grant allows.
 

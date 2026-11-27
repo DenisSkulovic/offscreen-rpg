@@ -1,8 +1,14 @@
 # Gameplay worlds and live operations
 
-**Owns:** how staff understand which rules and Storyteller configurations affect which campaigns, and how a future change to behavior is rolled out without rewriting history.  
-**Status: proposed product target, 2026-11-14. Owner review still required.** This page is the proposal, not an accepted production kill-switch and not an implemented LiveOps console. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.  
+**Owns:** how staff understand which rules and Storyteller configurations affect which campaigns, and how a future change to behavior is rolled out without rewriting history.
+
 **Does not own:** commercial refunds, provider billing implementation, or the engine's meaning of an accepted action ([selected engine](../../technical/engine/selected-architecture.md)).
+
+**Status:** proposed product target, 2026-11-14. Owner review still required.
+
+**Selected intent.** A change to future behavior is released by named version to a chosen audience under an explicit adoption policy. Publishing a catalogue or approving a proposal changes no active world until adoption activates it, and emergency controls limit only future eligibility.
+
+**Current realization.** This page is the proposal. It is not an accepted production kill-switch and not an implemented LiveOps console. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.
 
 ## The question
 
@@ -58,6 +64,7 @@ Shared campaigns must not receive two incompatible rule engines by random cohort
 - An active task still uses a captured older version. The operator can see that instead of assuming the latest deployment rewrote it.
 - A live model rollback does not permit a second charge or a redraw of an already accepted action.
 - Stopping an experiment does not silently confiscate a previously awarded entitlement.
+- An emergency stop does not repair a world, reverse spend, or authorize an export of player data. Repair is a separate controlled campaign recovery; export is its own purpose and authority ([commercial and trust](commercial-and-trust.md)).
 
 Support can explain a player's effective version. It does not activate production. Commercial owns funding economics. LiveOps may stop a dangerous exposure and does not rewrite financial transactions.
 

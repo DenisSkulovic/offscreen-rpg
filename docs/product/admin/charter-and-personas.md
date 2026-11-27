@@ -1,7 +1,12 @@
 # Charter and personas
 
-**Owns:** why Offscreen Control exists, the jobs it must make possible, and the workspace map staff use to find those jobs.  
-**Status: accepted long-term direction, 2026-11-14, with every powerful action still conditional.** Persona names are jobs, not security roles. A workspace does not grant a capability. Production Support, refund, raw-prompt and emergency-edit powers remain absent until a named grant exists.
+**Owns:** why Offscreen Control exists, the jobs it must make possible, and the workspace map staff use to find those jobs.
+
+**Status:** accepted long-term direction, 2026-11-14. Every powerful action is still conditional.
+
+**Selected intent.** Staff do jobs; jobs are not permissions. A persona name, a workspace or a case assignment never grants a capability. Only a named grant for one subject, one reason and stated limits does ([authority and governance](authority-and-governance.md)).
+
+**Current realization.** Production Support, refund, raw-prompt and emergency-edit powers remain absent until a named grant exists. Nothing on this page asserts a shipped console workspace.
 
 ## What the console is for
 
@@ -21,7 +26,17 @@ One platform does not mean one giant screen, one security role, or a homemade re
 
 ## Product job owners
 
-A persona is a responsibility pattern. A role is who is on a shift. A capability package is an illustrative bundle on [authority and governance](authority-and-governance.md). A case purpose is the reason a subject is opened. An actual grant is a named permission for one subject, one reason, and stated limits. This map names the page that owns each product job. Those five terms stay distinct from each other and from the map.
+Five terms stay distinct from each other and from the owner map below:
+
+| Term | Means |
+| --- | --- |
+| Persona | A responsibility pattern |
+| Role | Who is on a shift |
+| Capability package | An illustrative bundle on [authority and governance](authority-and-governance.md) |
+| Case purpose | The reason a subject is opened |
+| Actual grant | A named permission for one subject, one reason, and stated limits |
+
+This map names the page that owns each product job.
 
 | Product job | Owner page |
 | --- | --- |
@@ -48,7 +63,7 @@ A persona is a responsibility pattern. A role is who is on a shift. A capability
 
 ## Personas and workspaces
 
-A persona is a responsibility pattern. Authority is a separate capability package. Do not invent compound roles in advance.
+A persona is a responsibility pattern. Authority is a separate capability package. Do not invent compound roles in advance. A persona never implies a grant; the last column lists what the job name alone must not deliver.
 
 | Persona | Everyday question | Must not receive by the job name alone |
 | --- | --- | --- |

@@ -1,8 +1,14 @@
 # Player 360 and support
 
-**Owns:** how a staff member investigates an account, a campaign and a case without treating payer, participant and character as the same person.  
-**Status: proposed product target, 2026-11-14, except where a landed Admin slice is named.** Player-safe reads and case anchors exist from the Admin wave. Situation UI in OBS06/07 is synthetic. Full Turn Capsule disclosure and production Support grants are **not** implemented. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked.  
+**Owns:** how a staff member investigates an account, a campaign and a case without treating payer, participant and character as the same person.
+
 **Technical:** [investigation and privacy](../../technical/admin/investigation-and-privacy.md), [Turn Capsule](../../technical/observability/identities-and-evidence.md#turn-evidence-capsule).
+
+**Status:** proposed product target, 2026-11-14, except where a landed Admin slice is named below.
+
+**Selected target (Player 360).** One investigation view that keeps staff identity, account, payer, beneficiary, campaign, membership and character distinct, shows what each fact is (verified, pending, stale or unknowable), and offers only bounded, attributed interventions.
+
+**Current realization (narrow support projections).** Player-safe reads and case anchors exist from the Admin wave. Situation UI in OBS06/07 is synthetic. Full Turn Capsule disclosure and production Support grants are **not** implemented. Illustrative Support, impersonation, raw-prompt, refund, export, and LiveOps examples stay Proposed or Blocked. The landed projections are not the Player 360 target and do not imply it.
 
 ## Subjects that must stay distinct
 
@@ -35,9 +41,11 @@ Effective access is four questions, not one Premium badge:
 
 Example: subscription active, entitlement sync pending, allowance positive, global provider spending paused. The summary must not become "Premium works."
 
-Unknown is different from zero. A read-only Support view stays coherent on summary and operational metadata. A blank forbidden panel does not imply that other private records do or do not exist. Deep links are references, not access tokens.
+Unknown is different from zero. A read-only Support view stays coherent on summary and operational metadata. A blank forbidden panel does not imply that other private records do or do not exist. Deep links are references, not access tokens. Every shown fact carries its source and freshness, and a view projects the minimum the operator's grant allows. A player lookup returns summary and operational metadata, not a raw prompt; raw model context is a separate Tier C grant on [AI engineering and investigation](ai-engineering-and-investigation.md#disclosure-is-not-one-permission).
 
 ## Shared campaigns
+
+Shared campaigns are a deferred design ([shared play](../../../work/designs/backlog/shared-play/README.md)). This section keeps the vocabulary ready so Admin is not reinvented when multiplayer arrives.
 
 Open a campaign from a player profile and keep that participation context. Distinguish shared committed state from each member's character. Show whether an incident affects one participant, a character, or the shared world, and show blast radius before any intervention.
 
@@ -51,4 +59,4 @@ The timeline is typed events, not one list: participation, game operation, publi
 
 Every contextual action names target, intent, scope, authority, impact and outcome. There is no one-click free-form database edit from the 360 page. A player-view mode is not an admin mutation mechanism.
 
-**Negative:** do not claim production Support investigation works end to end while grant issuance for live workers is absent. A Support persona example does not grant raw provider prompt access or cross-tenant impersonation. An uncertain paid dispatch is not silently charged twice. "No event returned" does not mean the player has no history.
+**Negative:** do not claim production Support investigation works end to end while grant issuance for live workers is absent. A Support persona example does not grant raw provider prompt access or cross-tenant impersonation. An uncertain paid dispatch is not silently charged twice. "No event returned" does not mean the player has no history. Resolving a support case does not prove that a refund or repair occurred.
