@@ -1,6 +1,6 @@
 # Player visual system and expressive worlds
 
-**State:** SELECTED **architectural product requirements** for the next design-system implementation program, 2026-11-17. No final art direction, typography, book cover, illustration style or button design is accepted. These requirements elaborate [Living Book POC](living-book-poc.md) and [Presentation](presentation.md), not a new gameplay mechanism. The studies and unselected aesthetics remain in [Phase 3](../../../work/designs/open/player-experience-refoundation/phase-3/README.md).
+**State:** SELECTED **architectural product requirements** for the next design-system implementation program, 2026-11-17. No final art direction, typography, book cover, illustration style or button design is accepted. These requirements elaborate [Living Book POC](living-book-poc.md) and [Presentation](presentation.md), not a new gameplay mechanism. The studies and unselected aesthetics remain in [Phase 3](https://github.com/DenisSkulovic/offscreen-rpg/blob/7694d4124e6227e7b6b5092ada4067a63df4b4fb/work/designs/open/player-experience-refoundation/phase-3/README.md).
 
 ## The product experience we are building
 
@@ -52,4 +52,4 @@ For each component: document usage, states (idle/hover/focus/selected/disabled/p
 - Product identity is consistently observable on Welcome, Stories and Play without reusing literal story book mechanics where they do not fit.
 - No style-only user action triggers game mutation, provider charge, false wait or synthetic plot event.
 
-**Non-claims:** these requirements do not certify existing BOOK01/02 visuals, nor select a component or animation package. Next implementation targets are in [semantic design foundation](../../technical/client/semantic-design-foundation.md) and the Phase 3 Change queue.
+**Non-claims:** these requirements do not certify existing BOOK01/02 visuals, nor select a component or animation package. Next implementation targets are in [semantic design foundation](../../technical/client/semantic-design-foundation.md) and the recorded UI/DIR Change receipts; remaining creative design is deferred.

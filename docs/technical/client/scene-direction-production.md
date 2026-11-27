@@ -1,6 +1,6 @@
 # Storyteller art direction | Bounded author → publication → reader target
 
-**State:** **CONDITIONAL TECHNICAL TARGET**, design approved for investigation but **no automatic provider-writing change is approved** (2026-11-17). Source/protocol facts are verified; the exact production seam and spend policy require a design gate. [Product expression](../../product/experience/design-system-and-expression.md), [existing V1 resolver](presentation-runtime.md), [Storyteller publication owner](../storyteller/generation-and-publication.md), and [Phase 3 art-direction study](../../../work/designs/open/player-experience-refoundation/phase-3/02-ART-DIRECTION-PRODUCER-AND-QUALITY-GATES.md).
+**State:** **CONDITIONAL TECHNICAL TARGET**, design approved for investigation but **no automatic provider-writing change is approved** (2026-11-17). Source/protocol facts are verified; the exact production seam and spend policy require a design gate. [Product expression](../../product/experience/design-system-and-expression.md), [existing V1 resolver](presentation-runtime.md), [Storyteller publication owner](../storyteller/generation-and-publication.md), and [Phase 3 art-direction study](https://github.com/DenisSkulovic/offscreen-rpg/blob/7694d4124e6227e7b6b5092ada4067a63df4b4fb/work/designs/open/player-experience-refoundation/phase-3/02-ART-DIRECTION-PRODUCER-AND-QUALITY-GATES.md).
 
 ## Three independently verifiable links
 
