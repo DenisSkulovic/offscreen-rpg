@@ -1,6 +1,6 @@
 # OBSERVABILITY-DEVELOPER | practical developer telemetry
 
-**State:** Proposed / PLANNER BLOCKER (D1 safe admission, D2 connection ownership, D3 occupied transition).
+**State:** Proposed / EVIDENCE-GATED (R3 designer self-defense; developer policy, metric identity, upgrade projection and session cancellation).
 **Kind:** implementation.
 **Approval and owner:** Owner requested packet creation and active planning 2026-11-27. ChatGPT planner + human owner; no implementation commission or live mutation authority.
 **Baseline:** main 5f5750eca2f31d92fac6bfa478d1cae7203e1815. Planning branch design/observability-developer. Implementation branch/worktree to be selected after defense and promotion.
@@ -40,5 +40,8 @@ Enable safe application-shaped traces/logs/metrics from WSL into the existing de
 ## Acceptance and discriminating negative proof
 Provisional gates in design dossier. Required: WSL actual application-shaped all-signal query and correlated trace, no secret content or high-cardinality labels, repeat no-op, preserve exact storage/credential identities, unauthorized/wrong target/foreign pending refusal, cleanup only owned session. Existing original gate debts remain open. Focused source tests Cursor; heavy acceptance ChatGPT/owner. No destructive or release permission.
  
+## R3 consolidated design
+[Target](../../../designs/open/observability-developer/TARGET.md) · [Source map](../../../designs/open/observability-developer/SOURCE-MAP.md) · [Acceptance](../../../designs/open/observability-developer/ACCEPTANCE.md) · [Self-defense](../../../designs/open/observability-developer/SELF-DEFENSE.md). These supersede earlier conflicting candidates; no formal submission or commission until evidence gates close.
+
 ## Planning checkpoint
 [R2 design checkpoint](../../../designs/open/observability-developer/DESIGN-R2.md) records narrowed producer scope, foreground access, occupied upgrade state machine and source gaps. Resolve chart-port/render and OTTL evidence, predecessor identity and exact history semantics before defense. Freeze precise source anchors/algorithm/ordered T-IDs and proof commands only after defense. No TASKS.md with speculative Ready work. Reconciliation ledger not yet applicable: no source edits, no acceptance claim.
