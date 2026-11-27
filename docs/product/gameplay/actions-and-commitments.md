@@ -32,17 +32,13 @@ Player input expresses an **intention**; it does not directly supply resulting w
 
 ## Prepared local life while the Storyteller is dormant
 
-This section is the selected promise for quiet situations; the technical realization is bounded and incomplete (see the closing paragraph). On establishing a relevant situation, the Storyteller can prepare a bounded set of opportunities (fish, tavern, rumors, rest). The game validates supported rules, targets, outcomes, eligibility and wake conditions. The player may discover, select, repeat or switch among still-valid prepared activities **without fresh inference**.
+Selected product behavior for quiet situations, not delivery: [Prepared local opportunities](../../technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities) records the bounded solo realization and the limits that remain later work.
 
-The Storyteller authors available intentions for each situation; the engine does **not** invent options from inventory, capabilities or physical feasibility. Owning an apple does not add “Eat apple.” The engine may filter or reject an authored choice whose conditions fail, but cannot substitute its own choice or expand the menu.
+**What is prepared.** On establishing a relevant situation, the Storyteller can prepare a bounded set of opportunities (fish, tavern, rumors, rest). It authors the available intentions for that situation. The game validates supported rules, targets, outcomes, eligibility and wake conditions. The engine may filter or reject an authored choice whose conditions fail. It never substitutes its own choice or expands the menu: owning an apple does not add “Eat apple.”
 
-Each new interactive scene explicitly establishes its available choices. Earlier local activities do not automatically reappear because an encounter resolved. Within a still-authorized quiet situation, the player can repeatedly use exactly the prepared opportunities without another model call.
+**What the player can do without inference.** Within a still-authorized quiet situation, the player may discover, select, repeat or switch among the still-valid prepared activities with no further model call. Each new interactive scene establishes its choices explicitly; earlier local activities do not reappear merely because an encounter resolved.
 
-Known activities can end quietly, produce bounded mechanical results, continue accepted work, or request narration under configured policies. Wakes are bounded and deduplicated—not model polling. **No event is also a valid result.**
-
-Routine chitchat does not promise fresh bespoke dialogue; repeated rumor gathering cannot manufacture unlimited novel lore for free.
-
-This section states selected product behavior, not delivery. [Prepared local opportunities](../../technical/engine/mechanics-and-capabilities.md#prepared-local-opportunities) records the bounded solo realization and the limits that remain later work.
+**What may result.** A known activity can end quietly, produce bounded mechanical results, continue accepted work, or request narration under configured policies. Wakes are bounded and deduplicated, not model polling. **No event is also a valid result.** Routine chitchat does not promise fresh bespoke dialogue, and repeated rumor gathering cannot manufacture unlimited novel lore for free.
 
 ## Storyteller-directed pace
 
