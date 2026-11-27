@@ -1,6 +1,6 @@
 # PD03 | task queue
 
-Base SHA: `c7058958ec3f43fd37ec680d05757561d628926b`; latest must recheck. Change state: Done (source joined); all tasks complete. Shared path lock: group target join only; no shared canonical writes. Contract owners: [accepted Design](../../../../../designs/open/product-documentation-renewal/README.md), named card anchors. Tasks: T01 → T02; selected task: none.
+Base SHA: `c7058958ec3f43fd37ec680d05757561d628926b`; latest must recheck. Change state: Done (source joined); all tasks complete. Shared path lock: group target join only; no shared canonical writes. Contract owners: [accepted Design](../../../../../designs/archive/product-documentation-renewal/README.md), named card anchors. Tasks: T01 → T02; selected task: none.
 
 ## T01 | First solo oracle and later stress vignette | PROPOSED
 

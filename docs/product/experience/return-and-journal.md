@@ -29,7 +29,7 @@ The Living Book must allow the player to navigate back to **any committed scene*
 
 ### Narrow current proof and limits
 
-The journal remains source-faithful passage reading. Opening a saved scene may load that scene's checkpoint on a disjoint query key; it does not reuse the live snapshot and does not make a historic offer commandable. A quiescent checkpoint can start an independent fork. Scenes without a checkpoint still cannot be forked. Replay of dice, provider spend, and changing live time from the journal stay forbidden. Specific scene boundary semantics belong to the technical [lifecycle and compatibility](../../technical/engine/lifecycle-and-compatibility.md#forked-continuities) contracts, which also state the exact conditions under which a fork is supported or refused. This page does not claim the long-term target is built or proved beyond that narrow boundary.
+The journal remains source-faithful passage reading. Opening a saved scene may load that scene's checkpoint, but it never reuses the live snapshot and never makes a historic offer commandable (the query-key detail is recorded in [Living Book POC](../../technical/client/living-book-poc.md#data-and-command-invariants)). A quiescent checkpoint can start an independent fork. Scenes without a checkpoint still cannot be forked. Replay of dice, provider spend, and changing live time from the journal stay forbidden. Specific scene boundary semantics belong to the technical [lifecycle and compatibility](../../technical/engine/lifecycle-and-compatibility.md#forked-continuities) contracts, which also state the exact conditions under which a fork is supported or refused. This page does not claim the long-term target is built or proved beyond that narrow boundary.
 
 ## No chapters
 

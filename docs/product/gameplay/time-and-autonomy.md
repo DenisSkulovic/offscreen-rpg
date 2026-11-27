@@ -114,7 +114,7 @@ The first tested milestone is the solo [first playable target](../foundations/vi
 
 ## Existing narrative rehearsal adapter
 
-**Temporary dated realization (source baseline 2026-11-27); [ticks and tags](../../technical/engine/ticks-and-tags.md#fixed-real-second-scheduling-and-fictional-time) receives this detail.** The legacy narrative-only rehearsal maps a proposed interval to twenty real seconds and leaves immediate conversation at zero duration. Test composition can inject a shorter wait. It remains an isolated existing adapter, not the target time policy for mechanical campaigns, and twenty seconds is not the intended universal game clock. The committed-time feature must not add this timer on top of the mechanical clock.
+**Dated realization.** The legacy narrative-only rehearsal is an isolated adapter, not the target time policy for mechanical campaigns; twenty seconds is not the intended universal game clock, and the committed-time feature must not add its timer on top of the mechanical clock. Its constants and test injection are recorded in [ticks and tags](../../technical/engine/ticks-and-tags.md#existing-narrative-rehearsal-adapter-legacy-narrative-only-path).
 
 ## Mechanical activities
 

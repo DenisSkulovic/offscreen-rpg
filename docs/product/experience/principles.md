@@ -49,7 +49,7 @@ Reader rights, grouped by what the reader is owed.
 
 ## Demo vs live
 
-**Public `/demo` (authored prototype).** The route is an authored browser prototype (quiet interval, choices, consequences, chronology). It needs no sign-in or provider. Demonstration time advances manually; refreshing starts over. These controls explore presentation. They are **not** production rules for time or absence, and demo time is never real game time.
+**Public `/demo` (authored prototype).** The route is an authored browser prototype that needs no sign-in or provider; its manual time and reset behavior are recorded in [presentation runtime](../../technical/client/presentation-runtime.md#source-grounded-baseline-inspection-2026-11-13-revalidate-before-px01). Refreshing starts over. These controls explore presentation. They are **not** production rules for time or absence, and demo time is never real game time.
 
 **Authenticated live stories.** A live story shows truthful waits against server deadlines (including Pause/Resume when controllable). Reloading must not restart an accepted wait.
 

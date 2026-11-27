@@ -22,7 +22,7 @@ Rule families are **optional executable packages**: a prepared experience may op
 
 **Product rights.** Only committed, application-validated effects create or transfer possessions or change facts; effects of one passage commit atomically with it. **Prose and descriptive canonical-document changes alone never create or transfer possessions**, and a narrative statement never transfers ownership.
 
-**Current realization (scoped; TD04 receives this detail in [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#supported-mechanisms-and-the-future-kernel)).** Narrative continuation supports a small authoritative story-item vocabulary: `item.create.v1` introduces one bounded keyed item; `item.transfer.v1` moves an item only when the declared prior holder still matches. Ordered effects and the passage commit in one transaction.
+**Current realization.** The authoritative story-item vocabulary (`item.create.v1`, `item.transfer.v1`, with ordered effects committing atomically with the passage) is recorded in [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#supported-mechanisms-and-the-future-kernel). The product rights above do not depend on that realization.
 
 ## Rule libraries and adapters
 
@@ -60,11 +60,7 @@ Certain ordinary actions can succeed without a check. Impossible actions cannot 
 
 ## Implemented entry and honest limits
 
-**Dated realization note (experimental, source baseline 2026-11-27; not a product promise).** TD04 receives this detail in [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#supported-mechanisms-and-the-future-kernel); it stays here until that successor is on main.
-
-- **What exists.** Opening mechanical rehearsal (pineapple/microbe/beacon) runs on deterministic fixtures. Immediate actions and ability checks share the receipt path. A literal wait is a supported activity process (`clock-wait.v1`); a separate traversal family is not that process.
-- **What it proves.** The boundary, for the listed fixtures only. It does not prove general model quality, that arbitrary worlds are enjoyable, or that model quality is adequate.
-- **What stays outside.** Explicit abandonment, full combat, study/level progression and live-model evaluation remain outside this subset where not separately landed. Existing narrative stories are not silently assigned character sheets.
+**Dated realization (experimental; not a product promise).** The implemented slice is bounded to deterministic fixtures. Opening mechanical rehearsal runs on the pineapple, microbe and beacon fixtures; it proves that boundary only, not general model quality or that arbitrary worlds are enjoyable. Explicit abandonment, full combat, study and level progression and live-model evaluation are outside it, and existing narrative stories are not silently assigned character sheets. The exact vocabulary, receipt path, `clock-wait.v1` wait process and exclusions are recorded in [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#supported-mechanisms-and-the-future-kernel) and [persistence and known limits](../../technical/engine/mechanics-and-capabilities.md#persistence-and-known-limits).
 
 See also: [actions and commitments](actions-and-commitments.md), [time and autonomy](time-and-autonomy.md), [continuity](continuity.md).
 
@@ -72,11 +68,7 @@ See also: [actions and commitments](actions-and-commitments.md), [time and auton
 
 **Requirement.** The Storyteller receives only the bounded rules relevant to the current operation; the whole rulebook is never injected merely because it exists. A required rule or adapter that is unavailable holds or narrows the task (see [Rule libraries and adapters](#rule-libraries-and-adapters)). Editing prose can change interpretation, examples and campaign rulings, but changing a formula, supported effect or state transition requires a supported adapter or schema change. Storage stays complete across quality tiers; only the bounded working set changes. Imported rule material must be licensed for the product or privately supplied by an authorized user, with source and license provenance retained.
 
-**Current realization detail (scoped; TD05 receives compilation metadata and recipe details in [prompts and tools](../../technical/storyteller/prompts-and-tools.md#selected-compilation-and-tool-contract)).**
-
-- *Library.* A compact game-master reference, not one giant prompt attachment. A small orientation identifies the executable adapter, important topics and navigation handles. Each rule page and heading carries deterministic topic metadata such as `ability-check`, `advantage`, `time` or `contribution`.
-- *Recipes.* A task recipe selects mandatory sections from its known mechanics without a routing-model call. The Storyteller receives the compact applicable rules and may inspect another exact section under the same bounded operation allowance.
-- *Tiers.* Low-cost recipes include the mechanical kernel and the exact sections needed for the current operation. Richer recipes may add examples and edge cases, but they use the same pinned sources and executable authority.
+**Current realization.** Orientation, deterministic topic metadata, task recipes, bounded section reads and cost tiers are recorded in [prompts and tools](../../technical/storyteller/prompts-and-tools.md#selected-compilation-and-tool-contract). The requirement above does not depend on that realization.
 
 ## Resumption, hidden rolls and private fact transitions
 
@@ -84,8 +76,6 @@ Later resumption of unfinished work must reference the same commitment, preserve
 
 The public roll log shows permitted completed checks and redacts secret DCs or modifiers where they would disclose unknown facts. The full record stays private. Repeated quiet checks may be grouped for presentation while their individual records remain. Completed activities stay inspectable after they leave the active commitments view.
 
-In the current realization of an opening preview (no rule here makes a preview mandatory), review exposes public labels while the generated result retains private intentions, prerequisites, checks, DCs, process rules and outcome branches. Start copies those exact reviewed plans into the story. The browser later submits only the offer identity and selected path.
-
-Newly generated finite plans identify every intended write to an existing typed character fact by outcome branch. Admission requires the declaration and `fact.set.v1` effect to agree in both directions and rejects targets absent from the captured character state. Empty declarations are valid and do not make a state change compulsory. This metadata is private mechanical coherence. It is not a parser that derives rules from narrative prose.
+No rule here makes an opening preview mandatory. Where one exists, review exposes public labels only; private intentions, prerequisites, checks, DCs, process rules and outcome branches stay private, Start copies the exact reviewed plans, and the browser submits only the offer identity and selected path. Declared writes to existing typed character facts must agree with the `fact.set.v1` effect, and that metadata is mechanical coherence, not a parser that derives rules from prose. Details: [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#persistence-and-known-limits).
 
 **Negative:** prose that says an item changed hands does not create or transfer it. A reload, a narration retry or a pace change does not roll again. An approaching interruption may offer resumption of the same saved repair; it must not restart that repair at zero progress.
