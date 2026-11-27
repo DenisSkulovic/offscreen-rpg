@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { execFileSync } from 'node:child_process';
 import {
   mkdtempSync,
+  mkdirSync,
   writeFileSync,
   readFileSync,
   rmSync,
@@ -15,9 +16,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkChangeBranch } from './change-branch-guard.mjs';
 import {
+  assessArchival,
   assessJoin,
+  changePacketPaths,
   ensureDesignImplementationBranch,
   integrateChange,
+  lookupCommission,
   retireChangeWorktree,
 } from './change-lifecycle.mjs';
 
@@ -587,3 +591,208 @@ test('a standalone squash join retires only after the landed tree is verified', 
     });
     assert.equal(existsSync(change), false);
   }));
+
+const LEAF = '2026-11-27--obs-d03-operation-custody';
+
+function seedOpenPacket(cwd) {
+  const dir = path.join(cwd, 'work/changes/open', LEAF);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(path.join(dir, 'CHANGE.md'), '**State:** Implementing\n');
+  git(cwd, 'add', 'work');
+  git(cwd, 'commit', '-m', 'open packet');
+}
+
+function archivePacket(cwd) {
+  const paths = changePacketPaths(LEAF);
+  mkdirSync(path.dirname(path.join(cwd, paths.archived)), { recursive: true });
+  git(cwd, 'mv', paths.open, paths.archived);
+  const note = path.join(cwd, 'work/designs/open/demo/OBLIGATIONS.md');
+  mkdirSync(path.dirname(note), { recursive: true });
+  writeFileSync(note, 'Joint proof remains on the Design.\n');
+  git(cwd, 'add', 'work');
+  git(cwd, 'commit', '-m', 'archive the completed Change');
+}
+
+test('a completed constituent is archived on the implementation branch while main keeps the open packet', () =>
+  repo((cwd, add) => {
+    seedOpenPacket(cwd);
+    const implementation = ensureDesignImplementationBranch({
+      cwd,
+      design: 'demo',
+      base: 'main',
+    });
+    const integration = add('implementation/demo', 'main', { existing: true });
+    const change = add('change/hhh-close', implementation.sha);
+    archivePacket(change);
+    const before = git(integration, 'rev-parse', 'HEAD');
+    assert.throws(
+      () =>
+        integrateChange({
+          change: 'HHH',
+          changeCwd: change,
+          integrationCwd: integration,
+          design: 'demo',
+          recordedTarget: 'implementation/demo',
+          requestedTarget: 'implementation/demo',
+          indispensable: 'pass',
+          designAcceptance: 'pending',
+          permitSourceJoin: true,
+          leaf: LEAF,
+          obligationsTransferred: false,
+          target: 'implementation/demo',
+        }),
+      /transferred/,
+    );
+    assert.equal(git(integration, 'rev-parse', 'HEAD'), before);
+    const joined = integrateChange({
+      change: 'HHH',
+      changeCwd: change,
+      integrationCwd: integration,
+      design: 'demo',
+      recordedTarget: 'implementation/demo',
+      requestedTarget: 'implementation/demo',
+      indispensable: 'pass',
+      designAcceptance: 'pending',
+      permitSourceJoin: true,
+      leaf: LEAF,
+      obligationsTransferred: true,
+      target: 'implementation/demo',
+    });
+    assert.equal(joined.closed, true);
+    assert.equal(
+      existsSync(path.join(integration, joined.archivedPacket)),
+      true,
+    );
+    assert.equal(
+      existsSync(path.join(integration, 'work/changes/open', LEAF)),
+      false,
+    );
+    assert.equal(
+      lookupCommission({
+        repoCwd: cwd,
+        target: 'implementation/demo',
+        leaf: LEAF,
+      }).status,
+      'archived',
+    );
+    assert.equal(
+      lookupCommission({ repoCwd: cwd, target: 'main', leaf: LEAF }).status,
+      'open',
+    );
+    assert.throws(
+      () =>
+        integrateChange({
+          change: 'HHH',
+          changeCwd: change,
+          integrationCwd: integration,
+          design: 'demo',
+          recordedTarget: 'implementation/demo',
+          requestedTarget: 'implementation/demo',
+          indispensable: 'pass',
+          designAcceptance: 'pending',
+          permitSourceJoin: true,
+          leaf: LEAF,
+          obligationsTransferred: true,
+          target: 'implementation/demo',
+        }),
+      /already archived/,
+    );
+    retireChangeWorktree({
+      repoCwd: cwd,
+      changeCwd: change,
+      target: 'implementation/demo',
+      branch: 'change/hhh-close',
+      leaf: LEAF,
+    });
+    assert.equal(existsSync(change), false);
+  }));
+
+test('unresolved Change-level work is not archived and an open packet cannot be reported complete', () =>
+  repo((cwd, add) => {
+    assert.equal(
+      assessArchival({
+        indispensable: 'pending',
+        designAcceptance: 'pending',
+        obligationsTransferred: true,
+      }).allow,
+      false,
+    );
+    assert.equal(assessArchival({ indispensable: 'fail' }).allow, false);
+    seedOpenPacket(cwd);
+    ensureDesignImplementationBranch({ cwd, design: 'demo', base: 'main' });
+    const integration = add('implementation/demo', 'main', { existing: true });
+    const change = add('change/iii-open', implementationSha(cwd));
+    commitFile(change, 'code.txt', 'code\n', 'code');
+    const before = git(integration, 'rev-parse', 'HEAD');
+    assert.throws(
+      () =>
+        integrateChange({
+          change: 'III',
+          changeCwd: change,
+          integrationCwd: integration,
+          design: 'demo',
+          recordedTarget: 'implementation/demo',
+          requestedTarget: 'implementation/demo',
+          indispensable: 'pass',
+          designAcceptance: 'pending',
+          permitSourceJoin: true,
+          leaf: LEAF,
+          obligationsTransferred: true,
+          target: 'implementation/demo',
+        }),
+      /must be archived/,
+    );
+    assert.equal(git(integration, 'rev-parse', 'HEAD'), before);
+    assert.throws(
+      () =>
+        integrateChange({
+          change: 'III',
+          changeCwd: change,
+          integrationCwd: integration,
+          design: 'demo',
+          recordedTarget: 'implementation/demo',
+          requestedTarget: 'implementation/demo',
+          indispensable: 'fail',
+          designAcceptance: 'pending',
+          permitSourceJoin: true,
+          leaf: LEAF,
+          obligationsTransferred: true,
+          target: 'implementation/demo',
+        }),
+      /proof is fail/,
+    );
+    assert.equal(git(integration, 'rev-parse', 'HEAD'), before);
+    const joined = integrateChange({
+      change: 'III',
+      changeCwd: change,
+      integrationCwd: integration,
+      design: 'demo',
+      recordedTarget: 'implementation/demo',
+      requestedTarget: 'implementation/demo',
+      indispensable: 'pass',
+      constituent: true,
+      target: 'implementation/demo',
+    });
+    assert.equal(joined.closed, undefined);
+    assert.equal(
+      existsSync(
+        path.join(integration, 'work/changes/open', LEAF, 'CHANGE.md'),
+      ),
+      true,
+    );
+    assert.throws(
+      () =>
+        retireChangeWorktree({
+          repoCwd: cwd,
+          changeCwd: change,
+          target: 'implementation/demo',
+          leaf: LEAF,
+        }),
+      /remains in open|Archived Change packet is absent/,
+    );
+    assert.equal(existsSync(change), true);
+  }));
+
+function implementationSha(cwd) {
+  return git(cwd, 'rev-parse', 'refs/heads/implementation/demo');
+}

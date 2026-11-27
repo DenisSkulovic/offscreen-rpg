@@ -77,7 +77,7 @@ Parked is a scheduling label, not authority. Resume against actual source and cu
 
 ## Execution and evidence contracts
 
-Planner resolves design/source and exact verification before dispatch. Executor reads selected Change, precise anchors and checks. Parent commits and hands off heavy proof when required; no merge/archive while mandatory acceptance remains. Follow [parent procedure](bounded-parent-orchestration.md).
+Planner resolves design/source and exact verification before dispatch. Executor reads selected Change, precise anchors and checks. Parent archives a Change whose own gate has passed, commits that closure, and joins the recorded target. No merge or archive while that Change's own mandatory acceptance remains. Design-level obligations transfer to the Design and do not mark the Change unfinished. Follow [parent procedure](bounded-parent-orchestration.md).
 
 At closure compare actual diff with planned Product/Technical/Code/Related dispositions and known dependents. Complete **Reconciliation ledger** for affected authority headings and known dependent claims, updated with owner+delta or unchanged with concrete reason. Blanket "docs unaffected" is insufficient. Documentation-only Code row explicitly records no executable behavior changed; semantic negative and link/heading proof replace invented code tests. Run [documentation reconciliation](../skills/documentation-reconciliation/SKILL.md) for updated/drift hits. Accepted permanent docs must not lag landed behavior. Preserve unique decisions/evidence and repair links before retirement.
 

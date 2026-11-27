@@ -7,12 +7,20 @@
  * the integration index, the merge, and any shared ledger write in that join.
  * It is not a service. Agents that bypass this command are not protected.
  *
- * node scripts/repo-tools/change-lifecycle.mjs integrate --change OBS-D02 \
- *   --target integration/observability-developer \
- *   --recorded-target integration/observability-developer \
+ * A completed Change is archived on its Change branch before this join. The
+ * integration target must contain the archive path and must not contain the
+ * open packet. Main may still have the open packet until the design branch
+ * lands. `lookup` reads the recorded target, not the main checkout.
+ *
+ * node scripts/repo-tools/change-lifecycle.mjs lookup \
+ *   --repo-cwd <repo> --target implementation/<design-slug> --leaf <YYYY-MM-DD--slug>
+ * node scripts/repo-tools/change-lifecycle.mjs integrate --change OBS-D03 \
+ *   --target implementation/observability-developer \
+ *   --recorded-target implementation/observability-developer \
  *   --integration-cwd <linked-target-checkout> --change-cwd <linked-change-checkout> \
- *   --design observability-developer --grandfather integration/observability-developer \
- *   --indispensable pass --design-acceptance pending --permit-source-join
+ *   --design observability-developer --indispensable pass \
+ *   --design-acceptance pending --permit-source-join --obligations-transferred \
+ *   --leaf 2026-11-27--obs-d03-operation-custody
  */
 /* global console, process */
 import { spawnSync } from 'node:child_process';
@@ -26,6 +34,7 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { targetRelFromChanges } from './archive-changes.mjs';
 import { expectedDesignTarget } from './change-branch-guard.mjs';
 
 const SCRIPT = fileURLToPath(import.meta.url);
@@ -172,6 +181,107 @@ function assertAssessment(options) {
   return verdict;
 }
 
+const LEAF = /^\d{4}-\d{2}-\d{2}--[a-z0-9-]+$/;
+
+export function changePacketPaths(leaf) {
+  if (!LEAF.test(leaf))
+    throw Error(`Change leaf must look like YYYY-MM-DD--slug: ${leaf}`);
+  return {
+    open: path.posix.join(
+      'work/changes',
+      targetRelFromChanges(leaf, 'open'),
+      'CHANGE.md',
+    ),
+    archived: path.posix.join(
+      'work/changes',
+      targetRelFromChanges(leaf, 'archive'),
+      'CHANGE.md',
+    ),
+  };
+}
+
+function objectExists(cwd, rev, file) {
+  try {
+    git(['cat-file', '-e', `${rev}:${file}`], cwd);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function packetPresence(cwd, rev, leaf) {
+  const paths = changePacketPaths(leaf);
+  return {
+    open: objectExists(cwd, rev, paths.open),
+    archived: objectExists(cwd, rev, paths.archived),
+    paths,
+  };
+}
+
+export function assessArchival({
+  indispensable,
+  designAcceptance = 'na',
+  obligationsTransferred = false,
+}) {
+  if (indispensable !== 'pass')
+    return {
+      allow: false,
+      reason: `Unresolved Change-level acceptance (${indispensable ?? 'missing'}) cannot be archived or marked passed.`,
+    };
+  if (designAcceptance === 'pending' && !obligationsTransferred)
+    return {
+      allow: false,
+      reason:
+        'Design-level obligations must be transferred to the active Design before this Change is archived.',
+    };
+  return {
+    allow: true,
+    reason: 'Individual closure requirements are satisfied.',
+  };
+}
+
+export function lookupCommission({ repoCwd, target, leaf }) {
+  if (!refOk(target)) throw Error('Specify --target <implementation branch>');
+  const presence = packetPresence(repoCwd, `refs/heads/${target}`, leaf);
+  let status = 'absent';
+  if (presence.archived && !presence.open) status = 'archived';
+  else if (presence.open && presence.archived) status = 'split';
+  else if (presence.open) status = 'open';
+  return { target, leaf, status, ...presence };
+}
+
+function assertReadyToClose(options) {
+  const archival = assessArchival(options);
+  if (!archival.allow) throw Error(archival.reason);
+  const onTarget = lookupCommission({
+    repoCwd: options.integrationCwd,
+    target: options.requestedTarget,
+    leaf: options.leaf,
+  });
+  if (onTarget.status === 'archived')
+    throw Error(
+      `Change ${options.leaf} is already archived on ${options.requestedTarget}. Do not execute it again.`,
+    );
+  const onChange = packetPresence(options.changeCwd, 'HEAD', options.leaf);
+  if (onChange.open || !onChange.archived)
+    throw Error(
+      `Completed Change packet must be archived on the Change branch before integration. Open packet present: ${onChange.open}. Archived packet present: ${onChange.archived}.`,
+    );
+}
+
+function assertClosedOnTarget(cwd, rev, target, leaf) {
+  const presence = packetPresence(cwd, rev, leaf);
+  if (presence.open)
+    throw Error(
+      `Completed Change packet remains in open on ${target}. Do not report completion.`,
+    );
+  if (!presence.archived)
+    throw Error(
+      `Archived Change packet is absent on ${target}. Do not report completion.`,
+    );
+  return presence;
+}
+
 function trace(tracePath, line) {
   if (tracePath) appendFileSync(tracePath, `${line}\n`);
 }
@@ -241,6 +351,7 @@ function integrateUnlocked(options) {
   trace(options.tracePath, `${process.pid} enter`);
   sleep(options.holdMs ?? 0);
   const sourceSha = git(['rev-parse', 'HEAD'], options.changeCwd);
+  if (options.leaf) assertReadyToClose(options);
   try {
     if (verdict.mode === 'squash') {
       git(['merge', '--squash', sourceBranch], options.integrationCwd);
@@ -310,6 +421,14 @@ function integrateUnlocked(options) {
     !isAncestor(sourceSha, targetSha, options.integrationCwd)
   )
     throw Error('Join did not retain the Change revision on the target.');
+  const closure = options.leaf
+    ? assertClosedOnTarget(
+        options.integrationCwd,
+        targetSha,
+        options.requestedTarget,
+        options.leaf,
+      )
+    : null;
   trace(options.tracePath, `${process.pid} leave`);
   return {
     mode: verdict.mode,
@@ -318,6 +437,13 @@ function integrateUnlocked(options) {
     sourceSha,
     sourceBranch,
     target: options.requestedTarget,
+    ...(closure
+      ? {
+          closed: true,
+          archivedPacket: closure.paths.archived,
+          openPacket: closure.paths.open,
+        }
+      : {}),
   };
 }
 
@@ -404,6 +530,7 @@ export function retireChangeWorktree({
   target,
   branch,
   landedSha = null,
+  leaf = null,
 }) {
   if (!refOk(target)) throw Error('Specify --target <integration branch>');
   const info = linked(changeCwd);
@@ -425,6 +552,7 @@ export function retireChangeWorktree({
       git(['rev-parse', 'HEAD^{tree}'], changeCwd);
   if (!merged && !squashLanded)
     throw Error('Unintegrated worktree cannot be retired.');
+  if (leaf) assertClosedOnTarget(repoCwd, targetSha, target, leaf);
   const actual = branchName(changeCwd);
   if (branch && actual !== branch)
     throw Error(`Expected to retire ${branch}, found ${actual}.`);
@@ -474,6 +602,8 @@ export function main(args = process.argv.slice(2)) {
         holdMs: Number(flag(args, '--hold-ms') ?? 0),
         tracePath: flag(args, '--trace'),
         ledgerAppend: flag(args, '--ledger-append'),
+        leaf: flag(args, '--leaf'),
+        obligationsTransferred: args.includes('--obligations-transferred'),
       };
       print(integrateChange(options));
       return 0;
@@ -497,12 +627,23 @@ export function main(args = process.argv.slice(2)) {
           target: flag(args, '--target'),
           branch: flag(args, '--branch'),
           landedSha: flag(args, '--landed-sha'),
+          leaf: flag(args, '--leaf'),
+        }),
+      );
+      return 0;
+    }
+    if (command === 'lookup') {
+      print(
+        lookupCommission({
+          repoCwd: flag(args, '--repo-cwd') ?? process.cwd(),
+          target: flag(args, '--target'),
+          leaf: flag(args, '--leaf'),
         }),
       );
       return 0;
     }
     console.error(
-      'Usage: change-lifecycle.mjs <integrate|ensure-branch|retire> [flags]',
+      'Usage: change-lifecycle.mjs <integrate|ensure-branch|retire|lookup> [flags]',
     );
     return 2;
   } catch (error) {
