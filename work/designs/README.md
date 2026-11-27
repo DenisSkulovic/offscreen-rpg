@@ -36,4 +36,4 @@ Selected presentation language, prompt tools, the world-capability kernel and th
 
 **Next triage after the Storyteller wiki branch merges:** retire/promote source-grounded historical programs with inbound wiki citations, starting with `legacy-initiatives-index`, `repository-agent-workbench`, and older completed support programs. Writer's Workbench product/technical promotion verified from WR01/WRD02–04; dossier archived with research retained and successor references.
 
-- [Developer observability](open/observability-developer/README.md) — R5 defended, accepted, canon promoted; historical evidence for successor implementation, no active investigation.
+- [Developer observability](open/observability-developer/README.md) — R5 defended, accepted, canon promoted; active bounded-implementation recovery and staged certification decision, no commission.

@@ -19,11 +19,20 @@ Alternatives: retain strict synthetic only (does not meet developer goal); turn 
 | Proof | Real backend query freshness, scoped resource observation, individually UID-bound diagnostic cleanup, retained namespaces |
 | Release | Existing policy unchanged; no developer admission or release mutation |
 
-## Contract routes
+## Permanent contract and implementation boundary
 
-- [Artifact ownership](../../../../docs/technical/platform/observability-native-infrastructure.md#artifact-ownership) and [maintained geography](R5-GEOGRAPHY.md).
-- [Telemetry topology and trust](../../../../docs/technical/platform/observability-native-infrastructure.md#telemetry-topology-and-trust) and [developer v1 contract](../../../../docs/technical/platform/observability-native-infrastructure.md#developer-v1-contract).
-- [Lifecycle](LIFECYCLE.md) and [proof safety](R5-PROOF-CONTRACT.md).
-- [Acceptance](ACCEPTANCE.md), [certification continuity](R5-CERTIFICATION.md), and [implementation packet](../../../changes/open/2026-11-27--observability-developer/CHANGE.md).
+The [canonical technical owner](../../../../docs/technical/platform/observability-native-infrastructure.md) governs pinned artifact ownership, strict synthetic and trusted developer admission, bounded producer metrics, exact lifecycle/identity/custody, upgrade preservation, foreground process supervision, proof-resource UID custody and exact fresh backend observations. No duplicate normative architecture here. [Source map](SOURCE-MAP.md) owns maintained geography, [acceptance](ACCEPTANCE.md) owns capability and certification routing, [implementation plan](IMPLEMENTATION-PLAN.md) owns successor allocation. Release remains unchanged; no application instrumentation or automatic recovery.
 
-No actual application enrollment, public exposure, generic migration, release mutation or automatic recovery. Original native acceptance obligations transfer to the single successor, not a second active packet. Independent defense pass 02 and prior rationale are preserved at [the accepted candidate](https://github.com/DenisSkulovic/offscreen-rpg/tree/06306ace3717841f36ad0952cf7664afbd6fcd4a/work/designs/open/observability-developer/) and [pre-consolidation TARGET.md](https://github.com/DenisSkulovic/offscreen-rpg/blob/d4a2fa4307e5484f1520efa31954f7e7d240de27/work/designs/open/observability-developer/TARGET.md).
+## Remaining material decisions (not delegated)
+
+| Decision | Affected outcome | Resolution before commission |
+| --- | --- | --- |
+| Staged certification/integration | All successor closure; D01 first | Preserve every A/V predicate and final integrated proof, but permit separately safe narrow integrations after their required proof. Proposed only; independent design review and owner acceptance required. Until then the R5 single-candidate gate binds. |
+| Absolute deadlines and owned process cancellation | D02–D07, D09–D11 where relevant | Reconcile actual bounded read/process/lock semantics and budgets using existing Linux primitives; verify feasible phase arithmetic and failure behavior. No generic scheduler or success after timeout. |
+| Fresh bounded metric timestamps across retained stores | D08 | Pinned D3/D4 experiments, actual raw query samples and single-writer custody; evaluate proposed durable allocation watermark against rollback and delayed ingestion. Preserve exact freshness and bounded series; no new run label or acceptance weakening. |
+| Isolated A9 failure mechanism | D11 | Accepted real quota failure remains binding unless a separately ratified admission rejection demonstrates the same public installer failure/retained pending/repeat-refusal predicates. Verify actual Helm history and owner-only fixture custody. |
+| Exact Grafana service/target port and pinned Collector render | D04/D05/D09 and related proof | Verify actual pinned render and loopback wiring; do not invent ports or claim live success. |
+
+Prior read-only feasibility observation (/tmp/offscreen-obs-batch.aF0Wnxi8): five rev1 deployed, storage metadata and old Collector checksum/owned Pod chain observed, three claims, six host ports vacant, no pending, Linux Python 3.12.3/util-linux 2.39.3/prctl support and approximately 10 GiB available. Historical evidence only; no current resource or upgrade claim.
+
+D01 parity-only artifact migration needs no new topology decision and can be prepared now. Commission remains gated by independent readiness, worktree collision check and applicable certification authority. No downstream unresolved mechanism is assigned to its executor.

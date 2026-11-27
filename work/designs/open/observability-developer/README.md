@@ -1,43 +1,24 @@
 # Developer observability
 
-**Status:** Accepted architecture (R5, independent defense pass 02); implementation pending. The oversized Change fails submission admission and remains uncommissioned. [Recovery roadmap](IMPLEMENTATION-PLAN.md) owns the replacement sequence and first-dispatch priority; it does not amend accepted architecture or grant commission.
+**State:** R5 architecture accepted and promoted; implementation recovery active. Owner: ChatGPT planner; human integration custodian. Next review: staged certification decision and independent D01 packet readiness. No implementation or live operation commissioned. The old monolithic packet remains held for reconciliation, not dispatch.
 
 ## Objective
 
-Make the existing optional development observability stack useful for local application experiments while retaining its diagnostic, storage and security guarantees.
+Make the optional native observability stack useful for local development: maintained Helm inputs, separate trusted developer and strict diagnostic telemetry, foreground WSL access, safe known-predecessor Collector upgrade and truthful backend verification. Preserve five pinned native releases, three retained claims, credentials, release behavior, privacy and custody. No application SDK enrollment, generic upgrades, public exposure, paid calls or destructive cleanup.
 
-- Keep the five pinned Helm releases and three persistent claims.
-- Normalize maintained Helm values and locks; retain experimental specimens only in design evidence.
-- Separate strict synthetic diagnostics from trusted local developer telemetry.
-- Provide foreground, loopback-only WSL connectivity with owned process cleanup.
-- Support an explicit, identity-checked Collector-only configuration upgrade; ordinary ensure remains install-only.
-- Repair functional signal, datasource and resource proofs and retain all outstanding native infrastructure acceptance obligations.
+## Current route
 
-No actual application instrumentation, public exposure, generic upgrade engine, release changes, paid calls or destructive operations are authorized.
-
-## Recovery
-
-Follow the [implementation recovery roadmap](IMPLEMENTATION-PLAN.md): write coherent replacements, reconcile all obligations, retire the monolithic packet, and prioritize the first independently reviewable Change. The existing certification boundary remains binding until its proposed staged replacement is reviewed and accepted.
-
-## Specification
-
-| Document | Responsibility |
+| Document | Purpose |
 | --- | --- |
-| [TARGET.md](TARGET.md) | Architecture rationale and selected contract routes |
-| [LIFECYCLE.md](LIFECYCLE.md) | Links to canonical lifecycle sections |
-| [R5-GEOGRAPHY.md](R5-GEOGRAPHY.md) | Source and artifact placement |
-| [R5-PROOF-CONTRACT.md](R5-PROOF-CONTRACT.md) | Links to canonical proof safety and freshness |
-| [R5-CERTIFICATION.md](R5-CERTIFICATION.md) | Original acceptance obligations |
-| [ACCEPTANCE.md](ACCEPTANCE.md) | Acceptance matrix |
-| [SOURCE-MAP.md](SOURCE-MAP.md) | Source investigation |
+| [TARGET](TARGET.md) | Selected architecture, tradeoffs, remaining material decisions |
+| [SOURCE-MAP](SOURCE-MAP.md) | Current source ownership and integration seams |
+| [ACCEPTANCE](ACCEPTANCE.md) | Complete native/developer gate ownership and binding certification rule |
+| [IMPLEMENTATION-PLAN](IMPLEMENTATION-PLAN.md) | Bounded successor outcomes, dependencies and recovery |
 | [Canonical technical contract](../../../../docs/technical/platform/observability-native-infrastructure.md) | Permanent selected authority |
+| [D01 artifact normalization](../../../changes/open/2026-11-27--obs-d01-native-artifacts/CHANGE.md) | First proposed bounded packet, not yet independently reviewed |
 
-## Evidence and implementation
+## Historical and transition material
 
-The existing workloads and authenticated datasource health were observed, but clean fresh installation and complete backend signal queries were not certified. Preserve the distinction between observed health and unrun acceptance.
+[DESIGN-R2](DESIGN-R2.md), [SELF-DEFENSE](SELF-DEFENSE.md), [committee](committee/pass-02.md) and [experiments](experiments/) preserve the research, independent findings and actual pinned feasibility work. Previous [geography](R5-GEOGRAPHY.md), [lifecycle](LIFECYCLE.md), [proof contract](R5-PROOF-CONTRACT.md) and [certification](R5-CERTIFICATION.md) remain accessible during cutover to avoid breaking inbound references; the current route above consolidates their meaning without waiving accepted obligations. The [held predecessor](../../../changes/open/2026-11-27--observability-developer/CHANGE.md) retains detailed implementation candidates and proof predicates until full crosswalk reconciliation, not a second active schedule.
 
-[Historical R2 investigation](DESIGN-R2.md), [designer self-defense](SELF-DEFENSE.md), and [committee pass 01](committee/pass-01.md) are evidence, not execution instructions. Independent pass 02 accepted R5; the owner promoted the architecture.
-
-[Implementation Change](../../../changes/open/2026-11-27--observability-developer/CHANGE.md) owns execution planning and unresolved packet-level decisions. OBSERVABILITY-NATIVE is archived as superseded; its outstanding acceptance obligations belong to this successor.
-
-Original investigation and superseded README text are preserved in [the pre-consolidation revision](https://github.com/DenisSkulovic/offscreen-rpg/blob/dee29c6653b873b741197b04f84761d64b35824e/work/designs/open/observability-developer/README.md).
+Workloads and datasource health were observed on predecessor source; clean install, complete backend queries and full certification were not established. All successor evidence stays NOT RUN until executed. Original dossier and packet provenance: [audited baseline](https://github.com/DenisSkulovic/offscreen-rpg/tree/270a3b6e323872e4735f8d5ceac4a71027433ffd/work/designs/open/observability-developer).

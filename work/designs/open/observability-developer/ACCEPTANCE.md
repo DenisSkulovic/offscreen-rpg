@@ -1,5 +1,5 @@
 # Verification and acceptance matrix
-All successor results are NOT RUN. Historical experiment receipts apply only to their tested scope. Source checks belong to Cursor; substantial proof belongs to ChatGPT/owner. No paid calls or release mutations. The canonical technical contract owns selected behavior; the successor PROOF.md owns execution and deadline candidates.
+All successor results are NOT RUN. Historical experiment receipts apply only to their tested scope. Source checks belong to Cursor; substantial proof belongs to ChatGPT/owner. No paid calls or release mutations. The canonical technical contract owns selected behavior; individual successor proof packets will own executable routes; the held predecessor retains detailed candidate mechanisms pending reconciliation.
 
 | ID | Claim | Normal / discriminating negative | Tier and executor | Integration |
 | --- | --- | --- | --- | --- |
@@ -14,7 +14,56 @@ All successor results are NOT RUN. Historical experiment receipts apply only to 
 | V09 | Synthetic regression | real existing diagnostic normal/privacy paths via isolated owned namespace, immediate durable UIDs, unknown create refusal, individual UID cleanup, namespace retained, foreign/replaced child negative, no raw secrets; fixes run on actual default paths; duplicate argument, query error, missing Pod/partial creation and cleanup failures negative | source Cursor + live owner | essential |
 | V10 | Grafana/resource proof | exact datasource UID/type/URL/health with real auth and no output credential; exact five nonempty roles, >=3 advancing memory timestamps per role, 12 samples at 10s actual elapsed >=110s, scoped pod CPU/memory min/max/mean, collector scrape metrics/target, unchanged stable identities; no port0/interval0 production, no broad node summary retained | source Cursor + owner | essential |
 | V11 | Release nonmutation | both-profile source render/status routing; dev commands refuse release before write, no release context access for dev; old release gate A11 preserved | source Cursor | essential |
-| V12 | Original certification | All original A1–A12 retained, executed on successor per R5-CERTIFICATION after owner ratification; no waiver | Cursor source + owner live/isolated as specified | all original gates assigned to successor, joint closure per R5-CERTIFICATION; no waiver |
+| V12 | Original certification | All original A1–A12 retained, executed on final successor under the binding certification rule below; no waiver | Cursor source + owner live/isolated as specified | all original gates preserved; joint closure remains binding until revised authority |
 
-## Execution route
-Use the [successor verification specification](../../../changes/open/2026-11-27--observability-developer/PROOF.md) for precommission evidence, implementation tests, existing development qualification and isolated certification. See [certification continuity](R5-CERTIFICATION.md) for the transferred A1–A12 obligations. Historical design experiments and owner evidence are preserved in DESIGN-R2.md and [prior acceptance text](https://github.com/DenisSkulovic/offscreen-rpg/blob/d4a2fa4307e5484f1520efa31954f7e7d240de27/work/designs/open/observability-developer/ACCEPTANCE.md). No namespace deletion, live authorization or certification implied.
+
+## Original native certification continuity (A1–A12)
+
+OBSERVABILITY-NATIVE was superseded, not certified. The following original predicates are retained, with the R34 amendments and exact original owner commands in the [archived PROOF](../../../changes/archive/2026-11/observability/2026-11-26--observability-native/PROOF.md) and [OWNER-ACCEPTANCE](../../../changes/archive/2026-11/observability/2026-11-26--observability-native/OWNER-ACCEPTANCE.md). These references are required for planner reconciliation, not whole-dossier Cursor preload.
+
+| Original gate | Required proof | Tier / owner | Integration |
+| --- | --- | --- | --- |
+| A1 artifacts | five archives/hash locks, both-profile render exact expected inventory and digest-pinned image refs; corrupt final archive before any Helm invocation, mismatched repository/digest/tag/name, extra regular/init/ephemeral container, malformed/duplicate lock and unexpected resource refuse | source + offline Helm / implementer | essential |
+| A2 profile routing | explicit optional dev/release, unchanged defaults and unrelated plans; no legacy shell fallback, wrong context refuses | source / implementer | essential |
+| A3 read-only classifier | absent, complete, stale generation, unready, wrong full spec image, canonical runtime imageID mismatch (including config/child digest), missing/extra statuses or containers, wrong claim, foreign/partial namespace, malformed/timeout/forbidden, legacy occupied release; no writes | deterministic fixture tests / implementer | essential |
+| A4 custody | concurrent independent worktrees serialized, stale pending and symlink refused, child timeout/parent termination retains fence, wrong identity before write refuses; no cross-service lock collision | deterministic local process tests / implementer | essential |
+| A5 install sequencing | five preflight before writes, namespace/secret create once, exact native Helm install order and identical descriptor values to offline render, no upgrade or uninstall; fail at each phase, no later mutations, preserve data and bounded receipt; stale identity stops | injected command tests / implementer | essential |
+| A6 public fresh dev | owner-authorized disposable or freshly admitted dev target, real public CLI, all five ready with exact B07 workload/Pod references and canonical imageIDs and three bound PVCs, Grafana auth and datasource health; repeat ensure no writes/UID changes | actual local runtime / owner | essential |
+| A7 query & privacy | exact selected HTTP positive correlation and synthetic negative canaries, Collector diagnostics check; no app data. Include fresh invalid allowed-value case, metric metadata/exemplar query where exposed; report visibility limits | actual runtime / owner | essential bounded synthetic scope |
+| A8 persistence & fault | retained exact trace/log/metric after graceful backend replacements, same claims; Tempo unavailable, healthy paths continue and fresh trace recovery, same Collector UID; restoration on interruption where possible | isolated owner-authorized runtime / owner | essential |
+| A9 partial installation | injected real failed Helm install in isolated target, subsequent public ensure refusal and retained identities; explicit cleanup only by owner after receipt | isolated runtime / owner | essential |
+| A10 observation | bounded resource sampling, Collector scrape/queue/failure metrics; missing families not zero; no capacity claim | actual runtime / owner | essential |
+| A11 occupied release refusal | fixture tests plus read-only public preview against authorized occupied legacy release if available; no actual mutation | source and bounded read-only / owner | essential source; live evidence conditional on available target, no occupied admission |
+| A12 preservation | focused existing planner/status/diagnostic tests, host monitoring and game evidence unchanged, no unrelated service change | source / implementer | essential |
+
+| Gate | Exact successor proof target / ownership | Predecessor evidence and disposition |
+|---|---|---|
+| A1 | both-profile actual offline Helm render/hash/inventory/digest negatives, V01/V02, Cursor | historical original artifact render only; rerun changed path/descriptor |
+| A2 | successor source optional profile/routing/defaults/R34 diagnostic result semantics, Cursor | re-exercise, release unchanged not assumed |
+| A3 | successor classifier fixtures all original states and R34 bounds plus revision1/2, V04, Cursor | previous 118 tests historical, no credit for changed observer |
+| A4 | successor deterministic custody/identity/cancellation incl original inter-worktree/timeout cases, V05/V07, Cursor | re-exercise changed custody and lock |
+| A5 | successor fresh install-only ensure exact dev overlay, original five phases/no later writes, repeat no writes; upgrade separately V06, Cursor | preserve original install refusal, no implicit upgrade |
+| A6 | fresh normal dev successor public CLI with desired revision1 (not occupied upgrade), exact five pinned workloads/claims/auth and repeat identity/no writes, owner | earlier recovered install not clean PASS; separate approved isolated target needed |
+| A7 | successor real original strict synthetic normal/privacy using repaired harness, V09, owner | previous HTTP accepted then query failure, NOT PASS |
+| A8 | successor isolated authorized persistence and Tempo outage, query-only replay, original identities and fresh recovery, owner | NOT RUN; no substitute from developer smoke |
+| A9 | successor isolated fresh normal-profile public partial install with real quota failure, repeat refusal/fence/retained data, owner | prior E03 feasibility only, NOT RUN; no real dev cluster use |
+| A10 | successor real resource sampling and Collector scrape, V10, owner | NOT RUN; 12x10s complete roles |
+| A11 | successor source occupied release refusal fixtures Cursor; conditional authorized read-only legacy release preview owner if available, never mutate | unchanged release render plus rerun affected shared classifier; conditional live unavailable explicitly recorded |
+| A12 | successor full affected source routing/diagnostic/preservation/host monitor/evidence checks, Cursor | previous baseline unrelated failures separately attributed, no waiver |
+
+## Execution order and proof authority
+1. Verify canonical authority, current source, independent packet readiness and exact successor commission. Native ownership is already retired; no parallel dispatch. 
+2. Cursor source work + A1–A5,A11 source,A12 and V focused tests. Commit candidate, stop IMPLEMENTED — ACCEPTANCE PENDING. Owner confirms fresh isolated normal dev target(s) available for A6/A8/A9 before commission per original availability prerequisite. No cluster allocation implied.
+3. Existing owner dev predecessor: separately authorized V06 one Collector upgrade then V07/V08/V09/V10; exact tested SHA. A7/A10 may reuse same successor receipts if full original criteria met. No A9 on this target. 
+4. Separately owner-authorized fresh normal dev target A6, then A8 on isolated target with disruption permission. A9 on another fresh isolated normal-profile target or separately owner-authorized fresh bootstrap after A6/A8, no automatic teardown. A11 conditional read-only only. A6 and V06 are different starting states, both required. No need to reconstruct obsolete predecessor for A6. If A6/A8/A9 environment unavailable stop integration, preserve evidence. 
+5. Owner/ChatGPT compare exact source SHA, full gate receipts and current main affected seams; any changed seam rerun affected gates. Integrate successor only after all mandatory gates; record all successor gate receipts, reconcile historical links, and retire the successor and design per normal workflow. No release upgrade, no real app enrollment. 
+Original native R30/OBS-03 revision1-only is amended only for exact dev Collector revision2 on occupied known predecessor; fresh desired rev1 and release rev1 rules stay. All other original obligations unchanged. 
+
+
+## Proposed staged certification boundary (not accepted)
+
+The binding rule above is the selected R5 boundary. The [successor map](IMPLEMENTATION-PLAN.md) proposes independent integration only after each Change's essential scoped proof and safe intermediate-state check; final platform certification remains NOT RUN until all A/V gates pass on the final integrated SHA, with affected earlier gates rerun after drift. No data/credential, privacy, identity, release, refusal, recovery or cleanup predicate waived. A6 fresh and V06 occupied are distinct; A8/A9 require authorized isolated targets; A11 remains conditional read-only. This proposed change needs independent architecture review and owner acceptance. No implicit exemption for D01 or live permission.
+
+## Execution handoff
+
+The [held predecessor PROOF](../../../changes/open/2026-11-27--observability-developer/PROOF.md) preserves precise deadlines, evidence requests and current candidate contracts pending cutover. Each successor inherits its mapped exact predicates and verifies its own source, proof and authorization. No source/live PASS inferred from the prior 118 focused tests or experiment receipts.
