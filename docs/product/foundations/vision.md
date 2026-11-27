@@ -4,7 +4,7 @@ Offscreen RPG is a story that unfolds over time. You enter through a prepared ex
 
 The defining promise is not “AI chat with a character sheet.” It is a **living, persistent, historically exact story**: the Storyteller can investigate and write from durable sources, the game admits consequences under explicit authority, and each published scene becomes a faithful historical point that can later be reviewed or forked.
 
-The intended experience includes a character with a life, and it still names the possibility of inviting friends into a shared story. On 2026-11-18 the owner ratified the first tested playability milestone as solo. The small-party ambition stays a distant, unscheduled aspiration. It is not cancelled, not implemented, and not required before that solo proof. Shared decision and pause rules remain [proposed](../../../work/designs/open/shared-play/README.md).
+The intended experience includes a character with a life, and it still names the possibility of inviting friends into a shared story. On 2026-11-18 the owner ratified the first tested playability milestone as solo. The small-party ambition stays a distant, unscheduled aspiration. It is not cancelled, not implemented, and not required before that solo proof. Shared decision and pause rules remain [proposed](../../../work/designs/backlog/shared-play/README.md).
 
 ## What this page selects
 

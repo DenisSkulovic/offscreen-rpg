@@ -246,7 +246,7 @@ export const CASES = [
     entrypoint: 'docs/README.md',
     owners: [
       { path: 'docs/product/gameplay/time-and-autonomy.md', headingText: 'Pause and resume', role: 'mandatory', grade: 3, hopper: true },
-      { path: 'work/designs/open/shared-play/README.md', headingText: 'Shared play | open design', role: 'mandatory', grade: 3 },
+      { path: 'work/designs/backlog/shared-play/README.md', headingText: 'Shared play | deferred design', role: 'mandatory', grade: 3 },
     ],
     prohibited: ['Shared pause policy is an accepted product rule'],
   },

@@ -53,7 +53,7 @@
 | PVR-38 | Reader can understand hold, budget, retry and pause | `experience/play-and-decisions.md`; `experience/living-book-poc.md` | Usable status contracts and shell; human acceptance pending | **Experience target** |
 | PVR-39 | A meaningful return after days is possible cheaply | `experience/return-and-journal.md` | Raw passage reader exists, valid summary/long-recall quality not proven | **Research target** with 1/7/30-day fixtures |
 | PVR-40 | Timed response window and delegated default | `gameplay/time-and-autonomy.md#response-windows-and-absence` | General player policy explicitly not accepted | **Blocked future decision**, never imported from Chamber fixture |
-| PVR-41 | Group pause/funding/concurrent decisions coherent | `gameplay/acceptance-scenarios.md`; `work/designs/open/shared-play/README.md` | Proposed/Blocked; not available | **Parked** |
+| PVR-41 | Group pause/funding/concurrent decisions coherent | `gameplay/acceptance-scenarios.md`; `work/designs/backlog/shared-play/README.md` | Proposed/Blocked; not available | **Parked** |
 | PVR-42 | Admin Player 360/support grants are production-ready | `admin/README.md`, `admin/player-360-and-support.md` | Explicitly *not* production powers | **Future operating proposal**, no current grant |
 | PVR-43 | Multi-role Admin console is needed for POC | `admin/charter-and-personas.md` | Long-horizon product direction, not evidence of current user need | **Park** broad UI; keep minimal observability/kill switch |
 | PVR-44 | A visitor can get the magic instantly without erasing real-time play | `foundations/vision.md#why-build-it` | UX/experience tension; no tested demo protocol | **Design hypothesis**, choose honest demo acceleration |

@@ -7,7 +7,7 @@ Historical research, not product authority or a selected implementation. [Origin
 - [Livelihood](../../work/designs/backlog/livelihood-economy/README.md): shared resource names versus ruleset-defined quantities, prices/employers and admitted labor. A chemical exchange need not imply coins.
 - [Character lifecourse](../../work/designs/backlog/character-lifecourse/README.md): typed conditions versus durable continuity, form applicability, growth/loss/ending; absent ability is not zero or unlimited capability.
 - [Spatial play](../../work/designs/backlog/spatial-play/README.md): minimal interrupted-journey representation, abstract/nonmetric connection, no universal linear travel interpolation or coordinate requirement.
-- [Shared play](../../work/designs/open/shared-play/README.md): conflicting intentions, group pause, funding and consent remain unsettled. Player count grants no authority.
+- [Shared play](../../work/designs/backlog/shared-play/README.md): conflicting intentions, group pause, funding and consent remain unsettled. Player count grants no authority.
 - [Data lifecycle](../../work/designs/backlog/player-data-lifecycle/README.md): distinct from fiction limits; no export API, jurisdiction or raw-prompt permission follows.
 
 ## Social relationships

@@ -1,7 +1,7 @@
 # Identity and access
 
 **Owns:** sessions, invitations, membership checks and what an authenticated viewer may read or command.
-**Does not own:** the React/Next F1–F15 target, Query, forms or SSE. That binding design is [client architecture](../client/architecture.md). A dated file under `evidence/inspections/` is not the implementation contract. Shared-play rules are [proposed](../../../work/designs/open/shared-play/README.md), not selected here. Return and journal behavior is [product return](../../product/experience/return-and-journal.md). Scene media honesty is [product presentation](../../product/experience/presentation.md).
+**Does not own:** the React/Next F1–F15 target, Query, forms or SSE. That binding design is [client architecture](../client/architecture.md). A dated file under `evidence/inspections/` is not the implementation contract. Shared-play rules are [proposed](../../../work/designs/backlog/shared-play/README.md), not selected here. Return and journal behavior is [product return](../../product/experience/return-and-journal.md). Scene media honesty is [product presentation](../../product/experience/presentation.md).
 
 ## Who owns the boundary
 

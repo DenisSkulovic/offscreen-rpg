@@ -184,10 +184,10 @@ export const QUESTIONS = [
     cases: ['shared-consent-proposal'],
     prompt: 'Is shared consent for collecting conflicting player intentions an accepted product rule?',
     gold: {
-      ref: 'work/designs/open/shared-play/README.md#shared-play--open-design',
+      ref: 'work/designs/backlog/shared-play/README.md#shared-play--deferred-design',
       status: 'proposal',
-      negative: 'Not accepted product mechanics',
-      stop: 'proposed; do not implement shared decision resolution from this note',
+      negative: 'Not ratified or commissioned',
+      stop: 'No live multi-party acceptance, provider spend or implementation commission follows from this deferral',
     },
   },
   {

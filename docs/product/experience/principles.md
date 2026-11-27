@@ -1,7 +1,7 @@
 ﻿# Experience principles | player-facing non-negotiables
 
 **Owns:** what the browser experience must never compromise.  
-**Does not own:** React and presentation runtime ([client boundary](../../technical/client/state-and-server-boundary.md)), game rules, or staff Admin UX. Shared campaigns are an [open design](../../../work/designs/open/shared-play/README.md), not a principle on this page.
+**Does not own:** React and presentation runtime ([client boundary](../../technical/client/state-and-server-boundary.md)), game rules, or staff Admin UX. Shared campaigns are a [deferred design](../../../work/designs/backlog/shared-play/README.md), not a principle on this page.
 
 ## Core promise
 

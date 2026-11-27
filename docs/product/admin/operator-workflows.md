@@ -45,7 +45,7 @@ These are product sequences. Each powerful step still needs the grant named on [
 
 **Normal — repeated failed narration.** Support sees player impact. Engineering sees the task timeline. A goodwill allowance, if the offering has such units and the cap allows, is a new allowance record. It is not a refund and not a reroll of the settled action. See [AI investigation](ai-engineering-and-investigation.md).
 
-**Conditional — shared-campaign continuity.** Staff may inspect the shared committed state they are permitted to see. Repairing another participant's private material, or editing committed history, is not part of this journey. Shared-play rules remain an [open design](../../../work/designs/open/shared-play/README.md).
+**Conditional — shared-campaign continuity.** Staff may inspect the shared committed state they are permitted to see. Repairing another participant's private material, or editing committed history, is not part of this journey. Shared-play rules remain a [deferred design](../../../work/designs/backlog/shared-play/README.md).
 
 **Conditional — model-cost incident.** One incident, a proposed stop of new paid dispatch, finance exposure, and customer remedy are separate actions. The stop does not cancel in-flight provider charges and does not unpublish past passages.
 

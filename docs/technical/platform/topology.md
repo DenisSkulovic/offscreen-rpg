@@ -250,7 +250,7 @@ Before claiming capacity, run a scripted workload with many idle stories, a burs
 - [Proposed service ownership](#proposed-service-ownership): unextracted process boundaries. Not the running diagram above.
 - [Story lifecycle](../engine/lifecycle-and-compatibility.md): draft, preview, start, holds, membership and completion.
 - [Execution](./execution-and-delivery.md): time, scheduling, races and recovery.
-- [Identity and access](./identities-and-access.md): sessions, invitations and membership. Frontend and transport: [client architecture](../client/architecture.md). Shared play stays [proposed](../../../work/designs/open/shared-play/README.md).
+- [Identity and access](./identities-and-access.md): sessions, invitations and membership. Frontend and transport: [client architecture](../client/architecture.md). Shared play stays [proposed](../../../work/designs/backlog/shared-play/README.md).
 - [Storyteller runtime](../storyteller/operation-and-controller.md): model routing, tools and bounded workflows.
 - [Context and cost](../storyteller/request-context-and-cost.md): memory, caching, prompts and spending.
 - [Notifications](./notifications.md): reaching the player away from the page.
