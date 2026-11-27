@@ -329,8 +329,9 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [2026-11-12--web-storybook-state-workbench](../../../../work/changes/archive/2026-11/web/2026-11-12--web-storybook-state-workbench/CHANGE.md)
 - [2026-11-12--web-tanstack-query-hydration](../../../../work/changes/archive/2026-11/web/2026-11-12--web-tanstack-query-hydration/CHANGE.md)
 
-## other (6)
+## other (7)
 
+- [2026-11-27--ac03-workspace-and-contracts](other/2026-11-27--ac03-workspace-and-contracts/CHANGE.md) — Done source; joint proof remains AC08
 - [2026-11-25--cq06-code-craft-diagnostics](../../../../work/changes/archive/2026-11/other/2026-11-25--cq06-code-craft-diagnostics/CHANGE.md)
 - [2026-11-21--ma02-cache-port-inversion](../../../../work/changes/archive/2026-11/other/2026-11-21--ma02-cache-port-inversion/CHANGE.md)
 - [2026-11-21--ma01-workspace-import-graph](../../../../work/changes/archive/2026-11/other/2026-11-21--ma01-workspace-import-graph/CHANGE.md)
