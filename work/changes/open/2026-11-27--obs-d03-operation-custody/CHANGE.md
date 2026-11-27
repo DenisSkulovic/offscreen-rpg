@@ -11,7 +11,8 @@ Authority: [accepted R5 contract](../../../../docs/technical/platform/observabil
 Own P/custody.mjs, P/forward.mjs owned primitive only, P/exec-owned.py, P/install.mjs mutation result wiring and named custody/forward/install fixtures. D05 owns actual forwarding; D10 owns fixed restoration capability and operation-specific disruption finalization. No generic upgrade engine, global process kill or reset.
 
 ## Remaining planner gate
-F08 inclusive deadlines, Linux direct-exec/FD proof, OD-07 cross-revision exclusion and OD-06 route containment. Proposed schema2 validators and disruption extensions must be reconciled with D06/D10 before commission. Keep same lock identity; verify no old runtime can bypass or clear new fences.
+
+F08 schedule and OD-07 exclusion selected; independent ratification and Linux direct-exec/FD proof, packet readiness remain. D03 owns ensure validator only; D06/D10 their operations.
 
 These are candidate implementation cards, not PLANNER-READY. Before commission resolve named decisions, reconcile actual predecessor source/receipts and shared owners, independently audit G0–G7 and each child context, obtain commission and verify local worktree collision. No Cursor architecture discovery. No public activation or unsafe legacy route; all applicable OD-05–07 conditions and original A/V predicates retained.
 

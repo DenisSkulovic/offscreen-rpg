@@ -11,7 +11,8 @@ Authority: [accepted R5 contract](../../../../docs/technical/platform/observabil
 Own P/artifacts, inventory, readiness, install, receipt and fixtures; dev Collector overlay; scoped environment/verification callers and exact tests; raw-scan overlay exclusion. No generic upgrades, release changes, SDK enrollment or additional Collector. Candidate has five assignments; upper-end size/effort requires review and may need safe repartition.
 
 ## Remaining planner gate
-OD-05 activation proof dependency, OD-06 legacy proof/disruption containment, OD-07 custody compatibility; F08 deadlines and actual pinned Collector/Grafana renders; establish safe acyclic nonpublic preparation/joint activation. Current R5 joint integration remains binding. No public default activation until required real proof on coordinated candidate; do not invent toggle in Cursor.
+
+F08 exact aggregate schedule and offline assembly specified; independent ratification, actual pinned Collector/Grafana renders, fixture and full G0–G7 review remain. No intermediate live activation.
 
 These are candidate implementation cards, not PLANNER-READY. Before commission resolve named decisions, reconcile actual predecessor source/receipts and shared owners, independently audit G0–G7 and each child context, obtain commission and verify local worktree collision. No Cursor architecture discovery. No public activation or unsafe legacy route; all applicable OD-05–07 conditions and original A/V predicates retained.
 

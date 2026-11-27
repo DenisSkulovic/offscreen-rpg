@@ -11,7 +11,8 @@ Authority: [accepted R5 contract](../../../../docs/technical/platform/observabil
 Own P/identity.mjs, scoped read defaults in P/artifacts.mjs and P/install.mjs, corresponding identity/install/readiness/diagnostic-worker fixtures and V/tests/proof.test.mjs identity fields. Common target guard read-only; no global command redesign, new policy, release mutation or upgrade.
 
 ## Remaining planner gate
-F08 aggregate deadline feasibility and accepted constant set; OD-06 public proof-route containment and OD-07 old/new worktree exclusion. Verify actual Kind/Docker/CA configuration and command traces locally. Do not deploy intermediate partial reader migration.
+
+F08 numeric choice and owner assignment specified; independent ratification, local identity shape/trace evidence, coordinated source-route authority and readiness remain. OD-07 owner exclusion is a live/cutover gate, not Cursor compatibility design.
 
 These are candidate implementation cards, not PLANNER-READY. Before commission resolve named decisions, reconcile actual predecessor source/receipts and shared owners, independently audit G0–G7 and each child context, obtain commission and verify local worktree collision. No Cursor architecture discovery. No public activation or unsafe legacy route; all applicable OD-05–07 conditions and original A/V predicates retained.
 

@@ -11,6 +11,7 @@ Authority: [R5 canonical contract](../../../../docs/technical/platform/observabi
 P/forward.mjs forwarding orchestration, new connect.mjs, package.json obs:connect, tests/forward.test.mjs. No daemon, arbitrary targets, public ingress or SDK.
 
 ## Planner gate
-Pinned Grafana Service/targetPort and F08 startup/periodic/termination caps; OD-05–07 affected route/cross-version closure.
+
+F08 preflight/startup/periodic/closure schedule selected; pinned Grafana render, independent ratification and readiness remain.
 
 Candidate cards below are NOT PLANNER-READY. Before commission reconcile predecessor source/receipts and exact contract, settle named decisions, verify local worktree/custody exclusion, independently review G0–G7 and child contexts, obtain commission. No unresolved mechanism delegated. Active Cursor estimate 5–10 min; not measured, reconsider excessive atomic scope. [TASKS](TASKS.md) (2 assignments) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). Parent owns exact diff, focused proof and commit; owner/ChatGPT own heavy proof. No auto-next or early integration.

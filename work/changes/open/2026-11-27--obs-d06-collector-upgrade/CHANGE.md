@@ -11,6 +11,7 @@ Authority: [R5 canonical contract](../../../../docs/technical/platform/observabi
 New P/upgrade.mjs, package.json obs:upgrade, tests/upgrade.test.mjs, operation-specific custody validator only if needed. No generalized installer, rollback/uninstall, release mutation or recovery command.
 
 ## Planner gate
-F08 upgrade cap, pinned render and exact validator; OD-05 actual affected diagnostic/privacy and developer backend proof before exposure; OD-06/07 route/exclusion.
+
+F08 upgrade schedule and required D06 validator selected; independent ratification, pinned render/projection review and joint live proof remain.
 
 Candidate cards below are NOT PLANNER-READY. Before commission reconcile predecessor source/receipts and exact contract, settle named decisions, verify local worktree/custody exclusion, independently review G0–G7 and child contexts, obtain commission. No unresolved mechanism delegated. Active Cursor estimate 8–12 min; not measured, reconsider excessive atomic scope. [TASKS](TASKS.md) (2 assignments) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). Parent owns exact diff, focused proof and commit; owner/ChatGPT own heavy proof. No auto-next or early integration.

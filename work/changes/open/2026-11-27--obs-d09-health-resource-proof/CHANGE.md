@@ -11,6 +11,7 @@ Authority: [R5 canonical contract](../../../../docs/technical/platform/observabi
 V/resources.mjs, resource-observation.py, proof-host identity projection, proof.mjs gate, focused tests; shared forwards/auth, no raw node dump or capacity claim.
 
 ## Planner gate
-F08 phase bounds, actual Grafana port and node profile; OD-05 A6 real health/repeat before activation.
+
+F08 health/resources schedule and gate enablement selected; actual Grafana port, exact node profile, independent ratification and readiness remain.
 
 Candidate cards below are NOT PLANNER-READY. Before commission reconcile predecessor source/receipts and exact contract, settle named decisions, verify local worktree/custody exclusion, independently review G0–G7 and child contexts, obtain commission. No unresolved mechanism delegated. Active Cursor estimate 5–10 min; not measured, reconsider excessive atomic scope. [TASKS](TASKS.md) (2 assignments) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). Parent owns exact diff, focused proof and commit; owner/ChatGPT own heavy proof. No auto-next or early integration.

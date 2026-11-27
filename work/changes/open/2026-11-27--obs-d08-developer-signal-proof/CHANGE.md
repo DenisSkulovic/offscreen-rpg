@@ -11,6 +11,7 @@ Authority: [R5 canonical contract](../../../../docs/technical/platform/observabi
 New V/developer.mjs and developer-probe.py, developer dispatch/receipt in proof.mjs/proof-host.mjs, focused tests. D07 synthetic separate; no SDK or paid traffic.
 
 ## Planner gate
-D3/D4 pinned query evidence, D4.1 durable timestamp watermark unratified, delayed ingestion/rollback, single-writer and F08. No new metric run label or relaxed proof.
+
+D3/D4 pinned actual query/label evidence and independent D4/D4.1 ratification; compact selected scan+durable allocation algorithm specified, no executor choice. F08 shared schedule awaits ratification.
 
 Candidate cards below are NOT PLANNER-READY. Before commission reconcile predecessor source/receipts and exact contract, settle named decisions, verify local worktree/custody exclusion, independently review G0–G7 and child contexts, obtain commission. No unresolved mechanism delegated. Active Cursor estimate 10–15 min; remeasure; not measured, reconsider excessive atomic scope. [TASKS](TASKS.md) (3 assignments) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). Parent owns exact diff, focused proof and commit; owner/ChatGPT own heavy proof. No auto-next or early integration.

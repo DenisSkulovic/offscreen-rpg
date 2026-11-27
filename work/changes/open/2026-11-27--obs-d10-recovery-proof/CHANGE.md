@@ -11,6 +11,7 @@ Authority: [R5 canonical contract](../../../../docs/technical/platform/observabi
 P/custody.mjs operation-specific validator/restoration, V/disruptions.mjs, proof-host/proof gate, focused tests. No generic restore, arbitrary patch, retry or live Cursor proof.
 
 ## Planner gate
-F08 disruption/restoration cap, exact closed operation validator and fixed restore, isolated target availability, OD-06/07 containment/exclusion.
+
+F08 exact restart/outage/restoration arithmetic and D10-only validator ownership specified; independent ratification, isolated target permission and full readiness remain.
 
 Candidate cards below are NOT PLANNER-READY. Before commission reconcile predecessor source/receipts and exact contract, settle named decisions, verify local worktree/custody exclusion, independently review G0–G7 and child contexts, obtain commission. No unresolved mechanism delegated. Active Cursor estimate 10–15 min; not measured, reconsider excessive atomic scope. [TASKS](TASKS.md) (3 assignments) · [SOURCE-MAP](SOURCE-MAP.md) · [EXECUTION](EXECUTION.md) · [PROOF](PROOF.md). Parent owns exact diff, focused proof and commit; owner/ChatGPT own heavy proof. No auto-next or early integration.
