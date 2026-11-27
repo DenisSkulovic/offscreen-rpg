@@ -1,0 +1,33 @@
+# Isolated A9 owner experiment only; never apply on working dev or release.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: offscreen-a9-deny-loki
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    matchPolicy: Exact
+    resourceRules:
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["statefulsets"]
+        scope: Namespaced
+  matchConditions:
+    - name: exact-target
+      expression: 'request.namespace == "offscreen-dev-observability" && object.metadata.name == "obs-loki"'
+  validations:
+    - expression: "false"
+      message: "OFFSCREEN_A9_ISOLATED_LOKI_DENIAL"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: offscreen-a9-deny-loki
+spec:
+  policyName: offscreen-a9-deny-loki
+  validationActions: ["Deny"]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: offscreen-dev-observability

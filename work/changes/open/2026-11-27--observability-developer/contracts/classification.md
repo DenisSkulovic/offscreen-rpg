@@ -18,29 +18,13 @@ Retain existing snapshot fields and add:
 | helmHistory[name] | Sorted rows {revision,status,chart,appVersion} |
 | helmManifests[name] | {revision,documents,previousDocuments?}; previousDocuments only for Collector rev2 |
 
-Use the shared argv builders in [partial-install.md](partial-install.md) with frozen kubeconfig/context. List once; read history and current manifest for each known listed release, plus Collector rev1 manifest when latest is rev2. Do not fetch unknown release histories/manifests or enumerate arbitrary revisions.
+Use these exact ordered Helm arguments with the frozen snapshot/context (all tokens strings; export the history builder for A9):
 
-Reject nonarray responses, malformed rows, empty string fields, wrong namespace, duplicate list names/history revisions, >5 list rows, >=6 history rows, empty history for a listed release. Revisions are positive safe integers or canonical decimal strings (`^[1-9][0-9]*# T05 | Inventory, classification and receipts
+- List: `['--kubeconfig',snapshotPath,'--kube-context',contextName,'list','-n',namespace,'--all','--max','6','--output','json']`.
+- History: `['--kubeconfig',snapshotPath,'--kube-context',contextName,'history',releaseName,'-n',namespace,'--max','6','--output','json']`.
+- Manifest: `['--kubeconfig',snapshotPath,'--kube-context',contextName,'get','manifest',releaseName,'-n',namespace,'--revision',String(revision)]`.
 
-[Execution cards](../TASKS.md) · [Proof and deadlines](../PROOF.md)
-
-T05.1 owns inventory; T05.2 owns readiness and fixtures; T05.3 owns installer and receipts; T05.4 owns external callers and the join. Keep intermediate states source-only.
-
-## T05.1 Inventory
-
-### Input and output
-
-Use the verified T01 descriptors (`chartName`, `chartVersion`, `appVersion`) and T02 desired/predecessor renders. Read pin values from the descriptors, not duplicate version constants. Expected Helm chart string is chartName + '-' + chartVersion; appVersion matches literally, including any leading v. Only dev loads predecessor artifacts.
-
-Retain existing snapshot fields and add:
-
-| Field | Shape |
-| --- | --- |
-| helmReleases | Rows {name,namespace,revision,status,chart,appVersion} |
-| helmHistory[name] | Sorted rows {revision,status,chart,appVersion} |
-| helmManifests[name] | {revision,documents,previousDocuments?}; previousDocuments only for Collector rev2 |
-
-Use the shared argv builders in [partial-install.md](partial-install.md) with frozen kubeconfig/context. List once; read history and current manifest for each known listed release, plus Collector rev1 manifest when latest is rev2. Do not fetch unknown release histories/manifests or enumerate arbitrary revisions.
+ List once; read history and current manifest for each known listed release, plus Collector rev1 manifest when latest is rev2. Do not fetch unknown release histories/manifests or enumerate arbitrary revisions.
 
 Reject nonarray responses, malformed rows, empty string fields, wrong namespace, duplicate list names/history revisions, >5 list rows, >=6 history rows, empty history for a listed release. Revisions are positive safe integers or canonical decimal strings ). Unknown releases remain foreign/legacy. Unexpected revision/status is not-ready or foreign; command/read errors are unreadable. Never report either as absent.
 
