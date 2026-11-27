@@ -186,6 +186,8 @@ const IMPLEMENTED_GATES = new Set([
   'developer',
   'health',
   'resources',
+  'persistence',
+  'outage',
 ]);
 
 export function gateImplemented(gate) {
@@ -680,7 +682,14 @@ export async function runProofOperationSession(input) {
         if (outage.restorationFailed === true) {
           reasonCode = outage.reasonCode ?? 'outage-restore-failed';
         }
-        return { ok: false, phase: outage.phase ?? 'outage', reasonCode };
+        return {
+          ok: false,
+          phase: outage.phase ?? 'outage',
+          reasonCode,
+          restorationAttempted: outage.restorationAttempted === true,
+          restorationFailed: outage.restorationFailed === true,
+          retainedPending: outage.retainedPending === true,
+        };
       }
       completed = true;
       return {

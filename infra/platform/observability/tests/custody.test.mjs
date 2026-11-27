@@ -29,6 +29,7 @@ import {
   resolveProductionStateRoot,
   runMutation,
 } from '../custody.mjs';
+import { ownedChildResult } from '../forward.mjs';
 
 const devKind = readKindProfile('dev');
 const workerPath = fileURLToPath(
@@ -488,4 +489,688 @@ test('close-unconfirmed mutation retains the lock fd and pending record', async 
     rmSync(script, { recursive: true, force: true });
     rmSync(stateRoot, { recursive: true, force: true });
   }
+});
+
+const NAMESPACE = 'offscreen-observability';
+
+function disruptionTuple() {
+  return ensureRequest('obs-prometheus').tuple;
+}
+
+function disruptionBaseline() {
+  return {
+    collectorPodUid: 'collector-pod-uid',
+    workloadUids: {
+      'Deployment/obs-prometheus': 'prom-uid',
+      'StatefulSet/obs-loki': 'loki-uid',
+      'StatefulSet/obs-tempo': 'tempo-uid',
+      'Deployment/obs-collector': 'collector-uid',
+      'Deployment/obs-grafana': 'grafana-uid',
+    },
+    claims: [
+      {
+        name: 'obs-prometheus',
+        uid: 'claim-prom-uid',
+        volumeName: 'pv-prom',
+        pvUid: 'pv-prom-uid',
+        claimRef: {
+          name: 'obs-prometheus',
+          namespace: NAMESPACE,
+          uid: 'claim-prom-uid',
+        },
+      },
+      {
+        name: 'storage-obs-loki-0',
+        uid: 'claim-loki-uid',
+        volumeName: 'pv-loki',
+        pvUid: 'pv-loki-uid',
+        claimRef: {
+          name: 'storage-obs-loki-0',
+          namespace: NAMESPACE,
+          uid: 'claim-loki-uid',
+        },
+      },
+      {
+        name: 'storage-obs-tempo-0',
+        uid: 'claim-tempo-uid',
+        volumeName: 'pv-tempo',
+        pvUid: 'pv-tempo-uid',
+        claimRef: {
+          name: 'storage-obs-tempo-0',
+          namespace: NAMESPACE,
+          uid: 'claim-tempo-uid',
+        },
+      },
+    ],
+  };
+}
+
+function outageBeginDetails(
+  baseline = disruptionBaseline(),
+  down = { resourceVersion: 'rv-down-1', generation: 4, outcome: 'planned' },
+) {
+  return {
+    baseline,
+    tempo: {
+      uid: baseline.workloadUids['StatefulSet/obs-tempo'],
+      originalReplicas: 1,
+    },
+    down,
+    restore: null,
+  };
+}
+
+function frozenIdentity(tuple = disruptionTuple(), snapshotPath = '/tmp/fake-kubeconfig') {
+  return {
+    snapshotPath,
+    contextName: devKind.contextName,
+    namespace: NAMESPACE,
+    tuple,
+  };
+}
+
+function mockOwnedChild(stdout) {
+  const result = ownedChildResult(true, {
+    attempted: true,
+    stdout,
+    exitCode: 0,
+  });
+  return {
+    pid: 42,
+    closed: Promise.resolve(result),
+    outcome: Promise.resolve(result),
+    stop() {
+      return this.outcome;
+    },
+    onOutput() {},
+  };
+}
+
+test('D10 shared handle does not expose restore helpers', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-shared-'));
+  prepareState(stateRoot);
+  const shared = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    mode: 'shared',
+    lockWaitSec: 5,
+  });
+  assert.equal('restoreTempoOnce' in shared, false);
+  assert.equal('finishCancelledOutage' in shared, false);
+  assert.equal('confirmOutageDown' in shared, false);
+  shared.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 normal cancellation blocks advance clear and mutation', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-cancel-normal-'));
+  prepareState(stateRoot);
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  const baseline = disruptionBaseline();
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple: disruptionTuple(),
+    details: outageBeginDetails(baseline),
+  });
+  custody.cancel();
+  assert.throws(() => custody.advance(ensureRequest()), /cancelled/);
+  assert.throws(() => custody.clear(), /cancelled/);
+  const mutation = await runMutation(process.execPath, ['-e', '0'], {
+    custody,
+    timeoutMs: 1_000,
+  });
+  assert.equal(mutation.cancelled, true);
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 cancelled owned restore uses one fixed kubectl argv', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-restore-argv-'));
+  prepareState(stateRoot);
+  const tuple = disruptionTuple();
+  const baseline = disruptionBaseline();
+  const childCalls = [];
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+    startOwnedChild(command, args, options) {
+      childCalls.push({ command, args, options });
+      return mockOwnedChild(
+        JSON.stringify({
+          metadata: {
+            uid: 'tempo-uid',
+            generation: 6,
+            resourceVersion: 'rv-restore',
+          },
+          spec: { replicas: 1 },
+        }),
+      );
+    },
+  });
+  const details = outageBeginDetails(baseline);
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple,
+    details,
+  });
+  custody.confirmOutageDown({
+    observed: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-down-2',
+      generation: 5,
+      replicas: 0,
+    },
+  });
+  custody.cancel();
+  const identity = frozenIdentity(tuple);
+  const fresh = {
+    uid: 'tempo-uid',
+    resourceVersion: 'rv-fresh',
+    generation: 5,
+    replicas: 0,
+    claims: baseline.claims,
+    collectorPodUid: baseline.collectorPodUid,
+  };
+  const result = await custody.restoreTempoOnce(identity, { fresh, deadline: performance.now() + 30_000 });
+  assert.equal(childCalls.length, 1);
+  assert.equal(childCalls[0].command, 'kubectl');
+  assert.deepEqual(childCalls[0].args, [
+    'patch',
+    'statefulset',
+    'obs-tempo',
+    '--kubeconfig',
+    identity.snapshotPath,
+    '--context',
+    identity.contextName,
+    '-n',
+    identity.namespace,
+    '--type=json',
+    '-p',
+    JSON.stringify([
+      { op: 'test', path: '/metadata/uid', value: 'tempo-uid' },
+      { op: 'test', path: '/metadata/resourceVersion', value: 'rv-fresh' },
+      { op: 'test', path: '/metadata/generation', value: 5 },
+      { op: 'test', path: '/spec/replicas', value: 0 },
+      { op: 'replace', path: '/spec/replicas', value: 1 },
+    ]),
+    '-o',
+    'json',
+  ]);
+  assert.equal(result.restorationAttempted, true);
+  assert.equal(result.ok, true);
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 second restore attempt is denied', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-restore-twice-'));
+  prepareState(stateRoot);
+  const tuple = disruptionTuple();
+  const baseline = disruptionBaseline();
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+    startOwnedChild() {
+      return mockOwnedChild(
+        JSON.stringify({
+          metadata: { uid: 'tempo-uid', generation: 6 },
+          spec: { replicas: 1 },
+        }),
+      );
+    },
+  });
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple,
+    details: outageBeginDetails(baseline),
+  });
+  custody.confirmOutageDown({
+    observed: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-down-2',
+      generation: 5,
+      replicas: 0,
+    },
+  });
+  const identity = frozenIdentity(tuple);
+  const fresh = {
+    uid: 'tempo-uid',
+    resourceVersion: 'rv-fresh',
+    generation: 5,
+    replicas: 0,
+    claims: baseline.claims,
+    collectorPodUid: baseline.collectorPodUid,
+  };
+  await custody.restoreTempoOnce(identity, { fresh, deadline: performance.now() + 30_000 });
+  await assert.rejects(
+    () => custody.restoreTempoOnce(identity, { fresh, deadline: performance.now() + 30_000 }),
+    /outage-down|already attempted/,
+  );
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 unknown down still allows one compensation and retains pending', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-unknown-down-'));
+  const paths = prepareState(stateRoot);
+  const tuple = disruptionTuple();
+  const baseline = disruptionBaseline();
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+    startOwnedChild() {
+      return mockOwnedChild(
+        JSON.stringify({
+          metadata: { uid: 'tempo-uid', generation: 6 },
+          spec: { replicas: 1 },
+        }),
+      );
+    },
+  });
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple,
+    details: outageBeginDetails(baseline),
+  });
+  custody.confirmOutageDown({ notAttempted: false });
+  const identity = frozenIdentity(tuple);
+  const fresh = {
+    uid: 'tempo-uid',
+    resourceVersion: 'rv-fresh',
+    generation: 5,
+    replicas: 0,
+    claims: baseline.claims,
+    collectorPodUid: baseline.collectorPodUid,
+  };
+  await custody.restoreTempoOnce(identity, { fresh, deadline: performance.now() + 30_000 });
+  assert.equal(existsSync(paths.pendingPath), true);
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 unknown restore blocks compare-clear', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-unknown-restore-'));
+  const paths = prepareState(stateRoot);
+  const tuple = disruptionTuple();
+  const baseline = disruptionBaseline();
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+    startOwnedChild() {
+      return mockOwnedChild('');
+    },
+  });
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple,
+    details: outageBeginDetails(baseline),
+  });
+  custody.confirmOutageDown({
+    observed: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-down-2',
+      generation: 5,
+      replicas: 0,
+    },
+  });
+  const identity = frozenIdentity(tuple);
+  await custody.restoreTempoOnce(identity, {
+    fresh: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-fresh',
+      generation: 5,
+      replicas: 0,
+      claims: baseline.claims,
+      collectorPodUid: baseline.collectorPodUid,
+    },
+    deadline: performance.now() + 30_000,
+  });
+  assert.throws(() => custody.clear(), /cancelled|authority|restore/);
+  assert.throws(
+    () =>
+      custody.finishCancelledOutage(identity, {
+        verified: {
+          tempo: { uid: 'tempo-uid', replicas: 1, generation: 6 },
+          claims: baseline.claims,
+          collectorPodUid: baseline.collectorPodUid,
+          workloadUids: baseline.workloadUids,
+        },
+      }),
+    /uncertain/,
+  );
+  assert.equal(existsSync(paths.pendingPath), true);
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 close-unconfirmed refuses restore', async (t) => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-close-unconfirmed-'));
+  const paths = prepareState(stateRoot);
+  const script = mkdtempSync(join(tmpdir(), 'obs-d10-unconfirmed-'));
+  const slowPath = join(script, 'slow.mjs');
+  writeFileSync(slowPath, 'setTimeout(() => {}, 60_000);\n');
+  const tuple = disruptionTuple();
+  const baseline = disruptionBaseline();
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple,
+    details: outageBeginDetails(baseline),
+  });
+  custody.confirmOutageDown({
+    observed: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-down-2',
+      generation: 5,
+      replicas: 0,
+    },
+  });
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    const started = performance.now();
+    const pending = runMutation(process.execPath, [slowPath], {
+      custody,
+      now: () => performance.now(),
+      deadline: started + 30_000,
+      timeoutMs: 10_000,
+      killGraceMs: 2_000,
+    });
+    t.mock.timers.tick(20_000);
+    const result = await pending;
+    assert.equal(result.closeUnconfirmed, true);
+    await assert.rejects(
+      () =>
+        custody.restoreTempoOnce(frozenIdentity(tuple), {
+          fresh: {
+            uid: 'tempo-uid',
+            resourceVersion: 'rv-fresh',
+            generation: 5,
+            replicas: 0,
+            claims: baseline.claims,
+            collectorPodUid: baseline.collectorPodUid,
+          },
+          deadline: performance.now() + 30_000,
+        }),
+      /authority failed/,
+    );
+    assert.equal(existsSync(paths.pendingPath), true);
+  } finally {
+    t.mock.timers.reset();
+    rmSync(script, { recursive: true, force: true });
+    rmSync(stateRoot, { recursive: true, force: true });
+  }
+});
+
+test('D10 restore refuses wrong fresh identity and claims', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-restore-refuse-'));
+  const tuple = disruptionTuple();
+  const baseline = disruptionBaseline();
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple,
+    details: outageBeginDetails(baseline),
+  });
+  custody.confirmOutageDown({
+    observed: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-down-2',
+      generation: 5,
+      replicas: 0,
+    },
+  });
+  const identity = frozenIdentity(tuple);
+  await assert.rejects(
+    () =>
+      custody.restoreTempoOnce(identity, {
+        fresh: {
+          uid: 'other-uid',
+          resourceVersion: 'rv-fresh',
+          generation: 5,
+          replicas: 0,
+          claims: baseline.claims,
+          collectorPodUid: baseline.collectorPodUid,
+        },
+        deadline: performance.now() + 30_000,
+      }),
+    /fresh state is invalid/,
+  );
+  await assert.rejects(
+    () =>
+      custody.restoreTempoOnce(identity, {
+        fresh: {
+          uid: 'tempo-uid',
+          resourceVersion: 'rv-down-2',
+          generation: 5,
+          replicas: 0,
+          claims: baseline.claims,
+          collectorPodUid: baseline.collectorPodUid,
+        },
+        deadline: performance.now() + 30_000,
+      }),
+    /fresh state is invalid/,
+  );
+  const claims = globalThis.structuredClone(baseline.claims);
+  claims[0].uid = 'changed';
+  await assert.rejects(
+    () =>
+      custody.restoreTempoOnce(identity, {
+        fresh: {
+          uid: 'tempo-uid',
+          resourceVersion: 'rv-fresh',
+          generation: 5,
+          replicas: 0,
+          claims,
+          collectorPodUid: baseline.collectorPodUid,
+        },
+        deadline: performance.now() + 30_000,
+      }),
+    /fresh state is invalid/,
+  );
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 missing or replaced pending refuses restore', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-pending-replace-'));
+  const paths = prepareState(stateRoot);
+  const tuple = disruptionTuple();
+  const baseline = disruptionBaseline();
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple,
+    details: outageBeginDetails(baseline),
+  });
+  custody.confirmOutageDown({
+    observed: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-down-2',
+      generation: 5,
+      replicas: 0,
+    },
+  });
+  writeFileSync(paths.pendingPath, '{', { mode: 0o600 });
+  await assert.rejects(
+    () =>
+      custody.restoreTempoOnce(frozenIdentity(tuple), {
+        fresh: {
+          uid: 'tempo-uid',
+          resourceVersion: 'rv-fresh',
+          generation: 5,
+          replicas: 0,
+          claims: baseline.claims,
+          collectorPodUid: baseline.collectorPodUid,
+        },
+        deadline: performance.now() + 30_000,
+      }),
+    /changed|invalid/,
+  );
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 finishCancelledOutage clears only exact verified projection', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-finish-cancelled-'));
+  const paths = prepareState(stateRoot);
+  const tuple = disruptionTuple();
+  const baseline = disruptionBaseline();
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+    startOwnedChild() {
+      return mockOwnedChild(
+        JSON.stringify({
+          metadata: { uid: 'tempo-uid', generation: 6 },
+          spec: { replicas: 1 },
+        }),
+      );
+    },
+  });
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple,
+    details: outageBeginDetails(baseline),
+  });
+  custody.confirmOutageDown({
+    observed: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-down-2',
+      generation: 5,
+      replicas: 0,
+    },
+  });
+  const identity = frozenIdentity(tuple);
+  await custody.restoreTempoOnce(identity, {
+    fresh: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-fresh',
+      generation: 5,
+      replicas: 0,
+      claims: baseline.claims,
+      collectorPodUid: baseline.collectorPodUid,
+    },
+    deadline: performance.now() + 30_000,
+  });
+  custody.finishCancelledOutage(identity, {
+    verified: {
+      tempo: { uid: 'tempo-uid', replicas: 1, generation: 6 },
+      claims: baseline.claims,
+      collectorPodUid: baseline.collectorPodUid,
+      workloadUids: baseline.workloadUids,
+    },
+  });
+  assert.equal(existsSync(paths.pendingPath), false);
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 failed final projection refuses compare-clear', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-finish-bad-'));
+  const paths = prepareState(stateRoot);
+  const tuple = disruptionTuple();
+  const baseline = disruptionBaseline();
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+    startOwnedChild() {
+      return mockOwnedChild(
+        JSON.stringify({
+          metadata: { uid: 'tempo-uid', generation: 6 },
+          spec: { replicas: 1 },
+        }),
+      );
+    },
+  });
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple,
+    details: outageBeginDetails(baseline),
+  });
+  custody.confirmOutageDown({
+    observed: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-down-2',
+      generation: 5,
+      replicas: 0,
+    },
+  });
+  const identity = frozenIdentity(tuple);
+  await custody.restoreTempoOnce(identity, {
+    fresh: {
+      uid: 'tempo-uid',
+      resourceVersion: 'rv-fresh',
+      generation: 5,
+      replicas: 0,
+      claims: baseline.claims,
+      collectorPodUid: baseline.collectorPodUid,
+    },
+    deadline: performance.now() + 30_000,
+  });
+  assert.throws(
+    () =>
+      custody.finishCancelledOutage(identity, {
+        verified: {
+          tempo: { uid: 'tempo-uid', replicas: 1, generation: 99 },
+          claims: baseline.claims,
+          collectorPodUid: baseline.collectorPodUid,
+          workloadUids: baseline.workloadUids,
+        },
+      }),
+    /verified tempo invalid/,
+  );
+  assert.equal(existsSync(paths.pendingPath), true);
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('D10 public advance is refused after cancellation for outage down confirm', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-d10-outage-advance-cancel-'));
+  prepareState(stateRoot);
+  const custody = await acquireCustody(devKind.contextName, {
+    stateRoot,
+    lockWaitSec: 5,
+  });
+  custody.begin({
+    operation: 'outage',
+    phase: 'outage-down',
+    tuple: disruptionTuple(),
+    details: outageBeginDetails(),
+  });
+  custody.cancel();
+  assert.throws(
+    () =>
+      custody.confirmOutageDown({
+        observed: {
+          uid: 'tempo-uid',
+          resourceVersion: 'rv-down-2',
+          generation: 5,
+          replicas: 0,
+        },
+      }),
+    /cancelled/,
+  );
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
 });
