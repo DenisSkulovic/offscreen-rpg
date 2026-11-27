@@ -113,9 +113,8 @@ export function verifyContainerRuntimeIdentity(
   if (typeof imageId !== 'string' || imageId.length === 0) {
     return { ok: false, reason: 'missing-image-id' };
   }
-  if (entry.image != null) {
-    return { ok: false, reason: 'status-image-forbidden' };
-  }
+  // ContainerStatus.image is runtime metadata, not identity evidence (B07).
+  // Only imageID must equal the pinned canonical repository and digest.
   const at = imageId.indexOf('@sha256:');
   if (at < 1) {
     return { ok: false, reason: 'bare-config-digest' };
