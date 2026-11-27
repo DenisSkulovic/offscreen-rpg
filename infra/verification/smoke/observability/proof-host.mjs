@@ -28,6 +28,7 @@ export const PROOF_GATES = Object.freeze([
   'outage',
   'resources',
   'partial-install',
+  'developer',
 ]);
 
 export const GATE_WORK_MS = Object.freeze({
@@ -169,7 +170,7 @@ export function reserveMsForGate(gate) {
 /**
  * @param {string} gate
  */
-const IMPLEMENTED_GATES = new Set(['signals']);
+const IMPLEMENTED_GATES = new Set(['signals', 'developer']);
 
 export function gateImplemented(gate) {
   return IMPLEMENTED_GATES.has(gate);
@@ -580,6 +581,8 @@ export async function runProofOperationSession(input) {
       evidenceDir: input.evidenceDir,
       receiptPath: input.receiptPath,
       deleteProofResources: input.deleteProofResources,
+      custody: input.custody ?? null,
+      proofCustody: input.proofCustody ?? null,
     };
 
     if (input.gate === 'persistence') {
@@ -668,6 +671,23 @@ export async function runProofOperationSession(input) {
         reasonCode: null,
         cleanup: false,
       };
+    }
+
+    if (input.gate === 'developer') {
+      const runDeveloper =
+        input.runDeveloper ??
+        (() => {
+          throw new Error('developer-runner-required');
+        });
+      const developer = await runDeveloper(session);
+      if (!developer.ok) {
+        reasonCode = developer.reasonCode ?? 'developer-failed';
+        cleanupOk = developer.cleanup === true;
+        return { ok: false, phase: 'developer', reasonCode };
+      }
+      completed = true;
+      cleanupOk = true;
+      return { ok: true, phase: 'developer-complete', reasonCode: null };
     }
 
     if (input.gate === 'signals') {
