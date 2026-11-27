@@ -1,10 +1,10 @@
 # Web: Next.js player interface
 
-`@offscreen/web` owns presentation, forms and interaction with **published server projections**. It is not a second gameplay engine, clock, dice roller or provider-billing authority. Before changing the player experience, read [product UI intent](../../docs/product/experience/principles.md); [client and identity](../../docs/technical/platform/identities-and-access.md) owns intended browser/session boundaries.
+`@offscreen/web` is the player interface of the legacy exploratory application. It owns presentation, forms and interaction with **published server projections**. It is not a second gameplay engine, clock, dice roller or provider-billing authority. Before changing the player experience, read [product UI intent](../../docs/product/experience/principles.md); [client and identity](../../docs/technical/platform/identities-and-access.md) owns intended browser/session boundaries.
 
 ## Find the owning surface in one hop
 
-**For a selected Cursor Change:** open its own `CHANGE.md`, **one** matching map below, then 2–5 named source symbols. These maps describe the **current code**. TanStack Query, React Hook Form and Play SSE invalidation are in that code (`useStoryLiveUpdates`, shared Query provider). The [selected architecture](../../docs/technical/client/architecture.md) remains the contract for behavior the source has not finished, including F1–F15 human acceptance. Inspected 2026-11-16.
+**For a selected Cursor Change:** open its own `CHANGE.md`, **one** matching map below, then 2–5 named source symbols. These maps describe the **current code**. TanStack Query, React Hook Form and Play SSE invalidation are in that code (`useStoryLiveUpdates`, shared Query provider). The [selected architecture](../../docs/technical/client/architecture.md) remains the contract for behavior the source has not finished, including F1–F15 human acceptance. Inspected 2026-11-16; the maps are routes to the code, and their presence is not evidence that a flow was run.
 
 | Question / Change family | One first-read map | Only then inspect |
 | --- | --- | --- |
@@ -17,7 +17,7 @@
 | Connected real browser/DB evidence | [Test source map](../../tools/api-integration/test/README.md) (W14/W19) | One test file; integration runner **resets** disposable test DB |
 | Local scripts, Turbo, CI, Storybook | [Execution playbook](../../.agents/skills/frontend-engineering/SKILL.md) (W01/W18/W20/W21) | Exact script/manifest; no full app start for pure React tests |
 
-**Fast context test:** If the chosen map plus Change cannot name the input, state owner, output and relevant failure path, **report the missing fact to ChatGPT** rather than starting an unbounded Cursor search.
+**Fast context test:** If the chosen map plus Change cannot name the input, state owner, output and relevant failure path, **report the missing fact to the planner** rather than starting an unbounded Cursor search.
 
 ## Authority and design traps
 
@@ -26,3 +26,5 @@ The server Play route validates `storySnapshotSchema` before rendering `PlayScen
 For development-agent expertise, load [frontend-engineering](../../.agents/skills/frontend-engineering/SKILL.md) or [player-experience-design](../../.agents/skills/player-experience-design/SKILL.md) when the task warrants it; do not preload both for every CSS change.
 
 The package manifest has `dev`, `build`, `start`, `typecheck`, Vitest `test` / `test:watch` / `test:fast` (happy-dom + MSW), plus Storybook `storybook` / `storybook:build` (W18). **Fast local path:** `pnpm test:fast` or `pnpm --filter @offscreen/web test:fast` (Turbo `test:fast` depends on `^build` only — not `@offscreen/web#build`). Avoid `turbo run test --filter=@offscreen/web` for iteration; legacy `test` still depends on same-package production `build`. Provider-free Vitest/RTL/MSW tests prove UI/state races only; they do **not** certify Nest ownership, SSR privacy or exactly-once. **Storybook** (`pnpm --filter @offscreen/web storybook`) is a deterministic engineering-state catalogue under `src/stories/` with MSW + per-story QueryClient isolation — not a visual redesign, Nest substitute or screenshot proof. Browser/integration evidence remains under [tools/api-integration](../../tools/api-integration).
+
+There is no web consumer of the Agent Core package or of any deleted Application package. The Next server and browser call only the Nest API (which in distributed mode calls the private Game Authority); the browser never calls Game Authority, the worker or a provider directly. Where the [client architecture](../../docs/technical/client/architecture.md) selects behavior the code has not yet realized, the architecture page controls the target and this file controls only where the current code lives.

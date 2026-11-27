@@ -1,6 +1,17 @@
 # Evidence graph | Typed, durable, historically faithful data
 
-**Status: selected evidence-graph target, 2026-11-15. Not implemented** except where a landed read is named on [the forensic contract](investigation-and-reconstruction.md). This page is not a proposal. Product journeys are [Admin investigation](../../product/admin/ai-engineering-and-investigation.md). Source inventory is the 2026-11-15 observability run. Ownership: [Engine](../engine/authority-and-transitions.md), [Storyteller](../../product/storyteller/behavior-and-quality.md), [Admin](../admin/topology-and-authorization.md). No code or migration authorization.
+**Authority:** this page owns the selected evidence-graph target (selected 2026-11-15): which identities, envelopes, artifact references and derivations a forensic reconstruction may rely on. It is a target contract, not a proposal for debate, and it grants no code, schema or migration authority.
+
+**Current realization (source-inspected on this branch):** no evidence store exists. `EvidenceEnvelopeV1`, `ArtifactRefV1`, `EvidenceDerivationV1`, `GameCommitEvidenceV1` and a `story_evidence_cursor` appear nowhere in `packages/`, `apps/` or `scripts/`, and no migration creates an evidence table. What exists is the ordinary game and Storyteller rows named in [section 1](#1-decision-no-mega-gamedata-blob-no-telemetry-as-history), which remain authoritative for whether an action happened. The only landed read is the redacted operation diagnostic named on [the forensic contract](investigation-and-reconstruction.md).
+
+**Neighbours.** Product journeys: [Admin investigation](../../product/admin/ai-engineering-and-investigation.md). Ownership: [Engine](../engine/authority-and-transitions.md), [Storyteller](../../product/storyteller/behavior-and-quality.md), [Admin](../admin/topology-and-authorization.md). The source inventory is the 2026-11-15 observability run, which is evidence, not this contract.
+
+| Part of this page | Standing |
+| --- | --- |
+| [Decision](#1-decision-no-mega-gamedata-blob-no-telemetry-as-history), [identity graph](#2-core-identity-graph), [envelope](#3-evidenceenvelopev1-small-indexable-purpose-scoped), [artifact reference](#4-artifactrefv1-byte-precise-typed-inputoutput), [derivation](#5-every-node-must-carry-an-explanation-of-where-did-this-come-from) and [capture matrix](#6-data-capture-checkpoint-matrix) | Selected target; not implemented |
+| [Turn Evidence Capsule](#turn-evidence-capsule) and [reconstruction](#7-read-and-reconstruction) | Proposed read; not implemented |
+| [Folded invariants](#folded-invariants-from-the-2026-11-essays) | Proposed, not landed |
+| [Open technical decisions](#8-open-technical-decisions-before-execution) | Unresolved; block execution |
 
 ## Owner map
 
@@ -12,11 +23,11 @@ Evidence identity stays on this page. Durable forensic evidence and provenance s
 | Capture and causal identity | [Committed transition capture](capture-and-provenance.md#owner-map) | Proposal. |
 | Investigation and reconstruction | [Forensic read contract](investigation-and-reconstruction.md#owner-map) | Proposed read. |
 | Retention and access | [Replay, retention and privacy](retention-and-access.md#owner-map) | Unratified where that page already says so. |
-| Telemetry | [Runtime telemetry](telemetry-and-diagnostics.md#owner-map) | Planned. A noninstalled observer stack stays planned. |
+| Telemetry | [Runtime telemetry](telemetry-and-diagnostics.md#owner-map) | Application enrollment proposed. The optional native stack is owned by [native observability](../platform/observability-native-infrastructure.md). |
 
 The [Turn Evidence Capsule](#turn-evidence-capsule) stays a proposed read.
 
-**Negative:** Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. An analyst read does not grant forbidden prompts. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read.
+**Negative:** Telemetry is not the canonical replay source and cannot reconstruct a commit that was never captured. A lossy summary does not replace original evidence identity. An analyst read does not grant forbidden prompts. Candidate retention figures stay unratified. Proposed capture is not an authorized writer. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read.
 
 ## 1. Decision: no mega-GameData blob, no telemetry-as-history
 
@@ -26,10 +37,10 @@ Use **three cooperating contracts**, each with its own reliability and retention
 2. **Versioned evidence envelope + artifact graph:** small SQL-indexed envelopes tell us what work happened and reference immutable, typed CAS artifacts containing the **actual frozen application-level values** consumed/produced. Capture only at meaningful boundaries. This is an append-only *forensic sidecar*, **not** a second command bus or alternate source of game authority.
 3. **OpenTelemetry spans / process logs / metrics:** timings, health and troubleshooting signals, linked by operation/generation/artifact IDs. Traces may be sampled and retained briefly; the durable evidence graph must not depend on their existence.
 
-The numbered shape above is the indexed evidence target. Two siblings stay in this folder because the documentation architecture names them here. They are **proposals**, not selected contracts and not installed systems:
+The numbered shape above is the indexed evidence target. Two siblings stay in this folder because the documentation architecture names them here. They are **proposals**, not selected contracts and not landed systems:
 
 - [Proposed transition capture](capture-and-provenance.md) describes one finite-action writer. That page authorizes no code, schema or test.
-- [Proposed runtime telemetry](telemetry-and-diagnostics.md) recommends OpenTelemetry and Grafana. That stack is not deployed, and losing a trace is not missing game evidence.
+- [Proposed runtime telemetry](telemetry-and-diagnostics.md) recommends application enrollment in OpenTelemetry and Grafana. The optional native platform stack is owned by [native observability](../platform/observability-native-infrastructure.md), and application spans are not wired. Losing a trace is not missing game evidence.
 
 The envelope may point to zero, one or many artifacts. Every edge has an explicit relationship, timestamp/source and recorded coverage. **The same data type that code consumes can be serialized and rehydrated** when versioned stable codecs exist; no production object containing sockets, closures, secrets or nonportable handles should be archived blindly.
 
@@ -100,7 +111,7 @@ The drawing is **logical causality**, not an assertion every path exists for eve
 | `configRevision/promptPartRevision` | Effective creator/editable instruction at time | Code origin/git hash or DB immutable revision, never mutable “latest” |
 | `caseId/purposeGrantId` | Support investigation and access purpose | Links incident and authorized viewer without conferring game authority |
 
-**Time axes are explicitly separate:** DB commit order or event sequence; narrative `revision`; fictional `gameSecond`; real UTC wall timestamps; model/worker monotonic duration; source document revision. A “later” fictional report may be **committed today** about an earlier fictional time. Do not merge them into one sortable “turn number.”
+**Time axes are explicitly separate:** DB commit order or event sequence; narrative `revision`; fictional `gameSecond`; real UTC wall timestamps; model/worker monotonic duration; source document revision. A “later” fictional report may be **committed today** about an earlier fictional time. Do not merge them into one sortable “turn number.” The seek key for instrumented mechanical history is `(storyId, storyTransitionSeq)`; wall-clock `created_at` only finds a nearby frontier and must say when that match is ambiguous. Passage sequence, fictional `gameSecond`, provider attempt time and trace ids are different axes.
 
 ## 3. EvidenceEnvelopeV1: small, indexable, purpose-scoped
 
@@ -193,8 +204,9 @@ type ArtifactRefV1 = Readonly<{
 
 **Principle:** capture **the value as the corresponding runtime contract sees it**, before mutation or pruning, at the named stage; no field renaming to arbitrary diagnostic key-value bags. Preserve fields, order where semantic, schema version and binary/JSON encoding rules. The evidence envelope and provenance records are **additive**, not invasive mutations of that source value.
 
-- For provider sends, archive the **actual serialized request bytes** after policy/format projection, not a re-created JSON object that might reorder messages or silently omit a model parameter. Record request schema, route/model/endpoint policy, content hash, exact byte length and dispatch attempt identity. Secrets such as API tokens and auth headers are excluded from capture.
-- For in-memory Zod objects, persist validated canonical serializable values with a **versioned lossless codec** for JSON-safe type semantics. Define explicit handling for Date/BigInt, undefined vs absent, byte buffers and ordered map/list; do not pretend vanilla JSON stringify always preserves runtime meaning. Store an independent `schemaRef`/reader version and test archival round trips.
+- For provider sends, archive the **actual serialized request bytes** after policy/format projection, not a re-created JSON object that might reorder messages or silently omit a model parameter. Record request schema, route/model/endpoint policy, content hash, exact byte length and dispatch attempt identity. Secrets such as API tokens and auth headers are never archived. Byte identity is the hash at the last serialization boundary, checked before send. `dispatched` means the app attempted a send; it does not prove the provider received or charged it.
+- A task admitted under build B may still be in flight under B+1. Keep the captured packet parseable and never recompile it with a newer compiler to send different text under the old attempt id; retention must not delete raw bytes still required for that recovery.
+- For in-memory Zod objects, persist validated canonical serializable values with a **versioned lossless codec** for JSON-safe type semantics. Define explicit handling for Date/BigInt, undefined vs absent, byte buffers and ordered map/list; do not pretend vanilla JSON stringify always preserves runtime meaning. Store an independent `schemaRef`/reader version and test archival round trips. An upcaster is only a read adapter: it verifies the original hash, decodes the pinned schema and may project a current read DTO. It never re-runs effects, dice, prompts or providers; a missing old codec is `legacy-codec-unavailable`, not today's schema; a semantic change is described, not silently rewritten; decoder errors do not echo private JSON to Support or telemetry.
 - For mutable campaign state, use **before/after typed projections and field-level transition evidence** at authoritative commits, not full 200-KB state copies after every clock tick. The saved transition should contain original intended effect, actual admitted effect, changed keys, prior/new values where permitted and applied rule version. Stable item/character IDs remain in the original game schema.
 - For encrypted or redacted fields, store a **protected artifact** or a typed omission marker, not a blank value that implies the user submitted nothing. A ciphertext cannot be used as a directly readable support projection.
 - Content-addressing can deduplicate identical immutable blocks across turns, but **sharing bytes must never share authorization**. Artifacts require subject-level access/reference ownership; a guessed hash must not grant content access.
@@ -229,9 +241,11 @@ type EvidenceDerivationV1 = Readonly<{
 }>;
 ~~~
 
+Three kinds of statement stay distinct: a **recorded observation**, a **validated derivation** and a **hypothesis**. A dashboard must not put a fake confidence number on a recorded fact, and a hypothesis must not be rendered as a receipt. Prompt text that lives in code is not copied into a second prompt registry; provenance names the compiler build. Effective configuration is what this turn used, an edit history is not that configuration, and experiment assignment is future-only until a product experiment exists.
+
 This record is the crucial difference between **“prompt text retained”** and **“we can explain exactly how the prompt existed.”** A nested field can have more than one provenance parent (e.g. default config overridden by a player setting). A source with no stable revision is **not proven reproducible** and must be labelled as such.
 
-Record **ineligible** and **not-selected** items only where the selector actually considered them and bounded candidate metadata exists. Do not fabricate negative evidence for every possible document in the universe. For each required source, capture its inclusion/exclusion decision.
+Record **ineligible** and **not-selected** items only where the selector actually considered them and bounded candidate metadata exists. Do not fabricate negative evidence for every possible document in the universe: "not selected" is not provable for a source nobody listed. For each required source, capture its inclusion/exclusion decision.
 
 ## 6. Data-capture checkpoint matrix
 
@@ -263,7 +277,7 @@ Reconstruction output must show:
 - `diff`: actual changed fields/events, links to before/after artifacts where retained.
 - `evidence`: unique source IDs and schema/build revision; no “likely” inference disguised as source.
 
-**Forbidden:** interpreting a log line as authority; re-running dice to fill missing receipts; using current profile `latest` to explain an older task; treating provider request hash as proof the provider was billed; exposing contents from a different story just because a CAS hash matches; letting a sampled trace make an otherwise complete operation appear to never exist.
+**Forbidden:** interpreting a log line as authority; re-running dice to fill missing receipts; using current profile `latest` to explain an older task; treating provider request hash as proof the provider was billed; exposing contents from a different story just because a CAS hash matches; letting a sampled trace make an otherwise complete operation appear to never exist. Hidden model chain-of-thought the API did not return cannot be reconstructed, and a later self-explanation is not that computation; the honest label is "recorded decision path and available evidence."
 
 That cross-story refusal follows [Relationship semantics and current single-owner source](../admin/investigation-and-privacy.md#3-relationship-semantics-and-current-single-owner-source): normal story reads are owner-scoped, and a shared hash is not a shared owner. The viewer still has to pass [Authentication and sessions](../platform/identities-and-access.md#authentication-and-sessions), which checks membership on every snapshot read.
 
@@ -276,16 +290,14 @@ That cross-story refusal follows [Relationship semantics and current single-owne
 
 ## Folded invariants from the 2026-11 essays
 
-**Proposed, not landed.** These clauses used to live only in the essay folder.
+**Proposed, not landed.** These clauses formerly lived only in the essay folder and now sit in the section they govern:
 
-- A statement is a **recorded observation**, a **validated derivation**, or a **hypothesis**. A dashboard must not put a fake confidence number on a recorded fact, and a hypothesis must not be rendered as a receipt.
-- The seek key for instrumented mechanical history is `(storyId, storyTransitionSeq)`. Wall-clock `created_at` only finds a nearby frontier and must say when that match is ambiguous. Passage sequence, fictional `gameSecond`, provider attempt time and trace ids are different axes.
-- An upcaster is a read adapter. It verifies the original hash, decodes the pinned schema, and may project a current read DTO. It does not re-run effects, dice, prompts or providers. A missing old codec is `legacy-codec-unavailable`, not today's schema. A semantic change is described, not silently rewritten. Decoder errors do not echo private JSON to Support or to telemetry.
-- A task admitted under build B may still be in flight under B+1. Keep the captured packet parseable. Do not recompile it with a newer compiler and send different text under the old attempt id. Retention must not delete raw bytes still required for that recovery.
-- Prompt text that lives in code is not copied into a second prompt registry. Provenance names the compiler build. Capture eligible, selected, loaded, pruned and included sources only where the code enumerated those candidates. "Not selected" is not provable for a source nobody listed.
-- Effective configuration is what this turn used. An edit history is not that configuration. Experiment assignment is future-only until a product experiment exists.
-- Byte identity of a provider request is the hash at the last serialization boundary, checked before send. Authorization headers are never archived. `dispatched` means the app attempted a send. It does not prove the provider received or charged it.
-- Hidden model chain-of-thought that the API did not return cannot be reconstructed. A later self-explanation is not that hidden computation. The honest label is "recorded decision path and available evidence."
+| Invariant | Now stated in |
+| --- | --- |
+| Recorded observation vs validated derivation vs hypothesis; code-resident prompt text; effective configuration; future-only experiment assignment; unlisted sources are not provably "not selected" | [5. Derivation](#5-every-node-must-carry-an-explanation-of-where-did-this-come-from) |
+| Seek key `(storyId, storyTransitionSeq)` and separate time axes | [2. Required stable IDs](#required-stable-ids) |
+| Upcaster as read adapter; build B+1 in-flight packets; request byte identity; `dispatched` is not proof of receipt or charge | [4. ArtifactRefV1](#4-artifactrefv1-byte-precise-typed-inputoutput) |
+| Hidden chain-of-thought is not reconstructable | [7. Read and reconstruction](#7-read-and-reconstruction) |
 
 ## 8. Open technical decisions before execution
 

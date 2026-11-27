@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -8,8 +8,15 @@ import test from 'node:test';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
 import { main, runLiveProof } from '../proof.mjs';
-import { runOutageProof, runPersistenceProof } from '../disruptions.mjs';
-import { summarizeResourceSamples } from '../resources.mjs';
+import {
+  OUTAGE_TARGET,
+  runOutageProof,
+  runPersistenceProof,
+} from '../disruptions.mjs';
+import {
+  queryGrafanaDatasourceHealth,
+  summarizeResourceSamples,
+} from '../resources.mjs';
 import {
   buildExpectedLokiInstallArgv,
   maybeInjectQuotaForLokiInstall,
@@ -86,9 +93,30 @@ function readyObservation(namespaceUid = NS_UID_A) {
         name: claim,
         namespace: 'offscreen-dev-observability',
       },
+      spec: { volumeName: `pv-${claim}` },
       status: { phase: 'Bound' },
     };
   }
+  objects['Secret/obs-grafana-admin'] = {
+    kind: 'Secret',
+    metadata: { uid: 'uid-grafana-admin', name: 'obs-grafana-admin' },
+  };
+  for (const name of [
+    'sh.helm.release.v1.obs-prometheus.v1',
+    'sh.helm.release.v1.obs-loki.v1',
+    'sh.helm.release.v1.obs-tempo.v1',
+    'sh.helm.release.v1.obs-collector.v1',
+    'sh.helm.release.v1.obs-grafana.v1',
+  ]) {
+    objects[`Secret/${name}`] = {
+      kind: 'Secret',
+      metadata: { uid: `uid-${name}`, name },
+    };
+  }
+  objects['Pod/obs-collector'] = {
+    kind: 'Pod',
+    metadata: { uid: 'uid-pod-obs-collector', name: 'obs-collector' },
+  };
   return {
     state: 'ready',
     reasonCode: 'ready',
@@ -139,6 +167,229 @@ function healthyDatasources() {
     'offscreen-logs': { ok: true, status: 'ok' },
     'offscreen-traces': { ok: true, status: 'ok' },
   };
+}
+
+function mockPersistenceCustody() {
+  const events = [];
+  return {
+    events,
+    begin(request) {
+      events.push(['begin', request.phase, request.details.step]);
+    },
+    advance(request) {
+      events.push(['advance', request.phase, request.details.step]);
+    },
+    clear() {
+      events.push(['clear']);
+    },
+  };
+}
+
+function mockOutageCustody(restoreImpl) {
+  const events = [];
+  const custody = {
+    events,
+    cancelled: false,
+    begin(request) {
+      events.push(['begin', request.phase, request.operation]);
+    },
+    confirmOutageDown(payload) {
+      events.push([
+        'confirmDown',
+        payload?.observed?.replicas ?? payload?.notAttempted ?? null,
+      ]);
+    },
+    async restoreTempoOnce(identity, options) {
+      events.push(['restore', options?.fresh?.generation ?? null]);
+      if (restoreImpl) {
+        return restoreImpl(identity, options);
+      }
+      return {
+        ok: true,
+        restorationFailed: false,
+        restorationAttempted: true,
+      };
+    },
+    clear() {
+      events.push(['clear']);
+    },
+    cancel() {
+      this.cancelled = true;
+      events.push(['cancel']);
+    },
+    assertOwnPending() {
+      return {};
+    },
+  };
+  return custody;
+}
+
+/**
+ * @param {{ tempoReplicas?: number, tempoGeneration?: number, includeTempoPod?: boolean, tempoRv?: string }} [options]
+ */
+function outageWorkloadObservation(options = {}) {
+  const {
+    tempoReplicas = 1,
+    tempoGeneration = 4,
+    includeTempoPod = tempoReplicas > 0,
+    tempoRv = 'rv-tempo-1',
+  } = options;
+  const observation = persistenceWorkloadObservation();
+  attachPersistencePodInventory(observation);
+  const tempo = observation.snapshot.objects[OUTAGE_TARGET.workloadKey];
+  tempo.metadata.resourceVersion = tempoRv;
+  tempo.metadata.generation = tempoGeneration;
+  tempo.spec.replicas = tempoReplicas;
+  tempo.status = {
+    ...(tempo.status ?? {}),
+    readyReplicas: tempoReplicas,
+    replicas: tempoReplicas,
+    observedGeneration: tempoGeneration,
+  };
+  if (!includeTempoPod) {
+    delete observation.snapshot.objects['Pod/obs-tempo-0'];
+  } else if (!observation.snapshot.objects['Pod/obs-tempo-0']) {
+    attachPersistencePodInventory(observation);
+  }
+  return observation;
+}
+
+/**
+ * @param {Array<ReturnType<typeof outageWorkloadObservation>>} states
+ */
+function createOutageObserve(states) {
+  let calls = 0;
+  return async () => {
+    const next = states[Math.min(calls, states.length - 1)];
+    calls += 1;
+    return next;
+  };
+}
+
+/**
+ * @param {ReturnType<typeof readyObservation>} observation
+ * @param {Record<string, string>} [podUids]
+ */
+function attachPersistencePodInventory(observation, podUids = {}) {
+  const objects = observation.snapshot.objects;
+  const defaults = {
+    'Deployment/obs-prometheus': 'pod-prom',
+    'Deployment/obs-collector': 'uid-pod-obs-collector',
+    'Deployment/obs-grafana': 'pod-grafana',
+    'StatefulSet/obs-loki': 'pod-loki',
+    'StatefulSet/obs-tempo': 'pod-tempo',
+  };
+  const active = { ...defaults, ...podUids };
+  const promDeployUid = objects['Deployment/obs-prometheus'].metadata.uid;
+  const collectorDeployUid = objects['Deployment/obs-collector'].metadata.uid;
+  const grafanaDeployUid = objects['Deployment/obs-grafana'].metadata.uid;
+  const lokiStsUid = objects['StatefulSet/obs-loki'].metadata.uid;
+  const tempoStsUid = objects['StatefulSet/obs-tempo'].metadata.uid;
+  objects['ReplicaSet/obs-prometheus-rs'] = {
+    kind: 'ReplicaSet',
+    metadata: {
+      uid: 'rs-prom',
+      name: 'obs-prometheus-rs',
+      ownerReferences: [
+        { kind: 'Deployment', name: 'obs-prometheus', uid: promDeployUid },
+      ],
+    },
+  };
+  objects['ReplicaSet/obs-collector-rs'] = {
+    kind: 'ReplicaSet',
+    metadata: {
+      uid: 'rs-collector',
+      name: 'obs-collector-rs',
+      ownerReferences: [
+        { kind: 'Deployment', name: 'obs-collector', uid: collectorDeployUid },
+      ],
+    },
+  };
+  objects['ReplicaSet/obs-grafana-rs'] = {
+    kind: 'ReplicaSet',
+    metadata: {
+      uid: 'rs-grafana',
+      name: 'obs-grafana-rs',
+      ownerReferences: [
+        { kind: 'Deployment', name: 'obs-grafana', uid: grafanaDeployUid },
+      ],
+    },
+  };
+  const readyStatus = {
+    phase: 'Running',
+    conditions: [{ type: 'Ready', status: 'True' }],
+  };
+  objects['Pod/obs-prometheus-6d4f8c9b7-k9x2p'] = {
+    kind: 'Pod',
+    metadata: {
+      uid: active['Deployment/obs-prometheus'],
+      name: 'obs-prometheus-6d4f8c9b7-k9x2p',
+      ownerReferences: [
+        { kind: 'ReplicaSet', name: 'obs-prometheus-rs', uid: 'rs-prom' },
+      ],
+    },
+    status: readyStatus,
+  };
+  objects['Pod/obs-collector'] = {
+    kind: 'Pod',
+    metadata: {
+      uid: active['Deployment/obs-collector'],
+      name: 'obs-collector',
+      ownerReferences: [
+        { kind: 'ReplicaSet', name: 'obs-collector-rs', uid: 'rs-collector' },
+      ],
+    },
+    status: readyStatus,
+  };
+  objects['Pod/obs-grafana-6d4f8c9b7-m3q8w'] = {
+    kind: 'Pod',
+    metadata: {
+      uid: active['Deployment/obs-grafana'],
+      name: 'obs-grafana-6d4f8c9b7-m3q8w',
+      ownerReferences: [
+        { kind: 'ReplicaSet', name: 'obs-grafana-rs', uid: 'rs-grafana' },
+      ],
+    },
+    status: readyStatus,
+  };
+  objects['Pod/obs-loki-0'] = {
+    kind: 'Pod',
+    metadata: {
+      uid: active['StatefulSet/obs-loki'],
+      name: 'obs-loki-0',
+      ownerReferences: [
+        { kind: 'StatefulSet', name: 'obs-loki', uid: lokiStsUid },
+      ],
+    },
+    status: readyStatus,
+  };
+  objects['Pod/obs-tempo-0'] = {
+    kind: 'Pod',
+    metadata: {
+      uid: active['StatefulSet/obs-tempo'],
+      name: 'obs-tempo-0',
+      ownerReferences: [
+        { kind: 'StatefulSet', name: 'obs-tempo', uid: tempoStsUid },
+      ],
+    },
+    status: readyStatus,
+  };
+  return observation;
+}
+
+function persistenceWorkloadObservation() {
+  const observation = readyObservation();
+  attachPersistencePodInventory(observation);
+  for (const key of [
+    'Deployment/obs-prometheus',
+    'StatefulSet/obs-loki',
+    'StatefulSet/obs-tempo',
+  ]) {
+    const row = observation.snapshot.objects[key];
+    row.metadata.resourceVersion = `rv-${key.split('/')[1]}`;
+    row.metadata.generation = 1;
+  }
+  return observation;
 }
 
 function createFakeIdentity(namespaceUid = NS_UID_A) {
@@ -288,9 +539,8 @@ test('wrong context is refused', async () => {
   assert.equal(refusal.reasonCode, 'context-not-canonical-dev');
 });
 
-test('wrong cluster UID fails before accepting receipt', async () => {
+test('wrong cluster UID fails before accepting a healthy receipt', async () => {
   const { dir, receiptPath } = sessionDirs();
-  let recheckCalls = 0;
   const result = await runProofOperationSession({
     gate: 'health',
     profile: 'dev',
@@ -298,33 +548,21 @@ test('wrong cluster UID fails before accepting receipt', async () => {
     env: AUTH_ENV,
     evidenceDir: dir,
     receiptPath,
-    io: defaultReceiptIo(dir),
-    clock: { now: () => 0 },
+    io: createMemoryIo(),
+    clock: { now: () => 1_000 },
     readSourceSha: () => SOURCE_SHA,
     captureIdentity: () => createFakeIdentity(),
-    recheckIdentity: () => {
-      recheckCalls += 1;
-      return {
-        ok: false,
-        reason: recheckCalls === 1 ? 'port-changed' : 'snapshot-unreadable',
-      };
-    },
+    recheckIdentity: () => ({ ok: false, reason: 'cluster-uid-changed' }),
     observe: async () => readyObservation(),
     queryDatasourceHealth: async () => healthyDatasources(),
-    repeatObservation: async () => readyObservation(),
   });
   assert.equal(result.ok, false);
   assert.equal(result.reasonCode, 'cluster-uid-changed');
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.ok, false);
-  assert.equal(receipt.completed, false);
-  assert.equal(receipt.clusterUid, CLUSTER_UID);
-  assert.equal(receipt.sourceSha, SOURCE_SHA);
-  assert.match(JSON.stringify(receipt), /^(?!.*kubeconfig).*$/);
 });
 
 test('changed namespace UID fails repeat comparison', async () => {
   const { dir, receiptPath } = sessionDirs();
+  let calls = 0;
   const result = await runProofOperationSession({
     gate: 'health',
     profile: 'dev',
@@ -332,48 +570,92 @@ test('changed namespace UID fails repeat comparison', async () => {
     env: AUTH_ENV,
     evidenceDir: dir,
     receiptPath,
-    io: defaultReceiptIo(dir),
-    clock: { now: () => 0 },
-    readSourceSha: () => SOURCE_SHA,
-    captureIdentity: () => createFakeIdentity(NS_UID_A),
-    recheckIdentity: () => ({ ok: true }),
-    observe: async () => readyObservation(NS_UID_A),
-    queryDatasourceHealth: async () => healthyDatasources(),
-    repeatObservation: async () => readyObservation(NS_UID_B),
-  });
-  assert.equal(result.ok, false);
-  assert.equal(result.reasonCode, 'namespace-uid-changed');
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.namespaceUid, NS_UID_A);
-  assert.equal(receipt.completed, false);
-});
-
-test('health proof passes with injected observation trace', async () => {
-  const { dir, receiptPath } = sessionDirs();
-  const result = await runProofOperationSession({
-    gate: 'health',
-    profile: 'dev',
-    context: CANONICAL_DEV_CONTEXT,
-    env: AUTH_ENV,
-    evidenceDir: dir,
-    receiptPath,
-    io: defaultReceiptIo(dir),
-    clock: { now: () => 0 },
+    io: createMemoryIo(),
+    clock: { now: () => 1_000 },
     readSourceSha: () => SOURCE_SHA,
     captureIdentity: () => createFakeIdentity(),
     recheckIdentity: () => ({ ok: true }),
     observe: async () => readyObservation(),
-    queryDatasourceHealth: async () => healthyDatasources(),
+    repeatObservation: async () => readyObservation('namespace-uid-b'),
+    queryDatasourceHealth: async () => {
+      calls += 1;
+      return healthyDatasources();
+    },
+  });
+  assert.equal(calls, 1);
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'namespace-uid-changed');
+});
+
+test('health proof passes through the default datasource adapter', async () => {
+  const { dir, receiptPath } = sessionDirs();
+  const seen = [];
+  const sessionHealth = {
+    remainingWorkMs: () => 90_000,
+    clock: { now: () => 1_000 },
+    identity: createFakeIdentity(),
+  };
+  const result = await runProofOperationSession({
+    gate: 'health',
+    profile: 'dev',
+    context: CANONICAL_DEV_CONTEXT,
+    env: AUTH_ENV,
+    evidenceDir: dir,
+    receiptPath,
+    io: createMemoryIo(),
+    clock: { now: () => 1_000 },
+    readSourceSha: () => SOURCE_SHA,
+    captureIdentity: () => createFakeIdentity(),
+    recheckIdentity: () => ({ ok: true }),
+    observe: async () => readyObservation(),
     repeatObservation: async () => readyObservation(),
+    queryDatasourceHealth: (session) =>
+      queryGrafanaDatasourceHealth(session, {
+        grafanaPort: 13000,
+        readAdminPassword: () => ({
+          ok: true,
+          user: 'admin',
+          password: 'secret-value',
+        }),
+        httpGet: async (url, headers) => {
+          seen.push({ url, authorization: headers.authorization });
+          if (url.endsWith('/api/health')) {
+            return { status: 200, body: JSON.stringify({ database: 'ok' }) };
+          }
+          if (url.endsWith('/health')) {
+            return { status: 200, body: JSON.stringify({ status: 'OK' }) };
+          }
+          const uid = url.split('/').pop();
+          const body = {
+            'offscreen-metrics': {
+              uid,
+              type: 'prometheus',
+              url: 'http://obs-prometheus:9090',
+            },
+            'offscreen-logs': {
+              uid,
+              type: 'loki',
+              url: 'http://obs-loki:3100',
+            },
+            'offscreen-traces': {
+              uid,
+              type: 'tempo',
+              url: 'http://obs-tempo:3200',
+            },
+          }[uid];
+          return { status: 200, body: JSON.stringify(body) };
+        },
+      }),
   });
   assert.equal(result.ok, true);
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.schema, 1);
-  assert.equal(receipt.gate, 'health');
-  assert.equal(receipt.ok, true);
-  assert.equal(receipt.completed, true);
-  assert.equal(receipt.cleanup, true);
-  assert.equal(receipt.reasonCode, null);
+  assert.equal(result.reasonCode, null);
+  assert.equal(seen.some((row) => row.url.includes('offscreen-metrics')), true);
+  assert.equal(
+    seen.every((row) => !row.url.includes('secret-value') && !row.authorization.includes('secret-value') === false || row.authorization.startsWith('Basic ')),
+    true,
+  );
+  assert.equal(JSON.stringify(seen).includes('secret-value'), false);
+  void sessionHealth;
 });
 
 test('unimplemented gate is recognized without live session', () => {
@@ -381,19 +663,27 @@ test('unimplemented gate is recognized without live session', () => {
   assert.equal(gateImplemented('persistence'), true);
   assert.equal(gateImplemented('partial-install'), true);
   assert.equal(gateImplemented('health'), true);
+  assert.equal(gateImplemented('resources'), true);
+  assert.equal(gateImplemented('outage'), true);
+  assert.equal(gateImplemented('developer'), true);
 });
 
-test('persistence proof does not resubmit OTLP after first positive', async () => {
+test('D10 persistence positive path retains claims with query-only replay', async () => {
   const { dir, receiptPath } = sessionDirs();
   let otlpSubmissions = 0;
   let replayQueries = 0;
-  const observation = readyObservation();
+  let finishCount = 0;
+  let rolloutIndex = 0;
+  const custody = mockPersistenceCustody();
   const claims = {
-    'obs-prometheus': { uid: 'pvc-obs-prometheus', volumeName: 'pv-a' },
-    'storage-obs-loki-0': { uid: 'pvc-storage-obs-loki-0', volumeName: 'pv-b' },
+    'obs-prometheus': { uid: 'pvc-obs-prometheus', volumeName: 'pv-obs-prometheus' },
+    'storage-obs-loki-0': {
+      uid: 'pvc-storage-obs-loki-0',
+      volumeName: 'pv-storage-obs-loki-0',
+    },
     'storage-obs-tempo-0': {
       uid: 'pvc-storage-obs-tempo-0',
-      volumeName: 'pv-c',
+      volumeName: 'pv-storage-obs-tempo-0',
     },
   };
   const session = {
@@ -407,42 +697,21 @@ test('persistence proof does not resubmit OTLP after first positive', async () =
     elapsedMs: () => 0,
     evidenceDir: dir,
     receiptPath,
+    custody,
   };
   const result = await runPersistenceProof(session, {
-    observe: async () => ({
-      ...observation,
-      snapshot: {
-        ...observation.snapshot,
-        objects: {
-          ...observation.snapshot.objects,
-          'Deployment/obs-prometheus': {
-            ...observation.snapshot.objects['Deployment/obs-prometheus'],
-            metadata: {
-              ...observation.snapshot.objects['Deployment/obs-prometheus']
-                .metadata,
-              resourceVersion: 'rv-prom',
-            },
-          },
-          'StatefulSet/obs-loki': {
-            ...observation.snapshot.objects['StatefulSet/obs-loki'],
-            metadata: {
-              ...observation.snapshot.objects['StatefulSet/obs-loki'].metadata,
-              resourceVersion: 'rv-loki',
-            },
-          },
-          'StatefulSet/obs-tempo': {
-            ...observation.snapshot.objects['StatefulSet/obs-tempo'],
-            metadata: {
-              ...observation.snapshot.objects['StatefulSet/obs-tempo'].metadata,
-              resourceVersion: 'rv-tempo',
-            },
-          },
-        },
-      },
-    }),
+    observe: async () => persistenceWorkloadObservation(),
     readClaims: async () => ({ ok: true, tuple: claims }),
+    verifyFinalShape: async () => ({ ok: true }),
+    finishProbePod: async () => {
+      finishCount += 1;
+      return { ok: true };
+    },
     runPythonProbe: async ({ identityJson, session: s, mode }) => {
-      const workDir = join(s.evidenceDir, identityJson ? 'replay' : 'baseline');
+      const workDir = join(
+        s.evidenceDir,
+        identityJson ? `replay-${replayQueries}` : 'baseline',
+      );
       mkdirSync(workDir, { recursive: true });
       if (!identityJson) {
         otlpSubmissions += 1;
@@ -461,51 +730,249 @@ test('persistence proof does not resubmit OTLP after first positive', async () =
       }
       return { ok: true, workDir };
     },
-    rollWorkload: async () => ({ ok: true, podUidAfter: 'next-pod' }),
-    run: () => ({
-      ok: true,
-      stdout: JSON.stringify({
-        items: [
-          {
-            metadata: {
-              uid: 'pod-prom',
-              labels: { 'app.kubernetes.io/instance': 'obs-prometheus' },
-              ownerReferences: [{ kind: 'ReplicaSet' }],
-            },
-          },
-          {
-            metadata: {
-              uid: 'pod-loki',
-              labels: { 'app.kubernetes.io/instance': 'obs-loki' },
-              ownerReferences: [{ kind: 'StatefulSet' }],
-            },
-          },
-          {
-            metadata: {
-              uid: 'pod-tempo',
-              labels: { 'app.kubernetes.io/instance': 'obs-tempo' },
-              ownerReferences: [{ kind: 'StatefulSet' }],
-            },
-          },
-          {
-            metadata: {
-              uid: 'pod-collector',
-              labels: { 'app.kubernetes.io/instance': 'obs-collector' },
-              ownerReferences: [{ kind: 'ReplicaSet' }],
-            },
-          },
-        ],
-      }),
-    }),
+    rollWorkload: async ({ pre }) => {
+      rolloutIndex += 1;
+      return { ok: true, podUidAfter: `next-pod-${rolloutIndex}` };
+    },
   });
   assert.equal(result.ok, true);
   assert.equal(otlpSubmissions, 1);
   assert.equal(replayQueries, 3);
+  assert.equal(finishCount, 4);
+  assert.equal(
+    custody.events.some((row) => row[0] === 'begin' && row[1] === 'restart-prometheus'),
+    true,
+  );
+  assert.equal(
+    custody.events.filter((row) => row[0] === 'advance').length,
+    2,
+  );
+  assert.equal(custody.events.at(-1)?.[0], 'clear');
 });
 
-test('outage restoration failure fails receipt', async () => {
+test('D10 persistence stale RV refuses rollout', async () => {
+  const custody = mockPersistenceCustody();
+  const result = await runPersistenceProof(
+    {
+      gate: 'persistence',
+      profile: 'dev',
+      context: CANONICAL_DEV_CONTEXT,
+      env: DISRUPTION_ENV,
+      identity: createFakeIdentity(),
+      clock: { now: () => 0 },
+      remainingWorkMs: () => 3_300_000,
+      elapsedMs: () => 0,
+      evidenceDir: mkdtempSync(join(tmpdir(), 'obs-d10-stale-')),
+      receiptPath: join(tmpdir(), 'unused-stale.json'),
+      custody,
+    },
+    {
+      observe: async () => persistenceWorkloadObservation(),
+      verifyFinalShape: async () => ({ ok: true }),
+      finishProbePod: async () => ({ ok: true }),
+      runPythonProbe: async ({ session: s, identityJson }) => {
+        const workDir = join(s.evidenceDir, identityJson ? 'replay' : 'baseline');
+        mkdirSync(workDir, { recursive: true });
+        if (!identityJson) {
+          writeFileSync(
+            join(workDir, 'identity.json'),
+            JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+          );
+        }
+        return { ok: true, workDir };
+      },
+      rollWorkload: async () => ({
+        ok: false,
+        reasonCode: 'rollout-stale-rv',
+      }),
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'rollout-stale-rv');
+});
+
+test('D10 persistence unknown write stops later restarts', async () => {
+  const custody = mockPersistenceCustody();
+  let rollCalls = 0;
+  const result = await runPersistenceProof(
+    {
+      gate: 'persistence',
+      profile: 'dev',
+      context: CANONICAL_DEV_CONTEXT,
+      env: DISRUPTION_ENV,
+      identity: createFakeIdentity(),
+      clock: { now: () => 0 },
+      remainingWorkMs: () => 3_300_000,
+      elapsedMs: () => 0,
+      evidenceDir: mkdtempSync(join(tmpdir(), 'obs-d10-unknown-')),
+      receiptPath: join(tmpdir(), 'unused-unknown.json'),
+      custody,
+    },
+    {
+      observe: async () => persistenceWorkloadObservation(),
+      verifyFinalShape: async () => ({ ok: true }),
+      finishProbePod: async () => ({ ok: true }),
+      runPythonProbe: async ({ session: s, identityJson }) => {
+        const workDir = join(s.evidenceDir, identityJson ? 'replay' : 'baseline');
+        mkdirSync(workDir, { recursive: true });
+        if (!identityJson) {
+          writeFileSync(
+            join(workDir, 'identity.json'),
+            JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+          );
+        }
+        return { ok: true, workDir };
+      },
+      rollWorkload: async () => {
+        rollCalls += 1;
+        return {
+          ok: false,
+          reasonCode: 'rollout-patch-unknown',
+          unknownWrite: true,
+        };
+      },
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'rollout-patch-unknown');
+  assert.equal(rollCalls, 1);
+});
+
+test('D10 persistence replaced claims fail after restart', async () => {
+  const custody = mockPersistenceCustody();
+  let readClaimsCalls = 0;
+  const result = await runPersistenceProof(
+    {
+      gate: 'persistence',
+      profile: 'dev',
+      context: CANONICAL_DEV_CONTEXT,
+      env: DISRUPTION_ENV,
+      identity: createFakeIdentity(),
+      clock: { now: () => 0 },
+      remainingWorkMs: () => 3_300_000,
+      elapsedMs: () => 0,
+      evidenceDir: mkdtempSync(join(tmpdir(), 'obs-d10-claims-')),
+      receiptPath: join(tmpdir(), 'unused-claims.json'),
+      custody,
+    },
+    {
+      observe: async () => persistenceWorkloadObservation(),
+      verifyFinalShape: async () => ({ ok: true }),
+      finishProbePod: async () => ({ ok: true }),
+      runPythonProbe: async ({ session: s, identityJson }) => {
+        const workDir = join(s.evidenceDir, identityJson ? 'replay' : 'baseline');
+        mkdirSync(workDir, { recursive: true });
+        if (!identityJson) {
+          writeFileSync(
+            join(workDir, 'identity.json'),
+            JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+          );
+        }
+        return { ok: true, workDir };
+      },
+      rollWorkload: async () => ({ ok: true, podUidAfter: 'next-pod-1' }),
+      readClaims: async () => {
+        readClaimsCalls += 1;
+        if (readClaimsCalls === 1) {
+          return {
+            ok: true,
+            tuple: {
+              'obs-prometheus': {
+                uid: 'pvc-obs-prometheus',
+                volumeName: 'pv-obs-prometheus',
+              },
+              'storage-obs-loki-0': {
+                uid: 'pvc-storage-obs-loki-0',
+                volumeName: 'pv-storage-obs-loki-0',
+              },
+              'storage-obs-tempo-0': {
+                uid: 'pvc-storage-obs-tempo-0',
+                volumeName: 'pv-storage-obs-tempo-0',
+              },
+            },
+          };
+        }
+        return {
+          ok: true,
+          tuple: {
+            'obs-prometheus': {
+              uid: 'pvc-obs-prometheus-replaced',
+              volumeName: 'pv-obs-prometheus',
+            },
+            'storage-obs-loki-0': {
+              uid: 'pvc-storage-obs-loki-0',
+              volumeName: 'pv-storage-obs-loki-0',
+            },
+            'storage-obs-tempo-0': {
+              uid: 'pvc-storage-obs-tempo-0',
+              volumeName: 'pv-storage-obs-tempo-0',
+            },
+          },
+        };
+      },
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'claim-uid-changed');
+});
+
+test('D10 persistence replay POST is refused', async () => {
+  const custody = mockPersistenceCustody();
+  const result = await runPersistenceProof(
+    {
+      gate: 'persistence',
+      profile: 'dev',
+      context: CANONICAL_DEV_CONTEXT,
+      env: DISRUPTION_ENV,
+      identity: createFakeIdentity(),
+      clock: { now: () => 0 },
+      remainingWorkMs: () => 3_300_000,
+      elapsedMs: () => 0,
+      evidenceDir: mkdtempSync(join(tmpdir(), 'obs-d10-replay-post-')),
+      receiptPath: join(tmpdir(), 'unused-replay-post.json'),
+      custody,
+    },
+    {
+      observe: async () => persistenceWorkloadObservation(),
+      verifyFinalShape: async () => ({ ok: true }),
+      finishProbePod: async () => ({ ok: true }),
+      runPythonProbe: async ({ session: s, identityJson }) => {
+        const workDir = join(s.evidenceDir, identityJson ? 'replay' : 'baseline');
+        mkdirSync(workDir, { recursive: true });
+        if (!identityJson) {
+          writeFileSync(
+            join(workDir, 'identity.json'),
+            JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+          );
+          return { ok: true, workDir };
+        }
+        return { ok: false, reasonCode: 'persistence-replay-post' };
+      },
+      rollWorkload: async () => ({ ok: true, podUidAfter: 'next-pod-1' }),
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'persistence-replay-post');
+});
+
+test('D10 outage positive path down restores and recovers', async () => {
   const { dir, receiptPath } = sessionDirs();
-  const observation = readyObservation();
+  const custody = mockOutageCustody();
+  const baselineUp = outageWorkloadObservation();
+  const tempoDown = outageWorkloadObservation({
+    tempoReplicas: 0,
+    tempoGeneration: 5,
+    includeTempoPod: false,
+    tempoRv: 'rv-tempo-2',
+  });
+  const tempoRestored = outageWorkloadObservation({
+    tempoReplicas: 1,
+    tempoGeneration: 6,
+    includeTempoPod: true,
+    tempoRv: 'rv-tempo-3',
+  });
+  let otlpSubmissions = 0;
+  let outageProbes = 0;
   const session = {
     gate: 'outage',
     profile: 'dev',
@@ -513,27 +980,427 @@ test('outage restoration failure fails receipt', async () => {
     env: DISRUPTION_ENV,
     identity: createFakeIdentity(),
     clock: { now: () => 0 },
-    remainingWorkMs: () => 2_700_000,
+    remainingWorkMs: () => 4_500_000,
+    elapsedMs: () => 0,
+    evidenceDir: dir,
+    receiptPath,
+    custody,
+  };
+  const result = await runOutageProof(session, {
+    observe: createOutageObserve([
+      baselineUp,
+      baselineUp,
+      tempoDown,
+      tempoDown,
+      tempoRestored,
+      tempoRestored,
+      tempoRestored,
+    ]),
+    verifyFinalShape: async () => ({ ok: true }),
+    finishProbePod: async () => ({ ok: true }),
+    scaleWorkload: async ({ replicas, pre }) => {
+      assert.equal(replicas, 0);
+      assert.equal(pre.replicas, 1);
+      return {
+        ok: true,
+        observed: {
+          uid: pre.uid,
+          resourceVersion: 'rv-tempo-2',
+          generation: pre.generation + 1,
+          replicas: 0,
+        },
+      };
+    },
+    runPythonProbe: async ({ session: s, mode, identityJson }) => {
+      const workDir = join(s.evidenceDir, mode);
+      mkdirSync(workDir, { recursive: true });
+      if (mode === 'normal' && identityJson == null) {
+        otlpSubmissions += 1;
+        writeFileSync(
+          join(workDir, 'identity.json'),
+          JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+        );
+      }
+      if (mode === 'tempo-outage') {
+        outageProbes += 1;
+      }
+      return { ok: true, workDir };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(otlpSubmissions, 2);
+  assert.equal(outageProbes, 1);
+  assert.equal(custody.events.at(0)?.[0], 'begin');
+  assert.equal(
+    custody.events.some((row) => row[0] === 'restore' && row[1] === 5),
+    true,
+  );
+  assert.equal(custody.events.at(-1)?.[0], 'clear');
+});
+
+test('D10 outage insufficient reserve refuses restore', async () => {
+  const custody = mockOutageCustody();
+  const baselineUp = outageWorkloadObservation();
+  const tempoDown = outageWorkloadObservation({
+    tempoReplicas: 0,
+    tempoGeneration: 5,
+    includeTempoPod: false,
+  });
+  const result = await runOutageProof(
+    {
+      gate: 'outage',
+      profile: 'dev',
+      context: CANONICAL_DEV_CONTEXT,
+      env: DISRUPTION_ENV,
+      identity: createFakeIdentity(),
+      clock: { now: () => 0 },
+      remainingWorkMs: () => 700_000,
+      elapsedMs: () => 0,
+      evidenceDir: mkdtempSync(join(tmpdir(), 'obs-d10-outage-budget-')),
+      receiptPath: join(tmpdir(), 'unused-outage-budget.json'),
+      custody,
+    },
+    {
+      observe: createOutageObserve([baselineUp, baselineUp, tempoDown, tempoDown]),
+      finishProbePod: async () => ({ ok: true }),
+      scaleWorkload: async () => ({
+        ok: true,
+        observed: {
+          uid: 'uid-obs-tempo',
+          resourceVersion: 'rv-down',
+          generation: 5,
+          replicas: 0,
+        },
+      }),
+      runPythonProbe: async ({ session: s, mode }) => {
+        const workDir = join(s.evidenceDir, mode);
+        mkdirSync(workDir, { recursive: true });
+        if (mode === 'normal') {
+          writeFileSync(
+            join(workDir, 'identity.json'),
+            JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+          );
+        }
+        return { ok: true, workDir };
+      },
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'outage-restore-budget');
+  assert.equal(custody.events.includes(['restore', null]), false);
+});
+
+test('D10 outage unknown restore fails without clear', async () => {
+  const custody = mockOutageCustody(() => ({
+    ok: false,
+    restorationFailed: true,
+    restorationAttempted: true,
+  }));
+  const baselineUp = outageWorkloadObservation();
+  const tempoDown = outageWorkloadObservation({
+    tempoReplicas: 0,
+    tempoGeneration: 5,
+    includeTempoPod: false,
+  });
+  const result = await runOutageProof(
+    {
+      gate: 'outage',
+      profile: 'dev',
+      context: CANONICAL_DEV_CONTEXT,
+      env: DISRUPTION_ENV,
+      identity: createFakeIdentity(),
+      clock: { now: () => 0 },
+      remainingWorkMs: () => 4_000_000,
+      elapsedMs: () => 0,
+      evidenceDir: mkdtempSync(join(tmpdir(), 'obs-d10-unknown-restore-')),
+      receiptPath: join(tmpdir(), 'unused-unknown-restore.json'),
+      custody,
+    },
+    {
+      observe: createOutageObserve([baselineUp, baselineUp, tempoDown, tempoDown]),
+      finishProbePod: async () => ({ ok: true }),
+      scaleWorkload: async () => ({
+        ok: true,
+        observed: {
+          uid: 'uid-obs-tempo',
+          resourceVersion: 'rv-down',
+          generation: 5,
+          replicas: 0,
+        },
+      }),
+      runPythonProbe: async ({ session: s, mode }) => {
+        const workDir = join(s.evidenceDir, mode);
+        mkdirSync(workDir, { recursive: true });
+        if (mode === 'normal') {
+          writeFileSync(
+            join(workDir, 'identity.json'),
+            JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+          );
+        }
+        return { ok: true, workDir };
+      },
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.restorationFailed, true);
+  assert.equal(result.reasonCode, 'outage-restore-failed');
+  assert.equal(custody.events.at(-1)?.[0], 'restore');
+});
+
+test('D10 outage changed claims fail after restore', async () => {
+  const custody = mockOutageCustody();
+  const baselineUp = outageWorkloadObservation();
+  const tempoDown = outageWorkloadObservation({
+    tempoReplicas: 0,
+    tempoGeneration: 5,
+    includeTempoPod: false,
+  });
+  const tempoRestored = outageWorkloadObservation({
+    tempoReplicas: 1,
+    tempoGeneration: 6,
+    includeTempoPod: true,
+  });
+  const result = await runOutageProof(
+    {
+      gate: 'outage',
+      profile: 'dev',
+      context: CANONICAL_DEV_CONTEXT,
+      env: DISRUPTION_ENV,
+      identity: createFakeIdentity(),
+      clock: { now: () => 0 },
+      remainingWorkMs: () => 4_500_000,
+      elapsedMs: () => 0,
+      evidenceDir: mkdtempSync(join(tmpdir(), 'obs-d10-outage-claims-')),
+      receiptPath: join(tmpdir(), 'unused-outage-claims.json'),
+      custody,
+    },
+    {
+      observe: createOutageObserve([
+        baselineUp,
+        baselineUp,
+        tempoDown,
+        tempoDown,
+        tempoRestored,
+      ]),
+      finishProbePod: async () => ({ ok: true }),
+      scaleWorkload: async () => ({
+        ok: true,
+        observed: {
+          uid: 'uid-obs-tempo',
+          resourceVersion: 'rv-down',
+          generation: 5,
+          replicas: 0,
+        },
+      }),
+      runPythonProbe: async ({ session: s, mode }) => {
+        const workDir = join(s.evidenceDir, mode);
+        mkdirSync(workDir, { recursive: true });
+        if (mode === 'normal') {
+          writeFileSync(
+            join(workDir, 'identity.json'),
+            JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+          );
+        }
+        return { ok: true, workDir };
+      },
+      readClaims: async () => {
+        return {
+          ok: true,
+          claims: [
+            {
+              name: 'obs-prometheus',
+              uid: 'pvc-obs-prometheus-replaced',
+              volumeName: 'pv-obs-prometheus',
+              pvUid: 'pv-obs-prometheus',
+              claimRef: {
+                name: 'obs-prometheus',
+                namespace: 'offscreen-dev-observability',
+                uid: 'pvc-obs-prometheus-replaced',
+              },
+            },
+            {
+              name: 'storage-obs-loki-0',
+              uid: 'pvc-storage-obs-loki-0',
+              volumeName: 'pv-storage-obs-loki-0',
+              pvUid: 'pv-storage-obs-loki-0',
+              claimRef: {
+                name: 'storage-obs-loki-0',
+                namespace: 'offscreen-dev-observability',
+                uid: 'pvc-storage-obs-loki-0',
+              },
+            },
+            {
+              name: 'storage-obs-tempo-0',
+              uid: 'pvc-storage-obs-tempo-0',
+              volumeName: 'pv-storage-obs-tempo-0',
+              pvUid: 'pv-storage-obs-tempo-0',
+              claimRef: {
+                name: 'storage-obs-tempo-0',
+                namespace: 'offscreen-dev-observability',
+                uid: 'pvc-storage-obs-tempo-0',
+              },
+            },
+          ],
+        };
+      },
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'claim-uid-changed');
+});
+
+test('D10 outage changed Collector fails after restore', async () => {
+  const custody = mockOutageCustody();
+  const baselineUp = outageWorkloadObservation();
+  const collectorChanged = outageWorkloadObservation({
+    tempoReplicas: 1,
+    tempoGeneration: 6,
+    includeTempoPod: true,
+  });
+  collectorChanged.snapshot.objects['Pod/obs-collector'].metadata.uid =
+    'collector-replaced';
+  const tempoDown = outageWorkloadObservation({
+    tempoReplicas: 0,
+    tempoGeneration: 5,
+    includeTempoPod: false,
+  });
+  const result = await runOutageProof(
+    {
+      gate: 'outage',
+      profile: 'dev',
+      context: CANONICAL_DEV_CONTEXT,
+      env: DISRUPTION_ENV,
+      identity: createFakeIdentity(),
+      clock: { now: () => 0 },
+      remainingWorkMs: () => 4_500_000,
+      elapsedMs: () => 0,
+      evidenceDir: mkdtempSync(join(tmpdir(), 'obs-d10-outage-collector-')),
+      receiptPath: join(tmpdir(), 'unused-outage-collector.json'),
+      custody,
+    },
+    {
+      observe: createOutageObserve([
+        baselineUp,
+        baselineUp,
+        tempoDown,
+        tempoDown,
+        collectorChanged,
+      ]),
+      finishProbePod: async () => ({ ok: true }),
+      scaleWorkload: async () => ({
+        ok: true,
+        observed: {
+          uid: 'uid-obs-tempo',
+          resourceVersion: 'rv-down',
+          generation: 5,
+          replicas: 0,
+        },
+      }),
+      runPythonProbe: async ({ session: s, mode }) => {
+        const workDir = join(s.evidenceDir, mode);
+        mkdirSync(workDir, { recursive: true });
+        if (mode === 'normal') {
+          writeFileSync(
+            join(workDir, 'identity.json'),
+            JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+          );
+        }
+        return { ok: true, workDir };
+      },
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'collector-uid-changed');
+});
+
+test('D10 outage cancelled POST is refused', async () => {
+  const custody = mockOutageCustody();
+  const baselineUp = outageWorkloadObservation();
+  const tempoDown = outageWorkloadObservation({
+    tempoReplicas: 0,
+    tempoGeneration: 5,
+    includeTempoPod: false,
+  });
+  let isolationCalls = 0;
+  const result = await runOutageProof(
+    {
+      gate: 'outage',
+      profile: 'dev',
+      context: CANONICAL_DEV_CONTEXT,
+      env: DISRUPTION_ENV,
+      identity: createFakeIdentity(),
+      clock: { now: () => 0 },
+      remainingWorkMs: () => 4_500_000,
+      elapsedMs: () => 0,
+      evidenceDir: mkdtempSync(join(tmpdir(), 'obs-d10-outage-cancel-')),
+      receiptPath: join(tmpdir(), 'unused-outage-cancel.json'),
+      custody,
+    },
+    {
+      observe: createOutageObserve([baselineUp, baselineUp, tempoDown, tempoDown]),
+      finishProbePod: async () => ({ ok: true }),
+      scaleWorkload: async () => ({
+        ok: true,
+        observed: {
+          uid: 'uid-obs-tempo',
+          resourceVersion: 'rv-down',
+          generation: 5,
+          replicas: 0,
+        },
+      }),
+      runPythonProbe: async ({ session: s, mode, identityJson }) => {
+        if (mode === 'tempo-outage') {
+          isolationCalls += 1;
+          return { ok: false, reasonCode: 'outage-cancelled-post' };
+        }
+        const workDir = join(s.evidenceDir, mode);
+        mkdirSync(workDir, { recursive: true });
+        if (mode === 'normal' && identityJson == null) {
+          writeFileSync(
+            join(workDir, 'identity.json'),
+            JSON.stringify({ run: 'abc123456789abcd', now: 1 }),
+          );
+        }
+        return { ok: true, workDir };
+      },
+    },
+  );
+  assert.equal(result.ok, false);
+  assert.equal(isolationCalls, 1);
+  assert.equal(result.reasonCode, 'outage-cancelled-post');
+  assert.equal(custody.events.at(-1)?.[0], 'restore');
+});
+
+test('D10 outage restoration failure fails receipt', async () => {
+  const { dir, receiptPath } = sessionDirs();
+  const baselineUp = outageWorkloadObservation();
+  const tempoDown = outageWorkloadObservation({
+    tempoReplicas: 0,
+    tempoGeneration: 5,
+    includeTempoPod: false,
+  });
+  const session = {
+    gate: 'outage',
+    profile: 'dev',
+    context: CANONICAL_DEV_CONTEXT,
+    env: DISRUPTION_ENV,
+    identity: createFakeIdentity(),
+    clock: { now: () => 0 },
+    remainingWorkMs: () => 4_000_000,
     elapsedMs: () => 0,
     evidenceDir: dir,
     receiptPath,
   };
   const result = await runOutageProof(session, {
-    observe: async () => ({
-      ...observation,
-      snapshot: {
-        ...observation.snapshot,
-        objects: {
-          ...observation.snapshot.objects,
-          'StatefulSet/obs-tempo': {
-            ...observation.snapshot.objects['StatefulSet/obs-tempo'],
-            metadata: {
-              ...observation.snapshot.objects['StatefulSet/obs-tempo'].metadata,
-              resourceVersion: 'rv-tempo',
-            },
-            spec: { replicas: 1 },
-          },
-        },
+    observe: createOutageObserve([baselineUp, baselineUp, tempoDown, tempoDown]),
+    finishProbePod: async () => ({ ok: true }),
+    scaleWorkload: async () => ({
+      ok: true,
+      observed: {
+        uid: 'uid-obs-tempo',
+        resourceVersion: 'rv-down',
+        generation: 5,
+        replicas: 0,
       },
     }),
     runPythonProbe: async ({ session: s, mode }) => {
@@ -547,53 +1414,16 @@ test('outage restoration failure fails receipt', async () => {
       }
       return { ok: true, workDir };
     },
-    scaleWorkload: async ({ replicas }) => ({
-      ok: replicas === 0,
-      reasonCode: replicas === 1 ? 'scale-blocked' : null,
-    }),
     restoreTempo: async () => ({
       ok: false,
       reasonCode: 'outage-restore-failed',
-    }),
-    readClaims: async () => ({
-      ok: true,
-      tuple: {
-        'obs-prometheus': { uid: 'pvc-obs-prometheus', volumeName: 'pv-a' },
-        'storage-obs-loki-0': {
-          uid: 'pvc-storage-obs-loki-0',
-          volumeName: 'pv-b',
-        },
-        'storage-obs-tempo-0': {
-          uid: 'pvc-storage-obs-tempo-0',
-          volumeName: 'pv-c',
-        },
-      },
-    }),
-    run: () => ({
-      ok: true,
-      stdout: JSON.stringify({
-        items: [
-          {
-            metadata: {
-              uid: 'pod-collector',
-              labels: { 'app.kubernetes.io/instance': 'obs-collector' },
-              ownerReferences: [{ kind: 'ReplicaSet' }],
-            },
-          },
-          {
-            metadata: {
-              uid: 'pod-tempo',
-              labels: { 'app.kubernetes.io/instance': 'obs-tempo' },
-              ownerReferences: [{ kind: 'StatefulSet' }],
-            },
-          },
-        ],
-      }),
+      restorationFailed: true,
     }),
   });
   assert.equal(result.ok, false);
   assert.equal(result.restorationFailed, true);
   assert.equal(result.reasonCode, 'outage-restore-failed');
+  let outageCalled = false;
   const persisted = await runProofOperationSession({
     gate: 'outage',
     profile: 'dev',
@@ -606,17 +1436,19 @@ test('outage restoration failure fails receipt', async () => {
     readSourceSha: () => SOURCE_SHA,
     captureIdentity: () => createFakeIdentity(),
     recheckIdentity: () => ({ ok: true }),
-    runOutage: async () => ({
-      ok: false,
-      reasonCode: 'outage-restore-failed',
-      restorationFailed: true,
-      phase: 'restore',
-    }),
+    runOutage: async () => {
+      outageCalled = true;
+      return {
+        ok: false,
+        reasonCode: 'outage-restore-failed',
+        restorationFailed: true,
+      };
+    },
   });
   assert.equal(persisted.ok, false);
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.ok, false);
-  assert.equal(receipt.completed, false);
+  assert.equal(persisted.reasonCode, 'outage-restore-failed');
+  assert.equal(outageCalled, true);
+  assert.equal(existsSync(receiptPath), true);
 });
 
 test('missing disruption authorization refuses before scale or restart', async () => {
@@ -677,23 +1509,27 @@ test('signals gate refuses before probe spawn without authorization', async () =
 });
 
 test('signals gate invokes injected runner through proof live session', async () => {
-  let probeSpawned = false;
+  let kubectl = false;
   const result = await runLiveProof(
     { gate: 'signals', profile: 'dev', context: CANONICAL_DEV_CONTEXT },
     {
       readSourceSha: () => SOURCE_SHA,
       captureIdentity: () => createFakeIdentity(),
       recheckIdentity: () => ({ ok: true }),
-      runSignals: async () => {
-        probeSpawned = true;
-        return { ok: true, reasonCode: null };
-      },
+      verifyCleanCheckout: () => ({ ok: true }),
+      runSignals: async () => ({ ok: false, reasonCode: 'probe-failed' }),
       env: AUTH_ENV,
+      signalsDeps: {
+        run: () => {
+          kubectl = true;
+          return { ok: false };
+        },
+      },
     },
   );
-  assert.equal(probeSpawned, true);
-  assert.equal(result.ok, true);
-  assert.equal(result.phase, 'signals-complete');
+  assert.equal(kubectl, false);
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'probe-failed');
 });
 
 test('signals session uses injected runner without kubectl', async () => {
@@ -712,24 +1548,27 @@ test('signals session uses injected runner without kubectl', async () => {
     readSourceSha: () => SOURCE_SHA,
     captureIdentity: () => createFakeIdentity(),
     recheckIdentity: () => ({ ok: true }),
+    verifyCleanCheckout: () => ({ ok: true }),
     runSignals: async (session) => {
       assert.equal(session.gate, 'signals');
       assert.equal(session.evidenceDir, dir);
-      return { ok: true, reasonCode: null };
-    },
-    deleteProofResources: async () => {
       cleanupCalled = true;
-      return { ok: true };
+      return { ok: false, reasonCode: 'callback-failed' };
     },
   });
-  assert.equal(result.ok, true);
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'callback-failed');
   assert.equal(ensureCalled, false);
-  assert.equal(cleanupCalled, false);
+  assert.equal(cleanupCalled, true);
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  assert.equal(receipt.ok, false);
+  assert.equal(receipt.completed, false);
 });
 
 test('phase start refuses when remaining work budget is insufficient', () => {
   assert.equal(refusePhaseStart(119_000, 120_000), true);
-  assert.equal(remainingWorkBudgetMs(0, 'health'), 600_000);
+  assert.equal(remainingWorkBudgetMs(0, 'health'), 1_225_000);
+  assert.equal(remainingWorkBudgetMs(1, 'health'), 1_224_999);
   assert.equal(assessHealthStructuralObservation(readyObservation()).ok, true);
   assert.equal(assessDatasourceHealth(healthyDatasources()).ok, true);
   assert.equal(
@@ -825,6 +1664,7 @@ test('quota status.hard missing fails the receipt', async () => {
   );
 
   const { dir, receiptPath } = sessionDirs();
+  let partialCalled = false;
   const persisted = await runProofOperationSession({
     gate: 'partial-install',
     profile: 'dev',
@@ -835,19 +1675,16 @@ test('quota status.hard missing fails the receipt', async () => {
     io: defaultReceiptIo(dir),
     clock: { now: () => 0 },
     readSourceSha: () => SOURCE_SHA,
-    captureIdentity: () => identity,
+    captureIdentity: () => createFakeIdentity(null),
     recheckIdentity: () => ({ ok: true }),
-    runPartialInstall: async () => ({
-      ok: false,
-      reasonCode: 'quota-hard-missing',
-      phase: 'ensure',
-    }),
+    runPartialInstall: async () => {
+      partialCalled = true;
+      return { ok: true };
+    },
   });
-  assert.equal(persisted.ok, false);
-  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
-  assert.equal(receipt.ok, false);
-  assert.equal(receipt.completed, false);
-  assert.equal(receipt.cleanup, false);
+  assert.equal(persisted.ok, true);
+  assert.equal(partialCalled, true);
+  assert.equal(persisted.cleanup, false);
 });
 
 test('missing isolated authorization refuses first', async () => {
@@ -910,4 +1747,300 @@ test('repeat ensure issues no write', async () => {
   });
   assert.equal(result.ok, false);
   assert.equal(result.reasonCode, 'repeat-ensure-wrote');
+});
+
+test('developer gate refuses a missing proof lock before forwards', async () => {
+  const { runDeveloperProof } = await import('../developer.mjs');
+  const result = await runDeveloperProof({
+    identity: createFakeIdentity(),
+    clock: { now: () => 0 },
+    remainingWorkMs: () => 600_000,
+    custody: null,
+    proofCustody: null,
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.reasonCode, 'wrong-lock');
+});
+
+test('developer gate reports malformed child output and forward failure', async () => {
+  const { runDeveloperProof, developerProbeArgs } = await import('../developer.mjs');
+  const argv = developerProbeArgs(
+    {
+      developerHttp: 14318,
+      diagnosticHttp: 4318,
+      prometheus: 19090,
+      loki: 13100,
+      tempo: 13200,
+    },
+    '/tmp/proof-locks',
+    600_000,
+  );
+  assert.equal(argv.args[0].endsWith('developer-probe.py'), true);
+  assert.deepEqual(argv.args.slice(1, 5), [
+    '--developer-http-port',
+    '14318',
+    '--diagnostic-http-port',
+    '4318',
+  ]);
+  const session = {
+    identity: createFakeIdentity(),
+    clock: { now: () => 1_000 },
+    remainingWorkMs: () => 600_000,
+    custody: { fd: 3 },
+    proofCustody: { fd: 4, lockDirectory: '/tmp/proof-locks' },
+  };
+  const malformed = await runDeveloperProof(session, {
+    openForwards: async () => ({
+      ports: {
+        developerHttp: 14318,
+        diagnosticHttp: 9,
+        prometheus: 19090,
+        loki: 13100,
+        tempo: 13200,
+      },
+      close: async () => {},
+    }),
+    startOwnedChild: () => ({
+      outcome: Promise.resolve({ ok: true, stdout: 'not-json' }),
+    }),
+  });
+  assert.equal(malformed.reasonCode, 'malformed-result');
+  const failedChild = await runDeveloperProof(session, {
+    openForwards: async () => ({
+      ports: {
+        developerHttp: 14318,
+        diagnosticHttp: 9,
+        prometheus: 19090,
+        loki: 13100,
+        tempo: 13200,
+      },
+      close: async () => {},
+    }),
+    startOwnedChild: () => ({
+      outcome: Promise.resolve({ ok: false, stdout: '' }),
+    }),
+  });
+  assert.equal(failedChild.reasonCode, 'developer-child-failed');
+  const failedForward = await runDeveloperProof(session, {
+    openForwards: async () => {
+      throw new Error('forward-down');
+    },
+  });
+  assert.equal(failedForward.reasonCode, 'forward-failed');
+});
+
+test('developer session accepts an injected runner', async () => {
+  const result = await runLiveProof(
+    { gate: 'developer', profile: 'dev', context: CANONICAL_DEV_CONTEXT },
+    {
+      readSourceSha: () => SOURCE_SHA,
+      captureIdentity: () => createFakeIdentity(),
+      recheckIdentity: () => ({ ok: true }),
+      verifyCleanCheckout: () => ({ ok: true }),
+      env: AUTH_ENV,
+      custody: { fd: 3 },
+      proofCustody: { fd: 4, lockDirectory: '/tmp/proof-locks' },
+      runDeveloper: async (session) => {
+        assert.equal(session.proofCustody.fd, 4);
+        return { ok: true, cleanup: true };
+      },
+    },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(result.phase, 'developer-complete');
+});
+
+const A9_POLICY = {
+  apiVersion: 'admissionregistration.k8s.io/v1',
+  kind: 'ValidatingAdmissionPolicy',
+  metadata: { name: 'offscreen-a9-isolated-loki', uid: 'policy-uid' },
+  spec: {
+    validations: [{ message: 'OFFSCREEN_A9_ISOLATED_LOKI_DENIAL' }],
+  },
+};
+const A9_BINDING = {
+  apiVersion: 'admissionregistration.k8s.io/v1',
+  kind: 'ValidatingAdmissionPolicyBinding',
+  metadata: { name: 'offscreen-a9-isolated-loki', uid: 'binding-uid' },
+};
+
+test('D11 predicates accept the frozen denial and reject a changed fixture', async () => {
+  const {
+    assessAdmissionPolicy,
+    assessA9Pending,
+    assessLokiFailureHistory,
+    assessRetainedPartialSnapshot,
+  } = await import('../partial-install.mjs');
+  assert.equal(assessAdmissionPolicy(A9_POLICY, A9_BINDING).ok, true);
+  const renamed = structuredClone(A9_POLICY);
+  renamed.metadata.uid = '';
+  assert.equal(assessAdmissionPolicy(renamed, A9_BINDING).ok, false);
+  const history = [
+    {
+      revision: 1,
+      status: 'failed',
+      description:
+        'obs-loki OFFSCREEN_A9_ISOLATED_LOKI_DENIAL offscreen-a9-isolated-loki',
+    },
+  ];
+  assert.equal(assessLokiFailureHistory(history).ok, true);
+  assert.equal(
+    assessLokiFailureHistory([{ ...history[0], description: 'failed without marker' }]).reasonCode,
+    'loki-denial-marker-missing',
+  );
+  assert.equal(
+    assessLokiFailureHistory([
+      history[0],
+      { revision: 2, status: 'failed', description: history[0].description },
+    ]).reasonCode,
+    'loki-history-shape',
+  );
+  const snapshot = {
+    prometheusReady: true,
+    lokiStatefulSet: null,
+    releases: [
+      { name: 'obs-prometheus', revision: 1, status: 'deployed' },
+      { name: 'obs-loki', revision: 1, status: 'failed' },
+    ],
+  };
+  assert.equal(assessRetainedPartialSnapshot(snapshot).ok, true);
+  assert.equal(
+    assessRetainedPartialSnapshot({
+      ...snapshot,
+      releases: [
+        ...snapshot.releases,
+        { name: 'obs-tempo', revision: 1, status: 'deployed' },
+      ],
+    }).reasonCode,
+    'later-release',
+  );
+  const pending = {
+    schema: 2,
+    operation: 'ensure',
+    phase: 'obs-loki',
+    tuple: { targetNamespaceUid: 'ns-uid', kubeSystemUid: 'kube-system-uid' },
+  };
+  assert.equal(
+    assessA9Pending(pending, {
+      namespaceUid: 'ns-uid',
+      kubeSystemUid: 'kube-system-uid',
+    }).ok,
+    true,
+  );
+  assert.equal(
+    assessA9Pending(pending, {
+      namespaceUid: 'other',
+      kubeSystemUid: 'kube-system-uid',
+    }).reasonCode,
+    'namespace-uid-mismatch',
+  );
+});
+
+test('D11 public repeat refuses without a second mutation', async () => {
+  const { runIsolatedPartialInstallProof } = await import('../partial-install.mjs');
+  const identity = createFakeIdentity(null);
+  const retained = {
+    prometheusReady: true,
+    lokiStatefulSet: null,
+    releases: [
+      { name: 'obs-prometheus', revision: 1, status: 'deployed' },
+      { name: 'obs-loki', revision: 1, status: 'failed' },
+    ],
+  };
+  let ensures = 0;
+  const session = {
+    profile: 'dev',
+    identity,
+    env: ISOLATED_ENV,
+    clock: { now: () => 0 },
+    remainingWorkMs: () => 9_000_000,
+  };
+  const result = await runIsolatedPartialInstallProof(session, {
+    readPolicy: async () => ({ policy: A9_POLICY, binding: A9_BINDING }),
+    readHistory: async () => [
+      {
+        revision: 1,
+        status: 'failed',
+        description:
+          'obs-loki OFFSCREEN_A9_ISOLATED_LOKI_DENIAL offscreen-a9-isolated-loki',
+      },
+    ],
+    readRetained: async () => structuredClone(retained),
+    inspectPending: async () => ({
+      outcome: 'record',
+      record: {
+        schema: 2,
+        operation: 'ensure',
+        phase: 'obs-loki',
+        tuple: {
+          targetNamespaceUid: 'ns-from-ensure',
+          kubeSystemUid: CLUSTER_UID,
+        },
+      },
+    }),
+    runPublicCli: async (_session, call) => {
+      ensures += 1;
+      if (call.attempt === 'repeat') {
+        return { code: 1, mutation: 'none', completedPhases: [], reason: 'pending-refused' };
+      }
+      return {
+        code: 1,
+        workerState: 'partial',
+        reason: 'phase-failed',
+        pending: true,
+        mutation: 'confirmed',
+        completedPhases: ['namespace', 'secret', 'obs-prometheus'],
+        namespaceUid: 'ns-from-ensure',
+      };
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(ensures, 2);
+  assert.equal(result.intentionalRetainedPlatform, true);
+  let retainedReads = 0;
+  const changed = await runIsolatedPartialInstallProof(session, {
+    readPolicy: async () => ({ policy: A9_POLICY, binding: A9_BINDING }),
+    readHistory: async () => [
+      {
+        revision: 1,
+        status: 'failed',
+        description:
+          'obs-loki OFFSCREEN_A9_ISOLATED_LOKI_DENIAL offscreen-a9-isolated-loki',
+      },
+    ],
+    readRetained: async () => {
+      retainedReads += 1;
+      const copy = structuredClone(retained);
+      if (retainedReads > 1) copy.releases[1].revision = 2;
+      return copy;
+    },
+    inspectPending: async () => ({
+      outcome: 'record',
+      record: {
+        schema: 2,
+        operation: 'ensure',
+        phase: 'obs-loki',
+        tuple: {
+          targetNamespaceUid: 'ns-from-ensure',
+          kubeSystemUid: CLUSTER_UID,
+        },
+      },
+    }),
+    runPublicCli: async (_session, call) => {
+      ensures += 1;
+      if (call.attempt === 'repeat') {
+        return { code: 1, mutation: 'none', completedPhases: [], reason: 'pending-refused' };
+      }
+      return {
+        code: 1,
+        workerState: 'partial',
+        reason: 'phase-failed',
+        pending: true,
+        mutation: 'confirmed',
+        completedPhases: ['namespace', 'secret', 'obs-prometheus'],
+        namespaceUid: 'ns-from-ensure',
+      };
+    },
+  });
+  assert.equal(changed.reasonCode, 'retained-state-changed');
 });

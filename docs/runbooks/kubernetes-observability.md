@@ -6,7 +6,7 @@ The workstation Python observer in `infra/monitoring/` is separate. [Workstation
 
 ## What the selected native platform is
 
-Five independently versioned Helm releases (`obs-prometheus`, `obs-loki`, `obs-tempo`, `obs-collector`, `obs-grafana`) under `offscreen-dev-observability` or `offscreen-observability`. Vendored chart archives and frozen image digests live in `infra/platform/observability/`. Platform ensure/status uses the ordinary infra CLI; synthetic bounded proof uses an isolated query harness under `infra/verification/smoke/observability/`.
+Five independently versioned Helm releases (`obs-prometheus`, `obs-loki`, `obs-tempo`, `obs-collector`, `obs-grafana`) under `offscreen-dev-observability` or `offscreen-observability`. Vendored chart archives and frozen image digests live in `infra/platform/observability/`. Dev desired Collector merges `values/collector.yaml` then `values/profiles/dev/collector.yaml`; exact occupied predecessor refuses ensure with `upgrade-required`. The separate Collector upgrade command is below. Live upgrade remains NOT RUN. Platform ensure/status uses the ordinary infra CLI; synthetic bounded proof uses an isolated query harness under `infra/verification/smoke/observability/`. Offline source for that classifier exists on the observability implementation branch; live acceptance remains NOT RUN.
 
 ## Plan, ensure, and read-only status
 
@@ -20,6 +20,32 @@ Release profile substitutes `release` for `dev`. Dev is the primary target for o
 
 ```bash
 node infra/platform/common/cli.mjs render observability dev all --format yaml
+```
+
+## Collector upgrade and local connection
+
+Upgrade is a dev-only mutation. It accepts no arguments. The process must be started with `OFFSCREEN_OBSERVABILITY_UPGRADE` set to exactly `authorized`. Any other value, or any extra argument, refuses before host access. It upgrades only the `obs-collector` release from the exact predecessor revision to the desired revision. It does not install a missing release, roll back, or delete resources. Live upgrade on a cluster remains **NOT RUN**.
+
+```bash
+OFFSCREEN_OBSERVABILITY_UPGRADE=authorized pnpm obs:upgrade
+```
+
+Connection is read-only forwarding. It does not need the upgrade authorization variable and it does not enroll the application. The only accepted forms are no arguments, or one `--queries` argument. Other arguments exit 2 before target access. Fixed ports are bound on `127.0.0.1` only:
+
+| Key | Local port | With |
+| --- | ---: | --- |
+| developerHttp | 14318 | always |
+| developerGrpc | 14317 | always |
+| grafana | 13000 | always |
+| prometheus | 19090 | `--queries` |
+| loki | 13100 | `--queries` |
+| tempo | 13200 | `--queries` |
+
+The command prints those `key 127.0.0.1:port` lines and stays in the foreground until SIGINT (clean shutdown) or a failure. It never prints credentials. SIGTERM and an unexpected child exit are failures. Live connection remains **NOT RUN**.
+
+```bash
+pnpm obs:connect
+pnpm obs:connect --queries
 ```
 
 ## Authorized synthetic proof (not default verification)

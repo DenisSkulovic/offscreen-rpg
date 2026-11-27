@@ -5,6 +5,7 @@ import {
   classifyChangedPath,
   collectGitScopeState,
   decideAffectedScope,
+  isWorkspacePackageManifest,
   isRootGlobalInput,
   isTurboDryPlanInvocation,
   parseAffectedCliArgs,
@@ -214,6 +215,45 @@ test('negative: deleted package manifest => FULL', () => {
   });
   assert.equal(scope.mode, 'full');
   assert.match(scope.reason, /deleted package manifest/);
+});
+
+test('grouped manifest deletion and rename select full scope', () => {
+  assert.equal(
+    isWorkspacePackageManifest('packages/platform/leaf/package.json'),
+    true,
+  );
+  assert.equal(
+    isWorkspacePackageManifest('packages/not-a-family/leaf/package.json'),
+    false,
+  );
+  const removed = cleanScope({
+    changedPaths: ['packages/platform/leaf/src/index.ts'],
+    deletedPaths: ['packages/platform/leaf/package.json'],
+  });
+  assert.equal(removed.mode, 'full');
+  assert.equal(removed.reason, 'deleted package manifest');
+  const renamed = cleanScope({
+    changedPaths: ['packages/ai/next/package.json'],
+    renamedPaths: [
+      {
+        from: 'packages/ai/prior/package.json',
+        to: 'packages/ai/next/package.json',
+      },
+    ],
+  });
+  assert.equal(renamed.mode, 'full');
+  assert.equal(renamed.reason, 'package rename');
+  const ordinary = cleanScope({
+    changedPaths: ['packages/platform/leaf/src/index.ts'],
+  });
+  assert.equal(ordinary.mode, 'affected');
+  assert.equal(ordinary.reason, 'workspace source change');
+  const unrecognized = cleanScope({
+    changedPaths: ['packages/not-a-family/leaf/package.json'],
+    deletedPaths: ['packages/not-a-family/leaf/package.json'],
+  });
+  assert.equal(unrecognized.mode, 'affected');
+  assert.equal(unrecognized.reason, 'workspace source change');
 });
 
 test('package rename => FULL', () => {

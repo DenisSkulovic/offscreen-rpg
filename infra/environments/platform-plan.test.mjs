@@ -687,7 +687,7 @@ test('observability ensure runner is timeout-exempt only for exact native argv',
       'dev',
       'kind-offscreen-dev',
     ]),
-    600_000,
+    1_060_000,
   );
   assert.equal(
     platformRunnerSpawnTimeout('observability', [

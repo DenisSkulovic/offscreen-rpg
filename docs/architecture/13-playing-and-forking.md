@@ -1,6 +1,6 @@
 # 13. Playing, waiting for scene 2, and forking a past scene
 
-**Question:** I clicked an option. Which parts run, when does it become true, and how can I fork a past scene? **Baseline:** source inspected at `e2c0e751`, 2026-11-23. Source is implemented and lower-tier tests exist; a complete real cold-kind story/fork is **NOT PROVEN** in inspected status. [Engine authority](../technical/engine/authority-and-transitions.md), [publication fence](../technical/storyteller/generation-and-publication.md). [Start with the human tour](00-human-tour.md).
+**Question:** I clicked an option. Which parts run, when does it become true, and how can I fork a past scene? **Baseline:** source inspected at `e2c0e751`, 2026-11-23. Source is implemented and lower-tier tests exist; a complete real cold-kind story/fork is **NOT PROVEN** and its planned TURN03 proof is cancelled (2026-11-27). [Engine authority](../technical/engine/authority-and-transitions.md), [publication fence](../technical/storyteller/generation-and-publication.md). [Start with the human tour](00-human-tour.md).
 
 ## The single most important sentence
 
@@ -91,18 +91,20 @@ A fork at scene 1 **must not** clone the parent's current scene-2 state. The req
 | Game applies checkpoint-aware fork | [Story Engine forks](../../packages/story-engine/src/stories/forks.ts) |
 | Historical scene has a checkpoint reference | [Nest historical scene read](../../apps/api/src/modules/stories/controllers/story-reads.ts) and [checkpoint guide](05-scenes-and-forks.md) |
 
-The TURN03 trace checks the fork's source lineage. **An independent *child continuation* is a stronger requirement**, and the full cold-kind eight-gate report still must prove it.
+The local fork tests check the fork's source lineage and an independent child over a quiescent historical checkpoint. **An independent *child continuation* across separate Pods is a stronger requirement** that no run here has shown, and the cold-cluster proof that was to show it (TURN03) was cancelled on 2026-11-27 with no PASS.
 
 ## What TURN03 proves versus what it does not
+
+**Short answer: TURN03 proves nothing, because it never ran.** It was cancelled by the owner on 2026-11-27 while the monorepo and agent runtime are redesigned; its legacy scripted scenario is retired, not pending. The table separates the evidence tiers that do exist from the one that does not, and no tier below the last may be cited as product acceptance. A scripted trace is plumbing evidence, not acceptance of the game.
 
 | Evidence level | Meaning |
 | --- | --- |
 | **Code exists** | Routes, Story Seam, distributed Worker, checkpoint and client recovery paths exist |
 | **Local proof** | Focused tests, local multiprocess scripted scenarios and injected source-only acceptance adapters test selected behavior |
-| **Real release proof, still open** | One actual authenticated multi-Pod story gets scene 2; exact SQL/Temporal/S3 custody, GET/SSE, historical fork with independent child and recovery matrix all observed |
+| **Real release proof, not obtained (its TURN03 gate is cancelled)** | One actual authenticated multi-Pod story gets scene 2; exact SQL/Temporal/S3 custody, GET/SSE, historical fork with independent child and recovery matrix all observed |
 | **Real LLM turn, later** | Separately authorized provider-mode executor with cost/retry custody; current distributed executor deliberately refuses non-scripted mode |
 
-[Current execution roadmap](../../work/IMPLEMENTATION-ROADMAP.md) tracks the order. [TURN03 proof packet](../../work/changes/open/2026-11-19--turn03-full-distributed-forkable-turn-proof/PROOF.md) tracks the gate definition; its test fixtures should not be mistaken for the user's product APIs.
+[Current execution roadmap](../../work/IMPLEMENTATION-ROADMAP.md) tracks the order. The [historical TURN03 record](../../work/changes/archive/2026-11/distributed/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) retains the gate definition as provenance only; its test fixtures should not be mistaken for the user's product APIs, and future acceptance must be designed against the redesigned architecture.
 
 ## Failure examples worth tracing with your eyes
 

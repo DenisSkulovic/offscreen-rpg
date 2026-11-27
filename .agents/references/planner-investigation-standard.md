@@ -32,6 +32,8 @@ At the beginning of each planning, design, audit or handoff assignment, before d
 6. Review the authorized batch. Simulate the first dispatch and each task from its limited anchors, at a depth scaled to risk. Classify findings by severity. Critical and High block only the affected scope.
 7. When delegation is selected, give the implementation coordinator a compact launch: Change and first task, branch, locks, permitted operations, destination, exit proof and stop. The coordinator verifies nearby code, implements, tests and reports. It does not redesign the target or select the next Change.
 
+For a batch, record genuinely common stable source facts/decisions once in the existing group register, canonical contract or applicable source map; task cards link only the relevant slice. Do not make each task rediscover them or duplicate a full investigation in every card. Name exact obsolete statements, redundant sections or transfers that may be removed/condensed when substantive documentation restructuring is selected; preserve unique constraints and provenance, not every historical sentence. Leave bounded execution-time verification, local debugging and factual drift reconciliation to the implementation coordinator and workers. No exhaustive pre-investigation of incidental details or new shared-context artifact is required.
+
 A capable executor can start its first bounded edit from a few exact anchors. Open-ended system discovery is a planner defect. On correction, repeat task simulation only for affected tasks. Instructions such as "choose", "investigate architecture" or "where appropriate" are not an executor's algorithm.
 
 ## Artifact handoff

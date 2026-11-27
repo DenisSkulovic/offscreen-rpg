@@ -89,12 +89,4 @@ See [game rules](../gameplay/rules.md) and [settings execution](../../technical/
 
 ## Current implementation boundary
 
-This section is a dated realization record, not product contract; its recipient is [versioned settings: Current adapters](../../technical/storyteller/versioned-settings.md#current-adapters).
-
-**Editor and history.** The live-story editor supports catalogue presets, private saved presets, emphasis, encounter frequency, up to 16 custom narrative tags and four guidance snippets. Settings history exposes the latest 20 revisions. Existing profiled stories project their original settings until the first explicit update persists revisions. New stories can lock creative and speed settings before Start; pause remains available. Mid-activity pace changes are separate controls.
-
-**Offline narrator.** The offline source does not improvise from arbitrary text. Creative configuration is stored and included in bounded generated-task context, including the mechanical consequence task. The offline narrator repeats saved outcomes and has no special profile voice or absurd-comedy tag branch.
-
-**Tags.** Unknown custom tags carry no mechanical effect. Mechanical modifiers and event thresholds belong to captured action content; a world-tag editor is not implemented.
-
-**Not yet exposed.** The editor does not yet expose narrative initiative, a campaign narrative-direction revision or canon-invention permissions. Existing emphasis, encounter-frequency and guidance fields are not silently reinterpreted as any of those authorities. Current tasks therefore receive canonical material without a captured per-domain answer for how freely gaps may be filled; this is a known blocker before meaningful long-run evaluation in a private or sparsely documented world.
+This section is a dated realization note, not product contract. The editor boundary, revision history, lock and pause behavior, offline-narrator limits and tag handling are recorded in [versioned settings: Current adapters](../../technical/storyteller/versioned-settings.md#current-adapters). One product-facing limit stays here: the editor does not yet expose narrative initiative, a campaign narrative-direction revision or canon-invention permissions, and existing emphasis, encounter-frequency and guidance fields are not silently reinterpreted as those authorities. Current tasks therefore receive canonical material without a captured per-domain answer for how freely gaps may be filled; this is a known blocker before meaningful long-run evaluation in a private or sparsely documented world.

@@ -8,6 +8,7 @@ import {
   RUNTIME_IMAGES,
   isNonRuntimePath,
   selectWorkspaceImages,
+  workspaceDirectoryForPath,
   workspaceGraph,
 } from '../common/workspace-graph.mjs';
 
@@ -62,35 +63,35 @@ function isReleaseOnlyPath(file) {
 /**
  * @param {string} file
  */
-function workspaceDirForPath(file) {
-  const match = /^(apps|packages|tools)\/[^/]+/.exec(file);
-  return match ? match[0] : null;
-}
+const LEAF_MANIFEST_RE =
+  /^(?:(?:apps|packages|tools)\/[^/]+|packages\/(?:domain|ai|commerce|platform|foundation)\/[^/]+)\/package\.json$/;
+const LEAF_TSCONFIG_RE =
+  /^(?:(?:apps|packages|tools)\/[^/]+|packages\/(?:domain|ai|commerce|platform|foundation)\/[^/]+)\/tsconfig[^/]*\.json$/;
 
 /**
  * @param {string} file
+ * @param {string} root
  */
-function isWorkspaceDependencySourcePath(file) {
-  const dir = workspaceDirForPath(file);
+function isWorkspaceDependencySourcePath(file, root) {
+  const dir = workspaceDirectoryForPath(root, file);
   if (!dir) return false;
   if (APP_DIRS.has(dir)) return false;
   return true;
 }
 
 /**
+ * Structural leaf manifest or tsconfig, including a deleted manifest.
  * @param {string} file
  */
 function isAppManifestOrTsconfig(file) {
-  if (/^(apps|packages|tools)\/[^/]+\/package\.json$/.test(file)) return true;
-  if (/^(apps|packages|tools)\/[^/]+\/tsconfig[^/]*\.json$/.test(file))
-    return true;
-  return false;
+  return LEAF_MANIFEST_RE.test(file) || LEAF_TSCONFIG_RE.test(file);
 }
 
 /**
  * @param {string} filePath
+ * @param {string} [root]
  */
-export function isUnsafeDevSyncPath(filePath) {
+export function isUnsafeDevSyncPath(filePath, root = defaultRepoRoot()) {
   const file = normalizeChangedPath(filePath);
   if (file.length === 0) return false;
   if (isNonRuntimePath(file)) return false;
@@ -104,7 +105,7 @@ export function isUnsafeDevSyncPath(filePath) {
     return true;
   }
   if (isAppManifestOrTsconfig(file)) return true;
-  if (isWorkspaceDependencySourcePath(file)) return true;
+  if (isWorkspaceDependencySourcePath(file, root)) return true;
   return false;
 }
 
@@ -135,7 +136,7 @@ export function resolveDevSync(changedPath, root) {
     return { mode: 'none', images: [], workloads: [] };
   }
 
-  if (isUnsafeDevSyncPath(file)) {
+  if (isUnsafeDevSyncPath(file, root)) {
     const images = BUILD_CRITICAL_ROOT_FILE_SET.has(file)
       ? [...RUNTIME_IMAGES]
       : selectWorkspaceImages([file], buildGraph);

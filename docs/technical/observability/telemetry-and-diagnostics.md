@@ -1,12 +1,12 @@
 # Runtime telemetry and operational reliability | OpenTelemetry + pragmatic Grafana stack
 
-**Status: technical recommendation, 2026-11-15; not installed or authorized.** This is the **operational** sibling of [durable evidence](./identities-and-evidence.md), not its replacement and not a deployed monitoring stack. It remains under `docs/technical` because the documentation architecture names this path. That placement does not install the stack. The 2026-11-15 source inventory is an evidence run, not this contract. No monitoring service and no paid observability account are authorized.
+**Authority:** this page owns the proposed application-side telemetry contract: OpenTelemetry as the instrumentation standard, the trace and span design, a bounded metric vocabulary, the logging policy, sampling and backpressure rules, and operational objectives (technical recommendation, 2026-11-15). It is the **operational** sibling of [durable evidence](./identities-and-evidence.md), not its replacement. It authorizes no monitoring service, no paid observability account and no application instrumentation change.
 
-**Selected local platform boundary (2026-11-26):** [native observability infrastructure](../platform/observability-native-infrastructure.md) owns the independently defended optional five-release foundation. Implementation and live acceptance remain pending. The application instrumentation recommendations below remain proposals; durable evidence is unchanged. Historical source observations below are dated, not current inventory.
+**Platform boundary (selected 2026-11-26):** [native observability infrastructure](../platform/observability-native-infrastructure.md) owns the optional five-release local foundation (Prometheus, Loki, Tempo, an OpenTelemetry collector and Grafana), its install, readiness and qualification. This page does not restate that contract and does not assert whether any live stack is running today. The application instrumentation below remains proposed, and durable evidence is unchanged. Historical source observations below are dated, not current inventory; [Reality of current source](#2-reality-of-current-source) is the current realization.
 
 ## Owner map
 
-Telemetry stays on this page. A noninstalled observer stack stays planned. Durable forensic evidence and provenance stay distinct from lossy telemetry.
+Telemetry stays on this page. Application enrollment stays proposed; the platform stack has its own owner. Durable forensic evidence and provenance stay distinct from lossy telemetry.
 
 | Record | Owner | Standing |
 | --- | --- | --- |
@@ -14,9 +14,9 @@ Telemetry stays on this page. A noninstalled observer stack stays planned. Durab
 | Capture and causal identity | [Committed transition capture](./capture-and-provenance.md#owner-map) | Proposal. |
 | Investigation and reconstruction | [Forensic read contract](./investigation-and-reconstruction.md#owner-map) | Proposed read. |
 | Retention and access | [Replay, retention and privacy](./retention-and-access.md#owner-map) | Unratified where that page already says so. |
-| Telemetry | This page | Planned. A noninstalled observer stack stays planned. |
+| Telemetry | This page | Application enrollment proposed. The optional native stack is owned by [native observability](../platform/observability-native-infrastructure.md). |
 
-**Negative:** Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. An analyst read does not grant forbidden prompts. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read.
+**Negative:** Telemetry is not the canonical replay source. Installed platform charts do not mean any game span exists. A lossy summary does not replace original evidence identity. An analyst read does not grant forbidden prompts. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read.
 
 ## 1. Platform choice
 
@@ -39,15 +39,19 @@ flowchart LR
   GRAF --> ADMIN
 ~~~
 
-**A logical topology, not a demand to deploy seven services immediately.** Local development runs the kind lab (`pnpm dev`, `pnpm stack:*`); this stack is not deployed there and Prometheus is not part of the default lab release. Choose hosted or self-managed observability backends only after measured volume, security and support requirements. Prometheus alone does not archive per-campaign context. Grafana is excellent for system-wide time series and spans; **Offscreen Control** remains the right human-readable investigation product.
+**A logical topology, not a demand to deploy seven services immediately.** The optional native foundation realizes the Prometheus, Loki, Tempo, collector and Grafana releases for local use under its own contract; the application services in the diagram do not yet send OTLP to it. Choose hosted or self-managed observability backends only after measured volume, security and support requirements. Prometheus alone does not archive per-campaign context. Grafana is excellent for system-wide time series and spans; **Offscreen Control** remains the right human-readable investigation product.
 
 **Why not start with LangChain/LangSmith?** The application owns its Storyteller task, tool and publication lifecycle already. Instrument it directly with OTel GenAI conventions and domain evidence. A Langfuse/LangSmith-class tool can add model evaluation/prompt registry capability later, but no framework swap is needed to know which actual task and provider packet executed. A third-party tool must never become the sole long-term holder of a player's game evidence.
 
 ## 2. Reality of current source
 
-Inspected local lab infrastructure on main: Postgres, Temporal and supporting services on the kind cluster, **not** the proposed Prometheus/Grafana/Loki/Tempo/Collector stack. `apps/api/package.json` / `apps/worker/package.json` do not declare current OTel/Prometheus instrumentation. `packages/application/src/runtime-logging/index.ts` writes a bounded JSON record to stderr with `level,event,message,service,timestamp,correlation,errorKind`; `apps/api/src/main.ts` and `apps/worker/src/bootstrap/main.ts` call it for selected startup/adapter/relay problems. Nest is configured with a standard error/warn/log logger. This is a good cautious baseline, **not** distributed tracing or production retention.
+Source-inspected on this branch. Facts are scoped to the file named; none asserts a running stack.
 
-A dedicated `storyteller-operation-trace.v1` builder exists under `packages/storyteller/src/providers/operation-trace.ts`. The SA01 sample of 2026-11-14, retained as historical evidence, states that live execution and publication did **not** emit it yet. Do not claim zero observability. Do not mistake fixture or lab reports for live end-to-end spans.
+- **Platform artifacts.** `infra/platform/observability/` carries the five vendored chart archives (Prometheus, Loki, Tempo, OpenTelemetry collector, Grafana), values files, pinned artifacts and an install and readiness implementation (`install.mjs`, `readiness.mjs`, `artifacts.mjs`; release order `obs-prometheus`, `obs-loki`, `obs-tempo`, `obs-collector`, `obs-grafana`). Qualification, live acceptance and the developer contract belong to the [native contract](../platform/observability-native-infrastructure.md). The presence of these artifacts is not a claim that the stack is installed or healthy.
+- **Application instrumentation.** `apps/api/package.json` and `apps/worker/package.json` declare no OpenTelemetry or Prometheus client. No application span, OTLP export or application metric endpoint is wired.
+- **Process log path.** The application runtime logger is `writeRuntimeLog` in `packages/runtime-logging/src/index.ts` (the earlier path under `packages/application` no longer exists). It writes one JSON line to stderr with `level` (`info`, `warn`, `error`), `event`, `message`, `service` (`api` or `worker`), `timestamp`, optional `correlation` (string map) and optional `errorKind`, and its documentation says game history, provider content, SQL and arbitrary `Error` messages belong in their own stores. `classifyRuntimeError` reduces an error to its name. `writeRuntimeLog` is called by the API entrypoint (`apps/api/src/main.ts`) and the worker entrypoints (`apps/worker/src/bootstrap/main.ts`, `executor-main.ts`, `control-main.ts`); `apps/game-authority` imports only `classifyRuntimeError`. Nest keeps its standard logger. This is a cautious baseline, **not** distributed tracing or production retention.
+- **Database telemetry.** `packages/db/src/telemetry/runtime.ts` (`createDatabaseTelemetry`) keeps in-process counters and admission and pool gauges, and passes an optional observer an allowlisted event (`operation`, `outcome`, `workload`, `category`, `durationMs`, `queueDurationMs`, `count`, `isolation`, `operationName`); an observer failure cannot affect the database runtime. It is scoped database instrumentation, not an exporter and not a game span.
+- **Operation trace.** `storyteller-operation-trace.v1` is built in `packages/storyteller/src/providers/operation-trace.ts`. The SA01 sample of 2026-11-14, retained as historical evidence, states that live execution and publication did **not** emit it. On this branch the builder is referenced only by Storyteller tests, fixtures and the QA catalogue. Do not claim zero observability, and do not mistake fixture or lab reports for live end-to-end spans.
 
 ## 3. Telemetry is three cheap signals plus one durable evidence spine
 
@@ -58,7 +62,7 @@ A dedicated `storyteller-operation-trace.v1` builder exists under `packages/stor
 | **Structured logs (OTel/Loki)** | Selected categorized incidents and transitions with stable error class and bounded correlation IDs | Searchable process diagnostics; bounded and deletable, **not** the game ledger |
 | **Durable forensic evidence (native SQL + CAS)** | Accepted actions, exact frozen request/output artifacts, causal provenance, committed changes/holds, scope and coverage | **Never sampled** for defined critical boundaries, not emitted as verbose logs |
 
-The native evidence spine should provide a developer deep link to a trace when one exists; missing trace is not missing game evidence. Grafana metrics exemplars can link back to traces; Offscreen Control links from a generation or case to the same correlated span/trace.
+A missing or sampled trace does not mean the operation did not happen, and Support's basic answer must not depend on Loki or Tempo being up. The native evidence spine should provide a developer deep link to a trace when one exists; missing trace is not missing game evidence. Grafana metrics exemplars can link back to traces; Offscreen Control links from a generation or case to the same correlated span/trace.
 
 ## 4. Trace context and span design
 
@@ -154,13 +158,10 @@ Use log events for **unexpected exceptions, retry exhaustion, incident transitio
 
 **Choose OTel + Prometheus + Grafana**, and use Tempo/Loki when actual tracing/log search demand merits operating them. Do **not** force all local dev processes and CI to boot a heavy observability fleet on every `pnpm test:fast`. Start with an optional local observability profile, one test-connected trace and a small operational dashboard.
 
+Do not add Kafka, ClickHouse or a microservice tracing fleet in order to inspect traces; a local optional monolithic trace stack is the candidate. Raw prompts and generation bodies never go to a generic OTel exporter or a hosted third party (GenAI message fields are sensitive); the protected evidence store is the only place those bodies belong.
+
 **Do not choose a specialized LLM dashboard as the history owner.** Langfuse-style linked prompt versions, evaluations and model metrics can be useful later, but its retained traces are neither the game ledger nor a substitute for Offscreen Control’s permissioned source graph. If integrated, outbound events must exclude or deliberately consent/govern sensitive content, and the native evidence spine must still reconstruct the old task without that vendor.
 
 ## Folded invariants from the 2026-11 essays
 
-**Proposed, not installed.**
-
-- OpenTelemetry, Prometheus and Grafana are the operational complement. For this portfolio, a local optional monolithic trace stack is the candidate. Do not add Kafka, ClickHouse or a microservice tracing fleet in order to inspect traces.
-- Raw prompts and generation bodies do not go to a generic OTel exporter or a hosted third party. GenAI message fields are sensitive. The protected evidence store is the only place those bodies belong.
-- Metric labels stay bounded. No story text, no raw identifiers that explode cardinality, no secrets.
-- A missing or sampled trace does not mean the operation did not happen. The forensic spine is the business record. Support's basic answer must not depend on Loki or Tempo being up.
+**Proposed application telemetry; not wired.** Platform installation is owned by the native contract. The folded invariants sit where they govern: bounded labels in [section 5](#5-recommended-metric-vocabulary), no raw prompt in logs in [section 6](#6-logging-policy-less-volume-more-signal), missing traces versus durable evidence in [section 3](#3-telemetry-is-three-cheap-signals-plus-one-durable-evidence-spine), and the exporter and third-party limits in [section 9](#9-tool-choice-verdict).

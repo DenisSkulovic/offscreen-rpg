@@ -1,6 +1,15 @@
 # Technical contracts
 
-**Read as contracts, not implementation certification.** The [current maturity baseline](../../STATUS.md#2026-11-27--capability-maturity-baseline) distinguishes established local infrastructure, Agent Core foundation work, legacy exploratory product implementations and absent capabilities. A selected contract or completed construction Change does not establish a qualified capability. Preserve exact safety guarantees and scoped evidence while reassessing legacy implementation retention.
+**Read as contracts, not implementation certification.** Each entry below routes to one owner, and an owner may hold four different kinds of statement. Tell them apart before relying on one:
+
+| Kind | How the owner marks it | What it licenses |
+| --- | --- | --- |
+| Selected contract | "Selected", an accepted decision, a binding invariant | What a future change must preserve or deliberately revise |
+| Legacy realization | "Current source", a dated status or an Implemented section | What the exploratory application did when inspected; not a retention decision |
+| Proposal | "Proposed", "candidate", an unratified recommendation | Nothing; a reader may not treat it as a norm or a grant |
+| Proof | A named test, run or evidence file with its revision and scope | Exactly that scope; a fixture or source join does not certify the whole |
+
+The [current maturity baseline](../../STATUS.md#2026-11-27--capability-maturity-baseline) distinguishes established local infrastructure, Agent Core foundation work, legacy exploratory product implementations and absent capabilities. A selected contract or completed construction Change does not establish a qualified capability. Preserve exact safety guarantees and scoped evidence while reassessing legacy implementation retention. [Verification programmes](platform/verification-programmes.md) owns which proof exists for infrastructure, packages and apps.
 
 ## Storyteller evolution | authoritative implementation contracts
 
@@ -16,7 +25,7 @@
 | Fictional time and active commitments | [Chronology and activities](engine/chronology-and-activities.md) · [mechanics and capabilities](engine/mechanics-and-capabilities.md) |
 
 
-One owner per guarantee. Product intent is [product](../product/README.md). These pages include selected future design. They are not a status report.
+One owner per guarantee. Product intent is [product](../product/README.md). These pages include selected future design and are not a status report; [STATUS](../../STATUS.md) and dated evidence are.
 
 [Agent Core foundation](platform/agent-core.md) records the independently reviewed E1 target, durable limitations, deferred findings and qualification boundary; its standing distinguishes review from owner acceptance and realization.
 
@@ -33,7 +42,7 @@ flowchart LR
     Worker -->|validated proposal only| GA
 ```
 
-**Selected distributed target illustration, not a live topology inventory.** The [Architecture Atlas](../architecture/README.md) explains the architecture; [STATUS](../../STATUS.md), current source and dated evidence establish realization. The [19 November distributed-turn audit](../../work/designs/archive/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) is superseded historical evidence, not current readiness. Recheck the owning contracts and source before planning.
+**Selected distributed target illustration, not a live topology inventory and not a binding architecture.** The [Architecture Atlas](../architecture/README.md) explains the architecture; [STATUS](../../STATUS.md), current source and dated evidence establish realization. The [19 November distributed-turn audit](../../work/designs/archive/distributed-turn-poc/POC-READINESS-AUDIT-2026-11-19.md) is superseded historical evidence, not current readiness. Recheck the owning contracts and source before planning.
 
 | Question | Owner |
 | --- | --- |
@@ -66,7 +75,7 @@ flowchart LR
 | Who may spend on a model call? | [Spending and entitlements](platform/spending-and-entitlements.md) |
 | How does a release stay compatible? | [Deployment and compatibility](platform/deployment-and-compatibility.md) |
 | How do we reach the player? | [Notifications](platform/notifications.md) |
-| What engine are we building, and what did we reject? | [Selected architecture](engine/selected-architecture.md) |
+| What engine are we building, and what did we reject? | [Selected architecture](engine/selected-architecture.md) · dated decision [D-0001](../decisions/D-0001--modular-engine.md). The ban on model-owned mechanical truth is a standing safety rule. The modular-monolith shape is a dated working choice with a revisit rule |
 | What may commit a transition today? | [Authority and transitions](engine/authority-and-transitions.md) |
 | What may a rule change? | [Mechanics and capabilities](engine/mechanics-and-capabilities.md) |
 | When does fictional time advance? | [Chronology and activities](engine/chronology-and-activities.md) |
@@ -102,6 +111,4 @@ flowchart LR
 | How is a Chamber fixture not a gameplay proof? | [Chamber and fixtures](lab/chamber-and-fixtures.md) |
 | Which Chamber label is which proof? | [Proof tiers](lab/experiment-protocol.md#proof-tiers). A fixture, a connected smoke, and a manual QA mark are not live player acceptance |
 
-Accepted trade-offs that are not the norm itself: [decisions](../decisions/README.md).
-
-- [Verification programmes: infrastructure, packages and apps](platform/verification-programmes.md)
+Accepted trade-offs that are not the norm itself: [decisions](../decisions/README.md). Verification coverage for infrastructure, packages and apps: [Verification programmes](platform/verification-programmes.md).

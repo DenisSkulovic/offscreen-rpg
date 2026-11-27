@@ -37,7 +37,7 @@ Do not promote every named background object, person or spatial detail. A cup on
 
 **Requirement.** Only a bounded situated-present account is required, not a map or universal entity system. The storyteller may propose an updated scene frame alongside a DM turn; application code validates references to durable identities and authoritative relations, and prose remains free to add disposable texture. A later image pipeline derives a separate visual frame (composition, shot, angle, lighting, palette, reference anchors). Camera instructions are never prerequisites, effects or evidence that an event occurred.
 
-**Candidate representation (scoped).** `scene-frame.v1` is a candidate, not a required future schema; its bounded shape stays here until [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#opportunity-boundary) (TD04) holds it with provenance. Candidate information:
+**Candidate representation (scoped).** `scene-frame.v1` is a candidate, not a required future schema; its provenance-bearing record is [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#opportunity-boundary). Candidate information (product-level; retained here):
 
 - a durable place reference or temporary place description;
 - fictional time and temporary environmental conditions;
@@ -115,7 +115,7 @@ Keep modest identity and episode references for encountered people when later re
 - *Exact quantities.* Quantities, work, dice and permissions retain an execution ledger; their readable document views cannot independently change those values. Durable facts and quantities must not depend exclusively on a lossy summary: a small context can still preserve the spear's owner or the promise made at the mill.
 - *Source-based recall.* A returned recollection is a lead until its source identity is proved, and model prose is not current canon. As history grows, retrieve and summarize relevant material rather than sending the complete chronology with every request.
 
-**Current realization (scoped; TD05 receives it in [context selection and recall](../../technical/storyteller/context-selection-and-recall.md)).** The [implementation contract](../../technical/storyteller/context-and-memory.md) gives narrative documents explicit ownership, versioning, search and admitted edits. A bounded `ask_memory` / `read_memory` loop exists in the Storyteller packages. It is optional and provider-gated, and the returned snippet is the lead. It is not a general agent.
+**Current realization.** A bounded `ask_memory` / `read_memory` loop exists, optional and provider-gated; the returned snippet is only a lead and the loop is not a general agent. Ownership, versioning, search and admitted edits of narrative documents are the technical contract in [context selection and recall](../../technical/storyteller/context-selection-and-recall.md#storyteller-facing-memory-tools) and [context and memory](../../technical/storyteller/context-and-memory.md).
 
 Reuse stable material where useful. Cached or prepared output is only valid while its assumptions still hold. Cost measurement must include generation that gets discarded after a change of plan, not just prose ultimately shown to players.
 

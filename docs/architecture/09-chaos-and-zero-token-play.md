@@ -2,6 +2,17 @@
 
 **Question:** can an authenticated player continue a real scripted campaign while selected Kubernetes processes disappear, recover and sometimes come back in the wrong order? **Status:** **DESIGN** (2026-11-19), not an implemented campaign-chaos runner. One earlier Rabbit-consumer-loss test **did** run under [K8S10](../../work/changes/backlog/platform-operations/2026-11-19--k8s10-distributed-fault-and-load-harness/CHANGE.md), but it exercised a toy broker client, not a real Storyteller turn. Source inspection baseline: `584b594`. Canonical [lab experiment protocol](../technical/lab/experiment-protocol.md), [execution](../technical/platform/execution-and-delivery.md), [resilience](04-failure-and-recovery.md), [failure runbook](../runbooks/kubernetes-fault.md).
 
+**What is real here, what is planned, and what is excluded.**
+
+| Piece | Standing |
+| --- | --- |
+| Disposable target (`kind-offscreen-release`, an owned namespace and story) and the injection safety fence | Selected rules; selector, preflight and oracle pieces exist as historical K8S10 source, the target is not asserted live |
+| Zero-provider scripted scenario (scripted Storyteller fixture, strict preflight, dispatch tripwire) | The fixture and the offline default exist in source; the layered preflight for a chaos run is selected, not run |
+| Targeted crash-window cuts, then seeded single-Pod faults | **Planned experiment**, no campaign-chaos runner exists; only a toy Rabbit consumer-loss smoke ran |
+| Evidence of recovery | **None.** No run, passing or failing, is recorded for a real Storyteller turn under fault |
+
+A random-fault run, even a green one, shows only that the sampled cuts recovered. It does not establish recovery from every window, a production-ready cluster, or any live-model behavior.
+
 ## Our central idea: one continuous synthetic game as a live reliability oracle
 
 ```mermaid
@@ -29,7 +40,7 @@ The bot plays the **actual supported public API**, not direct SQL calls. It crea
 
 ## We already have the right no-provider fixture
 
-The actual `packages/storyteller/src/fixtures/index.ts:scriptedStorytellerResult` is a repeatable schema-valid Storyteller response, using authored rehearsal content and `scriptedMechanicalConsequence`. `packages/application/src/storyteller/execution.ts:createStorytellerExecution.generate` has an explicit scripted branch. `packages/application/src/storyteller/config.ts:readStorytellerExecution` defaults to offline unless `STORYTELLER_LIVE_ENABLED=true` **and** a valid approved JSON policy exists. This is a better contract than lorem ipsum: it exercises validation, documented choices, mechanical consequences, canonical source, result hashes and publication while avoiding LLM calls.
+The actual `packages/storyteller/src/fixtures/index.ts:scriptedStorytellerResult` is a repeatable schema-valid Storyteller response, using authored rehearsal content and `scriptedMechanicalConsequence`. `packages/story-engine/src/storyteller/execution.ts:createStorytellerExecution.generate` has an explicit scripted branch. `packages/story-engine/src/storyteller/config.ts:readStorytellerExecution` defaults to offline unless `STORYTELLER_LIVE_ENABLED=true` **and** a valid approved JSON policy exists. This is a better contract than lorem ipsum: it exercises validation, documented choices, mechanical consequences, canonical source, result hashes and publication while avoiding LLM calls.
 
 ```mermaid
 flowchart TD

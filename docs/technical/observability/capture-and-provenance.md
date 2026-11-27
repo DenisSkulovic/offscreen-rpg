@@ -1,6 +1,17 @@
 # Committed transition capture V1 | One real mechanic, one atomic forensic source
 
-**Status:** wave-4 detailed technical contract, proposal only, 2026-11-15. **No code, schema or test is authorized by this page.** It remains under `docs/technical` because the documentation architecture names this path. That placement does not select the writer. The indexed route is the [evidence graph](identities-and-evidence.md), which labels this page as a proposal. The writer-closure note in the 2026-11-15 observability run is the source inventory. This design does **not** require full event sourcing or a function-level log. Reconstruction rules are [on the read contract](investigation-and-reconstruction.md#reconstruction-steps). Physical retention limits are [on the retention owner](retention-and-access.md).
+**Status:** proposed first capture writer; not approved, and no writer, code, schema or test is authorized.
+
+**Authority:** this page owns the proposed first capture writer: one committed finite-action settlement or interrupt path that would record exact causal state and a per-story historical frontier in the same SQL transaction as the mechanic. It is a proposal. It selects no writer and authorizes no code, schema or test, and it does not require full event sourcing or a function-level log. It lives under `docs/technical` because the documentation architecture names this path.
+
+**Current realization (source-inspected on this branch):** the mechanic exists and the capture does not. `settleActionExecution` in `packages/story-engine/src/campaign/action-executions.ts` settles one admitted finite action under the story lock, inserts `gameActionExecutionEvent` and `gameActionReceipt` rows, and is idempotent on the terminal execution row. No `GameCommitEvidenceV1`, `story_evidence_cursor` or evidence table exists in `packages/`, `apps/` or migrations. Migration `0016_obs00_current_authority.sql` adds only the Storyteller current platform-policy and owner-grant tables; it is not capture. [STATUS](../../../STATUS.md) lists OBS04 E0 as an open gap. The function's existence is therefore not evidence that capture is implemented.
+
+**Neighbours.** The indexed route is the [evidence graph](identities-and-evidence.md), which labels this page a proposal. The writer-closure note in the 2026-11-15 observability run is the source inventory (2026-11-15, wave-4 contract). Reconstruction rules are [on the read contract](investigation-and-reconstruction.md#reconstruction-steps). Physical retention limits are [on the retention owner](retention-and-access.md).
+
+| Part of this page | Standing |
+| --- | --- |
+| [Pilot](#1-pilot-before-universal-rollout), [atomic group and frontier](#2-exact-causal-state-and-historical-frontier), [sequence](#3-per-story-sequence-correctness), [hook locations](#4-hook-locations-and-transactional-boundaries), [stochastic inputs](#5-what-about-stochastic-inputs-and-deterministic-replay) | Proposal; no writer selected |
+| [Proof matrix](#6-crash-and-concurrency-proof-matrix) and [rollout acceptance](#7-scaling-and-rollout-acceptance) | Required proof for any later Ready decision; NOT RUN |
 
 ## Owner map
 
@@ -12,17 +23,17 @@ Capture and causal identity stay on this page. Durable forensic evidence and pro
 | Capture and causal identity | This page | Proposal. |
 | Investigation and reconstruction | [Forensic read contract](investigation-and-reconstruction.md#owner-map) | Proposed read. |
 | Retention and access | [Replay, retention and privacy](retention-and-access.md#owner-map) | Unratified where that page already says so. |
-| Telemetry | [Runtime telemetry](telemetry-and-diagnostics.md#owner-map) | Planned. A noninstalled observer stack stays planned. |
+| Telemetry | [Runtime telemetry](telemetry-and-diagnostics.md#owner-map) | Application enrollment proposed. The optional native stack is owned by [native observability](../platform/observability-native-infrastructure.md). |
 
-**Negative:** Telemetry is not the canonical replay source. A lossy summary does not replace original evidence identity. An analyst read does not grant forbidden prompts. Candidate retention figures stay unratified. This map does not settle a legal, privacy, or access policy, and it does not authorize a new forensic read.
+**Negative:** Telemetry is not the canonical replay source and does not supply a missing commit. A lossy summary does not replace original evidence identity. An analyst read does not grant forbidden prompts. Candidate retention figures stay unratified. This proposal does not make the pilot an authorized writer, and this map does not settle a legal, privacy, or access policy or authorize a new forensic read.
 
 ## 1. Pilot before universal rollout
 
-**Choose one committed finite-action settlement/interrupt path first** at `packages/application/src/campaign/action-executions.ts::settleActionExecution`, with the matching `gameActionExecutionEvent` and `gameActionReceipt` and the caller's `story FOR UPDATE`. Follow-up `campaign/follow-up-intents.ts` and `storyteller` capture are causal descendants but not additional earned action events. This is a **source-backed technical experiment** before accepting all writers.
+**Choose one committed finite-action settlement/interrupt path first** at `packages/story-engine/src/campaign/action-executions.ts::settleActionExecution` (the earlier route under `packages/application` no longer exists; the story engine owns this function), with the matching `gameActionExecutionEvent` and `gameActionReceipt` and the caller's `story FOR UPDATE`. Follow-up `campaign/follow-up-intents.ts` and `storyteller` capture are causal descendants but not additional earned action events. This is a **source-backed technical experiment** before accepting all writers.
 
 Why:
 - It has an exact accepted original operation, saved plan, source passage/revision and explicit game time.
-- Its success case commits one `gameActionReceipt` with actual effects/roll; the interrupt case deliberately commits **no** success receipt.
+- Its success case commits one `gameActionReceipt` with actual effects/roll; the interrupt case deliberately commits **no** success receipt. An interruption never earns a success receipt, and the evidence group records `receiptId: null` for it.
 - It can modify character, storyFacts, world, clock/anchor, activeAction, holds, and emit a consequence intent/outbox wake **in one SQL transaction**.
 - It has a realistic duplicate worker/Temporal replay and same-story contention test.
 - It exercises a meaningful before/after diff and source causal chain without needing to invent a universal historical world reducer.
@@ -83,6 +94,8 @@ type GameCommitEvidenceV1 = Readonly<{
 }>;
 ~~~
 
+**The ledger is never a second game authority:** live commands still use current SQL and the pure rules, and a digest mismatch is an incident, not permission to overwrite authoritative rows from the ledger. Capture semantic committed changes and accepted causal edges, never a function call, a renderer update or every real-second tick; a batch of checks in one transaction is one outer commit whose ordered inner steps are explanation, not separate published frontiers.
+
 **Existing source wins:** exact type references are to *the source Zod/data contract versions* for `Character`/`StoryFacts`/`Clock`/`CampaignHolds` and accepted plan. `TypedChangedFieldV1` is a **closed discriminated union** over known changed fields for this one writer (character facts/quantities, storyFacts, clock/anchor, holds, activeAction, world conditions). It is not arbitrary `{ path, value: unknown }` JSON Patch that might be executed later as game logic.
 
 **Only changed fields** are copied; unchanged fields are represented in the before/after state digest by the codec but not repeated in each row. For before/after root/source correctness, the group includes source references to the actual current story/campaign snapshot hash; no alias to current mutable row after commit is allowed.
@@ -97,13 +110,15 @@ Under **the same existing story row lock** (which serializes authoritative game 
 
 **A sequence is allocated for:** settled/interrupted finite-action mechanic that changes source state, even if there is not yet a published passage. A later Storyteller publication gets a **separate** game frontier when it actually publishes passage/offer/root/continuity under story lock. The AI generation's intermediate provider stages are linked by G, not by fabricated game sequence numbers.
 
+**Failure rule:** if evidence capture is required for a complete-replay promise, a failed evidence write rolls the mechanic back; the delta is never dropped while claiming complete history. Optional prompt provenance must not be a critical write on the settlement path.
+
 **Idempotency:** using `(storyId, operationId, executionRevision, settlementKind)` as part of forensic source identity may be useful, but the **existing underlying game-action receipt/event uniqueness** is the primary proof. A duplicate same-operation worker call must read original source and return with no new evidence/counter. Never key on wall timestamp or random “capture request ID” alone.
 
 **Legacy enablement:** an old story with no `story_evidence_cursor` initializes an **instrumented-from frontier**, not a fictitious genesis. A pilot capture may include bounded before-state evidence without implying all prior clock/fact changes are known. The read layer must say `complete-for-this-writer` rather than `complete-historical-state`.
 
 ## 4. Hook locations and transactional boundaries
 
-Code paths to inspect, **not implement until owner selects**:
+Code paths to inspect (the named functions exist in `packages/story-engine/src/campaign/action-executions.ts`; the evidence step is the proposal), **not implement until owner selects**:
 
 ~~~text
 createCampaignActionExecutions(...).settle
@@ -122,6 +137,8 @@ createCampaignActionExecutions(...).settle
 **Place the minimal capture assembler inside the already-owned application transaction** with source-authoritative before and calculated after values. The caller should not create another transaction or independently fetch “latest” after commit. Prefer a pure `projectTransitionEvidence(before, transitionResult)` that produces strict deterministic data with **no extra CAS read**.
 
 Avoid two competing event sources: if `gameActionReceipt` already stores the original plan/outcome/roll, evidence references its ID + verified hash instead of reproducing all fields in another SQL JSONB. The E0 row holds the before/after **missing values**, not a full duplicate of receipt, task, scene and world.
+
+No remote object-store I/O runs under the story lock, and a worker that reads today's campaign later cannot call that row a checkpoint of last week's transition.
 
 **Hard limit:** bounded E0 data size and SQL statements, measured before a migration is Ready. Avoid full `Character`/`WorldConditions` deep snapshots on *every* wake if no change. Source projector may check a full in-memory hash without persisting the full copy.
 
@@ -173,10 +190,4 @@ Do not enable a new E0 contract globally until:
 
 ## Folded invariants from the 2026-11 essays
 
-**Proposed, not landed.** The pilot named above is a contract, not a shipped writer.
-
-- The forensic ledger is not a second game authority. Live commands still use current SQL and the pure rules. A digest mismatch is an incident. It is not permission to overwrite authoritative rows from the ledger.
-- Do not put remote object-store I/O under the story lock. A worker that reads today's campaign later cannot call that row a checkpoint of last week's transition.
-- Capture semantic committed changes and accepted causal edges. Do not capture a function call, a renderer update, or every real-second tick. A batch of checks in one transaction is one outer commit with ordered inner steps. Those inner steps are explanation. They are not separately published frontiers.
-- If evidence capture is required for a complete-replay promise, a failed evidence write rolls the mechanic back. Do not drop the delta and still claim complete history. Optional prompt provenance must not be a critical write on the settlement path.
-- "Keep every raw packet forever" is rejected. Cost includes backups, indexes, key custody, deletion and who can read the store. Raw bodies are protected finite-retention artifacts. See [retention](retention-and-access.md).
+**Proposed, not landed.** The pilot named above is a contract, not a shipped writer. The folded invariants now sit where they govern: ledger-not-authority and semantic-commit capture in [section 2](#2-exact-causal-state-and-historical-frontier), the no-remote-I/O-under-lock rule in [section 4](#4-hook-locations-and-transactional-boundaries), and the rollback-on-failed-evidence rule in [section 3](#3-per-story-sequence-correctness). "Keep every raw packet forever" is rejected: cost includes backups, indexes, key custody, deletion and who can read the store, so raw bodies are protected finite-retention artifacts under [retention](retention-and-access.md).

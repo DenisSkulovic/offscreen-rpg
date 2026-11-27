@@ -35,13 +35,7 @@ Provider/model latency does not advance fictional time. Retrying after an uncert
 
 ### Current POC honesty
 
-What the source does today, separate from the target above (source: `apps/web/src/features/stories/launch/story-launch-form.tsx`, `use-story-launch.ts`).
-
-- **Route.** Stories home Create story opens `/stories/new`: one Story Prompt via `StoryLaunchForm`, with no env-gated alternate launch route (`/stories/launch` redirects here).
-- **Prepared catalogue.** It appears only when the server supplies presets. An empty list must not fake one or invent a catalogue.
-- **Launch identity.** The client mints one operation id per launch and keeps a pointer so a reload reconnects. A lost or ambiguous submit is followed by one status read, never a second submit.
-- **Legacy drafts.** Saved drafts remain on the legacy staged creator at `/stories/[id]`.
-- **Scripted opening.** A published opening can carry one server-scripted `observe` choice with no character sheet. Choosing it uses the existing campaign action API. A later scene is a scripted Writer continuation, not a live model evaluation.
+What the source does today, separate from the target above: Create story opens one Story Prompt form (`/stories/new`), a prepared catalogue appears only when the server supplies presets and is never faked, one operation identity per launch means a lost or ambiguous submit is followed by one status read and never a second submit, saved drafts remain on the legacy staged creator, and a published opening can carry one server-scripted `observe` choice that is not live model evaluation. Routes, symbols and limits are recorded in [client interaction contracts: Drafts and forms](../../technical/client/interaction-contracts.md#drafts-and-forms).
 
 ## Drafts vs playable stories
 

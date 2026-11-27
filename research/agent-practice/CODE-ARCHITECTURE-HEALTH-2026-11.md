@@ -1,6 +1,6 @@
 # Code architecture health | concluded MA/DO research
 
-Non-normative historical evidence. Owner retired the design on 2026-11-27; [engineering rules](../../.agents/rules/code-quality.md) own enduring practice, [topology](../../docs/technical/platform/topology.md#code-organization) owns existing selected code organization, and [Agent Core](../../work/designs/open/agent-core-monorepo-map/README.md) explores a successor. No package partition or runtime proof follows from this record.
+Non-normative historical evidence. Owner retired the design on 2026-11-27; [engineering rules](../../.agents/rules/code-quality.md) own enduring practice, [topology](../../docs/technical/platform/topology.md#code-organization) owns existing selected code organization, and [Agent Core](../../work/designs/archive/agent-core-monorepo-map/README.md) explores a successor. No package partition or runtime proof follows from this record.
 
 ## Findings worth retaining
 

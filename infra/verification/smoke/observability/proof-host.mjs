@@ -28,16 +28,37 @@ export const PROOF_GATES = Object.freeze([
   'outage',
   'resources',
   'partial-install',
+  'developer',
 ]);
 
-export const GATE_BUDGET_MS = Object.freeze({
-  health: 720_000,
-  signals: 1_440_000,
-  persistence: 3_600_000,
-  outage: 3_000_000,
-  resources: 900_000,
-  'partial-install': 3_900_000,
+export const GATE_WORK_MS = Object.freeze({
+  health: 1_225_000,
+  developer: 1_765_000,
+  resources: 1_525_000,
+  signals: 4_510_000,
+  persistence: 8_950_000,
+  outage: 6_915_000,
+  'partial-install': 8_940_000,
 });
+
+export const GATE_RESERVE_MS = Object.freeze({
+  health: 120_000,
+  developer: 120_000,
+  resources: 120_000,
+  signals: 1_020_000,
+  persistence: 1_020_000,
+  outage: 2_040_000,
+  'partial-install': 300_000,
+});
+
+export const GATE_BUDGET_MS = Object.freeze(
+  Object.fromEntries(
+    Object.keys(GATE_WORK_MS).map((gate) => [
+      gate,
+      GATE_WORK_MS[gate] + GATE_RESERVE_MS[gate],
+    ]),
+  ),
+);
 
 export const CLEANUP_RESERVE_MS = 120_000;
 export const RESTORATION_RESERVE_MS = 300_000;
@@ -73,6 +94,17 @@ export const STABLE_PVC_NAMES = Object.freeze([
   'storage-obs-loki-0',
   'storage-obs-tempo-0',
 ]);
+
+export const HELM_STORAGE_SECRET_NAMES = Object.freeze([
+  'sh.helm.release.v1.obs-prometheus.v1',
+  'sh.helm.release.v1.obs-loki.v1',
+  'sh.helm.release.v1.obs-tempo.v1',
+  'sh.helm.release.v1.obs-collector.v1',
+  'sh.helm.release.v1.obs-grafana.v1',
+]);
+
+export const GRAFANA_ADMIN_SECRET_NAME = 'obs-grafana-admin';
+export const COLLECTOR_POD_KEY = 'Pod/obs-collector';
 
 const AUTHORIZATION_ENV = 'OFFSCREEN_OBSERVABILITY_PROOF';
 
@@ -143,23 +175,24 @@ export function refuseDisruptionInvocation({ gate, env = process.env }) {
  * @param {string} gate
  */
 export function reserveMsForGate(gate) {
-  return DISRUPTION_GATES.has(gate)
-    ? RESTORATION_RESERVE_MS
-    : CLEANUP_RESERVE_MS;
+  return GATE_RESERVE_MS[gate] ?? 0;
 }
 
 /**
  * @param {string} gate
  */
+const IMPLEMENTED_GATES = new Set([
+  'signals',
+  'developer',
+  'health',
+  'resources',
+  'persistence',
+  'outage',
+  'partial-install',
+]);
+
 export function gateImplemented(gate) {
-  return (
-    gate === 'health' ||
-    gate === 'signals' ||
-    gate === 'persistence' ||
-    gate === 'outage' ||
-    gate === 'resources' ||
-    gate === 'partial-install'
-  );
+  return IMPLEMENTED_GATES.has(gate);
 }
 
 /**
@@ -321,12 +354,42 @@ export function extractStableIdentities(observation) {
       volumes[claimName] = pvUid;
     }
   }
+  const grafanaAdminUid = uidOf(objects[`Secret/${GRAFANA_ADMIN_SECRET_NAME}`]);
+  /** @type {Record<string, string | null>} */
+  const helmStorage = {};
+  for (const name of HELM_STORAGE_SECRET_NAMES) {
+    helmStorage[name] = uidOf(objects[`Secret/${name}`]);
+  }
+  const collectorPodUid = uidOf(objects[COLLECTOR_POD_KEY]);
+  const complete =
+    typeof namespaceUid === 'string' &&
+    namespaceUid.length > 0 &&
+    STABLE_WORKLOAD_KEYS.every((key) => typeof workloads[key] === 'string') &&
+    STABLE_PVC_NAMES.every(
+      (name) =>
+        typeof claims[name] === 'string' && typeof volumes[name] === 'string',
+    ) &&
+    typeof grafanaAdminUid === 'string' &&
+    HELM_STORAGE_SECRET_NAMES.every((name) => typeof helmStorage[name] === 'string') &&
+    typeof collectorPodUid === 'string';
   return {
+    complete,
     namespaceUid,
     workloads,
     claims,
     volumes,
+    grafanaAdminUid,
+    helmStorage,
+    collectorPodUid,
   };
+}
+
+/**
+ * @param {object | undefined} object
+ */
+function uidOf(object) {
+  const uid = object?.metadata?.uid;
+  return typeof uid === 'string' && uid.length > 0 ? uid : null;
 }
 
 /**
@@ -334,8 +397,22 @@ export function extractStableIdentities(observation) {
  * @param {ReturnType<typeof extractStableIdentities>} after
  */
 export function stableIdentitiesCompatible(before, after) {
+  if (!before?.complete || !after?.complete) {
+    return { ok: false, reasonCode: 'identity-incomplete' };
+  }
   if (before.namespaceUid !== after.namespaceUid) {
     return { ok: false, reasonCode: 'namespace-uid-changed' };
+  }
+  if (before.grafanaAdminUid !== after.grafanaAdminUid) {
+    return { ok: false, reasonCode: 'grafana-admin-uid-changed' };
+  }
+  if (before.collectorPodUid !== after.collectorPodUid) {
+    return { ok: false, reasonCode: 'collector-pod-uid-changed' };
+  }
+  for (const name of HELM_STORAGE_SECRET_NAMES) {
+    if (before.helmStorage[name] !== after.helmStorage[name]) {
+      return { ok: false, reasonCode: 'helm-storage-uid-changed' };
+    }
   }
   for (const key of STABLE_WORKLOAD_KEYS) {
     if (before.workloads[key] !== after.workloads[key]) {
@@ -406,7 +483,10 @@ export function buildProofReceipt(input) {
   return {
     schema: PROOF_SCHEMA,
     gate: input.gate,
-    ok: input.completed === true && input.reasonCode == null,
+    ok:
+      input.completed === true &&
+      input.reasonCode == null &&
+      (input.cleanup === true || input.intentionalRetainedPlatform === true),
     profile: input.profile,
     context: input.context,
     sourceSha: input.sourceSha ?? null,
@@ -461,7 +541,22 @@ export async function runProofOperationSession(input) {
       ok: false,
       phase: 'not-implemented',
       reasonCode: 'gate-not-implemented',
+      completed: false,
+      cleanup: false,
     };
+  }
+
+  if (input.verifyCleanCheckout) {
+    const clean = input.verifyCleanCheckout();
+    if (!clean?.ok) {
+      return {
+        ok: false,
+        phase: 'source',
+        reasonCode: clean?.reasonCode ?? 'source-not-clean',
+        completed: false,
+        cleanup: false,
+      };
+    }
   }
 
   const clock = input.clock ?? { now: () => Date.now() };
@@ -549,6 +644,8 @@ export async function runProofOperationSession(input) {
       evidenceDir: input.evidenceDir,
       receiptPath: input.receiptPath,
       deleteProofResources: input.deleteProofResources,
+      custody: input.custody ?? null,
+      proofCustody: input.proofCustody ?? null,
     };
 
     if (input.gate === 'persistence') {
@@ -586,7 +683,14 @@ export async function runProofOperationSession(input) {
         if (outage.restorationFailed === true) {
           reasonCode = outage.reasonCode ?? 'outage-restore-failed';
         }
-        return { ok: false, phase: outage.phase ?? 'outage', reasonCode };
+        return {
+          ok: false,
+          phase: outage.phase ?? 'outage',
+          reasonCode,
+          restorationAttempted: outage.restorationAttempted === true,
+          restorationFailed: outage.restorationFailed === true,
+          retainedPending: outage.retainedPending === true,
+        };
       }
       completed = true;
       return {
@@ -637,6 +741,23 @@ export async function runProofOperationSession(input) {
         reasonCode: null,
         cleanup: false,
       };
+    }
+
+    if (input.gate === 'developer') {
+      const runDeveloper =
+        input.runDeveloper ??
+        (() => {
+          throw new Error('developer-runner-required');
+        });
+      const developer = await runDeveloper(session);
+      if (!developer.ok) {
+        reasonCode = developer.reasonCode ?? 'developer-failed';
+        cleanupOk = developer.cleanup === true;
+        return { ok: false, phase: 'developer', reasonCode };
+      }
+      completed = true;
+      cleanupOk = true;
+      return { ok: true, phase: 'developer-complete', reasonCode: null };
     }
 
     if (input.gate === 'signals') {

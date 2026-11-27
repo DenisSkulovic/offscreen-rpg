@@ -69,6 +69,13 @@ export function checkProofNamespaceAbsent(
  * @param {{ run?: typeof runPlatformCommand, pythonRunner?: (input: object) => Promise<{ ok: boolean, exitCode?: number, reasonCode?: string }>, ensureProofResources?: (input: object) => Promise<object>, cleanupProofResources?: (input: object) => Promise<{ ok: boolean }> }} [deps]
  */
 export async function runSignalsProof(session, deps = {}) {
+  if (!deps.ensureProofResources && !session.resources) {
+    return {
+      ok: false,
+      reasonCode: 'proof-resources-required',
+      cleanup: false,
+    };
+  }
   const run = deps.run ?? runPlatformCommand;
   const pythonRunner = deps.pythonRunner ?? null;
   const evidenceDir = session.evidenceDir;
@@ -302,9 +309,18 @@ export async function runSignalsProof(session, deps = {}) {
       if (deps.cleanupProofResources) {
         const cleanup = await deps.cleanupProofResources({ session, created });
         cleanupOk = cleanup.ok === true;
-      } else if (session.deleteProofResources) {
-        const cleanup = await session.deleteProofResources(created);
+      } else if (session.resources?.cleanup) {
+        const cleanup = await session.resources.cleanup({
+          deadline: session.clock.now() + session.remainingWorkMs(),
+        });
         cleanupOk = cleanup.ok === true;
+        if (!cleanupOk) {
+          terminal = {
+            ok: false,
+            reasonCode: cleanup.reasonCode ?? 'cleanup-failed',
+            cleanup: false,
+          };
+        }
       }
       if (!cleanupOk) {
         terminal = { ok: false, reasonCode: 'cleanup-failed', cleanup: false };
@@ -328,47 +344,6 @@ export function readSignalProbeSource(path = SIGNAL_PROBE_PATH) {
  * @param {{ namespace: string, namespaceUid: string, configMapName: string, configMapUid: string, podName: string, podUid: string }} resources
  * @param {{ run?: typeof runPlatformCommand }} [deps]
  */
-export async function deleteProofResourcesWithUid(
-  contextName,
-  resources,
-  deps = {},
-) {
-  const run = deps.run ?? runPlatformCommand;
-  const deleteWithUid = (uri, uid) =>
-    run(
-      'kubectl',
-      ['--context', contextName, 'delete', '--raw', uri, '-f', '-'],
-      {
-        timeoutMs: 15_000,
-        input: JSON.stringify({
-          apiVersion: 'v1',
-          kind: 'DeleteOptions',
-          preconditions: { uid },
-          gracePeriodSeconds: 0,
-        }),
-      },
-    );
-
-  const pod = deleteWithUid(
-    `/api/v1/namespaces/${resources.namespace}/pods/${resources.podName}`,
-    resources.podUid,
-  );
-  if (!pod.ok) {
-    return { ok: false, reasonCode: 'pod-delete-failed' };
-  }
-  const configMap = deleteWithUid(
-    `/api/v1/namespaces/${resources.namespace}/configmaps/${resources.configMapName}`,
-    resources.configMapUid,
-  );
-  if (!configMap.ok) {
-    return { ok: false, reasonCode: 'configmap-delete-failed' };
-  }
-  const namespace = deleteWithUid(
-    `/api/v1/namespaces/${resources.namespace}`,
-    resources.namespaceUid,
-  );
-  if (!namespace.ok) {
-    return { ok: false, reasonCode: 'namespace-delete-failed' };
-  }
-  return { ok: true };
+export function deleteProofResourcesWithUid() {
+  throw new Error('namespace-cascade-removed');
 }
