@@ -9,7 +9,10 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 
 import { main, runLiveProof } from '../proof.mjs';
 import { runOutageProof, runPersistenceProof } from '../disruptions.mjs';
-import { summarizeResourceSamples } from '../resources.mjs';
+import {
+  queryGrafanaDatasourceHealth,
+  summarizeResourceSamples,
+} from '../resources.mjs';
 import {
   buildExpectedLokiInstallArgv,
   maybeInjectQuotaForLokiInstall,
@@ -89,6 +92,26 @@ function readyObservation(namespaceUid = NS_UID_A) {
       status: { phase: 'Bound' },
     };
   }
+  objects['Secret/obs-grafana-admin'] = {
+    kind: 'Secret',
+    metadata: { uid: 'uid-grafana-admin', name: 'obs-grafana-admin' },
+  };
+  for (const name of [
+    'sh.helm.release.v1.obs-prometheus.v1',
+    'sh.helm.release.v1.obs-loki.v1',
+    'sh.helm.release.v1.obs-tempo.v1',
+    'sh.helm.release.v1.obs-collector.v1',
+    'sh.helm.release.v1.obs-grafana.v1',
+  ]) {
+    objects[`Secret/${name}`] = {
+      kind: 'Secret',
+      metadata: { uid: `uid-${name}`, name },
+    };
+  }
+  objects['Pod/obs-collector'] = {
+    kind: 'Pod',
+    metadata: { uid: 'uid-pod-obs-collector', name: 'obs-collector' },
+  };
   return {
     state: 'ready',
     reasonCode: 'ready',
@@ -288,7 +311,7 @@ test('wrong context is refused', async () => {
   assert.equal(refusal.reasonCode, 'context-not-canonical-dev');
 });
 
-test('wrong cluster UID fails before accepting receipt', async () => {
+test('wrong cluster UID fails before accepting a healthy receipt', async () => {
   const { dir, receiptPath } = sessionDirs();
   const result = await runProofOperationSession({
     gate: 'health',
@@ -297,23 +320,21 @@ test('wrong cluster UID fails before accepting receipt', async () => {
     env: AUTH_ENV,
     evidenceDir: dir,
     receiptPath,
-    io: defaultReceiptIo(dir),
-    clock: { now: () => 0 },
+    io: createMemoryIo(),
+    clock: { now: () => 1_000 },
     readSourceSha: () => SOURCE_SHA,
-    captureIdentity: () => {
-      throw new Error('capture-reached');
-    },
-    observe: async () => {
-      throw new Error('observe-reached');
-    },
+    captureIdentity: () => createFakeIdentity(),
+    recheckIdentity: () => ({ ok: false, reason: 'cluster-uid-changed' }),
+    observe: async () => readyObservation(),
+    queryDatasourceHealth: async () => healthyDatasources(),
   });
   assert.equal(result.ok, false);
-  assert.equal(result.reasonCode, 'gate-not-implemented');
-  assert.equal(existsSync(receiptPath), false);
+  assert.equal(result.reasonCode, 'cluster-uid-changed');
 });
 
 test('changed namespace UID fails repeat comparison', async () => {
   const { dir, receiptPath } = sessionDirs();
+  let calls = 0;
   const result = await runProofOperationSession({
     gate: 'health',
     profile: 'dev',
@@ -321,18 +342,31 @@ test('changed namespace UID fails repeat comparison', async () => {
     env: AUTH_ENV,
     evidenceDir: dir,
     receiptPath,
-    io: defaultReceiptIo(dir),
-    observe: async () => {
-      throw new Error('observe-reached');
+    io: createMemoryIo(),
+    clock: { now: () => 1_000 },
+    readSourceSha: () => SOURCE_SHA,
+    captureIdentity: () => createFakeIdentity(),
+    recheckIdentity: () => ({ ok: true }),
+    observe: async () => readyObservation(),
+    repeatObservation: async () => readyObservation('namespace-uid-b'),
+    queryDatasourceHealth: async () => {
+      calls += 1;
+      return healthyDatasources();
     },
   });
+  assert.equal(calls, 1);
   assert.equal(result.ok, false);
-  assert.equal(result.reasonCode, 'gate-not-implemented');
-  assert.equal(existsSync(receiptPath), false);
+  assert.equal(result.reasonCode, 'namespace-uid-changed');
 });
 
-test('health proof passes with injected observation trace', async () => {
+test('health proof passes through the default datasource adapter', async () => {
   const { dir, receiptPath } = sessionDirs();
+  const seen = [];
+  const sessionHealth = {
+    remainingWorkMs: () => 90_000,
+    clock: { now: () => 1_000 },
+    identity: createFakeIdentity(),
+  };
   const result = await runProofOperationSession({
     gate: 'health',
     profile: 'dev',
@@ -340,22 +374,68 @@ test('health proof passes with injected observation trace', async () => {
     env: AUTH_ENV,
     evidenceDir: dir,
     receiptPath,
-    io: defaultReceiptIo(dir),
-    observe: async () => {
-      throw new Error('observe-reached');
-    },
+    io: createMemoryIo(),
+    clock: { now: () => 1_000 },
+    readSourceSha: () => SOURCE_SHA,
+    captureIdentity: () => createFakeIdentity(),
+    recheckIdentity: () => ({ ok: true }),
+    observe: async () => readyObservation(),
+    repeatObservation: async () => readyObservation(),
+    queryDatasourceHealth: (session) =>
+      queryGrafanaDatasourceHealth(session, {
+        grafanaPort: 13000,
+        readAdminPassword: () => ({
+          ok: true,
+          user: 'admin',
+          password: 'secret-value',
+        }),
+        httpGet: async (url, headers) => {
+          seen.push({ url, authorization: headers.authorization });
+          if (url.endsWith('/api/health')) {
+            return { status: 200, body: JSON.stringify({ database: 'ok' }) };
+          }
+          if (url.endsWith('/health')) {
+            return { status: 200, body: JSON.stringify({ status: 'OK' }) };
+          }
+          const uid = url.split('/').pop();
+          const body = {
+            'offscreen-metrics': {
+              uid,
+              type: 'prometheus',
+              url: 'http://obs-prometheus:9090',
+            },
+            'offscreen-logs': {
+              uid,
+              type: 'loki',
+              url: 'http://obs-loki:3100',
+            },
+            'offscreen-traces': {
+              uid,
+              type: 'tempo',
+              url: 'http://obs-tempo:3200',
+            },
+          }[uid];
+          return { status: 200, body: JSON.stringify(body) };
+        },
+      }),
   });
-  assert.equal(result.ok, false);
-  assert.equal(result.reasonCode, 'gate-not-implemented');
-  assert.equal(existsSync(receiptPath), false);
+  assert.equal(result.ok, true);
+  assert.equal(result.reasonCode, null);
+  assert.equal(seen.some((row) => row.url.includes('offscreen-metrics')), true);
+  assert.equal(
+    seen.every((row) => !row.url.includes('secret-value') && !row.authorization.includes('secret-value') === false || row.authorization.startsWith('Basic ')),
+    true,
+  );
+  assert.equal(JSON.stringify(seen).includes('secret-value'), false);
+  void sessionHealth;
 });
 
 test('unimplemented gate is recognized without live session', () => {
   assert.equal(gateImplemented('signals'), true);
   assert.equal(gateImplemented('persistence'), false);
   assert.equal(gateImplemented('partial-install'), false);
-  assert.equal(gateImplemented('health'), false);
-  assert.equal(gateImplemented('resources'), false);
+  assert.equal(gateImplemented('health'), true);
+  assert.equal(gateImplemented('resources'), true);
   assert.equal(gateImplemented('outage'), false);
   assert.equal(gateImplemented('developer'), true);
 });

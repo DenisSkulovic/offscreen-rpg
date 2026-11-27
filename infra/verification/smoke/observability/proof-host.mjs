@@ -95,6 +95,17 @@ export const STABLE_PVC_NAMES = Object.freeze([
   'storage-obs-tempo-0',
 ]);
 
+export const HELM_STORAGE_SECRET_NAMES = Object.freeze([
+  'sh.helm.release.v1.obs-prometheus.v1',
+  'sh.helm.release.v1.obs-loki.v1',
+  'sh.helm.release.v1.obs-tempo.v1',
+  'sh.helm.release.v1.obs-collector.v1',
+  'sh.helm.release.v1.obs-grafana.v1',
+]);
+
+export const GRAFANA_ADMIN_SECRET_NAME = 'obs-grafana-admin';
+export const COLLECTOR_POD_KEY = 'Pod/obs-collector';
+
 const AUTHORIZATION_ENV = 'OFFSCREEN_OBSERVABILITY_PROOF';
 
 /**
@@ -170,7 +181,12 @@ export function reserveMsForGate(gate) {
 /**
  * @param {string} gate
  */
-const IMPLEMENTED_GATES = new Set(['signals', 'developer']);
+const IMPLEMENTED_GATES = new Set([
+  'signals',
+  'developer',
+  'health',
+  'resources',
+]);
 
 export function gateImplemented(gate) {
   return IMPLEMENTED_GATES.has(gate);
@@ -335,12 +351,42 @@ export function extractStableIdentities(observation) {
       volumes[claimName] = pvUid;
     }
   }
+  const grafanaAdminUid = uidOf(objects[`Secret/${GRAFANA_ADMIN_SECRET_NAME}`]);
+  /** @type {Record<string, string | null>} */
+  const helmStorage = {};
+  for (const name of HELM_STORAGE_SECRET_NAMES) {
+    helmStorage[name] = uidOf(objects[`Secret/${name}`]);
+  }
+  const collectorPodUid = uidOf(objects[COLLECTOR_POD_KEY]);
+  const complete =
+    typeof namespaceUid === 'string' &&
+    namespaceUid.length > 0 &&
+    STABLE_WORKLOAD_KEYS.every((key) => typeof workloads[key] === 'string') &&
+    STABLE_PVC_NAMES.every(
+      (name) =>
+        typeof claims[name] === 'string' && typeof volumes[name] === 'string',
+    ) &&
+    typeof grafanaAdminUid === 'string' &&
+    HELM_STORAGE_SECRET_NAMES.every((name) => typeof helmStorage[name] === 'string') &&
+    typeof collectorPodUid === 'string';
   return {
+    complete,
     namespaceUid,
     workloads,
     claims,
     volumes,
+    grafanaAdminUid,
+    helmStorage,
+    collectorPodUid,
   };
+}
+
+/**
+ * @param {object | undefined} object
+ */
+function uidOf(object) {
+  const uid = object?.metadata?.uid;
+  return typeof uid === 'string' && uid.length > 0 ? uid : null;
 }
 
 /**
@@ -348,8 +394,22 @@ export function extractStableIdentities(observation) {
  * @param {ReturnType<typeof extractStableIdentities>} after
  */
 export function stableIdentitiesCompatible(before, after) {
+  if (!before?.complete || !after?.complete) {
+    return { ok: false, reasonCode: 'identity-incomplete' };
+  }
   if (before.namespaceUid !== after.namespaceUid) {
     return { ok: false, reasonCode: 'namespace-uid-changed' };
+  }
+  if (before.grafanaAdminUid !== after.grafanaAdminUid) {
+    return { ok: false, reasonCode: 'grafana-admin-uid-changed' };
+  }
+  if (before.collectorPodUid !== after.collectorPodUid) {
+    return { ok: false, reasonCode: 'collector-pod-uid-changed' };
+  }
+  for (const name of HELM_STORAGE_SECRET_NAMES) {
+    if (before.helmStorage[name] !== after.helmStorage[name]) {
+      return { ok: false, reasonCode: 'helm-storage-uid-changed' };
+    }
   }
   for (const key of STABLE_WORKLOAD_KEYS) {
     if (before.workloads[key] !== after.workloads[key]) {
