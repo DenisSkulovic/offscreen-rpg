@@ -12,3 +12,5 @@ Dated observations, inspections, and run manifests. **Not** product or technical
 **DOC01:** RETAIN copies live under `evidence/runs/` (including [observability-program-2026-11-15](runs/observability-program-2026-11-15/MANIFEST.md)). The retired snapshot index is [doc01-legacy-snapshot](inspections/doc01-legacy-snapshot/MANIFEST.md). This checkout has no `docs/programs` tree.
 
 - [Temporal platform renewal, 2026-11-25–26](runs/2026-11-26-temporal-platform.md): chart experiments, CNPG convergence failure and correction, development install, browser UI upgrade and repeat ensure; release/workflow/cold-cluster proof remains open.
+- Agent Core E1, 2026-11-27: [qualification run evidence](runs/2026-11-27-agent-core-e1.md) and [implementation inspection](inspections/2026-11-27-agent-core-e1-review.md); construction and reported offline repair checks, joint acceptance pending.
+- Developer observability, 2026-11-27: [qualification run evidence](runs/2026-11-27-observability-developer.md) and [operational source inspection](inspections/2026-11-27-observability-review.md); owner-observed cluster/custody baseline, repair history, live qualification pending.
