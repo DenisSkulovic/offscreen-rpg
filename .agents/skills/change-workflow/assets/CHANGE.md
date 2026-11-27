@@ -40,6 +40,7 @@ One coherent, independently reviewable outcome. For `documentation`, specify *wh
 - **Product:** [selected contract path#heading, or explicit reason no player-facing promise is affected].
 - **Technical:** [selected contract path#heading, or explicit reason no runtime contract is affected].
 - **Evidence / source:** [source revision, test receipt and/or original prose/heading; separate selected design from actual realization].
+- **Integration:** [recorded target. A constituent Change names `implementation/<design-slug>` or an explicitly grandfathered design branch, never main. A standalone Change names main or its explicitly recorded target.]
 - **Proposals / unknowns:** [named unresolved decisions that this Change does **not** ratify].
 
 ## Exact scope and exclusions

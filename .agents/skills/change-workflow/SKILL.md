@@ -9,7 +9,7 @@ description: Plan and carry out one bounded documentation or implementation Chan
 
 ## Dedicated parent commission shorthand
 
-A direct named Change assignment authorizes its bounded scope, not sibling Changes or unassigned live/spend/destructive proof. Follow [parent commission and branch policy](../../references/bounded-parent-orchestration.md#0-dedicated-change-commission-owner-shorthand). One parent per Change. Continue authorized tasks through checkpoints; stop at committed acceptance handoff or actual blocker.
+A direct named Change assignment authorizes that Change's routine lifecycle, not sibling Changes or unassigned live, spend, or destructive proof. Follow [parent commission and branch policy](../../references/bounded-parent-orchestration.md#0-dedicated-change-commission-owner-shorthand). One coordinator per Change. Continue through the authorized tasks, the Change-level join, and clean retirement. Stop for indispensable Change-level acceptance or an actual blocker. A permitted isolated source join is not design certification and is not a merge to main.
 
 ## 1. Select a measurable documentation or code outcome
 
@@ -27,7 +27,7 @@ Use the [CHANGE template](assets/CHANGE.md) in `work/changes/open/YYYY-MM-DD--sl
 
 ### Bundle scheduling and parallel Cursor execution
 
-Use [parallel Change standard](../../references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). Separate authorized parents/worktrees, explicit dependency and ownership graph, one integration custodian. No whole Change as a child assignment. Internal checkpoints within one Change follow parent procedure, not new approvals or extra selectors.
+Use [parallel Change standard](../../references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19). Map the Design's Change edges before task cards. Each commissioned Change has its own coordinator, branch and linked worktree and joins the recorded design implementation branch. No whole Change as a child assignment. Internal checkpoints follow the parent procedure. They are not new approvals.
 
 ## 4. Implement only when authorized
 
@@ -37,4 +37,4 @@ Follow [parent procedure](../../references/bounded-parent-orchestration.md) and 
 
 Commit source and actual cheap proof; hand off mandatory heavy acceptance to the acceptance lead and owner, retain branch/worktree. No merge/archive with indispensable proof pending. At accepted closure complete reconciliation for every affected authority heading and known dependent: changed or unchanged with concrete reason, actual source/document revision, evidence tier, negative, owner update or N/A. Apply [documentation reconciliation](../documentation-reconciliation/SKILL.md) only to affected owners; docs-only changes require semantic/status preservation, not just links.
 
-Run applicable `pnpm wiki:change-guard --mode close`, link/maintenance and assigned join checks. Guard checks shape and known dependents, not normative truth. A guard defect needs separate authorized tooling repair, not waiver. Archive actual Done/Cancelled through [retirement procedure](../../../REPOSITORY-STRUCTURE.md#promotion-and-deletion-gate): move to work/changes/archive/YYYY-MM/<program>/<leaf>/, repair links/catalog/QUEUE if selected, compact ledger/full SHA. Batch moves may use scripts/repo-tools/archive-changes.mjs after checking actual scope. Preserve owner-retained legacy material and unique decisions/evidence. Parent integrates to recorded target and verifies safe retirement under the parent procedure; no auto-next.
+Run applicable `pnpm wiki:change-guard --mode close`, link/maintenance and assigned join checks. Guard checks shape and known dependents, not normative truth. A guard defect needs separate authorized tooling repair, not waiver. Archive actual Done/Cancelled through [retirement procedure](../../../REPOSITORY-STRUCTURE.md#promotion-and-deletion-gate): move to work/changes/archive/YYYY-MM/<program>/<leaf>/, repair links/catalog/QUEUE if selected, compact ledger/full SHA. Batch moves may use scripts/repo-tools/archive-changes.mjs after checking actual scope. Preserve owner-retained legacy material and unique decisions/evidence. The coordinator joins the recorded target and retires a clean integrated worktree under the parent procedure. A constituent Change does not join main. No auto-next.

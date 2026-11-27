@@ -1,6 +1,6 @@
 # Implementation recovery roadmap
 
-**Status:** All eleven current-sprint packets owner-released for reversible offline candidate implementation; not independently READY or certified. Integration reference `integration/observability-developer`; human custodian. No global queue change. [Acceptance boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
+**Status:** All eleven current-sprint packets are owner-released for reversible offline candidate implementation. They are not independently READY or certified. Grandfathered integration reference `integration/observability-developer`: do not rename or recreate it, and do not touch its in-flight worktrees. Each Change's implementation coordinator owns that Change's serialized source join. No global queue change. [Acceptance boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 ## Finish line and method
 
@@ -12,13 +12,13 @@ Write coherent replacements in large authoring batches, then compare against the
 
 ## Release and execution
 
-All eleven packets are commissioned for offline candidate source work under the scoped owner exception. D01 starts after local census, worktree ownership and baseline snapshot. Subsequent packets release on verified predecessor source receipt, not on another owner approval. No main integration of D01 or any other Change. Custodian serializes joins to the temporary reference. Preserve all existing focused normal/negative tests; stop only at actual contradiction, ownership conflict or failed required proof. Independent readiness remains unverified, and independent review of amended authority and implementation plus actual A/V evidence remain mandatory before live use/main integration.
+All eleven packets are commissioned for offline candidate source work under the scoped owner exception. D01 starts after local census, worktree ownership and baseline snapshot. Later packets release when their own source-join edges hold, not on another owner approval and not in one D01-through-D11 line. No constituent Change joins main. Joins to the grandfathered reference are serialized by the Change lifecycle lock. Preserve all existing focused normal and negative tests. Stop only for an actual contradiction, an ownership conflict, or a failed required Change-level proof. Independent readiness remains unverified. Independent review of the amended authority and implementation, plus the actual A1–A12 and V01–V12 evidence, remain mandatory before live use or main integration.
 
 The archived [owner preflight](https://github.com/DenisSkulovic/offscreen-rpg/blob/a82a79ed7d75926166c12154c030b5a1a98faa06/work/changes/archive/2026-11/observability/2026-11-27--observability-developer/original/preflight-evidence.sh) preserves the local census, offline render and optional isolated Docker experiment. D01 local census and pinned offline renders are executable cheap checks; actual D08/D11 mechanism feasibility is deferred to owner/ChatGPT before activation, not silently waived. No Docker/cluster experiments by Cursor.
 
 ## Proposed successor map
 
-Identifiers retained. D01–D11 are all open current-sprint packets; D01 first in execution order, none commissioned. D02–D11 remain planner-blocked on their named material gates and require source refresh and independent readiness before commission. No arbitrary sprint-size limit.
+Identifiers retained. D01–D11 are open and owner-released for offline source implementation. They are not independently READY, and the independent review is still outstanding. The source-join schedule below replaces the earlier total order. No arbitrary sprint-size limit.
 
 | Proposed outcome | Old cards | Prerequisites / seams | Proof ownership |
 | --- | --- | --- | --- |
@@ -34,6 +34,24 @@ Identifiers retained. D01–D11 are all open current-sprint packets; D01 first i
 | [D10 persistence/outage verification](../../../changes/open/2026-11-27--obs-d10-recovery-proof/CHANGE.md) | T11.1–3 | D02–04/07; isolated owner-approved target; restoration and pending semantics | A8, associated V05/V09 |
 | [D11 partial-install verification](../../../changes/open/2026-11-27--obs-d11-partial-install-proof/CHANGE.md) | T11.4–6 | D02–04; separately ratified fault mechanism, isolated owner-approved target | A9, associated A4/A5/V05 |
 | Normal closure | T12 | Every successor owns its own diff, receipt, docs and integration obligations | A12 affected-source regression; no independent integration task |
+
+## Source-join schedule
+
+Inspected 2026-11-27. `integration/observability-developer` remains the design implementation branch. The linked worktrees for `change/obs-d01-native-artifacts` and `change/obs-d02-target-identity` stay as they are. The remote ref is behind the local branch. Do not rename, recreate, or reset either. This correction does not implement an OBS Change. Where the table above and this schedule disagree, this schedule is the execution order.
+
+- D01 has no source predecessor.
+- D02 waits for D01's normalized descriptor and values paths. Both write `artifacts.mjs` and `install.mjs`.
+- D03 waits for D02's frozen identity tuple. Both write `install.mjs`.
+- D04 waits for D01, D02 and D03.
+- D05 waits for D03's forward primitive and D04's classifier and ports. It does not edit at the same time as D06 (`package.json`, `artifacts.mjs`).
+- D06 waits for D03's custody and D04's classifier. It does not wait for D05. It does not edit at the same time as D05, or as D10 (`custody.mjs`).
+- D07 waits for D04. It may proceed beside D05 or D06.
+- D08 waits for D05 and D07. D06 qualifies only the occupied-upgrade acceptance path. D08 does not edit `proof.mjs`, `proof-host.mjs`, or `proof.test.mjs` at the same time as D09, D10, or D11.
+- D09 waits for D05 and D07, not for D08, with that same proof-file collision.
+- D10 waits for D04's readiness and D07's proof resources. It does not wait for D08 or D09. It serializes `custody.mjs` with D06 and the proof files with D08, D09 and D11.
+- D11 waits for D04 and D07's refusal of the direct partial-install executable. It does not wait for D08, D09, or D10. It serializes those proof files. A9 feasibility remains a live-acceptance gate.
+
+The resulting critical path is D01, D02, D03, D04, then D05 and D07, then D08. Offline-only permission, the outstanding independent review, the D08 and D11 feasibility gates, OD-07, the original A1–A12 and V01–V12 joint certification, live authorization, and the ban on a constituent merge to main all remain.
 
 Program-level owners: A6 fresh desired-revision installation is owner-operated on an approved isolated target after D04 and required prerequisites, distinct from V06; A11 conditional release observation remains read-only and separately recorded; V12 is the complete original A1–A12 ledger, including revalidation where later Changes affect earlier evidence. A2 and A12 are cross-cutting, not waived by narrow packet scope. Preserve all exact original predicates in the replacement acceptance matrix before retirement. Do not invent a separate Change for owner-operated no-diff proof.
 
@@ -72,4 +90,4 @@ Known canonical/catalog/predecessor links repaired. Remote search returned zero 
 
 **Independent disposition:** [Pass 03](https://github.com/DenisSkulovic/offscreen-rpg/blob/114cc39cf4e1477ac34e24d4a26684ad9f91b8c3/work/designs/open/observability-developer/committee/pass-03.md) DEFENDED D01-only staged integration, REVISE AND RE-DEFEND broader staging (OD-05 activation/functional proof dependency; OD-06 legacy public mutation and cleanup paths; OD-07 cross-worktree lock/fence compatibility or owner-controlled exclusion). Existing joint rule remains selected except after owner accepts a defended slice. Drafting successors does not ratify these unresolved boundaries. D04/D06 activation must use safe coordinated candidate proof, not rely on unsafe already-merged changed default; settle exact entrypoint and cross-revision mechanism before affected commission.
 
-**Immediate next action:** dispatch D01 on the verified temporary reference, then D02–D11 as source dependencies land. No repeated commission. Full joint acceptance before any main merge or Done.
+**Immediate next action:** an owner instruction such as "Do OBS-D01" runs that Change's routine lifecycle on the grandfathered reference. Successors start when their own edges above hold, without another commission. Joint A1–A12/V01–V12 acceptance still precedes any main merge or Done. No constituent Change joins main.

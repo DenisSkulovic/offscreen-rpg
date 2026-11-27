@@ -60,6 +60,8 @@ Do not prepare implementation packets or dispatch a material new architecture be
 
 Direct planner edits with owner terminal feedback, delegated Changes or a hybrid are all legitimate after design convergence. Compare access, cohesion, local build requirements, risk, owner learning, interaction overhead and total rework. Preserve ownership, Change branch, proof and documentation requirements on every implementation route; no artificial paid-agent handoff.
 
+Commissioning the Design for implementation creates `implementation/<design-slug>` from the verified main revision that holds the accepted dossier and packets, unless an existing authorized integration branch is grandfathered in place. Record that target and the Change dependency edges in the existing implementation plan or catalog. Constituent Changes join only that branch. The design-level closure joins main after the constituent sources are integrated and the required joint acceptance has passed. An Undertaking is not required for the branch.
+
 Infrastructure deliverable is reproducible repository lifecycle: distinguish existing provisioning, repeat ensure, upgrade, workload proof and fresh-clone/cold-cluster acceptance. Manual actions are diagnostics or authorized maintenance, not hidden setup. Repair normal public path, prefer deterministic recurring checks and never infer disposability or destruction authority.
 
 ## Adaptive design workshop: choose the investigation, not a universal sequence

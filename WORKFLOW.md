@@ -99,7 +99,7 @@ flowchart TD
   C --> J["Accepted integrated outcome"]
 ```
 
-One custodian serializes joins and shared ledgers. [Parallel scheduling standard](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19) owns schedule format and isolation checks.
+Map a Design's Change dependency graph before writing its task cards. Record the edges in the existing implementation plan or catalog. Each commissioned Change joins through the serialized lifecycle in [branch policy](.agents/references/bounded-parent-orchestration.md#mandatory-change-branch-policy). [Parallel scheduling standard](.agents/references/change-work-unit-standard.md#batch-execution-and-parallel-change-orchestration-2026-11-19) owns the schedule fields and isolation checks.
 
 ## 6. After design convergence: cheap execution
 
@@ -109,19 +109,21 @@ For delegation, apply [source investigation](.agents/references/planner-investig
 
 A ready packet supplies selected algorithm, authority, exact source owners, prerequisites, task-specific anchors, focused normal/negative checks and acceptance owner. Ready is not commission.
 
-## 7. Git: one integration branch, one temporary branch per commissioned implementation Change
+## 7. Git: design implementation branch, then one temporary branch per Change
 
 ```text
-main (current trunk)
-  ├── change/<id>-<slug>        # dedicated linked worktree
-  └── change/<other-id>-<slug>  # separately commissioned, disjoint owners
+main (trunk; design dossiers and packets normally live here)
+  ├── implementation/<design-slug>   # or an existing grandfathered integration ref
+  │     ├── change/<id>-<slug>       # joins back only to that design branch
+  │     └── change/<other-id>-<slug>
+  └── change/<standalone-id>-<slug>  # a Change with no commissioned Design joins main
 ```
 
-Verify actual recorded target and HEAD. Dedicated branch/worktree before implementation; never switch primary checkout, discard existing work or create per-T-ID branches. Parent owns commits, named custodian serializes shared changes and accepted joins. On acceptance refresh target, reconcile safely, squash-integrate by default, verify and retire clean branch/worktree. Alternative target only by explicit authorization; preserve in-flight work. Exact guard, commands and cleanup rules: [branch policy](.agents/references/bounded-parent-orchestration.md#mandatory-change-branch-policy) · [commit rule](.agents/rules/git-commits.md).
+Verify the recorded target and HEAD. A commissioned Design gets its implementation branch from the main revision that contains the accepted design; that commission includes creating the recorded branch. Constituent Changes use linked worktrees and join that branch with an ordinary merge. They do not join main. Standalone Changes keep the direct route and its established squash join. Never switch the primary checkout, discard existing work, or create a branch per task. The Change coordinator commits, joins under the target lock, verifies the new SHA, and retires only a clean integrated worktree. In-flight branches stay. Exact guard, join, retirement and cleanup rules: [branch policy](.agents/references/bounded-parent-orchestration.md#mandatory-change-branch-policy) · [commit rule](.agents/rules/git-commits.md).
 
 ## 8. Delegated execution: coordinator, bounded tasks, real receipts
 
-The coordinator reads the selected front door and index, verifies branch and prerequisites, and dispatches the first bounded ready task. With native subagents, normally one implementation task runs, and up to two when independence is proven. Without them, the coordinator executes that same bounded task directly. The task reads its card and exact anchors, implements the decided change, runs focused normal and negative checks, and reports an actual receipt. No broad survey, nested swarms or auto-next Change.
+The coordinator reads the selected front door and index, verifies branch and prerequisites, and carries the commissioned Change through implementation, focused checks, commit, Change-level join, and clean retirement. With native subagents, normally one implementation task runs, and up to two when independence is proven. Without them, the coordinator executes that same bounded task directly. The task reads its card and exact anchors, implements the decided change, runs focused normal and negative checks, and reports an actual receipt. No broad survey, nested swarms or auto-next Change. A finished task is not the end of a commission whose join is still safe.
 
 Local mechanical diagnosis is allowed; material source/authority contradiction returns to planner with exact symbol, failed assumption and reproducer. Parent owns review, staged paths, commits and acceptance handoff. No full-suite run per child. [Parent procedure](.agents/references/bounded-parent-orchestration.md) owns checkpoints, retries and receipts.
 
@@ -129,7 +131,9 @@ Local mechanical diagnosis is allowed; material source/authority contradiction r
 
 At each bounded checkpoint: inspect changed files, test affected normal and negative contracts, confirm source/branch custody and document **what actually ran**. Tests are proportionate to risk; security, transaction correctness, privacy, idempotency and financial fences are non-negotiable. For material Changes use the frozen [acceptance matrix](.agents/rules/target-driven-renewal.md#design-verification-with-the-system), recording actual evidence tier, result, tested revision and outstanding limits. Distinguish NOT RUN from FAIL and inherited baseline failures from regressions.
 
-**Integration versus outcome closure:** normally integrate and close once required acceptance passes. If essential safety, functional and affected compatibility gates pass, a specifically owner-accepted deferral of extended assurance may permit integration while its unresolved proof remains visible in the open Change or a linked, owned follow-up. Record integrated SHA, exact deferred scenario, rationale, risk, next proof and owner; do not mark unverified claims PASS or the unresolved outcome Done. Known Critical or High defects, failed required safety gates, or missing indispensable safety or correctness evidence block the affected integration. Deferred Medium and Low assurance does not. New concrete findings may reopen a gate when their consequence is Critical or High; do not add ornamental checks after the agreed acceptance passes. No deferral grants live mutation permission. Integrating individual Changes does not certify the whole system.
+**Integration versus outcome closure:** keep these apart: implementation completed, the Change-level join gate passed, source integrated on the isolated design branch, design-wide acceptance passed, and final integration into main. A Design may allow the source join while joint acceptance is still pending. That join does not certify runtime behavior, activate anything live, mark the outcome Done, or waive the joint proof. The Change worktree does not have to stay open only because that design-level proof is still assigned. Indispensable Change-level proof still stops the join and keeps the worktree. Record the integrated SHA and the unresolved obligations on the implementation branch. Final main integration is the design-level closure, after every constituent is integrated and the required joint acceptance has passed. No constituent Change performs it.
+
+If essential safety, functional and affected compatibility gates pass, a specifically owner-accepted deferral of extended assurance may permit integration while its unresolved proof remains visible in the open Change or a linked, owned follow-up. Record the integrated SHA, exact deferred scenario, rationale, risk, next proof and owner; do not mark unverified claims PASS or the unresolved outcome Done. Known Critical or High defects, failed required safety gates, or missing indispensable safety or correctness evidence block the affected integration. Deferred Medium and Low assurance does not. New concrete findings may reopen a gate when their consequence is Critical or High; do not add ornamental checks after the agreed acceptance passes. No deferral grants live mutation permission. Integrating individual Changes does not certify the whole system.
 
 At a full Change close: demonstrate its accepted Goal; reconcile the Change's product/technical/code/related ledgers; update canonical docs as needed; update `STATUS.md` and evidence without overstating implementation; run applicable link/maintenance/close guards; archive and record the terminal disposition; integrate into the reference branch. **For Changes inside an Undertaking, the integration custodian also refreshes its `OVERVIEW.md` and checks/updates its required rough percentages when the completed outcome materially changes the human big picture; otherwise records that it remains accurate.** A passing subagent task alone is **not** a completed Change.
 
