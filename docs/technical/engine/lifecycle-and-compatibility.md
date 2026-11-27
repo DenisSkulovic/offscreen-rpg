@@ -18,6 +18,8 @@ An uncertain retry reconciles the existing generation and receipt. It does not r
 
 ## Forked continuities
 
+**Selected constraints.** A fork is a new story created from exactly one committed scene boundary (the exact checkpoint, not the parent's latest state). Story-scoped identities are remapped for the child; a fork never reads the parent's later root, clock or rows, never inherits the parent's future, and leaves the original story untouched. Creating or reading a fork requires owner authorization and, on the read and fork paths, performs no provider call and incurs no spend. Where the checkpoint cannot express the active work, the fork refuses rather than approximating. The paragraphs below give the contract and, under *Fork identity remap*, the current realization.
+
 A fork begins from one exact **published scene boundary**. The child references that scene's immutable Library root, fictional-state frontier, clock, effective creative/rule pins, choices and admitted active fictional commitments. It creates a new branch/story identity and fresh operational ownership.
 
 Already-settled fictional outcomes remain settled. Unresolved admitted plans/offers/obligations remain unresolved and are rehomed under the child's execution identity. Parent provider attempts, worker leases, billing reservations, external side-effect identity and any parent/sibling future are not copied.
@@ -82,6 +84,8 @@ Readiness refers to the exact draft/preview and roster being accepted. A friend 
 
 ## Scripted chamber initialization
 
+**Legacy fixture realization, not the selected product entry.** The chamber is a scripted compatibility and QA fixture that stays replayable under its original source and content; it is neither the Play launch nor a template for the first scene. The selected entry is [Start exactly the reviewed story](#start-exactly-the-reviewed-story).
+
 The chamber is a separate authored fixture, not a generated preview converted into live play. The immediate conversation uses `PUT /api/stories/:id/chamber` with `{ scenario: "chamber.v2" }`. It requires a verified owner and configured write origin. The server selects the content, and initialization returns a saved snapshot. The earlier `chamber.v1` fixture remains readable and retryable with its original source/content; it does not accept responses. New fixtures use new IDs, never reset existing history. The default browser fixture is `chamber.v3`: a timed courtyard visit. Its first choice saves a waiting passage; after 20 real seconds representing ten fictional minutes, the worker publishes arrival and a greeting choice. The immediate conversation remains selectable.
 
 `GET /api/stories/:id` reopens an owned snapshot. `/chamber` assigns and retains an ID in its URL before starting. The snapshot's `canRespond` flag reflects the implemented resolver and current offer; it is a presentation hint, never client authority. Normal authentication remains required. Tests use existing disposable sessions rather than a public login bypass.
@@ -98,7 +102,7 @@ The first playable branch approaches a gate, offers a reply and ends with a joke
 
 ## Start exactly the reviewed story
 
-Target **Play** starts exactly the captured launch inputs and publishes exactly one admitted opening. There is no separate reviewed-preview object whose later Start may silently regenerate.
+**Selected rule.** A start publishes exactly the reviewed or captured payload. It never silently regenerates, edits or substitutes it. A human-reviewed preview is **optional**: a reviewed start must use the exact reviewed payload, but no start requires a preview. Target **Play** starts exactly the captured launch inputs and publishes exactly one admitted opening. There is no separate reviewed-preview object whose later Start may silently regenerate.
 
 Idempotent retry uses the same durable launch identity. Provider uncertainty, HTTP loss or process restart recovers that operation; it must not create a second story or second paid attempt. The first scene's fictional clock is established by admitted fiction, not by elapsed provider or queue time.
 
@@ -156,6 +160,8 @@ Deleting first removes access and fences writes in PostgreSQL, then reliably req
 The presentation of finished stories, player departure rule, owner-deletion policy and automatic recovery preference remain unsettled product decisions with [player data lifecycle](../../../work/designs/backlog/player-data-lifecycle/README.md). The technical contracts above ensure those choices can be implemented without guessing or losing state.
 
 ## Workflow replay compatibility
+
+**Data safety.** Replay and compatibility proofs never authorize deleting or resetting existing data. Dropping or resetting retained prototype (POC) stories, drafts or histories is a separate owner-authorized, destructive operation; a statement elsewhere that a development database may be reset describes disposable local environments only and is not authority to delete retained data. **Proof limits.** The fork proofs (`createStoryForks`, `projectV2HistoricalCampaign`, `lockedCheckpointMatches`) are source-observed and disposable-SQL evidence for the paths they exercise. No distributed play-forward, multi-worker or hosted fork acceptance has been run.
 
 A sleeping, travelling or working character can outlive a code upgrade. Temporal replays the earlier command history, so a worker that changes that command sequence is non-deterministic even when TypeScript builds. A workflow name ending in `V1` is not a deployment pin.
 

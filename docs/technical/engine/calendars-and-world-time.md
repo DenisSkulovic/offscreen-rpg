@@ -1,6 +1,10 @@
 # Calendars and consequential world time
 
-Status: implemented and exercised provider-free. K1 projects bounded calendars from the canonical fictional-second coordinate; K2 handles controlling scenes and optional historical reports that do not hold play, including revisions, equal-boundary coalescing and a connected mixed-report/custom-calendar deadline rehearsal. The owner requested careful treatment of custom calendars, eras, seasonal consequences and time-limited plots on 2026-09-19 and reaffirmed optional calendars, seasons and celestial cycles on 2026-09-23. [Time and autonomy](../../product/gameplay/time-and-autonomy.md#calendars-seasons-and-story-deadlines) owns the product behavior, [fictional-time arithmetic](ticks-and-tags.md) owns the simulation coordinate, and [chronology](chronology-and-activities.md) owns permission to advance it.
+**Selected contract.** A calendar is an optional, deterministic, versioned label over the one canonical fictional-second coordinate. It never moves the clock, grants idle time or validates an activity. A world obligation is an admitted, due-game-second boundary that joins the shared scheduler; at an equal boundary the hard cutoff settles before the action's own completion, and a deadline is exclusive unless a supported rule says otherwise. Only the bounded calendar modes below are selected for delivery; leap cycles, era transitions, simultaneous calendars, reforms and calendar scripts are not delivered and are not claimed.
+
+**Legacy realization and evidence.** Status: implemented and exercised provider-free. K1 projects bounded calendars from the canonical fictional-second coordinate; K2 handles controlling scenes and optional historical reports that do not hold play, including revisions, equal-boundary coalescing and a connected mixed-report/custom-calendar deadline rehearsal. This is fixture-level evidence: it does not establish complex calendar delivery, hosted behavior or prose quality.
+
+**Provenance.** The owner requested careful treatment of custom calendars, eras, seasonal consequences and time-limited plots on 2026-09-19 and reaffirmed optional calendars, seasons and celestial cycles on 2026-09-23. [Time and autonomy](../../product/gameplay/time-and-autonomy.md#calendars-seasons-and-story-deadlines) owns the product behavior, [fictional-time arithmetic](ticks-and-tags.md) owns the simulation coordinate, and [chronology](chronology-and-activities.md) owns permission to advance it.
 
 ## Calendars label accepted time
 
@@ -91,7 +95,7 @@ Historical passages retain source game seconds and time-definition provenance. F
 
 ## QA evidence map
 
-Core projection, deadline, revision and connected Frost Road cases are implemented and selected through the versioned QA catalogue. This table remains a living coverage map: cases without an available driver are targets, not claims of completed support.
+This table is the expected-result contract for each case; evidence is fixture-level. Core projection, deadline, revision and connected Frost Road cases are implemented and selected through the versioned QA catalogue. This table remains a living coverage map: cases without an available driver are targets, not claims of completed support.
 
 | Case | Expected result |
 | --- | --- |

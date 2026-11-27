@@ -2,17 +2,21 @@
 
 **Fork/launch invariant:** provider latency never advances fictional time. A new branch reanchors any inherited unfinished **fictional** work from the selected scene's admitted clock/progress under fresh child execution identity; it never copies a parent's scheduler deadline, lease or wall-clock timestamp as story truth.
 
-Status, inspected at `15a997c7`. The preapproved-withdrawal row was rechecked on `change/gm07-consented-withdrawal` after `e4141c39`, and `gm07-delegated-worker-path.test.mjs` was re-run. The other tests named here were read and not re-run.
+**Selected contract (this page).** Fictional time advances only through an accepted execution that is not held. Permission, interval, hold, settlement and interruption are five distinct things. A selected action completes only when its execution is settled once and its required narration is validated; slow narration never adds fictional time, and early narration never exposes a result. Overlap is permitted only for a closed finite resolution. Decision deadlines are separate real-time windows that hold fiction. Product intent is in [Time and autonomy](../../product/gameplay/time-and-autonomy.md).
+
+## Evidence boundary (legacy realization)
+
+Inspected at `15a997c7`. The preapproved-withdrawal row was rechecked on `change/gm07-consented-withdrawal` after `e4141c39`, and `gm07-delegated-worker-path.test.mjs` was re-run at that time; it was not re-run for this page. The other tests named here were read and not re-run.
 
 - Fictional-second arithmetic, pause, and completion clamp: `packages/game/test/tick-clock.test.mjs`.
 - Fail-closed overlap when a world obligation intervenes, or when the resolution is not a finite action: `packages/game/test/immediate-offer.test.mjs`.
-- Finite-action settlement, a failed check that consumes the duration without the transfer, and a wrong-holder interrupt that does not roll: `packages/application/test/item-transfer-transition.test.mjs`.
-- A due world obligation interrupts before effects and does not roll: `packages/application/test/world-obligation-transition.test.mjs`.
-- One preapproved withdrawal on a published two-choice invitation: `packages/application/test/delegated-decision.test.mjs` and `packages/application/test/gm07-delegated-worker-path.test.mjs`.
-- Execution gate: `projectCampaignClock` in `packages/application/src/campaign/clock.ts` advances only for a matching accepted activity or finite action while unheld. Any other eligibility, including `none`, is held, and a non-running clock earns nothing in `packages/game/src/time.ts`. No dedicated unit test of that function was found. New activity selection calls it with `none`, so idle wall time is not donated to the new job.
+- Finite-action settlement, a failed check that consumes the duration without the transfer, and a wrong-holder interrupt that does not roll: `tools/api-integration/legacy-engine-tests/item-transfer-transition.test.mjs` (recorded at `packages/application/test/`).
+- A due world obligation interrupts before effects and does not roll: `tools/api-integration/legacy-engine-tests/world-obligation-transition.test.mjs` (recorded at `packages/application/test/`).
+- One preapproved withdrawal on a published two-choice invitation: `tools/api-integration/legacy-engine-tests/delegated-decision.test.mjs` and `tools/api-integration/legacy-engine-tests/gm07-delegated-worker-path.test.mjs` (recorded at `packages/application/test/`).
+- Execution gate: `projectCampaignClock` in `packages/story-engine/src/campaign/clock.ts` advances only for a matching accepted activity or finite action while unheld. Any other eligibility, including `none`, is held, and a non-running clock earns nothing in `packages/game/src/time.ts`. No dedicated unit test of that function was found. New activity selection calls it with `none`, so idle wall time is not donated to the new job.
 - Named API and worker cases exist for early preparation during pause, same-generation retry, and worker restart in `tools/api-integration/test/storyteller.integration.ts` and `apps/worker/test/eng06-worker-restart.live.test.ts`. Their assertions were not re-read and they were not re-run.
 
-Group progression, any consented fallback beyond the one preapproved withdrawal, and the OBS04 transition witness stay outside this proof. [OBS04 scoped terminal evidence decision](../../../work/changes/open/2026-11-15--obs04-finite-action-transition-evidence/DECISION-2026-11-20.md) records the precise missing historical before/after facts and typed interruption cause in source. That witness is **not implemented** yet and remains outside this document's currently proven behavior. [Time and autonomy](../../product/gameplay/time-and-autonomy.md) owns the product intent. This file owns execution permission and its relationship to narration. Unit arithmetic is [ticks and tags](ticks-and-tags.md). Calendar projection is [calendars](calendars-and-world-time.md).
+What stays outside this proof: group progression, any consented fallback beyond the one preapproved withdrawal, and the OBS04 transition witness. [OBS04 scoped terminal evidence decision](../../../work/changes/backlog/platform-operations/2026-11-15--obs04-finite-action-transition-evidence/DECISION-2026-11-20.md) records the precise missing historical before/after facts and typed interruption cause in source. That witness is **not implemented** and is not part of the behavior proven here. This file owns execution permission and its relationship to narration. Unit arithmetic is [ticks and tags](ticks-and-tags.md). Calendar projection is [calendars](calendars-and-world-time.md).
 
 ## Permission, interval, hold, settlement, interruption
 
@@ -27,6 +31,8 @@ These five words stay distinct. The status list above remains the evidence bound
 Normal: an accepted 1,800-fictional-second action earns that span at the selected pace and settles once. Negative: closing the browser, changing a calendar label, or leaving the player absent does not start a new interval, and a second settlement does not grant the reward again. The finite-action settlement named in the status list is that forbidding case. It was not re-run for this note.
 
 ## Units and responsibility — current implementation
+
+**Selected:** mechanical truth, cadence, quantities and deadlines are fictional seconds; a real-second scheduler step is only the wall wait and is never the unit of mechanical truth. **Legacy realization (below):** the numbers are illustrative fixtures, not defaults.
 
 The scheduler advances in fixed real-second steps while model-proposed durations, canonical time, cadence and deadlines use fictional seconds. Pace states how many fictional seconds are earned per eligible real second. At 360 fictional seconds per real second, a 1,800-fictional-second action consumes thirty fictional minutes and five active real seconds. Doubling pace changes only the wall wait; the action still advances 1,800 fictional seconds and has the same rule boundaries. Thirty fictional minutes is appropriate for a careful search, not automatically a quick glance. Numerical examples are not universal defaults.
 
@@ -122,7 +128,7 @@ One published two-choice invitation is a separate expiry, and only when the stor
 
 ## Worked traces and acceptance checklist
 
-All numbers below are fixture values. Sequential finite action, controls, interrupted work, restart/replay, bounded overlap and due-world interruption have focused offline evidence. The one preapproved withdrawal has a disposable SQL test and one local Temporal delivery. A hosted or cluster relay was not run. The general timed-default extension remains planned under bounded autonomy. None authorizes live spend or establishes human rhythm quality.
+These traces are legacy-realization fixture evidence and the acceptance checklist for the selected contract above; none is a default. All numbers below are fixture values. Sequential finite action, controls, interrupted work, restart/replay, bounded overlap and due-world interruption have focused offline evidence. The one preapproved withdrawal has a disposable SQL test and one local Temporal delivery. A hosted or cluster relay was not run. The general timed-default extension remains planned under bounded autonomy. None authorizes live spend or establishes human rhythm quality.
 
 | Trace | Accepted terms and timing | Required evidence |
 | --- | --- | --- |
