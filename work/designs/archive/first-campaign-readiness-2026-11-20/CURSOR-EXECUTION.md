@@ -1,3 +1,5 @@
+> **Terminal owner disposition (2026-11-27): Superseded.** Dated audit and implementation ladder retired following TURN03 cancellation, DIST03 and DISTURN supersession, and monorepo/Agent Core redesign. All former dispatch instructions, repair cards, source anchors, packet counts and scripted acceptance below are historical, not current authority. Preserve progressive verification and financial/safety gates; no new PASS, no source changes, no live permission. [Verification capabilities](../../../../infra/verification/CAPABILITIES.md) · [Original complete dossier](https://github.com/DenisSkulovic/offscreen-rpg/tree/ec8a4665c4498af82b51252b2d5f334ea975ffa6/work/designs/open/first-campaign-readiness-2026-11-20).
+
 # Cursor implementation schedule | vertical ladder and terminal outcomes
 
 **Priority supersession:** [work/IMPLEMENTATION-ROADMAP.md](../../../IMPLEMENTATION-ROADMAP.md) now decides short-term next work. This document remains source-backed historical design; T07/T08/T09 may already be landed. QUEUE alone selects work.

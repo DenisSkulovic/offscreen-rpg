@@ -1,3 +1,5 @@
+> **Terminal owner disposition (2026-11-27): Superseded.** Dated audit and implementation ladder retired following TURN03 cancellation, DIST03 and DISTURN supersession, and monorepo/Agent Core redesign. All former dispatch instructions, repair cards, source anchors, packet counts and scripted acceptance below are historical, not current authority. Preserve progressive verification and financial/safety gates; no new PASS, no source changes, no live permission. [Verification capabilities](../../../../infra/verification/CAPABILITIES.md) · [Original complete dossier](https://github.com/DenisSkulovic/offscreen-rpg/tree/ec8a4665c4498af82b51252b2d5f334ea975ffa6/work/designs/open/first-campaign-readiness-2026-11-20).
+
 # Campaign mechanism audit | source, current proof tier, next discriminator
 
 **Baseline:** main `3992437`. `source` means directly inspected symbol, `test` means a named test exists or historical receipts report PASS, **not rerun here**; `NOT-PROVED` is not a verdict that the code fails. Test with disposable resources only. Use current exact imports/commands before execution.

@@ -1,3 +1,5 @@
+> **Terminal owner disposition (2026-11-27): Superseded.** Dated audit and implementation ladder retired following TURN03 cancellation, DIST03 and DISTURN supersession, and monorepo/Agent Core redesign. All former dispatch instructions, repair cards, source anchors, packet counts and scripted acceptance below are historical, not current authority. Preserve progressive verification and financial/safety gates; no new PASS, no source changes, no live permission. [Verification capabilities](../../../../infra/verification/CAPABILITIES.md) · [Original complete dossier](https://github.com/DenisSkulovic/offscreen-rpg/tree/ec8a4665c4498af82b51252b2d5f334ea975ffa6/work/designs/open/first-campaign-readiness-2026-11-20).
+
 # Open Change reconciliation | 19 packets at 3992437
 
 **Count methodology:** 19 `work/changes/open/*/CHANGE.md` files in the 2026-11-20 lean snapshot. Archive omitted by export, so this is an *open-folder audit*, not a count of all historical changes. Existing `COMPOSER-QUEUE-AUDIT-2026-11-20.md` says 24 at an earlier point; archived packets and time changes explain why its heading must not be treated as today's open count.

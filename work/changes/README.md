@@ -294,7 +294,7 @@ The **unresolved architectural questions** live in the [Code Architecture Design
 | [DXK08](archive/2026-11/infrastructure/2026-11-20--dxk08-fast-kubernetes-inner-dev-loop/CHANGE.md) | Fast Kubernetes developer loop — **Done** |
 | [DXK09](backlog/quality-evaluation/2026-11-20--dxk09-parallel-worktree-dev-stacks/CHANGE.md) | Parallel worktree dev stacks |
 
-[DXK07](archive/2026-11/infrastructure/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) is **Done for implementation**; full fresh-clone/Headlamp operator proof remains [DXK-FINAL](../tasks/archive/2026-11/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md). · [Implementation roadmap](../IMPLEMENTATION-ROADMAP.md) · [Current distributed source review](../designs/archive/distributed-turn-poc/README.md) · [First-campaign readiness study](../designs/open/first-campaign-readiness-2026-11-20/README.md) · [current selection](../QUEUE.md). These source maps are dated; they do not supersede HEAD code or current Change states.
+[DXK07](archive/2026-11/infrastructure/2026-11-20--dxk07-clean-clone-acceptance/CHANGE.md) is **Done for implementation**; full fresh-clone/Headlamp operator proof remains [DXK-FINAL](../tasks/archive/2026-11/2026-11-20--dxk-final-wsl-clean-room-acceptance/TASK.md). · [Implementation roadmap](../IMPLEMENTATION-ROADMAP.md) · [Current distributed source review](../designs/archive/distributed-turn-poc/README.md) · [First-campaign readiness study](../designs/archive/first-campaign-readiness-2026-11-20/README.md) · [current selection](../QUEUE.md). These source maps are dated; they do not supersede HEAD code or current Change states.
 
 ### Writer refoundation | WR02 and WR03 archived; WR04–WR08 require planner repair
 
