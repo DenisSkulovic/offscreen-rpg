@@ -6,7 +6,7 @@
 
 ## Source-of-truth boundary
 
-The product wiki decides outcomes. Technical docs specify invariants and boundaries; runtime code/tests are realization evidence, not permission to weaken the target. Design dossier material is proposed until accepted. Preserve selected POC behavior **as current realization**, not a future architectural mandate. Read the relevant parts of [VISION-FIRST-TARGET](../../../../../designs/open/story-creation-and-writers-workbench/VISION-FIRST-TARGET.md), [agentic writer candidate](../../../../../designs/open/story-creation-and-writers-workbench/AGENTIC-WRITER-POC.md), [Library DAG](../../../../../designs/open/story-creation-and-writers-workbench/PERSISTENT-LIBRARY-DAG-DESIGN.md), and [self-review](../../../../../designs/open/story-creation-and-writers-workbench/CRITICAL-SELF-REVIEW.md), **not the whole dossier by default**.
+The product wiki decides outcomes. Technical docs specify invariants and boundaries; runtime code/tests are realization evidence, not permission to weaken the target. Design dossier material is proposed until accepted. Preserve selected POC behavior **as current realization**, not a future architectural mandate. Read the relevant parts of [VISION-FIRST-TARGET](../../../../../designs/archive/story-creation-and-writers-workbench/VISION-FIRST-TARGET.md), [agentic writer candidate](../../../../../designs/archive/story-creation-and-writers-workbench/AGENTIC-WRITER-POC.md), [Library DAG](../../../../../designs/archive/story-creation-and-writers-workbench/PERSISTENT-LIBRARY-DAG-DESIGN.md), and [self-review](../../../../../designs/archive/story-creation-and-writers-workbench/CRITICAL-SELF-REVIEW.md), **not the whole dossier by default**.
 
 ## Canonical technical owners and work
 

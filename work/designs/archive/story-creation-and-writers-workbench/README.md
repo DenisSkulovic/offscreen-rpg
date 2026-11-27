@@ -1,6 +1,6 @@
-# Story creation and the Storyteller's writer's workbench
+# Story creation and Writer's Workbench | promoted vision and archived research
 
-**Status:** active **investigation / unaccepted architecture**, begun 2026-11-20. **Source basis:** repository snapshot `09d5820bcafedbed7cf969fe228ee84f44ff2405`, read-only inspection. **No implementation, provider spending, or selected Change is authorized by these notes.**
+**State: Promoted product vision and historical technical research; archived by owner 2026-11-27.** Original investigation baseline `09d5820bcafedbed7cf969fe228ee84f44ff2405`. WR01 and WRD02–04 promoted accepted outcomes to canonical product/technical owners on 2026-11-21; no wholesale ratification of proposed mechanisms. Current contracts: [entry and onboarding](../../../../docs/product/experience/entry-and-onboarding.md), [Storyteller operation](../../../../docs/technical/storyteller/operation-and-controller.md), [Library](../../../../docs/technical/storyteller/canonical-documents-and-packages.md), [engine lifecycle](../../../../docs/technical/engine/lifecycle-and-compatibility.md). All 29 files retained; [original tree](https://github.com/DenisSkulovic/offscreen-rpg/tree/cac69f9864cfdeb820c18288113f3a18ab258095/work/designs/open/story-creation-and-writers-workbench). All earlier status, launch protocol candidates, research sequence and code dispatch below are historical. [Agent Core investigation](../../open/agent-core-monorepo-map/README.md) may reuse research, not inherit old package/transport/schema/recipe/index/limit choices. No implementation or paid authorization.
 
 **Question:** How do we replace the four-step setup wizard with immediate play from a prepared experience or one freeform Story Prompt, while giving the Storyteller a durable, coherent, appropriately bounded private creative workspace?
 
@@ -12,7 +12,7 @@
 
 **Implementation handoff exists (2026-11-21):** [eight Change packets and one execution map](../../../undertakings/storyteller-workshop/PROGRAM.md). Cursor owns implementation. Future ChatGPT sessions should address a **specific packet's blocker or source-map discrepancy**, not add more speculative design files. Packets are Proposed/unselected until reviewed; `work/QUEUE.md` stays the sole selection pointer.
 
-This dossier is the home for the continuing multi-conversation investigation. It is **not** a competing source of accepted product or technical law. A future chat should start with this page, check the source HEAD against the dated audit, then continue the unresolved design rather than restarting the discussion.
+This archived dossier is historical evidence; future investigations use their own current design owners. It is **not** a competing source of accepted product or technical law. A future chat should start with this page, check the source HEAD against the dated audit, then continue the unresolved design rather than restarting the discussion.
 
 ## Documents
 
@@ -65,7 +65,7 @@ This dossier is the home for the continuing multi-conversation investigation. It
 - [Canonical documents and packages](../../../../docs/technical/storyteller/canonical-documents-and-packages.md) owns start-package metadata, file authority, revision and publication.
 - [Context selection and recall](../../../../docs/technical/storyteller/context-selection-and-recall.md) owns bounded injected material and optional discovery.
 - [Operation and controller](../../../../docs/technical/storyteller/operation-and-controller.md) owns durable rounds, provider accounting and tool admission.
-- [Player experience refoundation](../player-experience-refoundation/README.md), [first campaign readiness](../first-campaign-readiness-2026-11-20/README.md) and [canon invention policy](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/designs/open/canon-invention-policy/README.md) are related but **not replaced** by this dossier.
+- [Player experience refoundation](../../open/player-experience-refoundation/README.md), [first campaign readiness](../first-campaign-readiness-2026-11-20/README.md) and [canon invention policy](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/designs/open/canon-invention-policy/README.md) are related but **not replaced** by this dossier.
 
 ## Research sequence
 
