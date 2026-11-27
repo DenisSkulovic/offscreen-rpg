@@ -1,12 +1,16 @@
 # Data and consistency
 
+**Authority:** PostgreSQL is the sole authority for command admission and for the committed story state. A story advances only through an SQL transaction that admits the command and commits the exact result, and nothing outside that transaction (prose, a cache, a search index, an uploaded object, a workflow timer) changes possession, clock or score. Object storage holds content-addressed bytes that an SQL selector later points at; a byte upload alone commits nothing.
+
 **Target persistence boundary:** every newly published scene can resolve an exact immutable Library root and an exact semantic fictional-state frontier, plus passage/choice and effective source/profile/rule lineage. Physical storage may structurally share state; the requirement is historical exactness and branch isolation, not full copies. Existing v1 checkpoints remain compatibility evidence, not the final schema promise.
 
 **Find the section:** [who owns the durable record](#who-owns-the-durable-record) · [durable record families](#durable-records) · [proposed service schemas](#proposed-service-schemas-and-delivery-records) · [selected document store](#selected-document-store) · [public story snapshots](#story-snapshot-and-chronology) · [type boundaries](#flexible-without-becoming-untyped) · [quantities and ownership](#quantities-and-ownership) · [story isolation and indexes](#story-isolation-and-indexes) · [retention/deletion](#changes-retention-and-deletion). Read the relevant section rather than loading this entire document.
 
 ## PostgreSQL package ownership
 
-[Database infrastructure and domain persistence](database-infrastructure.md) owns the selected TypeScript schema placement, dependency law, managed database runtime and migration composition. Domain declaration ownership is distinct from physical service schemas; the current shared SQL transaction boundary and all domain invariants below remain unchanged. See that page's realization record for implementation status.
+[Database infrastructure and domain persistence](database-infrastructure.md) owns the selected TypeScript schema placement, dependency law, managed database runtime and migration composition. Domain declaration ownership is distinct from physical service schemas; the current shared SQL transaction boundary and all domain invariants below remain unchanged. See that page's realization record for implementation status. The protected database owner decides schema placement, the managed runtime and migrations; this page owns record meaning and the invariants that bind them.
+
+**Source evidence (M04, not qualification).** `createDatabase` (`packages/db/src/database.ts`) returns the Drizzle `db`, a managed `withClient`, `transaction` through `executeManagedTransaction`, `checkConnection`, `telemetrySnapshot` and `close`. That is independent package-level source evidence for a managed connection and transaction primitive. It does not show that any domain transaction below uses it correctly, and it is not an admission or live SQL PASS.
 
 ## Who owns the durable record
 
@@ -24,13 +28,36 @@ Engine result admission and Storyteller publication stay on the linked headings.
 
 Realization records stay under [Durable records](#durable-records) and in the source-observed note of [Selected document store](#selected-document-store). [Planned story records](#planned-story-records) stays the selected family list.
 
+**Binding invariants and where they live.** The Durable records subsections below are legacy realization: they say what tables and migrations exist and never relax these.
+
+| Invariant | Controlling section |
+| --- | --- |
+| One mutable authority per scarce fact; prose, summaries, cache entries and indexes cannot move possession, clock or score | [Quantities and ownership](#quantities-and-ownership) |
+| A checkpoint exists only at a published passage; a staged object upload is not publication; objects may be staged before commit, but the SQL transaction is the coordinator | [Publication fence](#publication-fence) |
+| Stored v1 checkpoint objects stay readable and are never rewritten; v2 is additive. Dropping or rewriting a legacy format is not authorized by this page and needs its own owner-selected migration | [Scene checkpoint v1](#scene-checkpoint-v1), [Scene checkpoint v2 storage](#scene-checkpoint-v2-storage), [Mutable field inventory](#mutable-field-inventory) |
+| Every record is story-scoped; story-local references cannot cross stories | [Story isolation and indexes](#story-isolation-and-indexes) |
+| Settings snapshots, artifact retention, deletion and Temporal history retention | [Changes, retention and deletion](#changes-retention-and-deletion) |
+
 Current implementation stores campaign narrative bodies and continuity notes in PostgreSQL. The [canonical-file contract](../storyteller/context-and-memory.md) remains the target: versioned documents own narrative knowledge and Storyteller guidance; transactional records retain mechanical execution, permissions, publication references and accounting. Local document storage and an S3-compatible adapter exist; see [selected document store](#selected-document-store). Moving already-saved PostgreSQL narrative bodies onto that store is not claimed complete. Do not extend the table families below into new narrative content tables without reconciling that ownership boundary. A rebuildable search index is not the canonical content store.
 
 Application PostgreSQL owns committed story state, chronology, command receipts, decisions and spend reservations. When `GAME_AUTHORITY_MODE=distributed`, the owned snapshot read and the scripted resolution receipt are served by `apps/game-authority` through `createStoryApplication`. Nest does not write that receipt. Unset mode on host processes selects embedded mode and keeps the write in the API process; the lab release requires `distributed`. The receipt stays the existing `story_resolution` row. Start, campaign commands, and publication do not move. Temporal owns workflow history, timers and execution progress. Published deadlines are projected into PostgreSQL for display and admission checks; no database scheduler separately advances them. That ownership split is the selected model. Create further migrations in working slices, not every future table before the first screen. The world may imply far more people, objects and places than these records store. Do not add NPC, location, relationship, fact, population, schedule or generic world-entity tables because a scene mentioned a crowd. Durable story-scoped identity is created when later correctness depends on that exact person, object or place. See [sparse world](../../product/gameplay/continuity.md#sparse-world-progressive-materialization). Scene-local references for targetable details are a later presentation/interaction concern, not a reason to persist a full world census. A later split of schemas and the inbox rules are [Proposed service schemas and delivery records](#proposed-service-schemas-and-delivery-records). That section does not add those tables to the current database.
 
 ## Durable records
 
-These subsections are realization records of the tables and migrations already named here. [Planned story records](#planned-story-records) remains the selected family list. Demonstrated tiers, where a row exists, are [capability coverage](../../../STATUS.md#capability-coverage).
+These ten Implemented subsections are the legacy realization reference for the tables and migrations that exist today: record identity, state, version, uniqueness/revision and transaction conditions per record family. They describe source, not the selected target; the binding invariants are in the table under [Who owns the durable record](#who-owns-the-durable-record). Migration numbers are provenance, not a build order. [Planned story records](#planned-story-records) remains the selected family list and is proposal, not a claim that those tables exist. Demonstrated tiers, where a row exists, are [capability coverage](../../../STATUS.md#capability-coverage).
+
+| Subsection | Record, identity and key condition |
+| --- | --- |
+| [Implemented private draft](#implemented-private-draft) | `story_draft`: owner-scoped UUID, positive revision |
+| [Implemented generation records](#implemented-generation-records) | `generation`, `draft_opening`: one attempt id, versioned task kind |
+| [Implemented execution notices](#implemented-execution-notices) | `outbox`: unique notice id, lease token |
+| [Implemented launch operation ledger](#implemented-launch-operation-ledger) | `story_launch`: `(owner_id, operation_id)`, request hash |
+| [Implemented story initialization](#implemented-story-initialization) | `story`, `story_passage`: unique `(story_id, sequence)` |
+| [Implemented passage generation provenance](#implemented-passage-generation-provenance) | `source_generation_id`, `source_generation_part` |
+| [Implemented continuation commit component](#implemented-continuation-commit-component) | transition UUID unique per story, expected revision |
+| [Implemented fixed wait](#implemented-fixed-wait) | `wait_plan`/`due_at`, `story_control` receipt, `view_version` |
+| [Implemented decision deadline](#implemented-decision-deadline) | `decision_plan`/`response_due_at`/`response_source` |
+| [Implemented item transfer](#implemented-item-transfer) | `story_item`: unique story and item key, holder key |
 
 ### Implemented private draft
 
@@ -50,7 +77,7 @@ The generic record contains no draft, character, scene or timing fields. The ope
 
 ### Implemented execution notices
 
-`outbox` stores a unique notice ID, versioned topic, operation UUID, next delivery eligibility, lease token and delivery timestamp. It contains no prompt or player content. Opening admission inserts its notice in the same transaction as the generation record and latest-opening link. The notice ID currently equals the opening operation ID; typed topics select dispatch behavior, not arbitrary workflow names supplied by clients. A partial index serves undelivered notices. Migration `0003_execution_outbox` also admits previously pending scripted requests for delivery.
+`outbox` stores a unique notice ID, versioned topic, operation UUID, next delivery eligibility, lease token and delivery timestamp. It contains no prompt or player content. Opening admission inserts its notice in the same transaction as the generation record and latest-opening link. The notice ID currently equals the opening operation ID; typed topics select dispatch behavior, not arbitrary workflow names supplied by clients. A partial index serves undelivered notices. Migration `0003_execution_outbox` also enqueues delivery for scripted requests that were already pending when it ran.
 
 The reusable relay store leases and acknowledges delivery; it does not own the referenced operation's outcome. No foreign key binds this cross-operation notice table exclusively to generations. The admitting module is responsible for creating a valid reference transactionally; future deletion must account for outstanding notices. Keep receipt retention separate from Temporal history retention and from game chronology. Queue, outbox relay, and Temporal delivery stay on [commands and durable delivery](./execution-and-delivery.md#commands-and-durable-delivery).
 
@@ -66,7 +93,7 @@ The reusable relay store leases and acknowledges delivery; it does not own the r
 
 `@offscreen/story-engine/stories` owns the story use cases. The API, Game Authority, and worker import that package directly. `@offscreen/application/stories` remains a compatibility facade for other callers. Initialization, continuation commit, interval/decision timing and snapshot/history reads live in story-local modules. HTTP and authored fixtures call the story use cases, not a second writer. Its server-selected input includes the content and interaction specification; it assigns passage/interaction identities once. Repeating the same story ID checks owner, source and original opening content, then returns the saved snapshot. Conflicting content cannot replace an existing story. Reads join the current passage in one query. JSON is runtime-validated on write and read; ownership is derived from the session, not a browser DTO.
 
-The browser receives a story ID, narrative revision, current passage content and offered interaction. It receives no source code, effect instructions or owner information. Migration `0004_story_initialization` introduces these tables. Player choice resolution, consequential effects and listing retained stories remain subsequent operations.
+The browser receives a story ID, narrative revision, current passage content and offered interaction. It receives no source code, effect instructions or owner information. Migration `0004_story_initialization` introduces these tables. Player choice resolution, consequential effects and listing retained stories are separate operations, not part of this record.
 
 ### Implemented passage generation provenance
 
@@ -104,15 +131,17 @@ Migration `0009_decision_deadlines` adds `decision_plan`, `response_due_at` and 
 
 Snapshots expose only the due timestamp and default option ID, not the prepared consequence. The common commit validates new answers against the deadline under the story lock. A worker applies the stored default only when due and still current, through that same commit path. New resulting passages label response source as `player` or `default`; this is provenance, not authorization supplied by a client. History remains committed content and does not reveal future defaults' prose. See [execution](./execution-and-delivery.md#implemented-solo-response-deadline) for admission and retry semantics.
 
+**Scope of this row (PD03 / GM07 transfer).** Provenance: product `acceptance-scenarios.md` / 3. Meet the goblin, GM07 scope paragraph. This row records the chamber fixture's solo response deadline (`decision_plan`, `response_due_at`, `response_source`). It is a narrow source exception, not engine policy and not general delegation. The goblin, the fruit and any response clock in that scene are illustrative and select no delegated default; an ordinary unanswered decision stays open, and the narrative-rehearsal deadline is not imported into the mechanical campaign. The one other expiry that exists is the archived GM07 harmless invitation: a published two-choice invitation, only when the story owner enabled `decline-harmless-invitation.v1` before publication, with a twenty real-minute database-clock deadline. Its realization and proof limits are owned by [Decisions with deadlines](../engine/chronology-and-activities.md#decisions-with-deadlines). A general timed fallback remains proposed. The companion's own response and choosing another player's action are outside this record.
+
 ### Implemented item transfer
 
-Migration `0010_item_transfers` introduces `story_item`, keyed uniquely by story and item key, with a label and current holder key. The current solo fixture publishes all of its known items; this is not a secret inventory or multiplayer visibility model. Holder keys identify authored actors within a story, not authenticated users or a complete entity registry. The fixture source is responsible for meaningful holders. Do not infer permission to control an actor from its holder key.
+Migration `0010_item_transfers` introduces `story_item`, keyed uniquely by story and item key, with a label and current holder key. The solo fixture publishes all of its known items; this is not a secret inventory or multiplayer visibility model. Holder keys identify authored actors within a story, not authenticated users or a complete entity registry. The fixture source is responsible for meaningful holders. Do not infer permission to control an actor from its holder key.
 
 Initialization seeds at most 50 uniquely keyed items and records that original seed on the first passage. An initialization retry checks the original seed instead of resetting current possession. Snapshots read the scene and ordered item list in one database statement, avoiding mixed revisions. The fixed bound is an initial content limit, not a promised long-lived inventory capacity; item creation and paginated inventories are not implemented.
 
 A continuation may include up to 20 explicit `item.transfer.v1` effects with item key, expected holder and new holder. Under the story lock, each update checks the story-scoped identity and current holder. A missing item or mismatched holder rejects the entire transaction, including preceding effects and prose. The passage stores its effect list; identical retries skip application, while changed effects under the same transition ID conflict. Browser requests still contain only the selected answer, never effect instructions.
 
-This supports immediate authored transfers. Prepared arrivals and timeout consequences do not yet accept effects; extending them requires the same validation at activation, not applying future effects during preparation. Quantities, currency, consumption, equipment, trading, arbitrary attribute patches and shared-item contention remain outside this component. A stable identity and explicit transfer do not establish a general economy.
+This supports immediate authored transfers. Prepared arrivals and timeout consequences do not accept effects; extending them requires the same validation at activation, not applying future effects during preparation. Quantities, currency, consumption, equipment, trading, arbitrary attribute patches and shared-item contention remain outside this component. A stable identity and explicit transfer do not establish a general economy.
 
 ### Planned story records
 
@@ -375,6 +404,8 @@ Temporal history may retain Activity arguments and results after application dat
 Who may use these stores for access, export, correction, revoke, or deletion is unratified in [Player data lifecycle](../../../work/designs/backlog/player-data-lifecycle/README.md#eight-unresolved-decisions). This section does not set a retention period.
 
 ## Profiled storyteller storage
+
+This section records storage that exists in the one application database. It is separate from [Proposed service schemas and delivery records](#proposed-service-schemas-and-delivery-records), adds no cross-store atomicity, and does not widen any role's write access.
 
 Drafts carry a nullable profile reference while incomplete. Started storyteller stories carry captured profile/execution JSON and private derived continuity notes. Each note has story-local identity and source passage evidence. Opening/current/arrival publication updates notes atomically with its passage; prepared arrival notes are not current facts. Profiled generation execution records publication status separately from generation state. Persistent funding accounts, runs and attempts use integer USD microunits; immutable attempt reservations survive uncertain dispatch. Accounting takes a global paid-admission advisory lock, then funding account before run/attempt, and never lock a story in that accounting transaction. Story publication never holds accounting locks. Effective spending stays on [distinct authorities](./spending-and-entitlements.md#distinct-authorities).
 
