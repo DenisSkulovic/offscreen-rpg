@@ -25,9 +25,7 @@ This map separates the selected control-plane target from proposed module bounda
 
 **Status mirror (provenance).** Mirrored from product [authority and governance, Status](../../product/admin/authority-and-governance.md), [Player 360 and support, Status](../../product/admin/player-360-and-support.md) and [operator workflows, Status](../../product/admin/operator-workflows.md), all dated 2026-11-14; the product pages keep their own scope restrictions and remain the owners of the policy. Landed Admin access and audit slices do not accept the proposed package catalog as production grants; the catalog awaits owner review. Player-safe reads and case anchors exist from the Admin wave. OBS06/07 Situation UI is synthetic or disposable-grant proof only. Production `support-investigator` grant issuance for live workers is absent, and full Turn Capsule disclosure is not implemented. Illustrative Support, impersonation, raw-prompt, refund, export and LiveOps examples stay Proposed or Blocked. This mirror records realization status only; it adds no grant, role or disclosure, and no persona or workflow description is a grant.
 
-A description of Player 360 does not authorize general support impersonation. A description of an investigation read does not authorize raw prompt disclosure. Cross-tenant access stays refused. No heading read for this change selects it. Player story reads stay scoped by [Relationship semantics and current single-owner source](./investigation-and-privacy.md#3-relationship-semantics-and-current-single-owner-source). The caller remains a separate principal under [Authentication and sessions](../platform/identities-and-access.md#authentication-and-sessions).
-
-Command, write, and audit semantics stay on [commands and audit](commands-and-audit.md). Staff-console read models stay on [console and read models](console-and-read-models.md). Investigation reads and redaction stay on [investigation and privacy](investigation-and-privacy.md).
+This map is the single owner of the withholding: describing Player 360 does not authorize general support impersonation, describing an investigation read does not authorize raw prompt disclosure, and cross-tenant access stays refused. The [console](console-and-read-models.md), [investigation](investigation-and-privacy.md) and [commands](commands-and-audit.md) pages link here instead of restating it. Player story reads stay scoped by [Relationship semantics and current single-owner source](./investigation-and-privacy.md#3-relationship-semantics-and-current-single-owner-source). The caller remains a separate principal under [Authentication and sessions](../platform/identities-and-access.md#authentication-and-sessions).
 
 ### Contract dependencies
 
@@ -49,7 +47,7 @@ Realization facts, separate from the selected target above. Existence of a route
 
 ## 2. Trust boundaries and request flow
 
-How this staff flow sits beside the player API, the document store, the worker, and a provider is [Platform trust boundaries](../platform/security-and-trust-boundaries.md#boundary-map). That map does not grant a staff read, a raw prompt, or a production role. The diagram below and the withholding in [Authorization claim map](#authorization-claim-map) stay as written.
+The cross-boundary map (player API, document store, worker, provider) is [Platform trust boundaries](../platform/security-and-trust-boundaries.md#boundary-map); it grants nothing to staff. The staff request flow is below.
 
 ```text
 Browser with player or no session                 Browser with explicit staff session
@@ -71,11 +69,11 @@ Browser with player or no session                 Browser with explicit staff se
                                                   audited Admin results
 ```
 
-Each request, SSR render, search, export, mutation, SSE subscription and background action has the same mandatory authorization/revocation semantics. Authentication proves **who**, policy proves **allowed effect on this resource in this context**. Neither URL visibility nor a Next layout substitutes for the API gate.
+**Rule for every request.** Each request, SSR render, search, export, mutation, SSE subscription and background action carries the same mandatory authorization and revocation semantics. Authentication proves **who**; policy proves the **allowed effect on this resource in this context**. Neither URL visibility nor a Next layout substitutes for the API gate. A Player session alone never opens a staff page: the server resolver redirects it to the staff entry step (see [Current realization](#current-realization-source-verified-2026-11-27)).
 
 ### Do not use these shortcuts
 
-- Pass `targetOwnerId` into `this.stories.read` by constructing a fake player identity.
+- Pass `targetOwnerId` into `this.stories.read` by constructing a fake player identity, or accept any staff-supplied `ownerId` as scope: scope comes only from the server actor's assignments.
 - Expose developer-only Chamber controllers globally to obtain an easy Admin debugger.
 - Serialize `generation.input/output` or raw document-store JSON through a generic `/admin/query` endpoint.
 - Put entitlement/payer authority in React state, page props, JWT names, email domains, or an LLM-generated explanation.
@@ -133,9 +131,7 @@ No live write assistance, raw narrative export, financial actions, arbitrary wor
 
 ## 7. Dependency and trade-off rationale
 
-A separate admin microservice would duplicate identity, database access, deploy/incident surface and latency before there is measured need. A generic full ABAC scripting language would be powerful but hard to audit and validate for our small operating organization. A typed, small **deny-by-default grant evaluator** and dedicated domain service inside the existing Nest stack are more explainable and feasible.
-
-Conversely, using only a Boolean `isAdmin`, an owner spoof, raw SQL console or UI-hidden controls is too weak for the future target. The proposed boundary is intentionally stricter than today's POC.
+**Rejected alternatives.** A separate admin microservice would duplicate identity, database access, deploy/incident surface and latency before measured need. A full ABAC scripting language is hard to audit for a small operating organization. A Boolean `isAdmin`, an owner spoof, a raw SQL console or UI-hidden controls are too weak for the target. **Chosen:** a typed, small, **deny-by-default grant evaluator** and a dedicated domain service inside the existing Nest stack (realized as `registry.ts` plus `policy.ts`), intentionally stricter than the POC player path.
 
 ## 8. Architecture rejection cases
 

@@ -61,7 +61,7 @@ These are **behavioral components**, not specific UI libraries:
 | Work queue | Owner, subject, next action, current dependency and safely redacted preview |
 | Audit timeline | Human/system actor, authority/time, action type, target and verified status without private payload |
 
-Staff-console read models stay on this page. A description of Player 360 does not authorize general support impersonation. Cross-tenant access is not selected. Grant withholding is the [authorization claim map](topology-and-authorization.md#authorization-claim-map).
+Grant withholding is owned by the [authorization claim map](topology-and-authorization.md#authorization-claim-map); these patterns are presentation of decisions the API has already made.
 
 **Accessible behavior:** semantic controls, keyboard navigation, focus/failure recovery, accessible tables/pagination, deliberate confirmation for risky effects, readable status text, alerts that do not spam screen readers. A 403 (not permitted), 404 (no authorized record), 409 (stale intent), 423/blocked as selected, 429 (rate-limited), 503 (source unavailable) and unknown effect require distinguishable safe user-facing outcomes.
 
@@ -96,7 +96,7 @@ Fixture behavior does not prove endpoint authorization, audit persistence or rea
 
 Players remain in `/stories`, `/play` and public demo; their query cache and player auth flow remain unchanged. Developer Chamber remains conditionally registered in its own local tooling environment. Admin diagnostic sandbox may eventually reuse safe Chamber capabilities behind an independently governed application owner, but should not expose test fault switches via general `/control` routes.
 
-**No new public "Admin" link** that discloses internal features to ordinary players; internal staff can enter through a known route with proper authentication.
+No public "Admin" link discloses internal features to ordinary players; staff enter through the known `/control/enter` route with proper authentication.
 
 ## 8. Frontend negative acceptance
 
@@ -111,4 +111,4 @@ Players remain in `/stories`, `/play` and public demo; their query cache and pla
 - Two employees link to same case and operation: consistent safe status, independently authorized content.
 - Developer Chamber is unavailable in production: Admin UI does not try to activate it as a fallback.
 
-Exact component styling and route structure remain secondary to the security/interaction contracts.
+Exact component styling and route structure remain secondary to these contracts. The Storybook fixtures in section 6 and the acceptance list above are selected targets; no test in the repository is claimed to prove them here.

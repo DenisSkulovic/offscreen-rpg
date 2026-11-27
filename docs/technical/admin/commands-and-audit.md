@@ -15,7 +15,7 @@ An administrative action is a typed business operation:
 
 **Do not implement generic `PATCH /admin/tables/:name/:id`, "edit arbitrary JSON", "execute SQL", or `ownerId` impersonation.** Each effect must pass the owning game's/commercial system's domain validators and concurrency fences.
 
-Command, write, and audit semantics stay on this page. Describing this envelope does not issue a production write grant or a production staff role. Cross-tenant access is not selected. The [authorization claim map](topology-and-authorization.md#authorization-claim-map) records that withholding.
+Describing this envelope issues no production write grant or staff role; the [authorization claim map](topology-and-authorization.md#authorization-claim-map) records that withholding.
 
 ## 2. Bounded envelope and identities
 
@@ -138,4 +138,4 @@ No one generic action engine should launch those six unreviewed domains as a bat
 - An audit reviewer sees the record of a private-story read, but still cannot read the story without its own capability.
 - Compensation for a failed model task is recorded separately from the actual provider attempt and immutable mechanical receipt.
 
-No live action implementation has been run or evidenced by this design.
+This list is the selected acceptance target for the action framework. None of it has been run or evidenced against a live action implementation; the only realized action paths are the case operations in section 7.

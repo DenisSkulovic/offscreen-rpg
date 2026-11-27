@@ -6,7 +6,7 @@
 
 Staff must find and understand customers without creating a universal "return database rows" endpoint. A unified record is a **policy-scoped projection over authoritative sources** rather than a replicated writable dossier. It must be truthful about who the subject is, who funded an operation, what was published, and which records could not be shown.
 
-**Rule:** source-derived authorized information is not equivalent to raw source access. The projection's shape and field-level release policy are explicit contracts; an accidental `SELECT *` or `JSON.stringify(generation.input)` is a security bug.
+**Rule:** authorized source-derived information is not raw source access. Each projection's shape and field-level release policy is an explicit contract; an accidental `SELECT *` or `JSON.stringify(generation.input)` is a security bug. Today the realized projections are the first-wave subset listed under [Current realization](#current-realization-source-verified-2026-11-27); the other families in the table are target shapes.
 
 ## 2. Required projection families
 
@@ -91,7 +91,7 @@ The global Command Center and specialist workspace search use the **same Admin a
 
 ## 6. Sensitive evidence hierarchy
 
-Investigation reads and redaction stay on this page. A description of an investigation read does not authorize raw prompt disclosure. Cross-tenant access is not selected. Grant withholding is the [authorization claim map](topology-and-authorization.md#authorization-claim-map).
+Investigation reads and redaction are owned here; grant withholding (no raw prompt, no cross-tenant read) is the [authorization claim map](topology-and-authorization.md#authorization-claim-map).
 
 | Class | Example | Default handling |
 | --- | --- | --- |

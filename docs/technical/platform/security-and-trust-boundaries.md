@@ -4,7 +4,7 @@
 
 **Does not own:** session rules ([Authentication and sessions](identities-and-access.md#authentication-and-sessions)), player HTTP status meanings ([HTTP and client contracts](http-api-and-client-contracts.md)), staff grants ([Authorization claim map](../admin/topology-and-authorization.md#authorization-claim-map)), packet bytes ([Exact packet boundary](../storyteller/provider-boundary.md#exact-packet-boundary)), the store contract ([Selected document store](data-and-persistence.md#selected-document-store)), spend ([Distinct authorities](spending-and-entitlements.md#distinct-authorities)), or the first response to an unknown provider attempt ([Uncertain work recovery](../../runbooks/uncertain-work-recovery.md)).
 
-**Standing:** source-inspected at `b3113814` and, for the evidence links, re-pointed on 2026-11-27 to the files that now own those symbols (the `application` paths named in older reads moved to `packages/story-engine`) for the files under [Evidence read](#evidence-read). Those files were read and were not re-run. This page is not a passed security audit and not a legal review. It adds no staff read, no raw-prompt right, and no production role.
+**Standing:** source-inspected at `b3113814`; evidence links were re-pointed on 2026-11-27 to the current owners of those symbols (older `packages/application` paths now live in `packages/story-engine`) for the files under [Evidence read](#evidence-read). Those files were read and were not re-run. This page is not a passed security audit and not a legal review. It adds no staff read, no raw-prompt right, and no production role.
 
 **Reader question:** Which actor may touch which asset at this boundary, and which heading still owns the rule?
 
@@ -51,7 +51,7 @@ The package id `support-investigator` exists in the registry. This page did not 
 
 **Normal:** an assigned investigator with the exact case and campaign grant receives the body-free situation projection.
 
-**Negative:** a provider packet is not a staff grant. Reading the admin diagram does not give Support a raw prompt.
+**Negative:** reading the admin diagram does not give Support a raw prompt (this and the packet rule are consolidated under [What this page does not grant](#what-this-page-does-not-grant)).
 
 ## Provider packet redaction
 
@@ -63,7 +63,7 @@ The package id `support-investigator` exists in the registry. This page did not 
 
 **Normal:** a developer trace records sizes, hashes, and handles. The prompt body stays omitted.
 
-**Negative:** a provider packet is not a staff grant. Omitting a body in a trace does not authorize a staff read of the stored prompt.
+**Negative:** omitting a body in a trace does not authorize a staff read of the stored prompt.
 
 ## Story-specific document handles
 
@@ -97,7 +97,8 @@ These sentences are the boundary. They do not add a right.
 - An SSE hint is not a committed world. An HTTP 202 is not one either. The status meaning stays on [Accepted response versus committed world](http-api-and-client-contracts.md#accepted-response-versus-committed-world).
 - A provider packet is not a staff grant.
 - Importing a document is not permission to reveal it.
-- A Support persona does not gain a raw prompt by reading the admin diagram or this map.
+- A Support persona does not gain a raw prompt by reading the admin diagram or this map. Landed staff access and case anchors are not a production `support-investigator` grant, and no full Turn Capsule disclosure exists.
+- A terminal token is not accepted by the Admin gate, and a matching email, story id or hash links no account and grants no read.
 - A model does not receive another story's document handles from a shared hash. The handle is local to the manifest that matched the story id.
 - No production staff role is created here.
 
