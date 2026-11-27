@@ -35,15 +35,15 @@ A **scene** is a continuous situation at one primary place and time with relativ
 
 Do not promote every named background object, person or spatial detail. A cup on a table can remain scene dressing. Materialize the object if possession, location, later recognition or rule enforcement begins to depend on that exact cup. Likewise, “a drop of sweat rolls down her face” is normally presentation; it becomes state only when it establishes a consequential condition or observed clue.
 
-The product requirement is only a bounded situated-present account, not a map or universal entity system. `scene-frame.v1` is a **candidate representation**, not a required future schema; its bounded shape stays here until [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#opportunity-boundary) (TD04) holds it with provenance. Candidate information includes:
+**Requirement.** Only a bounded situated-present account is required, not a map or universal entity system. The storyteller may propose an updated scene frame alongside a DM turn; application code validates references to durable identities and authoritative relations, and prose remains free to add disposable texture. A later image pipeline derives a separate visual frame (composition, shot, angle, lighting, palette, reference anchors). Camera instructions are never prerequisites, effects or evidence that an event occurred.
+
+**Candidate representation (scoped).** `scene-frame.v1` is a candidate, not a required future schema; its bounded shape stays here until [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#opportunity-boundary) (TD04) holds it with provenance. Candidate information:
 
 - a durable place reference or temporary place description;
 - fictional time and temporary environmental conditions;
 - present durable participants and salient durable objects;
 - a small set of meaningful spatial relations;
 - current focus and atmosphere for generation.
-
-The storyteller may propose an updated scene frame alongside a DM turn. Application code validates references to durable identities and authoritative relations. Prose remains free to add disposable texture. A later image pipeline derives a separate visual frame containing composition, shot, angle, lighting, palette and reference anchors. Camera instructions are never prerequisites, effects or evidence that an event occurred.
 
 Scene transitions should be explicit enough to distinguish continuing the same situation, moving to another place, departing into a timed activity and arriving after one. Remote cutaways are not part of the solo POC because they can expose events the player character does not know.
 
@@ -109,13 +109,13 @@ Keep modest identity and episode references for encountered people when later re
 
 ## Context and cost
 
-The owner has requested canonical campaign files as the durable knowledge workspace: linked world descriptions, remembered identities, original passages, source-bounded summaries, open threads and Storyteller guidance. A model conversation is disposable; later turns must be able to navigate and recover the relevant established material without that conversation. This belongs in the POC's memory demonstration, including a short return scene, rather than only a distant long-campaign milestone.
+**Requirements.**
 
-Current canonical-file detail: the [implementation contract](../../technical/storyteller/context-and-memory.md) gives narrative documents explicit ownership, versioning, search and admitted edits. Exact quantities, work, dice and permissions retain an execution ledger; their readable document views cannot independently change those values. Requirement: a returned recollection is a lead until its source identity is proved, and model prose is not current canon.
+- *Durable workspace, disposable conversation.* The owner has requested canonical campaign files as the durable knowledge workspace: linked world descriptions, remembered identities, original passages, source-bounded summaries, open threads and Storyteller guidance. A model conversation is disposable; later turns must be able to navigate and recover the relevant established material without it. This belongs in the POC's memory demonstration, including a short return scene, rather than only a distant long-campaign milestone.
+- *Exact quantities.* Quantities, work, dice and permissions retain an execution ledger; their readable document views cannot independently change those values. Durable facts and quantities must not depend exclusively on a lossy summary: a small context can still preserve the spear's owner or the promise made at the mill.
+- *Source-based recall.* A returned recollection is a lead until its source identity is proved, and model prose is not current canon. As history grows, retrieve and summarize relevant material rather than sending the complete chronology with every request.
 
-**Current realization (scoped; TD05 receives it in [context selection and recall](../../technical/storyteller/context-selection-and-recall.md)).** A bounded `ask_memory` / `read_memory` loop exists in the Storyteller packages. It is optional and provider-gated, and the returned snippet is the lead. It is not a general agent.
-
-As history grows, retrieve and summarize relevant material rather than sending the complete chronology with every request. Durable facts and quantities should not depend exclusively on a lossy summary. A small context can still preserve the spear's owner or the promise made at the mill.
+**Current realization (scoped; TD05 receives it in [context selection and recall](../../technical/storyteller/context-selection-and-recall.md)).** The [implementation contract](../../technical/storyteller/context-and-memory.md) gives narrative documents explicit ownership, versioning, search and admitted edits. A bounded `ask_memory` / `read_memory` loop exists in the Storyteller packages. It is optional and provider-gated, and the returned snippet is the lead. It is not a general agent.
 
 Reuse stable material where useful. Cached or prepared output is only valid while its assumptions still hold. Cost measurement must include generation that gets discarded after a change of plan, not just prose ultimately shown to players.
 
