@@ -1,6 +1,6 @@
 # Implementation recovery roadmap
 
-**Status:** All eleven current-sprint packets owner-released for reversible offline candidate implementation; not independently READY or certified. Integration reference `integration/observability-developer`; human custodian. No global queue change. [Acceptance boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
+**Status:** All eleven current-sprint packets owner-released for reversible offline candidate implementation; not independently READY or certified. Implementation branch `implementation/observability-developer`. Each remaining packet branches from that branch and merges back into it. Human custodian. No global queue change. [Acceptance boundary](ACCEPTANCE.md#owner-released-offline-source-assembly-not-certification).
 
 ## Finish line and method
 
