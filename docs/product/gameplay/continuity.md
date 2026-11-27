@@ -35,7 +35,7 @@ A **scene** is a continuous situation at one primary place and time with relativ
 
 Do not promote every named background object, person or spatial detail. A cup on a table can remain scene dressing. Materialize the object if possession, location, later recognition or rule enforcement begins to depend on that exact cup. Likewise, “a drop of sweat rolls down her face” is normally presentation; it becomes state only when it establishes a consequential condition or observed clue.
 
-The initial scene representation should remain a bounded `scene-frame.v1`, not a map or universal entity system. Candidate information includes:
+The product requirement is only a bounded situated-present account, not a map or universal entity system. `scene-frame.v1` is a **candidate representation**, not a required future schema; its bounded shape stays here until [mechanics and capabilities](../../technical/engine/mechanics-and-capabilities.md#opportunity-boundary) (TD04) holds it with provenance. Candidate information includes:
 
 - a durable place reference or temporary place description;
 - fictional time and temporary environmental conditions;
@@ -63,7 +63,7 @@ If a wizard is scheduled to arrive at a tower and instead becomes trapped inside
 
 ## Space, movement and maps
 
-Canonical minimum: when location affects a consequence, the whereabouts of a known character are authoritative, and prose cannot silently move that character. Unsupported here: a selected coordinate schema, a cube graph as a requirement, a travel-duration formula, and a rule that every world has a map. Proposed experiment: [spatial play](../../../work/designs/backlog/spatial-play/README.md). Failure gate: a known character's location changes with no admitted transition. The cube map below stays a candidate. It is not selected.
+Canonical minimum: when location affects a consequence, the whereabouts of a known character are authoritative, and prose cannot silently move that character. Unsupported here: a selected coordinate schema, a cube graph as a requirement, a travel-duration formula, and a rule that every world has a map. Interrupted travel and the relative whereabouts of two characters remain unsolved, and no new map coordinates are chosen here. Proposed experiment: [spatial play](../../../work/designs/backlog/spatial-play/README.md). Failure gate: a known character's location changes with no admitted transition. The cube map below stays a candidate. It is not selected.
 
 Storytelling alone must not redefine established whereabouts, distances or travel conditions from passage to passage. When location affects a choice or consequence, the story needs an authoritative account of where characters are and how they can reach each other. A character interrupted between two places is still on a journey; neither departure nor planned arrival alone describes their position. When more than one character can act, proximity, rescue and encounters must fit each character's circumstances at the same fictional time. That multi-character case belongs to the distant small-party aspiration, not the solo first-playable milestone. Its live acceptance is Proposed/Blocked. It is not cancelled and not implemented.
 
@@ -111,10 +111,12 @@ Keep modest identity and episode references for encountered people when later re
 
 The owner has requested canonical campaign files as the durable knowledge workspace: linked world descriptions, remembered identities, original passages, source-bounded summaries, open threads and Storyteller guidance. A model conversation is disposable; later turns must be able to navigate and recover the relevant established material without that conversation. This belongs in the POC's memory demonstration, including a short return scene, rather than only a distant long-campaign milestone.
 
-The [canonical-file implementation contract](../../technical/storyteller/context-and-memory.md) gives narrative documents explicit ownership, versioning, search and admitted edits. Exact quantities, work, dice and permissions retain an execution ledger; their readable document views cannot independently change those values. A bounded `ask_memory` / `read_memory` loop exists in the Storyteller packages. It is optional and provider-gated, and a returned snippet is a lead until source identity is proved. It is not a general agent, and model prose is not current canon.
+Current canonical-file detail: the [implementation contract](../../technical/storyteller/context-and-memory.md) gives narrative documents explicit ownership, versioning, search and admitted edits. Exact quantities, work, dice and permissions retain an execution ledger; their readable document views cannot independently change those values. Requirement: a returned recollection is a lead until its source identity is proved, and model prose is not current canon.
+
+**Current realization (scoped; TD05 receives it in [context selection and recall](../../technical/storyteller/context-selection-and-recall.md)).** A bounded `ask_memory` / `read_memory` loop exists in the Storyteller packages. It is optional and provider-gated, and the returned snippet is the lead. It is not a general agent.
 
 As history grows, retrieve and summarize relevant material rather than sending the complete chronology with every request. Durable facts and quantities should not depend exclusively on a lossy summary. A small context can still preserve the spear's owner or the promise made at the mill.
 
 Reuse stable material where useful. Cached or prepared output is only valid while its assumptions still hold. Cost measurement must include generation that gets discarded after a change of plan, not just prose ultimately shown to players.
 
-The initial proof of continuity is modest but concrete: remember a person or object across several developments, apply a lasting consequence, and preserve both after a restart and recap. Elaborate knowledge propagation and offscreen economies are outside the first playable scope.
+The small memory proof target is modest but concrete: remember a person or object across several developments, apply a lasting consequence, and preserve both after a restart and recap. Elaborate knowledge propagation and offscreen economies are outside the first playable scope.
