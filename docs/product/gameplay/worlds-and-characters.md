@@ -7,7 +7,7 @@
 
 ## Flexible settings and protagonists
 
-Canonical minimum: the core must not require one profession, one human body, one economy, or one geography. The current playable target is one authored setting and the narrow rules subset. Unsupported: six abilities on every creature, a universal profession system, and a claim that arbitrary worlds are already enjoyable. Proposed experiment: [gameplay domain coverage](../../../work/designs/open/gameplay-domain-coverage/README.md). Failure gate: a microorganism or a bodiless mind receives a humanoid inventory because a human character has one.
+Canonical minimum: the core must not require one profession, one human body, one economy, or one geography. The current playable target is one authored setting and the narrow rules subset. Unsupported: six abilities on every creature, a universal profession system, and a claim that arbitrary worlds are already enjoyable. Unratified alternatives and world-neutral counterexamples: [domain coverage research](../../../research/product-reality/DOMAIN-COVERAGE-2026-11-18.md). Failure gate: a microorganism or a bodiless mind receives a humanoid inventory because a human character has one.
 
 Settings and characters should be flexible: fantasy, space, everyday life, unusual creatures or mixtures. The core must not require a specific profession, human body, economy or geography. Creative freedom still needs continuity: established facts and player choices have weight.
 

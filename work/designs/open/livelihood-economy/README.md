@@ -4,7 +4,7 @@
 
 **Reader question:** Which livelihood and exchange facts are already selected, and which choices about units, prices, employers, inventories, and absent labor stay inside one world?
 
-This page is the unratified map for that question. The [gameplay domain coverage catalogue](../gameplay-domain-coverage/README.md#economy) keeps the coverage classification and keeps the unanswered choice of a shared resource name. Selected promises stay on the headings named below. The shared-name choice stays unanswered here. `docs/product/gameplay/livelihood-and-exchange.md` is not created. Selected possession continuity stays on [Possessions and exchanges](../../../../docs/product/gameplay/continuity.md#possessions-and-exchanges).
+This page is the unratified map for that question. The [historical domain research](../../../../research/product-reality/DOMAIN-COVERAGE-2026-11-18.md#domain-questions) retains the coverage classification. This investigation owns the unanswered shared-resource-name question. Selected promises stay on the headings named below. The shared-name choice stays unanswered here. `docs/product/gameplay/livelihood-and-exchange.md` is not created. Selected possession continuity stays on [Possessions and exchanges](../../../../docs/product/gameplay/continuity.md#possessions-and-exchanges).
 
 A wage example stays an example. A microorganism story with no employer and no coins still fits the foundation.
 
@@ -70,3 +70,6 @@ The same mechanical path can omit quantities, currency, and a human calendar. [O
 This proposal does not publish `docs/product/gameplay/livelihood-and-exchange.md`. It does not add a universal currency, a wage table, a profession, a tax, or a new effect kind. A later owner may ratify a distinct player promise and then choose an owner. Until that acceptance, the selected headings above remain the rules.
 
 Packet: [DOC32](https://github.com/DenisSkulovic/offscreen-rpg/blob/34e2b4fd8d9d9967e13311da3a938460b1a02244/work/changes/archive/2026-11/documentation/2026-11-18--doc32-livelihood-and-economy-scope/CHANGE.md).
+
+
+**Retained routine question:** investigate bounded recurring accepted work before introducing a separate repeated-activity engine. Compare existing accepted-plan machinery; preserve authorization, per-iteration identity, stop on new decision/hold, and no repeated reward without committed earned effects. No historical duration is a universal default. [Autonomy research](../../../../research/product-reality/DOMAIN-COVERAGE-2026-11-18.md#autonomy-and-agency).

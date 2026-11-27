@@ -4,7 +4,7 @@
 
 **Reader question:** Which location facts must stay consistent, and which choices about distance, visibility, map identity, travel time, teleportation, concurrent position, and the world clock stay open?
 
-This page is the unratified map for that question. The [gameplay domain coverage catalogue](../gameplay-domain-coverage/README.md#spatiality) keeps the coverage classification. Selected promises stay on the headings named below. The unanswered choices stay here. `docs/product/gameplay/maps-and-travel.md` is not created. No route-planning engine and no coordinate schema are proposed as rules.
+This page is the unratified map for that question. The [Historical domain research](../../../../research/product-reality/DOMAIN-COVERAGE-2026-11-18.md#domain-questions) retains coverage classification; this investigation owns the minimal representation of interrupted journeys, including discrete transitions and nonmetric worlds. Selected promises stay on the headings named below. The unanswered choices stay here. `docs/product/gameplay/maps-and-travel.md` is not created. No route-planning engine and no coordinate schema are proposed as rules.
 
 A prose map does not create an executable route. A bodiless world does not have to use Euclidean meters.
 

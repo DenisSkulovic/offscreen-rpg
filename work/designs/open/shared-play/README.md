@@ -7,3 +7,6 @@ Shared campaigns are part of the long-term vision, and Admin reasoning must not 
 Do not implement shared decision resolution from this note. The longer unsettled study is [shared-story collaboration](shared-story-collaboration.md). A canonical page may point here. It must not paraphrase these gaps as accepted rules. Simultaneous consent cases stay Proposed in [the consent and resolution matrix](CONSENT-AND-RESOLUTION-MATRIX.md).
 
 Related stress tests that stay proposed: [Player 360](../../../../docs/product/admin/player-360-and-support.md), [LiveOps shared-world compatibility](../../../../docs/product/admin/gameplay-and-liveops.md).
+
+
+[Retained autonomy research](../../../../research/product-reality/DOMAIN-COVERAGE-2026-11-18.md#autonomy-and-agency) preserves the optional timed-response question: per-published-decision explicit consent, exact allowed option, versioned revocation and manual-versus-expiry arbitration at the same authority boundary; stale/invalid choices hold. Group consent is independently unratified; solo first remains selected. No historic deadline is a universal rule.

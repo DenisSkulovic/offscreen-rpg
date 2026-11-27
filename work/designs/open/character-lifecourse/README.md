@@ -4,7 +4,7 @@
 
 **Reader question:** What lasting change is already required, and which choices about growth, injury, death or irreversible loss, aging, form, return, and story ending stay inside one world?
 
-This page is the unratified map for that question. The [gameplay domain coverage catalogue](../gameplay-domain-coverage/README.md#progression-and-fate) keeps the coverage classification and leaves unanswered whether a lasting bodily change should become a typed condition. Selected promises stay on the headings named below. `docs/product/gameplay/character-life-and-progression.md` is not created.
+This page is the unratified map for that question. The [historical domain research](../../../../research/product-reality/DOMAIN-COVERAGE-2026-11-18.md#domain-questions) retains the coverage classification. This investigation owns whether lasting change needs a typed condition rather than a continuity constraint. Selected promises stay on the headings named below. `docs/product/gameplay/character-life-and-progression.md` is not created.
 
 Consequences remain real. Hit points, fatigue, aging, skill trees, and disease are ruleset content when a world admits them. A missing applicable Strength for a microbe is not an engineering bug. A wound example is not a universal damage track. Death is not selected because a scenario mentions loss.
 

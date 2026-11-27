@@ -1,0 +1,25 @@
+# Gameplay domain coverage | retained questions
+
+Historical research, not product authority or a selected implementation. [Original catalogue](https://github.com/DenisSkulovic/offscreen-rpg/blob/ca098e1ea250b38dc1ebb59288220134c4210807/work/designs/open/gameplay-domain-coverage/README.md) preserved unchanged at retirement 2026-11-27. DOC32–36 recorded Done for documentation and question ownership, not mechanics. Current [vision](../../docs/product/foundations/vision.md), [rules](../../docs/product/gameplay/rules.md), [continuity](../../docs/product/gameplay/continuity.md), [time/autonomy](../../docs/product/gameplay/time-and-autonomy.md) and [worlds](../../docs/product/gameplay/worlds-and-characters.md) govern selected meaning. D&D is optional authored content; solo first, party a later aspiration. No universal body, currency, employment, map, combat or progression system.
+
+## Domain questions
+
+- [Livelihood](../../work/designs/open/livelihood-economy/README.md): shared resource names versus ruleset-defined quantities, prices/employers and admitted labor. A chemical exchange need not imply coins.
+- [Character lifecourse](../../work/designs/open/character-lifecourse/README.md): typed conditions versus durable continuity, form applicability, growth/loss/ending; absent ability is not zero or unlimited capability.
+- [Spatial play](../../work/designs/open/spatial-play/README.md): minimal interrupted-journey representation, abstract/nonmetric connection, no universal linear travel interpolation or coordinate requirement.
+- [Shared play](../../work/designs/open/shared-play/README.md): conflicting intentions, group pause, funding and consent remain unsettled. Player count grants no authority.
+- [Data lifecycle](../../work/designs/open/player-data-lifecycle/README.md): distinct from fiction limits; no export API, jurisdiction or raw-prompt permission follows.
+
+## Social relationships
+
+Product owner with Storyteller and Game Authority: decide when recognition, debt, promise, allegiance or other relation merits durable identity and what representation/admission is sufficient. Test omitted and falsely promoted relations, identity continuity, attributed rumor, perspective and future recall; no universal friendship score, trust meter or population simulation. A repeated chemical recognition may matter without human social attributes. Ordinary implied crowds need not materialize. Canonical continuity owns selected identity; [semantic middle research](README.md) and [playability probes](PLAYABILITY-EXPERIMENTS-2026-11-18.md) own experimental evidence. Revisit when semantic admission and retrieval contracts are being designed.
+
+## Autonomy and agency
+
+GM03/GM07 narrow Done receipts do not select general standing life or universal timed decisions. For recurring routines compare accepted-plan machinery, bounded authorization, iteration identity, stop on decision/hold, earned effects only. For timed responses compare explicit per-published-decision consent, exact option, versioned revocation, manual response versus expiry under one transaction, stale/invalid hold and no fictional time merely for deliberation. Historical three 600-fictional-second waits and 20-real-minute deadline are fixtures only. [Convergence research](../agent-practice/BACKLOG-CONVERGENCE-2026-11-18.md) preserves evidence. Meaningful agency under bounded choices, omitted reasonable intentions and offscreen value versus waiting tax are [human evaluation questions](PLAYABILITY-EXPERIMENTS-2026-11-18.md), not mandatory new systems. Product owner selects scope with relevant authority owners before implementation.
+
+## Content policy
+
+Product owner and legal reviewer must decide whether and where to ratify player-facing fiction limits, age/rating rules and enforcement boundaries before public release. No selected rating or ban follows from the historical catalogue. The proposed [staff trust page](../../docs/product/admin/commercial-and-trust.md) is not a gameplay content code; [provenance and rights](../../work/designs/open/content-provenance-and-rights/README.md) concerns source rights, not moderation authority. Franchise memory is not supplied canon. Abstract, tragic or unusual protagonist examples do not establish a complete content policy. Retain this as an open question; no premature legal or mechanic decision.
+
+Original source observations at b3113814 concerning applicableAbilities and absent health are historical, not current source proof. Original full coverage table and counterexamples remain available at immutable provenance. No new canonical owner or implementation dispatch.
