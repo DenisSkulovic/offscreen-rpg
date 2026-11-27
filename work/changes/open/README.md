@@ -2,7 +2,7 @@
 
 ## Agent Core E1 | current sprint (2026-11-27)
 
-[Eight Changes](agent-core-monorepo-map/README.md) implement the accepted E1 foundation. Independent review passed AC01–AC07 at the reviewed SHA; targeted confirmation of localized corrections and explicit named commission pending; the group owns dependency scheduling and joint qualification.
+[Eight Changes](agent-core-monorepo-map/README.md) implement the accepted E1 foundation. Final independent READY (all eight) and owner-commissioned for construction/assigned offline proof; the group owns dependency scheduling and joint qualification.
 
 ## Developer observability | current sprint (2026-11-27)
 

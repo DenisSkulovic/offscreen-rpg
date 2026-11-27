@@ -588,3 +588,39 @@ No constituent Change merges directly to main.
 **Evidence limitations:** this was a remote, read-only source review. I did not inspect active local WSL worktrees, execute the plan guard, install dependencies, compile the proposed package, run tests, build images or contact Temporal. Existing experimental evidence was inspected through repository records rather than independently reproduced. The review is bound to the exact SHA above, not uncommitted local changes.
 
 **Final judgment:** this is a strong, actionable implementation batch. Its planning has reached the point where development should proceed. Correct AC08's offline proof boundary in parallel with construction, record the deferred findings, and move forward. Another comprehensive planning cycle would be disproportionate to the remaining defect.
+
+
+## Targeted independent re-review | 2026-11-27
+
+Custodian transcription of the owner-supplied independent reviewer report, with layout normalized and findings/evidence summarized; original review above is unchanged. Repository `DenisSkulovic/offscreen-rpg`, branch main. Original review `7b90ad10119fb300e04beaf35c8069205e1b12fd`; corrected reviewed candidate [`96f0a26904a6a6e1fb07dfac0ccad618ea634ab2`](https://github.com/DenisSkulovic/offscreen-rpg/commit/96f0a26904a6a6e1fb07dfac0ccad618ea634ab2); R10 architecture candidate unchanged. Reviewer verified one intervening commit, 25 changed documentation/packet files, zero executable-source changes, and reverified main at completion. See [revision comparison](https://github.com/DenisSkulovic/offscreen-rpg/compare/7b90ad10119fb300e04beaf35c8069205e1b12fd...96f0a26904a6a6e1fb07dfac0ccad618ea634ab2). Original unaffected G0–G7 evidence and task simulations reused. No new architecture defense.
+
+**Independent verdict: READY — FULL BATCH.** Zero unresolved Critical/High; all five original findings addressed in planning. Implementation and native qualification are NOT RUN.
+
+| Finding | Review conclusion | Evidence and remaining obligation |
+| --- | --- | --- |
+| E1-IR-H01 High | Closed; PASS | AC08 T05, SOURCE-MAP and PROOF agree: remove legacy image-closure Docker test entirely from offline gate (skip flag does not cover second test); keep deterministic warm-path, exact baseline/candidate closure, four-app build/typecheck and native proof. Separate authorization and SHA-bound isolated image provenance if release-image execution is ever selected. |
+| E1-IR-M01 Medium | Selected correction implementation-ready; PASS | AC01 T02 and source map assign structural five-family manifest classification without filesystem existence checks, including deletion; flat/grouped manifests true, ordinary source, README, unrelated deeper and unknown-family manifests false for full-rebuild predicate only. Existing `requiresFullImageRebuild` source and warm-path regression route inspected; correction not yet executed. |
+| E1-IR-M02 Medium | Fixture and native proof coherent; PASS | AC07 `E1_UNGRANTED_TOOL` researcher fixture deliberately requests valid readDocument with empty requestedTools; AC08 asserts denied, one physical model call, zero scheduled and physical tool Activities. AC05 selection and AC06 sticky denial unchanged; no new dependency. NOT RUN. |
+| E1-IR-M03 Medium | Repair ownership resolved; PASS | Acceptance lead retains failed evidence, obtains explicit bounded repair commission through existing design-branch lifecycle, reruns affected proof at corrected SHA; material contradictions return to planner. No direct main repair or waiver. |
+| E1-IR-L01 Low | Corrected; PASS | All eight guard examples now include `--design agent-core-monorepo-map`; actual expectedDesignTarget rejects inappropriate target. |
+
+Reviewed permanent findings preservation: PASS. `docs/technical/platform/agent-core.md` retains H01/M02/M03, original architecture findings and residual proof; `packages/README.md` retains M01 and correction/proof ownership; `scripts/repo-tools/README.md` retains grouped scanner/classification findings; original verdict above retains provenance. No substantive finding discarded or falsely represented as implemented.
+
+| Gate | Final | Basis |
+| --- | --- | --- |
+| G0 Repository/authority | PASS | HEAD reverified |
+| G1 Source truth | PASS | Affected source reinspected |
+| G2 Frozen decisions | PASS | Reused; affected interfaces checked |
+| G3 Child contexts | PASS | Corrected cards reviewed |
+| G4 Parent dispatch | PASS | All branch guards checked |
+| G5 Dependencies/concurrency | PASS | Reused; expanded write ownership checked |
+| G6 Assigned proof | PASS | H01 closed; new negative assigned |
+| G7 Cost/closure | PASS | Repair and archival confirmed |
+
+All eight READY, 22 tasks, no further planning iteration required. AC01/02/03 immediately eligible after commission; AC04 after AC03; AC05 after AC03/04; AC06 after AC03–05; AC07 after AC03; AC08 after AC01–07. Three initial coordinators; dispatch per dependency, not synchronized waves. All constituent joins target `implementation/agent-core-monorepo-map`. Main integration requires actual mandatory joint proof and separate owner authorization.
+
+Reviewer limits: remote, read-only impact review; no local WSL worktree inspection, plan guard, compilation, Docker or native Temporal qualification. No reviewer repository mutations. Original verdict preserved; supplementary verdict delivered to owner for authorized custodian persistence. Owner commission separate from reviewer approval. Reviewer conclusion: release AC01–AC08; planning complete.
+
+### Owner commission (2026-11-27)
+
+After receiving the targeted verdict above, owner explicitly directed: “Okay, so lets prepare everything and release the change packets for implementation”. This commissions AC01–AC08 under the reviewed E1 construction/offline scope, with the stated source prerequisites and existing lifecycle. No authorization for live Temporal, real providers, Docker execution, production activation, spending, unassigned destructive operations or final merge to main. Custodian persists this release and creates `implementation/agent-core-monorepo-map` from the resulting verified main release commit (reviewed parent `96f0a26904a6a6e1fb07dfac0ccad618ea634ab2`); no branch or code execution is claimed by this receipt. Actual branch creation, clean-worktree check and plan guards are local custodian actions.

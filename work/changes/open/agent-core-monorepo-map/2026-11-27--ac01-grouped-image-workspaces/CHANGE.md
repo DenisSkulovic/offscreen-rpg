@@ -1,10 +1,10 @@
 # AC01 | Grouped workspace image and sync compatibility
 
-**State:** READY (reviewed scope; selected small refinement pending impact confirmation)
+**State:** READY; owner-commissioned
 
 **Kind:** implementation
 
-**Target:** `implementation/agent-core-monorepo-map`. **Source baseline:** `1cf22fe0f512b5dd92b5cedaa2d35a3fe27cee7c` (main). Reviewed R10 `5ea13cc6ac6ade8c3909acbecd54a039ceeb17fe`. The custodian must persist the exact independent verdict and selected permanent contracts before commissioning; recheck actual latest target and unrelated worktrees. No paid/live/destructive permission. [Group schedule](../README.md).
+**Target:** `implementation/agent-core-monorepo-map`. **Source baseline:** `1cf22fe0f512b5dd92b5cedaa2d35a3fe27cee7c` (main). Reviewed R10 `5ea13cc6ac6ade8c3909acbecd54a039ceeb17fe`. Final readiness confirmed at `96f0a26904a6a6e1fb07dfac0ccad618ea634ab2`; [review and owner commission](../READINESS.md#targeted-independent-re-review--2026-11-27). Recheck actual latest target, plan guard and unrelated worktrees before dispatch. No paid/live/destructive permission. [Group schedule](../README.md).
 
 ## Outcome and authority
 
@@ -14,7 +14,7 @@ Existing flat and grouped leaf workspace manifests participate in the same image
 
 ## Implementation first-screen brief
 
-2 tasks; 5–10 min active implementation, excluding dependency installation and joint proof. Prerequisites: **None**. Parent reads this front door and [TASKS](TASKS.md), then first eligible card and its named anchors only. Use the [group readiness disposition](../README.md#readiness-disposition) and await explicit named commission; verify any pending impact confirmation before dispatch of its affected edits. Source postcondition and assigned focused checks; AC08 owns full joint proof. [PROOF](PROOF.md) owns assigned checks. No auto-next; one coordinator and worktree per Change.
+2 tasks; 5–10 min active implementation, excluding dependency installation and joint proof. Prerequisites: **None**. Parent reads this front door and [TASKS](TASKS.md), then first eligible card and its named anchors only. The [group readiness disposition](../README.md#readiness-disposition) records the full-batch commission; dispatch only after this Change’s prerequisites hold. No additional owner approval or review required for unchanged scope. Source postcondition and assigned focused checks; AC08 owns full joint proof. [PROOF](PROOF.md) owns assigned checks. No auto-next; one coordinator and worktree per Change.
 
 ## Planned specification and implementation delta | planned-impact.v1
 
@@ -29,7 +29,7 @@ Write ownership is the named T-ID files; no sibling file writes except parent-ow
 
 ## Handoff and closure
 
-When explicitly commissioned: linked Change worktree from latest verified `implementation/agent-core-monorepo-map`; run `node scripts/repo-tools/change-branch-guard.mjs --change AC01 --target implementation/agent-core-monorepo-map --design agent-core-monorepo-map` before writes. Parent executes selected tasks, records source/assigned checks, exact SHA and outstanding proof. Stop on material contradiction or failed assigned gate; no unapproved live operations. When assigned Change gate passes, reconcile durable knowledge, complete P/T/C/Related ledger with observed evidence, archive this leaf in same commission, commit closure, integrate under target lock and verify archive present/open absent before reporting. AC08 owns joint acceptance; no constituent main merge. No false PASS; if assigned gate fails keep worktree. No new required review for Medium/Low findings. Follow current AGENTS and change lifecycle, not historical packet examples.
+Owner-commissioned: linked Change worktree from latest verified `implementation/agent-core-monorepo-map`; run `node scripts/repo-tools/change-branch-guard.mjs --change AC01 --target implementation/agent-core-monorepo-map --design agent-core-monorepo-map` before writes. Parent executes selected tasks, records source/assigned checks, exact SHA and outstanding proof. Stop on material contradiction or failed assigned gate; no unapproved live operations. When assigned Change gate passes, reconcile durable knowledge, complete P/T/C/Related ledger with observed evidence, archive this leaf in same commission, commit closure, integrate under target lock and verify archive present/open absent before reporting. AC08 owns joint acceptance; no constituent main merge. No false PASS; if assigned gate fails keep worktree. No new required review for Medium/Low findings. Follow current AGENTS and change lifecycle, not historical packet examples.
 
 ## Reconciliation ledger (complete before Done)
 
