@@ -1,20 +1,20 @@
 # Technical Documentation Renewal | current-sprint planning group
 
-Repository `DenisSkulovic/offscreen-rpg`. Accepted E1 [Design](../../../designs/open/technical-documentation-renewal/README.md), independently DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`. Main refreshed at `a28693dcefe80a3242a870ed03a6c144b47f1ac7`; prior reviewed SHA unchanged in authority. Planned integration target `implementation/technical-documentation-renewal`; no branch created, queue selected, or work commissioned. All partitions are current planning scope, not backlog. Group owns operational register; only linked leaves actually exist. Candidate partition count may change with source investigation; do not execute a row without a prepared packet and readiness/commission.
+Repository `DenisSkulovic/offscreen-rpg`. Accepted E1 [Design](../../../designs/open/technical-documentation-renewal/README.md), independently DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`. Main refreshed at `4b621ec9708361a2304efdcff4d34bb7da2b6c88`; prior reviewed SHA unchanged in authority. Planned integration target `implementation/technical-documentation-renewal`; no branch created, queue selected, or work commissioned. All partitions are current planning scope, not backlog. Group owns operational register; only linked leaves actually exist. Candidate partition count may change with source investigation; do not execute a row without a prepared packet and readiness/commission.
 
 ## Change register
 
 | ID | Outcome | Prerequisite / coordination | Standing |
 | --- | --- | --- | --- |
 | [TD01](2026-11-27--td01-developer-platform/CHANGE.md) | Developer platform (5 pages) | None; active ownership fence | Proposed — detailed first-batch packet authored; readiness pending |
-| TD02 | Topology/deployment (3 pages) | None; active ownership fence | Planning outstanding — no packet or dispatch |
+| [TD02](2026-11-27--td02-topology-deployment/CHANGE.md) | Topology/deployment (3 pages) | None; active ownership fence | Proposed — third-batch packet authored; readiness pending |
 | [TD03](2026-11-27--td03-persistence-primitives/CHANGE.md) | Persistence/reusable primitives (3 pages) | None; M04 | Proposed — second-batch packet authored; readiness pending |
 | [TD04](2026-11-27--td04-game-engine/CHANGE.md) | Engine (8 pages) | PD02 transfer facts frozen before dispatch; M01 | Proposed — second-batch packet authored; readiness pending |
 | [TD05](2026-11-27--td05-storyteller-architecture/CHANGE.md) | Storyteller (9 pages) | PD01/PD02/PD05 transfer facts frozen before dispatch | Proposed — second-batch packet authored; readiness pending |
-| TD06 | Client/API (10 pages) | PD04 transfer facts frozen before dispatch | Planning outstanding — no packet or dispatch |
-| TD07 | Admin/trust/spend (7 pages) | PD06 transfer facts frozen before dispatch; M04 | Planning outstanding — no packet or dispatch |
-| TD08 | Application evidence/lab (7 pages) | Other transfer facts frozen before dispatch | Planning outstanding — no packet or dispatch |
-| TD10 | Technical integration (index, shared maps, STATUS) | TD01–TD08; M02/M03; transfer completeness | Planning outstanding — no packet or dispatch |
+| [TD06](2026-11-27--td06-client-api/CHANGE.md) | Client/API (10 pages) | PD04 transfer facts frozen before dispatch | Proposed — third-batch packet authored; readiness pending |
+| [TD07](2026-11-27--td07-admin-trust-spend/CHANGE.md) | Admin/trust/spend (7 pages) | PD06 scoped source facts frozen; M04 | Proposed — third-batch packet authored; readiness pending |
+| [TD08](2026-11-27--td08-application-evidence-lab/CHANGE.md) | Application evidence/lab (7 pages) | PD06 scoped redacted diagnostic evidence; no policy transfer | Proposed — third-batch packet authored; readiness pending |
+| [TD10](2026-11-27--td10-technical-integration/CHANGE.md) | Technical integration (index, shared maps, STATUS) | TD01–TD08; M02/M03; transfer completeness | Proposed — third-batch packet authored; readiness pending |
 
 TD09 is a protected NO-OP disposition for seven active foundation/native pages, not an executable Change.
 
@@ -22,9 +22,9 @@ TD09 is a protected NO-OP disposition for seven active foundation/native pages, 
 
 Separate Change worktrees join only their design branch using target lock; archive each leaf before reporting completion when its gate passes. Parallel preparation of both groups and disjoint domain edits permitted after commission. Shared source/contract owners and actual in-flight writes protected; recheck on dispatch. Technical group owns root README, docs router, architecture/shared source maps and STATUS at TD10; product group owns product index at PD07. Product removal of unique implementation facts requires a technical/source successor on actual main, not just another branch; preserve original until successor exists. Freeze transfer mappings during planning. Technical final integration first, then product final integration; no circular dependency. Joint acceptance NOT RUN. No live permission, runtime edits or new proof.
 
-## Frozen transfer subset (batches 1–2)
+## Frozen transfer subset (batches 1–3)
 
-All source headings are in the corresponding existing product domain. Technical destinations retain exact scope and provenance. PD07 verifies each destination on actual main before removing its source paragraph; TD10 verifies technical survivors. Other UI/staff/scenario transfers remain to be frozen in subsequent planning. Do not remove unmatched unique facts.
+All source headings are in the corresponding existing product domain. Technical destinations retain exact scope and provenance. PD07 verifies each destination on actual main before removing its source paragraph; TD10 verifies technical survivors. UI transfers below complete the selected explicit set. Staff narrow realization facts below are mirrored with provenance; leave product-facing scope restrictions in place. Scenario GM07 exception remains at its existing technical owner and product reference (no move). Do not remove unmatched unique facts.
 
 | Source Change | Source page / heading | Receiver | Technical destination / heading | Fact set |
 | --- | --- | --- | --- | --- | --- |
@@ -34,7 +34,13 @@ All source headings are in the corresponding existing product domain. Technical 
 | PD02 | time-and-autonomy.md / Existing narrative rehearsal adapter | TD04 | ticks-and-tags.md / Fixed real-second scheduling and fictional time | 20 real seconds, injected wait, immediate conversation zero, mechanical-clock exclusion |
 | PD02 | continuity.md / Places, scenes and cinematic presentation; Context and cost | TD04 / TD05 | mechanics-and-capabilities.md / Opportunity boundary; context-selection-and-recall.md / Storyteller-facing memory tools | scene-frame.v1 candidate; optional provider-gated ask_memory/read_memory, snippet lead, no generic agent |
 | PD05 | profiles-and-settings.md / Current implementation boundary | TD05 | versioned-settings.md / Current adapters | editor counts, revision projection, lock/pause, offline limitations and missing policy controls |
+| PD04 | entry-and-onboarding.md / Current POC honesty | TD06 | client/interaction-contracts.md / Drafts and forms | /stories/new StoryLaunchForm; /stories/launch redirect; server presets only; legacy drafts /stories/[id]; scripted observe and continuation, no live model proof |
+| PD04 | principles.md / Demo vs live | TD06 | client/presentation-runtime.md / Source-grounded baseline | /demo authored manual-time/reset/no-sign-in/no-provider, not production time |
+| PD04 | return-and-journal.md / Scene checkpoints, review and forks | TD06 | client/living-book-poc.md / Data and command invariants | selected disjoint historical query key / no live snapshot reuse or historic offer command; not proof of implementation; retain player-facing guarantees |
+| PD06 | authority-and-governance.md / Status; player-360-and-support.md / Status; operator-workflows.md / Status | TD07 | admin/topology-and-authorization.md / Authorization claim map; admin/investigation-and-privacy.md / Relationship semantics and current single-owner source | landed access/audit, scoped player-safe reads and case anchors; OBS06/07 synthetic or disposable-grant proof only; no production support-investigator grant or full Turn Capsule disclosure |
+| PD06 | ai-engineering-and-investigation.md / Status | TD08 | observability/investigation-and-reconstruction.md / Owner map | some redacted diagnostic reads exist, not full proposed workspace, no raw prompt grant |
+| PD03 | acceptance-scenarios.md / 3. Meet the goblin (GM07 scope paragraph) | TD03 | platform/data-and-persistence.md / Implemented decision deadline; platform/execution-and-delivery.md / Implemented solo response deadline | existing narrow harmless invitation exception; retain both stable headings and product reference, never general delegation |
 
-## Planning checkpoint
+## Final planning checkpoint
 
-Eight packets authored: PD01/02/03/05 and TD01/03/04/05. Remaining PD04/06/07 and TD02/06/07/08/10 need exact investigation and integration proof; TD09 remains no-op. No Ready or dispatch; no new Design review for unchanged scope.
+All nine executable technical packets authored (TD01–TD08 and TD10). TD09 remains protected no-op. TD10 follows all eight domain joins; AC08 owns packages/README.md and final Agent Core status, OBS final acceptance also owns STATUS.md: gate only the affected shared-file tasks until those writers release custody and reconcile their integrated text; final technical join cannot overwrite their changes. TD10 owns named shared reconciliation paths, semantic retrieval M02, front doors M03, independent primitive standing M04 and transfer completeness. TD02 exclusively owns Atlas 06/10; TD04/05 own their package maps. No other shared writer. Main publication of accepted technical Design before product transfer cleanup. Proposed, not Ready or commissioned. No further Design review for unchanged scope.

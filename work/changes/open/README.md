@@ -1,6 +1,6 @@
 # Open Changes | current sprint / execution horizon
 
-**Documentation renewal E1:** [product](product-documentation-renewal/README.md) and [technical](technical-documentation-renewal/README.md) — both owner-accepted for planning; eight detailed packets PD01/02/03/05 and TD01/03/04/05 Proposed; remaining current-sprint partitions in group registers. No readiness verdict, commission, queue or branch change.
+**Documentation renewal E1:** [product](product-documentation-renewal/README.md) and [technical](technical-documentation-renewal/README.md) — both owner-accepted for planning; all sixteen detailed packets PD01–PD07 and TD01–TD08/TD10 Proposed; TD09 protected no-op; complete current-sprint batch in group registers. No readiness verdict, commission, queue or branch change.
 
 ## Agent Core E1 | current sprint (2026-11-27)
 
