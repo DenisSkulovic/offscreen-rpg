@@ -36,3 +36,5 @@ Repair15: owner approved D1 deadline candidate for review and D2/D3 isolated evi
 Repair16: exact baseline/current Git tree blob comparison, tracked existing test paths, T01 fixture write ownership and dependency-gated dispatch correction. No tests/live; outside-root reference census and final cold simulation remain pending.
 
 Repair17: persist external supervisor migration, shared constant ownership, diagnostic pending exit/receipt correction, archive verification and exact regression cases. T03/T05 task linkage updated. No tests or live; diagnostic-engine termination and outer process closure still require verification.
+
+Repair18: close selected external process containment semantics, correct plan-only runner recognition, narrow T11 generic runner cancellation/close extension, new focused test ownership and aggregate integration. Actual Linux tests/independent approval pending; no live.
