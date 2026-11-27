@@ -1,6 +1,6 @@
 # AC03 | Agent Core workspace, dependency pins and pure contracts
 
-**State:** Proposed
+**State:** READY
 
 **Kind:** implementation
 
@@ -14,7 +14,7 @@ Exactly one new active grouped workspace, five manifest-free placeholders, exact
 
 ## Implementation first-screen brief
 
-3 tasks; 8–12 min active construction; registry/lockfile wait separate. Prerequisites: **None**. Parent reads this front door and [TASKS](TASKS.md), then first eligible card and its named anchors only. Await independent packet-readiness verdict and explicit named commission. Source postcondition and assigned focused checks; AC08 owns full joint proof. [PROOF](PROOF.md) owns assigned checks. No auto-next; one coordinator and worktree per Change.
+3 tasks; 8–12 min active construction; registry/lockfile wait separate. Prerequisites: **None**. Parent reads this front door and [TASKS](TASKS.md), then first eligible card and its named anchors only. Use the [group readiness disposition](../README.md#readiness-disposition) and await explicit named commission; verify any pending impact confirmation before dispatch of its affected edits. Source postcondition and assigned focused checks; AC08 owns full joint proof. [PROOF](PROOF.md) owns assigned checks. No auto-next; one coordinator and worktree per Change.
 
 ## Planned specification and implementation delta | planned-impact.v1
 
@@ -29,7 +29,7 @@ Write ownership is the named T-ID files; no sibling file writes except parent-ow
 
 ## Handoff and closure
 
-When explicitly commissioned: linked Change worktree from latest verified `implementation/agent-core-monorepo-map`; run `node scripts/repo-tools/change-branch-guard.mjs --change AC03 --target implementation/agent-core-monorepo-map` before writes. Parent executes selected tasks, records source/assigned checks, exact SHA and outstanding proof. Stop on material contradiction or failed assigned gate; no unapproved live operations. When assigned Change gate passes, reconcile durable knowledge, complete P/T/C/Related ledger with observed evidence, archive this leaf in same commission, commit closure, integrate under target lock and verify archive present/open absent before reporting. AC08 owns joint acceptance; no constituent main merge. No false PASS; if assigned gate fails keep worktree. No new required review for Medium/Low findings. Follow current AGENTS and change lifecycle, not historical packet examples.
+When explicitly commissioned: linked Change worktree from latest verified `implementation/agent-core-monorepo-map`; run `node scripts/repo-tools/change-branch-guard.mjs --change AC03 --target implementation/agent-core-monorepo-map --design agent-core-monorepo-map` before writes. Parent executes selected tasks, records source/assigned checks, exact SHA and outstanding proof. Stop on material contradiction or failed assigned gate; no unapproved live operations. When assigned Change gate passes, reconcile durable knowledge, complete P/T/C/Related ledger with observed evidence, archive this leaf in same commission, commit closure, integrate under target lock and verify archive present/open absent before reporting. AC08 owns joint acceptance; no constituent main merge. No false PASS; if assigned gate fails keep worktree. No new required review for Medium/Low findings. Follow current AGENTS and change lifecycle, not historical packet examples.
 
 ## Reconciliation ledger (complete before Done)
 

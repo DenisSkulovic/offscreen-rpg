@@ -17,6 +17,7 @@ Test-only `mission(raw:unknown, testControl?:'hold-after-tool'|'hold-before-loop
 | invalid definition/version, actual ID mismatch, extra field modelId, duplicate/foreign tool, maxSteps 0/4, input 4097 | denied before effects, 0/0; test at least each distinct guard |
 | trusted `unknown-model` control | failed, model dispatch attempted once by plugin but provider lookup rejects; zero synthetic doGenerate success, zero tools |
 | model E1_UNKNOWN_TOOL / E1_BAD_ARGS | denied; 1 model (stop after invalid step); no unauthorized tool Activity; later text cannot turn success |
+| researcher E1_UNGRANTED_TOOL, requestedTools=[] | denied; one actual model invocation, zero scheduled or physical runSyntheticTool Activities, tool absent from advertised capability list; a valid readDocument request is still unauthorized |
 | E1_THREE_TOOLS | limit-reached; 1 model, max 2 admitted/actual valid tools; no 3rd Activity |
 | E1_TOOL maxSteps=1 | limit-reached; 1 model, 1 valid tool; no second model |
 | E1_MODEL_FAIL | failed; 1 attempted model, 0 tool, no retry |
