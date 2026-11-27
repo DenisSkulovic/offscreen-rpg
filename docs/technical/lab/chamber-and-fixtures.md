@@ -24,6 +24,10 @@
 | Definition of success | [Acceptance C01–C16](#11-verifiable-acceptance-c01c16) |
 | Alternative approaches | [Trade-offs](#12-architectural-challenges-and-decisions) |
 
+## Story response capability boundary
+
+The fixture-response predicate, its production-absence rule and its dated proof are stated once, in the [Authority, safety and cost](#9-authority-safety-and-cost) section.
+
 ## 1. Operating model
 
 The Chamber is **a developer laboratory with several execution lanes**, sharing scenario identity and evidence vocabulary, **not one giant UI or a second game engine**.

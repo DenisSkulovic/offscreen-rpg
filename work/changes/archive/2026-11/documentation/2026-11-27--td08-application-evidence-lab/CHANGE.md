@@ -1,8 +1,8 @@
 # TD08 | Application evidence and experimentation
 
-**State:** READY; owner-authorized for named dispatch. **Kind:** DOC. **Base:** `4b621ec9708361a2304efdcff4d34bb7da2b6c88` main; E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`, owner accepted 2026-11-27. **Target:** `implementation/technical-documentation-renewal`. [Accepted Design](../../../../designs/open/technical-documentation-renewal/README.md) · [Group](../README.md).
+**State:** Done — source joined to implementation/technical-documentation-renewal; joint semantic acceptance pending (PD07/TD10 and Design). **Kind:** DOC. **Base:** `4b621ec9708361a2304efdcff4d34bb7da2b6c88` main; E1 DEFENDED at `c7058958ec3f43fd37ec680d05757561d628926b`, owner accepted 2026-11-27. **Target:** `implementation/technical-documentation-renewal`. [Accepted Design](../../../../designs/open/technical-documentation-renewal/README.md) · [Group](../../../open/technical-documentation-renewal/README.md).
 
-**Release:** [group readiness and dispatch](../README.md#owner-release-and-independent-readiness); exact reviewed candidate `606de3a0a4856eb36ce275bd4bc109ea46d480c0`. Verify named assignment, actual target, branch guard, prerequisites and custody before editing.
+**Release:** [group readiness and dispatch](../../../open/technical-documentation-renewal/README.md#owner-release-and-independent-readiness); exact reviewed candidate `606de3a0a4856eb36ce275bd4bc109ea46d480c0`. Verify named assignment, actual target, branch guard, prerequisites and custody before editing.
 
 ## Implementation first-screen brief
 
@@ -37,3 +37,14 @@ Once separately Ready and commissioned, branch from verified `implementation/tec
 
 | Affected heading | Authority | Target delta / unchanged reason | Source delta and SHA | Evidence tier | Negative proof | Route update |
 | --- | --- | --- | --- | --- | --- | --- |
+| Observability owner map and 5 pages | Authority-first openings, current-realization separated from selected/proposed, folded essay invariants moved into governing sections | Editorial; stale routes corrected | Page commit cc42f3484d926ae1562d5a6ffa88e9a7126e3b8e | source-inspected | Telemetry cannot reconstruct a missing commit; interrupt has no success receipt; proposal is not a writer; metadata read grants no prompt; native charts do not mean game spans | TD10 |
+| Lab 2 pages | Current createChamber/LabRun/api-lab routes vs C01-C16 target; proof tiers single-sourced | Editorial | same | source-inspected | Fixture success is not provider quality; unknown target refused; report grants no production permission | TD10 |
+
+## Closure receipt
+
+- Page commit `cc42f3484d926ae1562d5a6ffa88e9a7126e3b8e`; paths: the seven owned pages only.
+- Checks: `git diff --check` PASS; `check_docs.py` 96 problems = baseline (no new); `docs-health.mjs` = baseline. Link health is not semantic proof. Runtime, provider, cluster proof NOT RUN.
+- Transfer fact PD06 ai-engineering Status landed at `investigation-and-reconstruction.md` Owner map ("Product status received from the AI engineering workspace"), provenance product page Status 2026-11-14.
+- Semantic answers: capture negatives in Owner map and capture sec 1/3 (receiptId null on interrupt); `ai.operation.read` is redacted diagnostics only (page opening, acceptance negative 1); current world never fills history (Reconstruction steps); retention figures stay candidates (opening, sec 6); native charts do not mean game spans (telemetry opening, sec 2); no raw SQL/prompt in logs (sec 6); missing trace does not erase history (sec 3); fixture is not provider proof (chamber Proof tiers); unknown target refused (chamber sec 9, protocol sec 8); report grants no production permission (protocol Proof tiers).
+- Heading mapping: all existing headings retained; Chamber "Story response capability boundary" body moved into sec 9, heading kept as a pointer for inbound archive anchors.
+- Deferred Medium/Low: stale `packages/application` references in other pages and Chamber section 10/protocol module sketches beyond named files are target, not verified; destination group register (custodian).
