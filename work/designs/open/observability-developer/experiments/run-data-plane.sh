@@ -29,9 +29,9 @@ PROM=""
 cleanup() {
   rc=$?
   trap - EXIT
-  if [[ -n "$PID" ]]; then docker rm -f "$PID" >/dev/null 2>&1 || true; fi
-  if [[ -n "$PROM" ]]; then docker logs "$PROM" >"$OUT/prometheus.log" 2>&1 || true; docker rm -f "$PROM" >/dev/null 2>&1 || true; fi
-  if [[ -n "$CID" ]]; then docker logs "$CID" >"$OUT/collector.log" 2>&1 || true; docker rm -f "$CID" >/dev/null 2>&1 || true; fi
+  if [[ -n "$PID" ]]; then docker rm -fv "$PID" >/dev/null 2>&1 || true; fi
+  if [[ -n "$PROM" ]]; then docker logs "$PROM" >"$OUT/prometheus.log" 2>&1 || true; docker rm -fv "$PROM" >/dev/null 2>&1 || true; fi
+  if [[ -n "$CID" ]]; then docker logs "$CID" >"$OUT/collector.log" 2>&1 || true; docker rm -fv "$CID" >/dev/null 2>&1 || true; fi
   echo "Evidence directory: $OUT"
   exit "$rc"
 }
@@ -39,6 +39,7 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 CID="$(docker create "${COMMON[@]}" --network none --memory 256m --cpus 1 -e MY_POD_IP=127.0.0.1 "$IMAGE" --config=file:/tmp/relay.yaml)"
+chmod 644 "$OUT/relay.yaml"
 docker cp "$OUT/relay.yaml" "$CID:/tmp/relay.yaml"
 docker start "$CID" >/dev/null
 cat >"$OUT/prometheus.yaml" <<'YAML'
@@ -49,6 +50,7 @@ otlp:
 scrape_configs: []
 YAML
 PROM="$(docker create "${COMMON[@]}" --network "container:$CID" --memory 512m --cpus 1 "$PROMIMAGE" --config.file=/tmp/experiment-prometheus.yaml --storage.tsdb.path=/tmp/experiment-tsdb --web.enable-otlp-receiver --web.listen-address=127.0.0.1:9090)"
+chmod 644 "$OUT/prometheus.yaml"
 docker cp "$OUT/prometheus.yaml" "$PROM:/tmp/experiment-prometheus.yaml"
 docker start "$PROM" >/dev/null
 PID="$(docker create -i "${COMMON[@]}" --network "container:$CID" --memory 128m --cpus 1 "$PYIMAGE" python3 -)"
@@ -63,14 +65,20 @@ def query(expr):
         return json.load(r)["data"]["result"]
 for attempt in range(15):
     rows=query('{__name__=~"offscreen_agent_.*"}')
-    if rows: break
+    if len(rows)>=10: break
     time.sleep(1)
 assert rows, "No application metrics"
 print(json.dumps(rows,indent=2))
 for row in rows:
     assert not any("run" in k or "trace" in k for k in row["metric"] if k!="__name__"), row
     assert float(row["value"][1]) not in (987654321,987654322,987654323),row
-assert len(rows)<=12,rows
+assert len(rows)==10,rows
+assert len([r for r in rows if r["metric"]["__name__"].endswith("_bucket")])==6,rows
+assert any(r["metric"]["__name__"].endswith("_total") and float(r["value"][1])==17 for r in rows),rows
+assert any("active" in r["metric"]["__name__"] and float(r["value"][1])==3 for r in rows),rows
+assert any(r["metric"]["__name__"].endswith("_count") and float(r["value"][1])==1 for r in rows),rows
+assert any(r["metric"]["__name__"].endswith("_sum") and abs(float(r["value"][1])-0.2)<1e-9 for r in rows),rows
+print("TARGET_INFO",json.dumps(query("target_info")))
 print("PROMETHEUS SERIES CHECK PASS")
 PY
 docker logs "$CID" >"$OUT/collector.log" 2>&1
