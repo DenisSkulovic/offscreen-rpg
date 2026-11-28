@@ -1,6 +1,6 @@
 # OBS-E2-07 | Repository-owned Grafana dashboard provisioning
 
-**Kind:** implementation. **Standing:** PLANNER-BLOCKED — exact metric/coverage contracts G1–G4; not commissioned. **Baseline:** `main` `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. **Authority:** [defended E2](<../../../../designs/open/observability-infrastructure-visibility/README.md>), [pass 02](<../../../../designs/open/observability-infrastructure-visibility/committee/pass-02.md>) at `0e731739c8a97e6e83896612acec40f89a26516f`; [selected technical direction](<../../../../../docs/technical/platform/observability-native-infrastructure.md>). See [group register](../README.md) for branch, custody, source dependencies and acceptance. Recheck exact source and target before dispatch; no remote or live permission is granted by this packet.
+**Kind:** implementation. **Standing:** PROPOSED — owner-ratified bounded scope; targeted readiness pending; not commissioned. **Baseline:** `main` `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. **Authority:** [defended E2](<../../../../designs/open/observability-infrastructure-visibility/README.md>), [pass 02](<../../../../designs/open/observability-infrastructure-visibility/committee/pass-02.md>) at `0e731739c8a97e6e83896612acec40f89a26516f`; [selected technical direction](<../../../../../docs/technical/platform/observability-native-infrastructure.md>). See [group register](../README.md) for branch, custody, source dependencies and acceptance. Recheck exact source and target before dispatch; no remote or live permission is granted by this packet.
 
 ## Outcome and boundaries
 
@@ -8,7 +8,7 @@ Eight provisioned dashboards, one native Grafana provider, stable UIDs, no UI st
 
 **Requires:** Frozen selected metric families, labels, exact panel queries and coverage rows in NATIVE-INPUTS from G1–G4 (G4b before SeaweedFS enabled). Source joins of 02–06 are acceptance dependencies, not dashboard construction prerequisites.
 
-**Exclusive write owners:** `values/profiles/dev/grafana.yaml` (new), `dashboards/{overview,kubernetes,nodes,postgres,temporal,storage,messaging-cache,observability}.json` (new), `tests/e2-dashboards.test.mjs` (new).
+**Exclusive write owners:** `values/profiles/dev/grafana.yaml` (new), `dashboards/{overview,kubernetes,nodes,postgres,temporal,storage,messaging-cache,observability}.json` (new), `tests/e2-dashboards.test.mjs` (new); narrow M03 edit of `coverage/inventory.json` panel `offscreen-overview/104` only (03 already joined).
 
 **Collisions:** Can construct independent of lifecycle; no edits to shared Prometheus overlay.
 

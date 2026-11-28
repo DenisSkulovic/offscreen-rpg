@@ -1,0 +1,1021 @@
+{
+  "status": "owner-ratified-bounded-scope-2026-11-28",
+  "base": "eb1e71a4ebe74fc2cf88359b62b2b6c6cda4b141",
+  "nativeServices": [
+    {
+      "component": "postgres",
+      "namespace": "offscreen-dev-postgres",
+      "workloadSelector": {
+        "cnpg.io/cluster": "dev-pg",
+        "app.kubernetes.io/name": "postgresql"
+      },
+      "jobs": [
+        "postgres-cnpg"
+      ],
+      "requiredFamilies": [
+        "cnpg_pg_database_size_bytes",
+        "cnpg_pg_stat_database_xact_commit",
+        "cnpg_pg_stat_database_xact_rollback",
+        "cnpg_pg_stat_database_deadlocks",
+        "cnpg_pg_stat_database_blks_hit",
+        "cnpg_pg_stat_database_blks_read",
+        "cnpg_pg_stat_database_temp_bytes",
+        "cnpg_pg_stat_database_temp_files",
+        "cnpg_backends_total",
+        "cnpg_backends_max_tx_duration_seconds",
+        "cnpg_pg_settings_setting",
+        "cnpg_collector_up",
+        "cnpg_backends_waiting_total",
+        "cnpg_collector_last_collection_error",
+        "cnpg_last_error",
+        "cnpg_last_update_timestamp",
+        "cnpg_collector_replica_mode",
+        "cnpg_pg_replication_in_recovery",
+        "cnpg_pg_replication_is_wal_receiver_up",
+        "cnpg_pg_replication_lag",
+        "cnpg_pg_replication_streaming_replicas"
+      ],
+      "panels": {
+        "offscreen-postgres/401": {
+          "promql": "up{job=\"postgres-cnpg\"} and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90)",
+          "unit": "none",
+          "interpretation": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/402": {
+          "promql": "((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Native PostgreSQL collector up; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/403": {
+          "promql": "((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Native collector collection error; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/404": {
+          "promql": "((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Native last error; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/405": {
+          "promql": "time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90)))",
+          "unit": "s",
+          "interpretation": "Seconds since exporter last update; future/clock anomaly is not healthy; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/406": {
+          "promql": "(((rate(cnpg_pg_stat_database_xact_commit{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_xact_commit{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "ops",
+          "interpretation": "Commits/s per admitted database and instance; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/407": {
+          "promql": "(((rate(cnpg_pg_stat_database_xact_rollback{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_xact_rollback{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "ops",
+          "interpretation": "Rollbacks/s per admitted database and instance; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/408": {
+          "promql": "(((rate(cnpg_pg_stat_database_deadlocks{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_deadlocks{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "ops",
+          "interpretation": "Deadlocks/s per admitted database and instance; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/409": {
+          "promql": "(((cnpg_pg_database_size_bytes{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_database_size_bytes{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "bytes",
+          "interpretation": "Database size by admitted database and instance; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/410": {
+          "promql": "(((rate(cnpg_pg_stat_database_temp_bytes{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_temp_bytes{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "Bps",
+          "interpretation": "Temporary bytes written/s; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/411": {
+          "promql": "(((rate(cnpg_pg_stat_database_temp_files{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_temp_files{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "ops",
+          "interpretation": "Temporary files created/s; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/412": {
+          "promql": "(((cnpg_backends_waiting_total{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_backends_waiting_total{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "none",
+          "interpretation": "Waiting lock-match contention indicator (not distinct sessions); missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/413": {
+          "promql": "(((cnpg_backends_max_tx_duration_seconds{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_backends_max_tx_duration_seconds{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "s",
+          "interpretation": "Maximum transaction duration in admitted client groups only; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/414": {
+          "promql": "sum by (job,instance,pod) ((((cnpg_backends_total{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_backends_total{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90)))",
+          "unit": "none",
+          "interpretation": "Admitted backends only; lower-bound subset, not all connections; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/415": {
+          "promql": "(((cnpg_pg_settings_setting{job=\"postgres-cnpg\",name=\"max_connections\"}) and (time() - timestamp(cnpg_pg_settings_setting{job=\"postgres-cnpg\",name=\"max_connections\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "none",
+          "interpretation": "Actual configured max_connections; not hardcoded; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/416": {
+          "promql": "sum by (job,instance,pod) ((((cnpg_backends_total{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_backends_total{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))) / on(job,instance,pod) (((((cnpg_pg_settings_setting{job=\"postgres-cnpg\",name=\"max_connections\"}) and (time() - timestamp(cnpg_pg_settings_setting{job=\"postgres-cnpg\",name=\"max_connections\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))) > 0)",
+          "unit": "percentunit",
+          "interpretation": "Admitted backend count divided by actual configured limit; lower-bound occupancy, never whole-instance saturation; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/417": {
+          "promql": "((((rate(cnpg_pg_stat_database_blks_hit{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_blks_hit{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))) / ((((((rate(cnpg_pg_stat_database_blks_hit{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_blks_hit{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))) + ((((rate(cnpg_pg_stat_database_blks_read{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_blks_read{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90)))) > 0)",
+          "unit": "percentunit",
+          "interpretation": "PostgreSQL buffer hit fraction per database and instance, positive denominator only (not OS cache); missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/418": {
+          "promql": "(((cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "none",
+          "interpretation": "Instance recovery indicator; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/419": {
+          "promql": "(((cnpg_pg_replication_streaming_replicas{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_streaming_replicas{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "none",
+          "interpretation": "Observed streaming replica connections; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/420": {
+          "promql": "(((cnpg_collector_replica_mode{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_replica_mode{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "unit": "none",
+          "interpretation": "Cluster replica-mode indicator; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/421": {
+          "promql": "(((cnpg_pg_replication_lag{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_lag{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90)) and on(job,instance) ((((cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1)",
+          "unit": "s",
+          "interpretation": "Lag only for instance in recovery; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-postgres/422": {
+          "promql": "(((cnpg_pg_replication_is_wal_receiver_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_is_wal_receiver_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90)) and on(job,instance) ((((cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1)",
+          "unit": "none",
+          "interpretation": "WAL receiver state only for instance in recovery; missing/stale unknown, never synthetic zero."
+        }
+      },
+      "coverage": "enabled",
+      "reason": ""
+    },
+    {
+      "component": "temporal",
+      "namespace": "offscreen-dev-temporal",
+      "workloadSelector": {
+        "app.kubernetes.io/instance": "temporal",
+        "app.kubernetes.io/name": "temporal",
+        "app.kubernetes.io/component": [
+          "frontend",
+          "history",
+          "matching",
+          "worker"
+        ]
+      },
+      "jobs": [
+        "temporal-server"
+      ],
+      "requiredFamilies": [
+        "service_requests",
+        "service_error_with_type",
+        "persistence_requests",
+        "persistence_sql_in_use",
+        "service_latency_bucket",
+        "service_latency_count",
+        "service_latency_sum",
+        "persistence_latency_bucket",
+        "persistence_latency_count",
+        "persistence_latency_sum"
+      ],
+      "panels": {
+        "offscreen-temporal/501": {
+          "promql": "up{job=\"temporal-server\"} and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)",
+          "unit": "none",
+          "interpretation": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-temporal/502": {
+          "promql": "((rate(service_requests{job=\"temporal-server\"}[5m])) and (time() - timestamp(service_requests{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Platform-namespace server requests/s by role/instance/operation; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-temporal/503": {
+          "promql": "((rate(service_error_with_type{job=\"temporal-server\"}[5m])) and (time() - timestamp(service_error_with_type{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Observed typed server errors/s in admitted platform namespaces; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-temporal/504": {
+          "promql": "((rate(persistence_requests{job=\"temporal-server\"}[5m])) and (time() - timestamp(persistence_requests{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Persistence requests/s in admitted platform namespaces; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-temporal/505": {
+          "promql": "((persistence_sql_in_use{job=\"temporal-server\"}) and (time() - timestamp(persistence_sql_in_use{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "SQL connections in use by role/instance/db_kind; do not sum overlapping pool identities; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-temporal/506": {
+          "promql": "histogram_quantile(0.95, sum by (job,instance,pod,role,exported_namespace,operation,service_name,type,le) (((rate(service_latency_bucket{job=\"temporal-server\"}[5m])) and (time() - timestamp(service_latency_bucket{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)))) and on(job,instance,pod,role,exported_namespace,operation,service_name,type) ((sum by (job,instance,pod,role,exported_namespace,operation,service_name,type) (((rate(service_latency_count{job=\"temporal-server\"}[5m])) and (time() - timestamp(service_latency_count{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)))) > 0)",
+          "unit": "s",
+          "interpretation": "Server request p95, seconds, admitted platform namespaces only; observed roles only; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-temporal/507": {
+          "promql": "histogram_quantile(0.95, sum by (job,instance,pod,role,exported_namespace,operation,service_name,type,le) (((rate(persistence_latency_bucket{job=\"temporal-server\"}[5m])) and (time() - timestamp(persistence_latency_bucket{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)))) and on(job,instance,pod,role,exported_namespace,operation,service_name,type) ((sum by (job,instance,pod,role,exported_namespace,operation,service_name,type) (((rate(persistence_latency_count{job=\"temporal-server\"}[5m])) and (time() - timestamp(persistence_latency_count{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)))) > 0)",
+          "unit": "s",
+          "interpretation": "Persistence p95, seconds, admitted platform namespaces only; observed roles only; missing/stale unknown, never synthetic zero."
+        }
+      },
+      "coverage": "enabled",
+      "reason": ""
+    },
+    {
+      "component": "rabbitmq",
+      "namespace": "offscreen-dev-rabbitmq",
+      "workloadSelector": {
+        "app.kubernetes.io/name": "rabbitmq",
+        "app.kubernetes.io/component": "rabbitmq"
+      },
+      "jobs": [
+        "rabbitmq"
+      ],
+      "requiredFamilies": [
+        "rabbitmq_queue_messages",
+        "rabbitmq_queue_messages_ready",
+        "rabbitmq_queue_messages_unacked",
+        "rabbitmq_connections",
+        "rabbitmq_queue_messages_published_total",
+        "rabbitmq_queue_messages_delivered_total",
+        "rabbitmq_queue_messages_acked_total",
+        "rabbitmq_alarms_free_disk_space_watermark",
+        "rabbitmq_alarms_memory_used_watermark",
+        "rabbitmq_process_resident_memory_bytes",
+        "rabbitmq_process_open_fds",
+        "rabbitmq_process_max_fds"
+      ],
+      "panels": {
+        "offscreen-messaging-cache/710": {
+          "promql": "up{job=\"rabbitmq\"} and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90)",
+          "unit": "none",
+          "interpretation": "Current scrape state only; missing or stale unknown."
+        },
+        "offscreen-messaging-cache/711": {
+          "promql": "((rabbitmq_queue_messages{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Total queue depth (ready plus unacknowledged); current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/712": {
+          "promql": "((rabbitmq_queue_messages_ready{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_ready{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Ready messages; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/713": {
+          "promql": "((rabbitmq_queue_messages_unacked{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_unacked{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Unacknowledged messages; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/714": {
+          "promql": "((rabbitmq_connections{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_connections{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Open connections; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/715": {
+          "promql": "((rate(rabbitmq_queue_messages_published_total{job=\"rabbitmq\"}[5m])) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_published_total{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Published messages per second; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/716": {
+          "promql": "((rate(rabbitmq_queue_messages_delivered_total{job=\"rabbitmq\"}[5m])) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_delivered_total{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Automatic-ack deliveries per second; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/717": {
+          "promql": "((rate(rabbitmq_queue_messages_acked_total{job=\"rabbitmq\"}[5m])) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_acked_total{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Acknowledged messages per second; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/718": {
+          "promql": "((rabbitmq_alarms_free_disk_space_watermark{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_alarms_free_disk_space_watermark{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Free-disk-space alarm 1 active / 0 inactive; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/719": {
+          "promql": "((rabbitmq_alarms_memory_used_watermark{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_alarms_memory_used_watermark{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Memory alarm 1 active / 0 inactive; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/720": {
+          "promql": "((rabbitmq_process_resident_memory_bytes{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_process_resident_memory_bytes{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "bytes",
+          "interpretation": "Resident memory; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/721": {
+          "promql": "((rabbitmq_process_open_fds{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_process_open_fds{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Open file descriptors; current scrape and metric required; missing/stale unknown."
+        },
+        "offscreen-messaging-cache/722": {
+          "promql": "((rabbitmq_process_max_fds{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_process_max_fds{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "File descriptor limit; current scrape and metric required; missing/stale unknown."
+        }
+      },
+      "coverage": "enabled",
+      "reason": ""
+    },
+    {
+      "component": "loki",
+      "namespace": "offscreen-dev-observability",
+      "workloadSelector": {
+        "app.kubernetes.io/instance": "obs-loki",
+        "app.kubernetes.io/name": "loki",
+        "app.kubernetes.io/component": "single-binary"
+      },
+      "jobs": [
+        "loki"
+      ],
+      "requiredFamilies": [
+        "loki_ingester_memory_chunks",
+        "loki_ingester_flush_queue_length",
+        "loki_ingester_chunks_flush_failures_total",
+        "loki_ingester_wal_bytes_in_use"
+      ],
+      "panels": {
+        "offscreen-observability/810": {
+          "promql": "up{job=\"loki\"} and (time() - timestamp(up{job=\"loki\"}) <= 90)",
+          "unit": "none",
+          "interpretation": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/811": {
+          "promql": "((loki_ingester_memory_chunks{job=\"loki\"}) and (time() - timestamp(loki_ingester_memory_chunks{job=\"loki\"}) <= 90)) and on(job,instance) ((up{job=\"loki\"} == 1) and (time() - timestamp(up{job=\"loki\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Chunks in memory; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/812": {
+          "promql": "((loki_ingester_flush_queue_length{job=\"loki\"}) and (time() - timestamp(loki_ingester_flush_queue_length{job=\"loki\"}) <= 90)) and on(job,instance) ((up{job=\"loki\"} == 1) and (time() - timestamp(up{job=\"loki\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Flush queue length (series pending); missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/813": {
+          "promql": "((rate(loki_ingester_chunks_flush_failures_total{job=\"loki\"}[5m])) and (time() - timestamp(loki_ingester_chunks_flush_failures_total{job=\"loki\"}) <= 90)) and on(job,instance) ((up{job=\"loki\"} == 1) and (time() - timestamp(up{job=\"loki\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Flush failures/s; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/814": {
+          "promql": "((loki_ingester_wal_bytes_in_use{job=\"loki\"}) and (time() - timestamp(loki_ingester_wal_bytes_in_use{job=\"loki\"}) <= 90)) and on(job,instance) ((up{job=\"loki\"} == 1) and (time() - timestamp(up{job=\"loki\"}) <= 90))",
+          "unit": "bytes",
+          "interpretation": "WAL recovery bytes in use; missing/stale unknown, never synthetic zero."
+        }
+      },
+      "coverage": "enabled",
+      "reason": ""
+    },
+    {
+      "component": "tempo",
+      "namespace": "offscreen-dev-observability",
+      "workloadSelector": {
+        "app.kubernetes.io/instance": "obs-tempo",
+        "app.kubernetes.io/name": "tempo"
+      },
+      "jobs": [
+        "tempo"
+      ],
+      "requiredFamilies": [
+        "tempo_distributor_traces_per_batch_count",
+        "tempo_distributor_traces_per_batch_sum"
+      ],
+      "panels": {
+        "offscreen-observability/820": {
+          "promql": "up{job=\"tempo\"} and (time() - timestamp(up{job=\"tempo\"}) <= 90)",
+          "unit": "none",
+          "interpretation": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/821": {
+          "promql": "((rate(tempo_distributor_traces_per_batch_count{job=\"tempo\"}[5m])) and (time() - timestamp(tempo_distributor_traces_per_batch_count{job=\"tempo\"}) <= 90)) and on(job,instance) ((up{job=\"tempo\"} == 1) and (time() - timestamp(up{job=\"tempo\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Distributor observed batches/s, not durable ingest; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/822": {
+          "promql": "((rate(tempo_distributor_traces_per_batch_sum{job=\"tempo\"}[5m])) and (time() - timestamp(tempo_distributor_traces_per_batch_sum{job=\"tempo\"}) <= 90)) and on(job,instance) ((up{job=\"tempo\"} == 1) and (time() - timestamp(up{job=\"tempo\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Distributor observed traces/s in batches, not durable ingest; missing/stale unknown, never synthetic zero."
+        }
+      },
+      "coverage": "enabled",
+      "reason": ""
+    },
+    {
+      "component": "grafana",
+      "namespace": "offscreen-dev-observability",
+      "workloadSelector": {
+        "app.kubernetes.io/instance": "obs-grafana",
+        "app.kubernetes.io/name": "grafana"
+      },
+      "jobs": [
+        "grafana"
+      ],
+      "requiredFamilies": [
+        "grafana_http_request_in_flight",
+        "grafana_api_response_status_total"
+      ],
+      "panels": {
+        "offscreen-observability/830": {
+          "promql": "up{job=\"grafana\"} and (time() - timestamp(up{job=\"grafana\"}) <= 90)",
+          "unit": "none",
+          "interpretation": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/831": {
+          "promql": "((grafana_http_request_in_flight{job=\"grafana\"}) and (time() - timestamp(grafana_http_request_in_flight{job=\"grafana\"}) <= 90)) and on(job,instance) ((up{job=\"grafana\"} == 1) and (time() - timestamp(up{job=\"grafana\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "HTTP requests in flight; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/832": {
+          "promql": "((rate(grafana_api_response_status_total{job=\"grafana\"}[5m])) and (time() - timestamp(grafana_api_response_status_total{job=\"grafana\"}) <= 90)) and on(job,instance) ((up{job=\"grafana\"} == 1) and (time() - timestamp(up{job=\"grafana\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "API response rate by status code; missing/stale unknown, never synthetic zero."
+        }
+      },
+      "coverage": "enabled",
+      "reason": ""
+    },
+    {
+      "component": "prometheus",
+      "namespace": "offscreen-dev-observability",
+      "workloadSelector": {
+        "service": "obs-prometheus"
+      },
+      "jobs": [
+        "prometheus"
+      ],
+      "requiredFamilies": [
+        "prometheus_tsdb_head_series",
+        "prometheus_tsdb_storage_blocks_bytes",
+        "prometheus_tsdb_head_samples_appended_total",
+        "prometheus_target_scrapes_exceeded_sample_limit_total",
+        "prometheus_target_scrapes_sample_duplicate_timestamp_total",
+        "prometheus_target_scrapes_sample_out_of_bounds_total",
+        "prometheus_target_scrapes_sample_out_of_order_total"
+      ],
+      "panels": {
+        "offscreen-observability/840": {
+          "promql": "up{job=\"prometheus\"} and (time() - timestamp(up{job=\"prometheus\"}) <= 90)",
+          "unit": "none",
+          "interpretation": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/841": {
+          "promql": "((prometheus_tsdb_head_series{job=\"prometheus\"}) and (time() - timestamp(prometheus_tsdb_head_series{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Observed gauge: prometheus_tsdb_head_series; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/842": {
+          "promql": "((prometheus_tsdb_storage_blocks_bytes{job=\"prometheus\"}) and (time() - timestamp(prometheus_tsdb_storage_blocks_bytes{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "unit": "bytes",
+          "interpretation": "Observed gauge: prometheus_tsdb_storage_blocks_bytes; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/843": {
+          "promql": "((rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_tsdb_head_samples_appended_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Observed rate by native type where present: prometheus_tsdb_head_samples_appended_total; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/844": {
+          "promql": "((rate(prometheus_target_scrapes_exceeded_sample_limit_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_target_scrapes_exceeded_sample_limit_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Observed rate by native type where present: prometheus_target_scrapes_exceeded_sample_limit_total; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/845": {
+          "promql": "((rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_target_scrapes_sample_duplicate_timestamp_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Observed rate by native type where present: prometheus_target_scrapes_sample_duplicate_timestamp_total; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/846": {
+          "promql": "((rate(prometheus_target_scrapes_sample_out_of_bounds_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_target_scrapes_sample_out_of_bounds_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Observed rate by native type where present: prometheus_target_scrapes_sample_out_of_bounds_total; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/847": {
+          "promql": "((rate(prometheus_target_scrapes_sample_out_of_order_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_target_scrapes_sample_out_of_order_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Observed rate by native type where present: prometheus_target_scrapes_sample_out_of_order_total; missing/stale unknown, never synthetic zero."
+        }
+      },
+      "coverage": "enabled",
+      "reason": ""
+    },
+    {
+      "component": "collector",
+      "namespace": "offscreen-dev-observability",
+      "workloadSelector": {
+        "service": "obs-collector"
+      },
+      "jobs": [
+        "collector"
+      ],
+      "requiredFamilies": [
+        "otelcol_exporter_queue_capacity",
+        "otelcol_exporter_queue_size",
+        "otelcol_process_memory_rss",
+        "promhttp_metric_handler_errors_total"
+      ],
+      "panels": {
+        "offscreen-observability/850": {
+          "promql": "up{job=\"collector\"} and (time() - timestamp(up{job=\"collector\"}) <= 90)",
+          "unit": "none",
+          "interpretation": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/851": {
+          "promql": "((otelcol_exporter_queue_capacity{job=\"collector\"}) and (time() - timestamp(otelcol_exporter_queue_capacity{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Exporter queue capacity per exporter/data_type; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/852": {
+          "promql": "((otelcol_exporter_queue_size{job=\"collector\"}) and (time() - timestamp(otelcol_exporter_queue_size{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Exporter queue size per exporter/data_type; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/853": {
+          "promql": "((otelcol_process_memory_rss{job=\"collector\"}) and (time() - timestamp(otelcol_process_memory_rss{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))",
+          "unit": "bytes",
+          "interpretation": "Collector process RSS; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/854": {
+          "promql": "((rate(promhttp_metric_handler_errors_total{job=\"collector\"}[5m])) and (time() - timestamp(promhttp_metric_handler_errors_total{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Metrics HTTP handler errors/s by cause, not signal delivery failures; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-observability/855": {
+          "promql": "(((otelcol_exporter_queue_size{job=\"collector\"}) and (time() - timestamp(otelcol_exporter_queue_size{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))) / on(job,instance,exporter,data_type) ((((otelcol_exporter_queue_capacity{job=\"collector\"}) and (time() - timestamp(otelcol_exporter_queue_capacity{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))) > 0)",
+          "unit": "percentunit",
+          "interpretation": "Exporter queue usage ratio; same exporter and signal type, positive capacity; missing/stale unknown, never synthetic zero."
+        }
+      },
+      "coverage": "enabled",
+      "reason": ""
+    },
+    {
+      "component": "kubernetes-control-plane",
+      "namespace": "kube-system",
+      "workloadSelector": {},
+      "jobs": [],
+      "requiredFamilies": [],
+      "panels": {},
+      "coverage": "inventory-only",
+      "reason": "Optional richer control-plane endpoints not enrolled; KSM and kubelet inventory/resource visibility remain."
+    },
+    {
+      "component": "cnpg-operator",
+      "namespace": "cnpg-system",
+      "workloadSelector": {},
+      "jobs": [],
+      "requiredFamilies": [],
+      "panels": {},
+      "coverage": "inventory-only",
+      "reason": "Optional operator endpoint not qualified."
+    },
+    {
+      "component": "rabbitmq-operator",
+      "namespace": "rabbitmq-system",
+      "workloadSelector": {},
+      "jobs": [],
+      "requiredFamilies": [],
+      "panels": {},
+      "coverage": "inventory-only",
+      "reason": "Optional operator endpoint not qualified."
+    },
+    {
+      "component": "cert-manager",
+      "namespace": "cert-manager",
+      "workloadSelector": {},
+      "jobs": [],
+      "requiredFamilies": [],
+      "panels": {},
+      "coverage": "inventory-only",
+      "reason": "Optional controller endpoints not qualified."
+    },
+    {
+      "component": "local-path",
+      "namespace": "local-path-storage",
+      "workloadSelector": {},
+      "jobs": [],
+      "requiredFamilies": [],
+      "panels": {},
+      "coverage": "inventory-only",
+      "reason": "Optional provisioner endpoint not qualified."
+    },
+    {
+      "component": "traefik",
+      "namespace": null,
+      "workloadSelector": {},
+      "jobs": [],
+      "requiredFamilies": [],
+      "panels": {},
+      "coverage": "not-applicable",
+      "reason": "Release-only gateway; not applicable to dev E2."
+    }
+  ],
+  "seaweedfs": [
+    {
+      "component": "seaweedfs",
+      "namespace": "offscreen-dev-objects",
+      "workloadSelector": {
+        "app": "object-store"
+      },
+      "jobs": [
+        "seaweedfs"
+      ],
+      "requiredFamilies": [
+        "SeaweedFS_master_is_leader",
+        "SeaweedFS_s3_in_flight_upload_bytes",
+        "SeaweedFS_s3_in_flight_upload_count",
+        "SeaweedFS_volumeServer_max_volumes",
+        "SeaweedFS_volumeServer_file_read_failures",
+        "SeaweedFS_volumeServer_file_write_failures",
+        "SeaweedFS_volumeServer_storage_io_error_total",
+        "SeaweedFS_s3_in_flight_requests",
+        "SeaweedFS_volumeServer_volumes",
+        "SeaweedFS_volumeServer_read_only_volumes",
+        "SeaweedFS_filer_request_total",
+        "SeaweedFS_volumeServer_request_total",
+        "SeaweedFS_s3_request_total",
+        "SeaweedFS_volumeServer_request_seconds_bucket",
+        "SeaweedFS_volumeServer_request_seconds_count",
+        "SeaweedFS_volumeServer_request_seconds_sum",
+        "SeaweedFS_s3_request_seconds_bucket",
+        "SeaweedFS_s3_request_seconds_count",
+        "SeaweedFS_s3_request_seconds_sum"
+      ],
+      "panels": {
+        "offscreen-storage/610": {
+          "promql": "up{job=\"seaweedfs\"} and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90)",
+          "unit": "none",
+          "interpretation": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/611": {
+          "promql": "((SeaweedFS_master_is_leader{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_master_is_leader{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Master leader indicator; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/612": {
+          "promql": "((SeaweedFS_s3_in_flight_upload_bytes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_s3_in_flight_upload_bytes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "bytes",
+          "interpretation": "S3 upload bytes in flight; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/613": {
+          "promql": "((SeaweedFS_s3_in_flight_upload_count{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_s3_in_flight_upload_count{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "S3 uploads in flight; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/614": {
+          "promql": "((SeaweedFS_volumeServer_max_volumes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_volumeServer_max_volumes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Configured maximum volumes, not bytes; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/615": {
+          "promql": "((rate(SeaweedFS_volumeServer_file_read_failures{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_file_read_failures{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Volume file read failures/s; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/616": {
+          "promql": "((rate(SeaweedFS_volumeServer_file_write_failures{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_file_write_failures{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Volume file write failures/s; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/617": {
+          "promql": "((rate(SeaweedFS_volumeServer_storage_io_error_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_storage_io_error_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Volume/shard storage EIO errors/s; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/618": {
+          "promql": "((SeaweedFS_s3_in_flight_requests{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_s3_in_flight_requests{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "S3 requests in flight by operation type; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/619": {
+          "promql": "((SeaweedFS_volumeServer_volumes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_volumeServer_volumes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Default/empty-collection volumes or shards by type, not a global count; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/620": {
+          "promql": "((SeaweedFS_volumeServer_read_only_volumes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_volumeServer_read_only_volumes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "none",
+          "interpretation": "Default/empty-collection read-only volumes by type, not a global count; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/621": {
+          "promql": "((rate(SeaweedFS_filer_request_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_filer_request_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Filer request rate by type/status; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/622": {
+          "promql": "((rate(SeaweedFS_volumeServer_request_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_request_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Volume-server request rate by type/status; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/623": {
+          "promql": "((rate(SeaweedFS_s3_request_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_s3_request_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "unit": "ops",
+          "interpretation": "Bucketless S3 request rate by type/status only, not global; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/624": {
+          "promql": "histogram_quantile(0.95, sum by (job,instance,type,le) (((rate(SeaweedFS_volumeServer_request_seconds_bucket{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_request_seconds_bucket{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90)))) and on(job,instance,type) (sum by (job,instance,type) (((rate(SeaweedFS_volumeServer_request_seconds_count{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_request_seconds_count{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))) > 0)",
+          "unit": "s",
+          "interpretation": "Volume-server p95 request time by type, seconds; S3 excludes all nonempty bucket names; missing/stale unknown, never synthetic zero."
+        },
+        "offscreen-storage/625": {
+          "promql": "histogram_quantile(0.95, sum by (job,instance,type,le) (((rate(SeaweedFS_s3_request_seconds_bucket{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_s3_request_seconds_bucket{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90)))) and on(job,instance,type) (sum by (job,instance,type) (((rate(SeaweedFS_s3_request_seconds_count{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_s3_request_seconds_count{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))) > 0)",
+          "unit": "s",
+          "interpretation": "Bucketless S3 p95 request time by type, seconds; S3 excludes all nonempty bucket names; missing/stale unknown, never synthetic zero."
+        }
+      },
+      "coverage": "enabled",
+      "reason": ""
+    }
+  ],
+  "newScrapePolicies": {
+    "postgres-cnpg": {
+      "families": [
+        "cnpg_pg_database_size_bytes",
+        "cnpg_pg_stat_database_xact_commit",
+        "cnpg_pg_stat_database_xact_rollback",
+        "cnpg_pg_stat_database_deadlocks",
+        "cnpg_pg_stat_database_blks_hit",
+        "cnpg_pg_stat_database_blks_read",
+        "cnpg_pg_stat_database_temp_bytes",
+        "cnpg_pg_stat_database_temp_files",
+        "cnpg_backends_total",
+        "cnpg_backends_max_tx_duration_seconds",
+        "cnpg_pg_settings_setting",
+        "cnpg_collector_up",
+        "cnpg_backends_waiting_total",
+        "cnpg_collector_last_collection_error",
+        "cnpg_last_error",
+        "cnpg_last_update_timestamp",
+        "cnpg_collector_replica_mode",
+        "cnpg_pg_replication_in_recovery",
+        "cnpg_pg_replication_is_wal_receiver_up",
+        "cnpg_pg_replication_lag",
+        "cnpg_pg_replication_streaming_replicas"
+      ],
+      "retainedLabels": [
+        "__name__",
+        "job",
+        "instance",
+        "cluster",
+        "env",
+        "component",
+        "namespace",
+        "pod",
+        "datname",
+        "application_name",
+        "usename",
+        "state",
+        "name",
+        "exported_cluster"
+      ],
+      "valueFilters": [
+        {
+          "source_labels": [
+            "__name__",
+            "datname",
+            "application_name",
+            "usename",
+            "state",
+            "name",
+            "exported_cluster"
+          ],
+          "separator": ";",
+          "regex": "(cnpg_pg_database_size_bytes|cnpg_pg_stat_database_xact_commit|cnpg_pg_stat_database_xact_rollback|cnpg_pg_stat_database_deadlocks|cnpg_pg_stat_database_blks_hit|cnpg_pg_stat_database_blks_read|cnpg_pg_stat_database_temp_bytes|cnpg_pg_stat_database_temp_files);(postgres|dev|temporal|temporal_visibility|dev_[1-9][0-9]*);;;;;|(cnpg_backends_total|cnpg_backends_max_tx_duration_seconds);(postgres|dev|temporal|temporal_visibility|dev_[1-9][0-9]*);(|cnpg_metrics_exporter);(postgres|dev|temporal|cnpg_metrics_exporter|dev_[1-9][0-9]*_(mig|run));(active|idle|idle in transaction|idle in transaction \\(aborted\\)|fastpath function call|disabled);;|cnpg_pg_settings_setting;;;;;max_connections;|cnpg_collector_up;;;;;;dev-pg|(cnpg_backends_waiting_total|cnpg_collector_last_collection_error|cnpg_last_error|cnpg_last_update_timestamp|cnpg_collector_replica_mode|cnpg_pg_replication_in_recovery|cnpg_pg_replication_is_wal_receiver_up|cnpg_pg_replication_lag|cnpg_pg_replication_streaming_replicas);;;;;;",
+          "action": "keep"
+        }
+      ],
+      "target": {
+        "kind": "pod",
+        "namespace": "offscreen-dev-postgres",
+        "labels": {
+          "cnpg.io/cluster": "dev-pg",
+          "app.kubernetes.io/name": "postgresql"
+        },
+        "container": "postgres",
+        "portName": "metrics",
+        "port": 9187
+      }
+    },
+    "temporal-server": {
+      "families": [
+        "service_requests",
+        "service_error_with_type",
+        "persistence_requests",
+        "persistence_sql_in_use",
+        "service_latency_bucket",
+        "service_latency_count",
+        "service_latency_sum",
+        "persistence_latency_bucket",
+        "persistence_latency_count",
+        "persistence_latency_sum"
+      ],
+      "retainedLabels": [
+        "__name__",
+        "job",
+        "instance",
+        "cluster",
+        "env",
+        "component",
+        "namespace",
+        "pod",
+        "role",
+        "exported_namespace",
+        "operation",
+        "service_name",
+        "type",
+        "db_kind",
+        "error_type",
+        "le"
+      ],
+      "valueFilters": [
+        {
+          "source_labels": [
+            "__name__",
+            "exported_namespace"
+          ],
+          "separator": ";",
+          "regex": "(service_requests|service_error_with_type|persistence_requests|service_latency_bucket|service_latency_count|service_latency_sum|persistence_latency_bucket|persistence_latency_count|persistence_latency_sum);(system|_unknown_)|persistence_sql_in_use;",
+          "action": "keep"
+        }
+      ],
+      "target": {
+        "kind": "pod",
+        "namespace": "offscreen-dev-temporal",
+        "labels": {
+          "app.kubernetes.io/instance": "temporal",
+          "app.kubernetes.io/name": "temporal",
+          "app.kubernetes.io/component": [
+            "frontend",
+            "history",
+            "matching",
+            "worker"
+          ]
+        },
+        "containerByRole": {
+          "frontend": "temporal-frontend",
+          "history": "temporal-history",
+          "matching": "temporal-matching",
+          "worker": "temporal-worker"
+        },
+        "portName": "metrics",
+        "port": 9090
+      }
+    },
+    "rabbitmq": {
+      "families": [
+        "rabbitmq_queue_messages",
+        "rabbitmq_queue_messages_ready",
+        "rabbitmq_queue_messages_unacked",
+        "rabbitmq_connections",
+        "rabbitmq_queue_messages_published_total",
+        "rabbitmq_queue_messages_delivered_total",
+        "rabbitmq_queue_messages_acked_total",
+        "rabbitmq_alarms_free_disk_space_watermark",
+        "rabbitmq_alarms_memory_used_watermark",
+        "rabbitmq_process_resident_memory_bytes",
+        "rabbitmq_process_open_fds",
+        "rabbitmq_process_max_fds"
+      ],
+      "retainedLabels": [
+        "__name__",
+        "job",
+        "instance",
+        "cluster",
+        "env",
+        "component",
+        "namespace"
+      ],
+      "valueFilters": [],
+      "target": {
+        "kind": "static",
+        "address": "rabbitmq.offscreen-dev-rabbitmq.svc:15692",
+        "namespace": "offscreen-dev-rabbitmq"
+      }
+    },
+    "loki": {
+      "families": [
+        "loki_ingester_memory_chunks",
+        "loki_ingester_flush_queue_length",
+        "loki_ingester_chunks_flush_failures_total",
+        "loki_ingester_wal_bytes_in_use"
+      ],
+      "retainedLabels": [
+        "__name__",
+        "job",
+        "instance",
+        "cluster",
+        "env",
+        "component",
+        "namespace"
+      ],
+      "valueFilters": [],
+      "target": {
+        "kind": "static",
+        "address": "obs-loki.offscreen-dev-observability.svc:3100",
+        "namespace": "offscreen-dev-observability"
+      }
+    },
+    "tempo": {
+      "families": [
+        "tempo_distributor_traces_per_batch_count",
+        "tempo_distributor_traces_per_batch_sum"
+      ],
+      "retainedLabels": [
+        "__name__",
+        "job",
+        "instance",
+        "cluster",
+        "env",
+        "component",
+        "namespace"
+      ],
+      "valueFilters": [],
+      "target": {
+        "kind": "static",
+        "address": "obs-tempo.offscreen-dev-observability.svc:3200",
+        "namespace": "offscreen-dev-observability"
+      }
+    },
+    "grafana": {
+      "families": [
+        "grafana_http_request_in_flight",
+        "grafana_api_response_status_total"
+      ],
+      "retainedLabels": [
+        "__name__",
+        "job",
+        "instance",
+        "cluster",
+        "env",
+        "component",
+        "namespace",
+        "code"
+      ],
+      "valueFilters": [
+        {
+          "source_labels": [
+            "__name__",
+            "code"
+          ],
+          "separator": ";",
+          "regex": "grafana_http_request_in_flight;|grafana_api_response_status_total;[1-5][0-9][0-9]",
+          "action": "keep"
+        }
+      ],
+      "target": {
+        "kind": "static",
+        "address": "obs-grafana.offscreen-dev-observability.svc:80",
+        "namespace": "offscreen-dev-observability"
+      }
+    },
+    "seaweedfs": {
+      "families": [
+        "SeaweedFS_master_is_leader",
+        "SeaweedFS_s3_in_flight_upload_bytes",
+        "SeaweedFS_s3_in_flight_upload_count",
+        "SeaweedFS_volumeServer_max_volumes",
+        "SeaweedFS_volumeServer_file_read_failures",
+        "SeaweedFS_volumeServer_file_write_failures",
+        "SeaweedFS_volumeServer_storage_io_error_total",
+        "SeaweedFS_s3_in_flight_requests",
+        "SeaweedFS_volumeServer_volumes",
+        "SeaweedFS_volumeServer_read_only_volumes",
+        "SeaweedFS_filer_request_total",
+        "SeaweedFS_volumeServer_request_total",
+        "SeaweedFS_s3_request_total",
+        "SeaweedFS_volumeServer_request_seconds_bucket",
+        "SeaweedFS_volumeServer_request_seconds_count",
+        "SeaweedFS_volumeServer_request_seconds_sum",
+        "SeaweedFS_s3_request_seconds_bucket",
+        "SeaweedFS_s3_request_seconds_count",
+        "SeaweedFS_s3_request_seconds_sum"
+      ],
+      "retainedLabels": [
+        "__name__",
+        "job",
+        "instance",
+        "cluster",
+        "env",
+        "component",
+        "namespace",
+        "type",
+        "code",
+        "le",
+        "bucket",
+        "collection"
+      ],
+      "valueFilters": [
+        {
+          "source_labels": [
+            "__name__",
+            "bucket",
+            "collection"
+          ],
+          "separator": ";",
+          "regex": "(SeaweedFS_master_is_leader|SeaweedFS_s3_in_flight_upload_bytes|SeaweedFS_s3_in_flight_upload_count|SeaweedFS_volumeServer_max_volumes|SeaweedFS_volumeServer_file_read_failures|SeaweedFS_volumeServer_file_write_failures|SeaweedFS_volumeServer_storage_io_error_total|SeaweedFS_s3_in_flight_requests|SeaweedFS_volumeServer_volumes|SeaweedFS_volumeServer_read_only_volumes|SeaweedFS_filer_request_total|SeaweedFS_volumeServer_request_total|SeaweedFS_s3_request_total|SeaweedFS_volumeServer_request_seconds_bucket|SeaweedFS_volumeServer_request_seconds_count|SeaweedFS_volumeServer_request_seconds_sum|SeaweedFS_s3_request_seconds_bucket|SeaweedFS_s3_request_seconds_count|SeaweedFS_s3_request_seconds_sum);;",
+          "action": "keep"
+        }
+      ],
+      "target": {
+        "kind": "static",
+        "address": "object-store.offscreen-dev-objects.svc:9327",
+        "namespace": "offscreen-dev-objects"
+      }
+    }
+  },
+  "existingJobsUnchanged": [
+    "prometheus",
+    "collector"
+  ]
+}

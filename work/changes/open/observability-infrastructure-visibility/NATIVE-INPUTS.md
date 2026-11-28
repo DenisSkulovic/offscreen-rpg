@@ -1,6 +1,6 @@
 # E2 | native input closure (planner/operator evidence only)
 
-**Status:** G1 KSM specimen passed; Redis v1.97.0 replacement native specimen PASSED with frozen coverage. G2 node-local trusted HTTPS feasibility and Collector existing scrape PASSED. 03 and 06 source construction joined. PG01 occupied repair and collector recovery PASS; full existing-tenant executor admission remains unexercised. G4b marker preparation and occupied metrics rollout PASS; retained data verified, 112 native sample names observed. Exact selected metric/label/query rows remain OPEN. Remaining exact native panel/coverage contracts and G5 remain OPEN. Verified remote planning base `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. [Defended dossier](../../../designs/open/observability-infrastructure-visibility/EVIDENCE.md) owns architecture and scope. This is the one bounded evidence handoff for all affected packets, not an implementation research assignment. Owner ran the read-only native probe at the committed batch SHA; planner records the observed subset below. No native commands executed by planner; no fabricated digest, cert, endpoint, family or PASS. G5 is downstream construction and qualification. Owner must explicitly authorize any live probe creating resources, executing a helper container, or mutating data. Read-only metadata/port-forwards need correct fixed dev target and must not disclose credentials. No release commands, no provider spend.
+**Status:** G1 KSM specimen passed; Redis v1.97.0 replacement native specimen PASSED with frozen coverage. G2 node-local trusted HTTPS feasibility and Collector existing scrape PASSED. 03 and 06 source construction joined. PG01 occupied repair and collector recovery PASS; full existing-tenant executor admission remains unexercised. G4b marker preparation and occupied metrics rollout PASS; retained data verified, 112 native sample names observed. All selected endpoint reads now succeeded; bounded coverage scope owner-ratified on 2026-11-28; affected packet readiness pending. Full PG01 tenant admission and G5 remain OPEN. Verified remote planning base `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. [Defended dossier](../../../designs/open/observability-infrastructure-visibility/EVIDENCE.md) owns architecture and scope. This is the one bounded evidence handoff for all affected packets, not an implementation research assignment. Owner ran the read-only native probe at the committed batch SHA; planner records the observed subset below. No native commands executed by planner; no fabricated digest, cert, endpoint, family or PASS. G5 is downstream construction and qualification. Owner must explicitly authorize any live probe creating resources, executing a helper container, or mutating data. Read-only metadata/port-forwards need correct fixed dev target and must not disclose credentials. No release commands, no provider spend.
 
 ## G1 | helper image identity
 
@@ -580,9 +580,9 @@ Append the following rows to 02's `coverage/inventory.json` without changing its
     ],
     "panels": {
       "offscreen-overview/104": {
-        "promql": "((sum (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() ((count(((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2))) and on() (count(((node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2)",
+        "promql": "(sum (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() (count(((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2) and on() (count(count by (node) (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) == 2)",
         "unit": "none",
-        "interpretation": "CPU cores across both Kind nodes, only when both resource scrapes current. Require current node family on both nodes; suppress incomplete totals."
+        "interpretation": "CPU cores across both distinct Kind nodes, only when exactly two current node series each produce a valid five-minute rate; missing or insufficient rate samples suppress the total."
       },
       "offscreen-nodes/306": {
         "promql": "sum by (node) (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
@@ -732,7 +732,7 @@ All names below are observed from the repaired primary. Table rows group names b
 
 Pinned default query definitions (`infra/platform/postgres/vendor/cnpg-1.30.2.yaml`, `backends`, `backends_waiting`, `pg_database`, `pg_stat_database`, `pg_settings`) corroborate the observed families. Keep the previously selected discovery (`postgres-cnpg`, fixed namespace/labels/container/metrics port) and fixed limits. Health: distinguish Prometheus `up`, native collector up, collection error and last-update freshness; no missing-to-zero conversion. Use per-instance identity, never sum primary and standby database statistics as a cluster total. Per-database transaction commits/rollbacks, deadlocks, cache hits/reads and temp files/bytes use observed counters and reset-aware `rate`/`increase` as appropriate, with current healthy source, same-series identity and positive denominator for ratios. Database size is bytes gauge; use actual observed per-database samples. Read/write block-time counters are milliseconds, not seconds. Do not infer query throughput or latency from these cumulative I/O times. `backends_max_tx_duration_seconds` and `backends_waiting_total` are gauges, not counters despite `_total`. Vendor waiting query joins blocked and blocking locks and counts matches; do not promise a distinct waiting-session count or per-lock-type inventory. Use waiting-lock contention indicator and deadlock rate/count as the supported contention panels, no custom SQL or manufactured contention. Replication applicability must be explicit; direct primary specimen does not establish a standby/replication-lag proof.
 
-**Label-identity safeguard:** vendor `backends` groups by database, state, user and application. Dropping `usename`/`application_name` in metric relabeling can merge distinct series with identical remaining labels; do not do it. Nor silently store arbitrary freeform client/application identifiers. The planner must resolve a bounded, privacy-compatible connection-family admission (retaining an approved identity tuple if justified) or explicitly obtain owner scope disposition; do not fake complete connection saturation from waiting matches. For saturation, `cnpg_pg_settings_setting` was observed with `name` key, but the actual `max_connections` sample/value was not retained in the supplied evidence; verify its presence and restrict to selected setting, not all settings. Exclude extension metadata from the selected scrape unless explicitly needed; avoid collapsing any other native label dimensions. No blanket family regex. This records concrete semantic decisions for the final CNPG row, not a complete freeze of exact panel IDs, PromQL, labels and coverage JSON. Finish those alongside the remaining service rows; the existing 04/07 readiness fences remain.
+**Label-identity safeguard:** vendor `backends` groups by database, state, user and application. Dropping `usename`/`application_name` in metric relabeling can merge distinct series with identical remaining labels; do not do it. Nor silently store arbitrary freeform client/application identifiers. The planner must resolve a bounded, privacy-compatible connection-family admission (retaining an approved identity tuple if justified) or explicitly obtain owner scope disposition; do not fake complete connection saturation from waiting matches. For saturation, `cnpg_pg_settings_setting` was observed with `name` key, but the subsequent selected probe observed exactly one `max_connections` sample of 100; restrict to that selected setting, not all settings. Exclude extension metadata from the selected scrape unless explicitly needed; avoid collapsing any other native label dimensions. No blanket family regex. This records concrete semantic decisions for the final CNPG row, not a complete freeze of exact panel IDs, PromQL, labels and coverage JSON. Finish those alongside the remaining service rows; the existing 04/07 readiness fences remain.
 
 ### G4b owner preflight and registry cutover: PASS
 
@@ -900,6 +900,322 @@ The guarded operation verified the exact old/new history, unchanged stable owner
 
 **Planner constraints for final 04/07 freeze:** enroll only the fixed `seaweedfs` job at `object-store.offscreen-dev-objects.svc:9327/metrics`, never port 8333; retain selected 30s/10s, 5000 samples and 100 target ceiling. Select meaningful bounded families, not all 112. Candidate aggregate signals include S3 in-flight upload count/bytes, filer requests, volume-server file read/write failures and storage I/O errors, volume count/capacity, process memory and CPU. Confirm actual HELP/TYPE and semantics before final exact panel/coverage freeze; request counts and time-to-first-byte/latency grouped by `bucket` cannot simply drop that label (series collision) or retain arbitrary tenant/marker bucket names without a reviewed bounded privacy-compatible selection. Prefer safe aggregate native signals; no fabricated aggregate S3 request rate or capacity utilization, no raw paths/clientName/sourceFiler or arbitrary collection/bucket identities. Filer and volume-server request families are not equivalent to S3 requests; label each panel honestly. Histogram component names and units need base TYPE/HELP confirmation; `_seconds` versus `_millisecond` are different. Counters use reset-aware rates, gauges use current values, distinguish absent/stale/up vs healthy; KSM PVC binding is not proof of byte utilization. No workload or additional storage writes to manufacture evidence. Record final exact rows, panel IDs, units and selectors in this register before dispatch.
 
+## G3/G4 selected metric observation and partial contract freeze | 2026-11-28
+
+Owner read-only probe output SHA256 `b59de0f71762d627527b9499aad520acd6ce5d6a55c07b0f3e8a0aaafa865900`; remote joined planning HEAD `eb1e71a4ebe74fc2cf88359b62b2b6c6cda4b141` verified when received (the diagnostic did not bind its own HEAD). Fixed dev context. Nine of twelve endpoint observations succeeded; failures Loki `ValueError`, Grafana `RuntimeError`, Collector `RemoteDisconnected` are probe failures, not backend health findings. No new native mutation. Counts below are selected sample series, not whole endpoint cardinality. Do not repeat the successful storage or SQL owner operations.
+
+| Endpoint | Selected series | Result |
+| --- | ---: | --- |
+| `postgres-cnpg` | 362 | Observed |
+| `temporal-frontend` | 762 | Observed |
+| `temporal-history` | 739 | Observed |
+| `temporal-matching` | 1059 | Observed |
+| `temporal-worker` | 324 | Observed |
+| `rabbitmq` | 12 | Observed |
+| `loki` | — | ValueError |
+| `tempo` | 36 | Observed |
+| `grafana` | — | RuntimeError |
+| `seaweedfs` | 110 | Observed |
+| `prometheus` | 8 | Observed |
+| `collector` | — | RemoteDisconnected |
+
+### Observed selected families, types and dimension cardinality
+
+Each line below records an actual observed sample name, Prometheus family type and series count, and observed distinct values **per label key**, never actual private label values. These are evidence, not a blanket allowlist. Histogram suffix samples inherit the declared parent family type. Empty label sets shown as `none`.
+
+#### postgres-cnpg
+
+| Sample name | Type | Series | Label cardinalities |
+| --- | --- | ---: | --- |
+| `cnpg_backends_max_tx_duration_seconds` | gauge | 3 | application_name=2, datname=3, state=2, usename=2 |
+| `cnpg_backends_total` | gauge | 3 | application_name=2, datname=3, state=2, usename=2 |
+| `cnpg_backends_waiting_total` | gauge | 1 | none |
+| `cnpg_collector_last_collection_error` | gauge | 1 | none |
+| `cnpg_collector_replica_mode` | gauge | 1 | none |
+| `cnpg_collector_up` | gauge | 1 | cluster=1 |
+| `cnpg_last_error` | gauge | 1 | none |
+| `cnpg_last_update_timestamp` | gauge | 1 | none |
+| `cnpg_pg_database_size_bytes` | gauge | 6 | datname=6 |
+| `cnpg_pg_replication_in_recovery` | gauge | 1 | none |
+| `cnpg_pg_replication_is_wal_receiver_up` | gauge | 1 | none |
+| `cnpg_pg_replication_lag` | gauge | 1 | none |
+| `cnpg_pg_replication_streaming_replicas` | gauge | 1 | none |
+| `cnpg_pg_settings_setting` | gauge | 284 | name=284 |
+| `cnpg_pg_stat_database_blks_hit` | counter | 8 | datname=8 |
+| `cnpg_pg_stat_database_blks_read` | counter | 8 | datname=8 |
+| `cnpg_pg_stat_database_deadlocks` | counter | 8 | datname=8 |
+| `cnpg_pg_stat_database_temp_bytes` | counter | 8 | datname=8 |
+| `cnpg_pg_stat_database_temp_files` | counter | 8 | datname=8 |
+| `cnpg_pg_stat_database_xact_commit` | counter | 8 | datname=8 |
+| `cnpg_pg_stat_database_xact_rollback` | counter | 8 | datname=8 |
+
+#### temporal-frontend
+
+| Sample name | Type | Series | Label cardinalities |
+| --- | --- | ---: | --- |
+| `persistence_latency_bucket` | histogram | 300 | le=20, namespace=4, operation=12, service_name=2, type=1 |
+| `persistence_latency_count` | histogram | 15 | namespace=4, operation=12, service_name=2, type=1 |
+| `persistence_latency_sum` | histogram | 15 | namespace=4, operation=12, service_name=2, type=1 |
+| `persistence_requests` | counter | 15 | namespace=4, operation=12, service_name=2, type=1 |
+| `persistence_sql_in_use` | gauge | 2 | db_kind=2, service_name=1, type=1 |
+| `service_error_with_type` | counter | 1 | error_type=1, namespace=1, operation=1, service_name=1, type=1 |
+| `service_latency_bucket` | histogram | 360 | le=20, namespace=4, operation=10, service_name=1, type=1 |
+| `service_latency_count` | histogram | 18 | namespace=4, operation=10, service_name=1, type=1 |
+| `service_latency_sum` | histogram | 18 | namespace=4, operation=10, service_name=1, type=1 |
+| `service_requests` | counter | 18 | namespace=4, operation=10, service_name=1, type=1 |
+
+#### temporal-history
+
+| Sample name | Type | Series | Label cardinalities |
+| --- | --- | ---: | --- |
+| `persistence_latency_bucket` | histogram | 540 | le=20, namespace=2, operation=26, service_name=2, type=1 |
+| `persistence_latency_count` | histogram | 27 | namespace=2, operation=26, service_name=2, type=1 |
+| `persistence_latency_sum` | histogram | 27 | namespace=2, operation=26, service_name=2, type=1 |
+| `persistence_requests` | counter | 27 | namespace=2, operation=26, service_name=2, type=1 |
+| `persistence_sql_in_use` | gauge | 2 | db_kind=2, service_name=1, type=1 |
+| `service_error_with_type` | counter | 1 | error_type=1, namespace=1, operation=1, service_name=1, type=1 |
+| `service_latency_bucket` | histogram | 100 | le=20, namespace=1, operation=5, service_name=1, type=1 |
+| `service_latency_count` | histogram | 5 | namespace=1, operation=5, service_name=1, type=1 |
+| `service_latency_sum` | histogram | 5 | namespace=1, operation=5, service_name=1, type=1 |
+| `service_requests` | counter | 5 | namespace=1, operation=5, service_name=1, type=1 |
+
+#### temporal-matching
+
+| Sample name | Type | Series | Label cardinalities |
+| --- | --- | ---: | --- |
+| `approximate_backlog_age_seconds` | gauge | 57 | namespace=3, namespace_state=1, operation=1, partition=5, service_name=1, task_type=2, taskqueue=8, type=1, worker_build_id=1, worker_deployment_name=1, worker_version=1 |
+| `approximate_backlog_count` | gauge | 57 | namespace=3, namespace_state=1, operation=1, partition=5, service_name=1, task_priority=1, task_type=2, taskqueue=8, type=1, worker_build_id=1, worker_deployment_name=1, worker_version=1 |
+| `persistence_latency_bucket` | histogram | 520 | le=20, namespace=4, operation=15, service_name=2, type=1 |
+| `persistence_latency_count` | histogram | 26 | namespace=4, operation=15, service_name=2, type=1 |
+| `persistence_latency_sum` | histogram | 26 | namespace=4, operation=15, service_name=2, type=1 |
+| `persistence_requests` | counter | 26 | namespace=4, operation=15, service_name=2, type=1 |
+| `persistence_sql_in_use` | gauge | 2 | db_kind=2, service_name=1, type=1 |
+| `service_latency_bucket` | histogram | 300 | le=20, namespace=4, operation=7, service_name=1, type=1 |
+| `service_latency_count` | histogram | 15 | namespace=4, operation=7, service_name=1, type=1 |
+| `service_latency_sum` | histogram | 15 | namespace=4, operation=7, service_name=1, type=1 |
+| `service_requests` | counter | 15 | namespace=4, operation=7, service_name=1, type=1 |
+
+#### temporal-worker
+
+| Sample name | Type | Series | Label cardinalities |
+| --- | --- | ---: | --- |
+| `persistence_latency_bucket` | histogram | 280 | le=20, namespace=2, operation=13, service_name=2, type=1 |
+| `persistence_latency_count` | histogram | 14 | namespace=2, operation=13, service_name=2, type=1 |
+| `persistence_latency_sum` | histogram | 14 | namespace=2, operation=13, service_name=2, type=1 |
+| `persistence_requests` | counter | 14 | namespace=2, operation=13, service_name=2, type=1 |
+| `persistence_sql_in_use` | gauge | 2 | db_kind=2, service_name=1, type=1 |
+
+#### rabbitmq
+
+| Sample name | Type | Series | Label cardinalities |
+| --- | --- | ---: | --- |
+| `rabbitmq_alarms_free_disk_space_watermark` | untyped | 1 | none |
+| `rabbitmq_alarms_memory_used_watermark` | untyped | 1 | none |
+| `rabbitmq_connections` | gauge | 1 | none |
+| `rabbitmq_process_max_fds` | gauge | 1 | none |
+| `rabbitmq_process_open_fds` | gauge | 1 | none |
+| `rabbitmq_process_resident_memory_bytes` | gauge | 1 | none |
+| `rabbitmq_queue_messages` | gauge | 1 | none |
+| `rabbitmq_queue_messages_acked_total` | counter | 1 | none |
+| `rabbitmq_queue_messages_delivered_total` | counter | 1 | none |
+| `rabbitmq_queue_messages_published_total` | counter | 1 | none |
+| `rabbitmq_queue_messages_ready` | gauge | 1 | none |
+| `rabbitmq_queue_messages_unacked` | gauge | 1 | none |
+
+#### tempo
+
+| Sample name | Type | Series | Label cardinalities |
+| --- | --- | ---: | --- |
+| `tempo_distributor_traces_per_batch_count` | histogram | 1 | none |
+| `tempo_distributor_traces_per_batch_sum` | histogram | 1 | none |
+| `tempo_request_duration_seconds_bucket` | histogram | 30 | le=15, method=2, route=2, status_code=2, ws=1 |
+| `tempo_request_duration_seconds_count` | histogram | 2 | method=2, route=2, status_code=2, ws=1 |
+| `tempo_request_duration_seconds_sum` | histogram | 2 | method=2, route=2, status_code=2, ws=1 |
+
+#### seaweedfs
+
+| Sample name | Type | Series | Label cardinalities |
+| --- | --- | ---: | --- |
+| `SeaweedFS_filer_request_total` | counter | 1 | code=1, type=1 |
+| `SeaweedFS_master_is_leader` | gauge | 1 | none |
+| `SeaweedFS_s3_in_flight_requests` | gauge | 2 | type=2 |
+| `SeaweedFS_s3_in_flight_upload_bytes` | gauge | 1 | none |
+| `SeaweedFS_s3_in_flight_upload_count` | gauge | 1 | none |
+| `SeaweedFS_s3_request_seconds_bucket` | histogram | 50 | bucket=2, le=25, type=2 |
+| `SeaweedFS_s3_request_seconds_count` | histogram | 2 | bucket=2, type=2 |
+| `SeaweedFS_s3_request_seconds_sum` | histogram | 2 | bucket=2, type=2 |
+| `SeaweedFS_s3_request_total` | counter | 2 | bucket=2, code=2, type=2 |
+| `SeaweedFS_volumeServer_disk_error_status` | gauge | 1 | name=1, type=1 |
+| `SeaweedFS_volumeServer_file_read_failures` | counter | 1 | none |
+| `SeaweedFS_volumeServer_file_write_failures` | counter | 1 | none |
+| `SeaweedFS_volumeServer_max_volumes` | gauge | 1 | none |
+| `SeaweedFS_volumeServer_read_only_volumes` | gauge | 8 | collection=2, type=4 |
+| `SeaweedFS_volumeServer_request_seconds_bucket` | histogram | 25 | le=25, type=1 |
+| `SeaweedFS_volumeServer_request_seconds_count` | histogram | 1 | type=1 |
+| `SeaweedFS_volumeServer_request_seconds_sum` | histogram | 1 | type=1 |
+| `SeaweedFS_volumeServer_request_total` | counter | 2 | code=2, type=1 |
+| `SeaweedFS_volumeServer_storage_io_error_total` | counter | 1 | none |
+| `SeaweedFS_volumeServer_total_disk_size` | gauge | 4 | collection=2, type=2 |
+| `SeaweedFS_volumeServer_volumes` | gauge | 2 | collection=2, type=1 |
+
+#### prometheus
+
+| Sample name | Type | Series | Label cardinalities |
+| --- | --- | ---: | --- |
+| `prometheus_target_scrapes_exceeded_sample_limit_total` | counter | 1 | none |
+| `prometheus_target_scrapes_sample_duplicate_timestamp_total` | counter | 1 | none |
+| `prometheus_target_scrapes_sample_out_of_bounds_total` | counter | 1 | none |
+| `prometheus_target_scrapes_sample_out_of_order_total` | counter | 1 | none |
+| `prometheus_tsdb_head_samples_appended_total` | counter | 2 | type=2 |
+| `prometheus_tsdb_head_series` | gauge | 1 | none |
+| `prometheus_tsdb_storage_blocks_bytes` | gauge | 1 | none |
+
+`cnpg_pg_settings_setting{name="max_connections"}` yielded exactly one selected value `100`; do not hardcode the limit in dashboards. Select the setting sample only, not the other 283 exported settings. The previous CNPG family inventory and occupied recovery remain valid. `cnpg_backends_total` is a gauge and the two backends families have the same four native dimensions; do not remove any dimension to create an aggregate. `cnpg_backends_waiting_total` is a gauge of matching lock contention, not an exact blocked-session inventory. Transaction, deadlock, temp and buffer counters have reset-aware rates; database size is bytes. The observed 8 `datname` values include dimensions outside the five connectable owner-approved databases; keep only known platform/owned slot DB names for database panels (not an alleged whole-cluster total). No custom SQL enrollment or collector ACL expansion.
+
+### Frozen RabbitMQ row (04 and 07; independent of remaining native facts)
+
+Fixed static `rabbitmq.offscreen-dev-rabbitmq.svc:15692/metrics`, HTTP, job `rabbitmq`, fixed component and namespace, 30s/10s; 5000 sample / 100 target / 40 label / 128 name-length / 512 value-length limits. Exact selected families below; all twelve observed with **no native labels**. Keep only target identity labels, do not scrape per-object endpoint. Existing owner workloads unchanged. `up` is scrape health, not broker health. Alarm samples are untyped on wire but HELP explicitly defines 1 when the alarm is active; treat as binary gauges, never rate them. Delivery counter means automatic acknowledgement delivery only, not all consumer deliveries; label panel accordingly.
+
+```json
+{
+  "component": "rabbitmq",
+  "namespace": "offscreen-dev-rabbitmq",
+  "workloadSelector": {
+    "app.kubernetes.io/name": "rabbitmq",
+    "app.kubernetes.io/component": "rabbitmq"
+  },
+  "jobs": [
+    "rabbitmq"
+  ],
+  "requiredFamilies": [
+    "rabbitmq_queue_messages",
+    "rabbitmq_queue_messages_ready",
+    "rabbitmq_queue_messages_unacked",
+    "rabbitmq_connections",
+    "rabbitmq_queue_messages_published_total",
+    "rabbitmq_queue_messages_delivered_total",
+    "rabbitmq_queue_messages_acked_total",
+    "rabbitmq_alarms_free_disk_space_watermark",
+    "rabbitmq_alarms_memory_used_watermark",
+    "rabbitmq_process_resident_memory_bytes",
+    "rabbitmq_process_open_fds",
+    "rabbitmq_process_max_fds"
+  ],
+  "panels": {
+    "offscreen-messaging-cache/710": {
+      "promql": "up{job=\"rabbitmq\"} and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90)",
+      "unit": "none",
+      "interpretation": "Current scrape state only; missing or stale unknown."
+    },
+    "offscreen-messaging-cache/711": {
+      "promql": "((rabbitmq_queue_messages{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "none",
+      "interpretation": "Total queue depth (ready plus unacknowledged); current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/712": {
+      "promql": "((rabbitmq_queue_messages_ready{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_ready{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "none",
+      "interpretation": "Ready messages; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/713": {
+      "promql": "((rabbitmq_queue_messages_unacked{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_unacked{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "none",
+      "interpretation": "Unacknowledged messages; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/714": {
+      "promql": "((rabbitmq_connections{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_connections{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "none",
+      "interpretation": "Open connections; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/715": {
+      "promql": "((rate(rabbitmq_queue_messages_published_total{job=\"rabbitmq\"}[5m])) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_published_total{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "ops",
+      "interpretation": "Published messages per second; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/716": {
+      "promql": "((rate(rabbitmq_queue_messages_delivered_total{job=\"rabbitmq\"}[5m])) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_delivered_total{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "ops",
+      "interpretation": "Automatic-ack deliveries per second; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/717": {
+      "promql": "((rate(rabbitmq_queue_messages_acked_total{job=\"rabbitmq\"}[5m])) and on(job,instance) (time() - timestamp(rabbitmq_queue_messages_acked_total{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "ops",
+      "interpretation": "Acknowledged messages per second; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/718": {
+      "promql": "((rabbitmq_alarms_free_disk_space_watermark{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_alarms_free_disk_space_watermark{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "none",
+      "interpretation": "Free-disk-space alarm 1 active / 0 inactive; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/719": {
+      "promql": "((rabbitmq_alarms_memory_used_watermark{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_alarms_memory_used_watermark{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "none",
+      "interpretation": "Memory alarm 1 active / 0 inactive; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/720": {
+      "promql": "((rabbitmq_process_resident_memory_bytes{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_process_resident_memory_bytes{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "bytes",
+      "interpretation": "Resident memory; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/721": {
+      "promql": "((rabbitmq_process_open_fds{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_process_open_fds{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "none",
+      "interpretation": "Open file descriptors; current scrape and metric required; missing/stale unknown."
+    },
+    "offscreen-messaging-cache/722": {
+      "promql": "((rabbitmq_process_max_fds{job=\"rabbitmq\"}) and on(job,instance) (time() - timestamp(rabbitmq_process_max_fds{job=\"rabbitmq\"}) <= 90)) and on(job,instance) ((up{job=\"rabbitmq\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"rabbitmq\"}) <= 90))",
+      "unit": "none",
+      "interpretation": "File descriptor limit; current scrape and metric required; missing/stale unknown."
+    }
+  },
+  "coverage": "enabled",
+  "reason": ""
+}
+```
+
+Materialize this exact row in the eventual `coverage/native-services.json` array and mirror its reserved IDs 710–722; the full array and final 04/07 dispatch remain gated. No new source edits are commissioned by this partial freeze.
+
+### Remaining narrow decisions (not a complete coverage freeze)
+
+- **SeaweedFS:** 110 selected series, S3 request histogram verified as seconds, volume-server request histogram seconds. Existing evidence policy prohibits bucket/key names and arbitrary collection/path identifiers. Do not scrape `SeaweedFS_s3_request_total`, `SeaweedFS_s3_request_seconds_{bucket,count,sum}` or bucket-labelled traffic by dropping `bucket`; that aliases distinct source series. The same holds for collection-labelled volume metrics and disk name/path dimensions. Selected safe native gauges/counters with no native labels: `SeaweedFS_master_is_leader`, `SeaweedFS_s3_in_flight_upload_bytes`, `SeaweedFS_s3_in_flight_upload_count`, `SeaweedFS_volumeServer_max_volumes`, `SeaweedFS_volumeServer_storage_io_error_total`, `SeaweedFS_volumeServer_file_read_failures`, `SeaweedFS_volumeServer_file_write_failures`. The in-flight request type and volume/filer request type/code dimensions are vendor operation/status dimensions; retain them if enrolled, never drop an identity dimension. Verify whether vendor exposes a true global (non-bucket) aggregate before selecting S3 request/latency coverage; otherwise report those panels as unavailable with owner disposition. Existing PVC capacity and Pod health panels remain. Do not treat max-volume count as used byte capacity. No further storage operation.
+- **Temporal:** service and persistence histogram labels include native `namespace`; do not collide with the Kubernetes `namespace` target label, and do not store private tenant/workflow/taskqueue/worker identifiers or collapse distinct source series. Native persistence `db_kind`/`service_name`/`type` are observed on all four roles; select them as a bounded pool-use candidate. Worker lacks observed service request/latency, matching lacks observed error series in this sample; no zeros fabricated. Matching backlog has namespace, taskqueue, partition, task type, worker/deployment/version dimensions; defer per-queue enrollment absent privacy-safe aggregate. Pinned Temporal 1.32.2 upstream `common/metrics/config.go` (https://github.com/temporalio/temporal/blob/v1.32.2/common/metrics/config.go) uses seconds for Tally timer bucket conversion and OpenTelemetry uses milliseconds unless `recordTimerInSeconds`; see https://github.com/temporalio/temporal/blob/v1.32.2/common/metrics/otel_metrics_handler.go. Determine actual configured reporter/unit from selected native bucket boundaries and config before latency panel freeze. Do not infer units merely from `_bucket`.
+- **Tempo:** `tempo_distributor_traces_per_batch_{count,sum}` are histogram components with no native labels; count is batches, sum is traces observed in batches, not successful durable ingestion. HTTP `tempo_request_duration_seconds_{bucket,count,sum}` has native method/route/status_code/ws; preserve identity and verify route policy, no arbitrary paths.
+- **Prometheus/Collector:** preserve existing jobs and their existing scrape semantics; do not apply new filtering to legacy self metrics without review. Prometheus head-series gauge, storage bytes gauge, append and rejection counters verified; sum append rates only over actual observed type dimension if appropriate. Collector existing Prometheus `up=1` from prior specimen; query existing job instead of repeating direct-forward failures.
+- **Loki/Grafana:** earlier endpoint specimen established actual families; new probe failures may reflect empty HELP parser assumption and Service-to-container port mismatch respectively. Correct only these diagnostic paths and existing Collector query; no service restart, reinstall or workload changes.
+- **PG01:** remaining existing-slot executor admission is separate from the already-passed repair and metrics observation; do not repeat SQL grants.
+
+The complete final metric contract requires explicit disposition of CNPG freeform client dimensions, Temporal namespace/taskqueue dimensions and SeaweedFS bucket/collection dimensions. Keep the accepted no-private-label guarantee. A source-owned aggregate metric can be a later focused owner evolution, not an implicit change by 04. Do not silently reduce required coverage; seek owner ratification if a complete privacy-safe aggregate is unavailable. The remaining read-only diagnostic should return only bounded classifications, actual bucket bounds and selected family keys, never raw arbitrary values. No new committee for ordinary evidence completion.
+
+
+## Final native readback and bounded coverage candidate | 2026-11-28
+
+Owner read-only follow-up in `kind-offscreen-dev`, observed remote Design HEAD `eb1e71a4ebe74fc2cf88359b62b2b6c6cda4b141` (probe did not bind its own HEAD). The previous metric-evidence patch is applied locally but not committed at this observation. All previously failed endpoint reads now succeeded; no additional owner mutation. Preserve earlier receipts; do not repeat G4b, marker preparation, PG01 repair or registry migration.
+
+| Endpoint | Actual selected observation |
+| --- | --- |
+| Loki | Service 3100 → `http-metrics`; four scalar families, one series each: `loki_ingester_chunks_flush_failures_total` counter; `loki_ingester_flush_queue_length`, `loki_ingester_memory_chunks`, `loki_ingester_wal_bytes_in_use` gauges. |
+| Grafana | Service 80 → `grafana`; API response status counter 4 series/4 code values; HTTP duration seconds histogram bucket/count/sum 26/2/2 with handler, method, slo_group, status_code, status_source and le on buckets; inflight gauge one unlabeled series. |
+| Collector | Existing Prometheus `up{job="collector"}=1`; `otelcol_exporter_queue_capacity` and `otelcol_exporter_queue_size` each three series keyed by exporter,data_type plus target labels; `otelcol_process_memory_rss` one; `promhttp_metric_handler_errors_total` two cause series. Also observed CPU, uptime, three runtime memory families and batch metadata cardinality. No accepted/sent/refused/drop counters observed; cannot infer end-to-end delivery or zero loss. Preserve existing scrape configuration. |
+| CNPG | Backend dimensions: application_name 2 distinct, both empty or cnpg_metrics_exporter; datname 3 distinct, all approved dev/temporal/temporal_visibility; usename 2, both cnpg_metrics_exporter or temporal; no other values in this snapshot. Prior max_connections=100 is measured, not a constant. |
+| SeaweedFS | S3 counter bucket and histogram bucket each two distinct values: one empty, one unapproved; volume collection two distinct: one empty, one unapproved. Empty label is not evidence of a global aggregate. |
+| Temporal frontend/history/matching/worker | Native namespace classifications: distinct 5/2/5/2, approved system/_unknown_ as observed (history system only), unapproved 3/1/3/0. Both service and persistence latency bucket boundaries are 0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2,0.5,1,2,5,10,20,50,100,200,500,1000,+Inf (worker persistence only). These match Temporal 1.32.2 default timer seconds boundaries (pinned `common/metrics/config.go::buildTallyTimerHistogramBuckets` converts milliseconds to seconds; source inspected; observed bounds confirm seconds rather than millisecond-scale buckets). Do not divide by 1000. Worker service latency is not observed. |
+
+### Selected bounded coverage (owner ratified 2026-11-28)
+
+[Exact service coverage and scrape-policy candidate](NATIVE-SERVICE-CANDIDATE.json) supplies the concrete JSON rows and PromQL for 04/07, including the previously frozen RabbitMQ row unchanged. It is a planner input, not runtime configuration. Do not dispatch on its presence alone. The owner explicitly accepted the bounded views below on 2026-11-28, with later expansion as needed. Exact selected arrays and policies are frozen in the linked JSON; verify exact row equality at 08. No further vendor endpoint discovery is required for this bounded candidate. Do not add an exporter, custom SQL, owner-side restart or scrape private identifiers to make the panels more complete.
+
+- CNPG: retain all four approved backend identity dimensions (do not drop them to aggregate). Restrict application_name to empty or cnpg_metrics_exporter, usename to known infrastructure/derived slot role vocabulary, datname to the selected platform and derived dev slot database vocabulary, and state to fixed pg_stat_activity states. Connection count and occupancy explicitly lower-bound admitted client groups, not global saturation. Database statistics per instance and selected datname; no primary/standby double-count. Keep max_connections only from settings. Native collector health, error flags and last-update freshness gate DB statistics. Replication lag/receiver only in recovery. No arbitrary SQL or labels.
+- Temporal: keep all observed identity dimensions on selected service/persistence families but admit namespace-labelled samples only for system and _unknown_. Native namespace collides with target namespace under honor_labels=false, hence explicitly retain exported_namespace; namespace target remains Kubernetes namespace. Operation/service_name/type/error_type/db_kind are native server instrumentation dimensions, not workflow/taskqueue identifiers. Do not admit matching backlog labels in E2; no backlog aggregate proved. Never label partial system request/latency panels as all-tenant service metrics. Missing worker service series or typed error series is unknown, not zero. Histograms use seconds and positive rate-count gates. No application or SDK enrollment.
+- SeaweedFS: keep empty bucket and empty collection samples only, with bucketless S3 request rate/p95 and default-collection counts explicitly partial; never strip a nonempty bucket/collection to fake totals. Preserve native type/code/le. Exclude disk name/path and arbitrary collection/bucket traffic labels; retain volume error counters and upload gauges, plus existing KSM PVC capacity/binding. No exact global S3 request/latency or physical disk occupancy proof. `max_volumes` is a count, not capacity bytes.
+- Grafana/Tempo: admit fixed selected scalar/counter signals. Do not enroll handler/route-labelled latency histograms absent a bounded route classification. Tempo batch sum means traces observed in batches, not durable ingestion. Loki exact four verified signals. Prometheus and Collector legacy jobs unchanged; selected dashboard queries only. Collector queue ratio is per exporter/data_type with positive denominator; missing loss counters explicitly unsupported, not healthy.
+- Optional richer operator/control-plane metrics stay inventory-only; Traefik not applicable. Retain universal KSM inventory and resource coverage. The inventory-only rows use namespace inventory, not new endpoint or deployment selection. No new privileges beyond the previously selected Pod discovery. Keep M03 both-node rate correction and existing conditional list/network proof; no claim of native dashboard/Prometheus/G5 success.
+
+### Exact candidate realization rules
+
+`nativeServices` and `seaweedfs` arrays in the linked candidate are the intended contents of the corresponding `coverage/*.json` files under the owner-ratified scope. `newScrapePolicies` gives exact job family allowlists, ordered value filters, retained label union and target selector. Build metric relabel sequence: exact family keep (join family names with `|`, no broad wildcard), then given `valueFilters` in listed order, then one labelkeep of exactly `retainedLabels` (join with `|`). Preserve full admitted identity; tests reject duplicate projected label sets in representative native samples; any new identity dimension or unapproved native value refuses affected qualification rather than broadening collection. For `postgres-cnpg` native cluster label is `exported_cluster` because the target supplies cluster=offscreen-dev; restrict to dev-pg, retain the distinct label. For Temporal keep native `exported_namespace`, target namespace is actual Kubernetes namespace. Use `honor_labels:false` explicitly. Job labels cluster=offscreen-dev, env=dev, component from coverage row (postgres/temporal/etc), namespace fixed target namespace, pod discovered name for both Pod jobs, role from exact Temporal component. Instance remains actual target address; no ready-only filter. Pod discovery restricted to listed namespace and exact Pod labels, exact container/port pairs (role/container must match), not annotations. Use fixed HTTP /metrics, existing 30s/10s, sample_limit 5000, target_limit 100, label_limit 40, label_name_length_limit 128, label_value_length_limit 512. Static job addresses from policy, no service-owner edits. 04 extends the existing exact `obs-prometheus-kubelet` ClusterRole with pods get/list/watch (no pods/exec, Secrets, proxy or mutation), no duplicate new RBAC owner; 08/13 verify combined role/SA/render/effective negatives against the selected contract. Preserve original 02/03/05 jobs and legacy Prometheus/Collector jobs. Existing `scrapeConfigs` and `extraManifests` are the exact current source anchors.
+
+07 mirrors every candidate panel ID, PromQL, unit and interpretation exactly, including partial-scope labels. Add explicit text limitation annotations for each omitted domain above, never render no-data as zero/healthy. Existing frozen inventory/Redis/resource rows remain authoritative, including M03's required correction. Overview consumes fixed component inventory, current up and domain signals separately, with a visible coverage status and no false absence; do not rely solely on scrape success. 08 compares source arrays to the owner-ratified contract, validates exact rendered jobs/labels, PromQL syntax and provider mounts. 13 native query acceptance compares actual series and bounded labels, current health and no-data, no scrape rejects/collisions. Scope ratification is recorded; affected readiness and live proof are distinct. No new architecture committee.
+
 ## Freeze record (current)
 
 | Gate | Current result | Closure owner | Affected |
@@ -907,10 +1223,10 @@ The guarded operation verified the exact old/new history, unchanged stable owner
 | G1 KSM | Registry/runtime pin, render and specimen permissions PASS; observed construction rows frozen; list/Job/degradation proof remains G5 | planner + owner | 02,07,08 |
 | G1 Redis | v1.93.0 rejected; v1.97.0 pin, exclusion flags, disposable command/negative evidence and selected coverage RESOLVED | planner + owner | 05,07,08 |
 | G2 | Native feasibility PASSED; scoped trust/render and resource coverage frozen; 03 source archived/joined; integrated render/trust and G5 NOT RUN | owner/cluster owner + planner | 03,07,08 |
-| G3 | Collector existing scrape PASS; Redis replacement specimen PASS; PG01 occupied repair and CNPG collector recovery PASS (74 observed names, exact isolation); full existing-tenant executor admission and remaining exact panel contracts OPEN | service owner + planner | 04,05,07,08 |
-| G4a/b | 06 source archived/joined; guarded registry cutover, marker preparation and occupied transition PASS; 112 observed sample names; exact selected metric/label/query rows remain OPEN | object-store owner + planner/acceptance lead | 06 source; 04/07/08/13 native |
+| G3 | Collector existing scrape PASS; Redis replacement specimen PASS; PG01 occupied repair and CNPG collector recovery PASS (74 observed names, exact isolation); all selected endpoint reads PASS; bounded coverage ratified and frozen; affected packet readiness pending; full existing-tenant executor admission OPEN | service owner + planner | 04,05,07,08 |
+| G4a/b | 06 source archived/joined; guarded registry cutover, marker preparation and occupied transition PASS; 112 observed sample names; bounded SeaweedFS row ratified and frozen | object-store owner + planner/acceptance lead | 06 source; 04/07/08/13 native |
 | G5 | NOT RUN | acceptance lead + owner | 13 |
 
 Append only actual evidence references and current resolved input values here or in existing evidence owner; update corresponding affected cards in place. No third comprehensive architecture review for ordinary facts. No implementation-ready claim for dependent scope until material facts resolved and reviewed. Keep raw secret data outside Git. The owner can send one consolidated nonsecret terminal summary for G1–G3; G4 owner transition requires separate bounded closure, not an arbitrary live patch.
 
-**Review 03 disposition:** [receipt](READINESS-REVIEW-03.md) establishes 03/06 construction readiness at the reviewed SHA. M03 is a nonblocking resource-query refinement owned by 07: before 08, require both distinct current node series to actually produce `rate(node_cpu_usage_seconds_total[5m])` under the existing freshness/up filters before displaying the cluster CPU total; synchronize the frozen row, inventory coverage and dashboard query (explicitly authorize the narrow inventory coverage reconciliation at 07; no duplicate owner or concurrent 03 writer). Do not substitute zero for an insufficient-sample rate. M04 clarifies 03 T02 realizes node permissions and token mount, 04 realizes selected Pod discovery; 08/13 verify combined exact RBAC. No new gate or committee for these Medium dispositions.
+**Review 03 disposition:** [receipt](READINESS-REVIEW-03.md) establishes 03/06 construction readiness at the reviewed SHA. M03 is a nonblocking resource-query refinement owned by 07: the exact revised offscreen-overview/104 query and interpretation above require two distinct current node rate series; synchronize inventory coverage and dashboard query to that frozen row before 08 (explicitly authorize the narrow inventory coverage reconciliation at 07; no duplicate owner or concurrent 03 writer). Do not substitute zero for an insufficient-sample rate. M04 clarifies 03 T02 realizes node permissions and token mount, 04 realizes selected Pod discovery; 08/13 verify combined exact RBAC. No new gate or committee for these Medium dispositions.
