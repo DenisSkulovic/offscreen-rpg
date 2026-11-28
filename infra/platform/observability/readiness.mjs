@@ -1882,7 +1882,12 @@ export function verifyOwnedEnsurePrefix(snapshot, desired, params) {
       return { ok: false, detail: `unexpected-helm-${release.name}` };
     }
   }
-  if (completedReleasePhases.length === EXPECTED_HELM_RELEASES.length) {
+  // The historical subset shape describes E1 only. The exact E2 shape is
+  // verified by verifyOwnedHistoryShape at finalization, never here.
+  if (
+    completedReleasePhases.length === EXPECTED_HELM_RELEASES.length &&
+    desired.artifactId !== 'dev-e2'
+  ) {
     const subset = assessShape(snapshot, desired, {
       collectorVariant: 'desired',
     });

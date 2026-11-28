@@ -309,6 +309,7 @@ test('inherited descriptor keeps the lock until the owned child closes', async (
 });
 
 const identity = {
+  contextName: 'dev',
   snapshotPath: '/tmp/kubeconfig',
   tuple: { contextName: 'dev', targetNamespace: 'offscreen-dev-observability' },
 };
@@ -594,6 +595,126 @@ test('connect failures name the condition and omit credentials', async () => {
   }
 });
 
+const CLASSIFIED_E2 = {
+  state: 'ready', reasonCode: 'ready', pending: false, structuralReady: true,
+  desiredConverged: true, artifactId: 'dev-e2', historyId: 'e2-fresh',
+  artifacts: { marker: 'e2-descriptor', releases: [] },
+};
+const CLASSIFIED_E1 = {
+  state: 'not-ready', reasonCode: 'upgrade-required', pending: false,
+  structuralReady: true, desiredConverged: false, artifactId: 'dev-e1-developer',
+  historyId: 'developer-fresh', artifacts: { marker: 'e1-descriptor', releases: [] },
+};
+
+function connectDeps(overrides = {}) {
+  const log = { opened: 0, optionsArtifacts: null, admin: 0, order: [] };
+  const deps = {
+    argv: [],
+    readPlatformProfile: () => ({ contextName: 'dev' }),
+    acquireCustody: async () => ({ fd: 3, mode: 'shared', close() {} }),
+    captureIdentity: () => identity,
+    recheckIdentity: () => ({ ok: true }),
+    loadOperationalArtifactSet: () => ({
+      desired: { artifactId: 'dev-e1-developer-should-not-be-used' },
+      admissible: [{ marker: 'e1-descriptor' }],
+    }),
+    collectInventory: async () => ({
+      pending: false,
+      objects: { 'Secret/obs-grafana-admin': { metadata: { uid: 'uid-grafana' } } },
+    }),
+    classifyOperationalInventory: () => CLASSIFIED_E2,
+    openForwards: async (_identity, _held, options) => {
+      log.opened += 1;
+      log.optionsArtifacts = options.artifacts;
+      return {
+        ports: { developerHttp: 14318, developerGrpc: 14317, grafana: 13000 },
+        failure: new Promise(() => {}),
+        close: async () => ({ ok: true }),
+      };
+    },
+    readGrafanaAdmin: async (_identity, uid) => {
+      log.admin += 1;
+      assert.equal(uid, 'uid-grafana');
+      return { user: 'admin', password: 'secret-value' };
+    },
+    probeForwardTransport: async () => ({ ok: true, reasonCode: 'transport' }),
+    ...overrides,
+  };
+  return { deps, log };
+}
+
+test('connect carries the matched E2 descriptor even when an E1 artifact is available', async () => {
+  const { deps, log } = connectDeps();
+  const session = await runObservabilityConnect(deps);
+  assert.equal(session.ok, true);
+  assert.equal(session.artifactId, 'dev-e2');
+  assert.equal(session.historyId, 'e2-fresh');
+  assert.equal(log.optionsArtifacts, CLASSIFIED_E2.artifacts);
+  assert.equal(log.opened, 1);
+  await session.cleanup();
+});
+
+test('connect admits exact E1 developer with its own descriptor', async () => {
+  const { deps, log } = connectDeps({ classifyOperationalInventory: () => CLASSIFIED_E1 });
+  const session = await runObservabilityConnect(deps);
+  assert.equal(session.ok, true);
+  assert.equal(session.artifactId, 'dev-e1-developer');
+  assert.equal(log.optionsArtifacts, CLASSIFIED_E1.artifacts);
+  await session.cleanup();
+});
+
+test('connect refuses base, pending, unreadable, foreign, mixed and unmatched before any forward', async () => {
+  const none = { structuralReady: false, artifactId: null, historyId: null, artifacts: null, pending: false };
+  const refusals = {
+    base: { ...none, state: 'not-ready', reasonCode: 'upgrade-required', artifactId: 'dev-e1-base', historyId: 'base-fresh', artifacts: {} },
+    'base marked structural': { ...CLASSIFIED_E1, artifactId: 'dev-e1-base', historyId: 'base-fresh' },
+    pending: { ...CLASSIFIED_E2, pending: true, state: 'not-ready', reasonCode: 'pending' },
+    unreadable: { ...none, state: 'unreadable', reasonCode: 'unreadable' },
+    foreign: { ...none, state: 'foreign', reasonCode: 'foreign' },
+    mixed: { ...none, state: 'not-ready', reasonCode: 'not-ready' },
+    'release artifact': { ...CLASSIFIED_E2, artifactId: 'release-e1', historyId: 'release-e1' },
+    'no descriptor': { ...CLASSIFIED_E2, artifacts: null },
+  };
+  for (const [name, classified] of Object.entries(refusals)) {
+    const { deps, log } = connectDeps({ classifyOperationalInventory: () => classified });
+    const result = await runObservabilityConnect(deps);
+    assert.equal(result.ok, false, name);
+    assert.equal(result.exitCode, 1, name);
+    assert.equal(log.opened, 0, name);
+    assert.equal(log.admin, 0, name);
+  }
+  const { deps } = connectDeps({ classifyOperationalInventory: () => refusals.pending });
+  assert.equal((await runObservabilityConnect(deps)).reasonCode, 'pending');
+});
+
+test('wrong admin Secret UID or changed context fails before any forward', async () => {
+  const wrongUid = connectDeps({
+    readGrafanaAdmin: async () => {
+      throw Object.assign(new Error('uid'), { reasonCode: 'admin-secret-uid' });
+    },
+  });
+  const failed = await runObservabilityConnect(wrongUid.deps);
+  assert.equal(failed.ok, false);
+  assert.equal(failed.reasonCode, 'admin-secret-uid');
+  assert.equal(wrongUid.log.opened, 0);
+
+  const noUid = connectDeps({
+    collectInventory: async () => ({ pending: false, objects: {} }),
+  });
+  assert.equal((await runObservabilityConnect(noUid.deps)).reasonCode, 'admin-secret');
+  assert.equal(noUid.log.opened, 0);
+
+  const changed = connectDeps({
+    captureIdentity: () => ({ ...identity, contextName: 'kind-other' }),
+  });
+  assert.equal((await runObservabilityConnect(changed.deps)).reasonCode, 'identity');
+  assert.equal(changed.log.opened, 0);
+
+  const rechecked = connectDeps({ recheckIdentity: () => ({ ok: false }) });
+  assert.equal((await runObservabilityConnect(rechecked.deps)).reasonCode, 'identity');
+  assert.equal(rechecked.log.opened, 0);
+});
+
 test('connect accepts only empty argv or --queries and refuses a predecessor', async () => {
   assert.deepEqual(parseConnectArgs([]), { queries: false });
   assert.deepEqual(parseConnectArgs(['--queries']), { queries: true });
@@ -603,9 +724,9 @@ test('connect accepts only empty argv or --queries and refuses a predecessor', a
     readPlatformProfile: () => ({ contextName: 'dev' }),
     acquireCustody: async () => ({ fd: 3, close() {} }),
     captureIdentity: () => identity,
-    loadObservabilityVariants: () => ({ desired: {}, predecessor: {} }),
+    loadOperationalArtifactSet: () => ({ desired: {}, admissible: [] }),
     collectInventory: async () => ({ pending: false }),
-    classifyInventory: () => ({ state: 'not-ready', reasonCode: 'upgrade-required', pending: false }),
+    classifyOperationalInventory: () => ({ state: 'not-ready', reasonCode: 'upgrade-required', pending: false, structuralReady: false, artifactId: 'dev-e1-base', historyId: 'base-fresh', artifacts: {} }),
   });
   assert.equal(refused.reasonCode, 'upgrade-required');
   assert.equal(refused.exitCode, 1);
@@ -708,12 +829,12 @@ test('connect supervision stops on a premature child and on SIGINT', async () =>
     acquireCustody: async () => ({ fd: 3, mode: 'shared', close() {} }),
     captureIdentity: () => identity,
     recheckIdentity: () => ({ ok: true }),
-    loadObservabilityVariants: () => ({ desired: { releases: [] }, predecessor: null }),
+    loadOperationalArtifactSet: () => ({ desired: { releases: [] }, admissible: [] }),
     collectInventory: async () => ({
       pending: false,
       objects: { 'Secret/obs-grafana-admin': { metadata: { uid: 'uid-grafana' } } },
     }),
-    classifyInventory: () => ({ state: 'ready', reasonCode: 'ready', pending: false }),
+    classifyOperationalInventory: () => CLASSIFIED_E2,
     openForwards: async (_identity, _held, options) => {
       bindings = options.bindings;
       return {
@@ -787,12 +908,12 @@ test('session recheck calls now and credential failure releases children', async
       },
     }),
     recheckIdentity: () => ({ ok: true }),
-    loadObservabilityVariants: () => ({ desired: { releases: [] }, predecessor: null }),
+    loadOperationalArtifactSet: () => ({ desired: { releases: [] }, admissible: [] }),
     collectInventory: async () => ({
       pending: false,
       objects: { 'Secret/obs-grafana-admin': { metadata: { uid: 'uid-grafana' } } },
     }),
-    classifyInventory: () => ({ state: 'ready', reasonCode: 'ready', pending: false }),
+    classifyOperationalInventory: () => CLASSIFIED_E2,
     openForwards: async () => ({
       ports: { developerHttp: 1, developerGrpc: 2, grafana: 3 },
       failure: new Promise(() => {}),
@@ -808,8 +929,9 @@ test('session recheck calls now and credential failure releases children', async
   });
   assert.equal(failed.ok, false);
   assert.equal(failed.reasonCode, 'credential');
-  assert.equal(closed, true);
+  // The admin Secret is validated before any forward opens: no children.
+  assert.equal(closed, false);
   assert.equal(cleaned, true);
   assert.equal(heldClosed, true);
-  assert.deepEqual(order, ['children', 'snapshot', 'custody']);
+  assert.deepEqual(order, ['snapshot', 'custody']);
 });

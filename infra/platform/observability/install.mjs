@@ -10,7 +10,7 @@ import { readPlatformProfile } from '../common/profile.mjs';
 import {
   helmValuesArgv,
   loadArtifacts,
-  loadObservabilityVariants,
+  loadOperationalArtifactSet,
 } from './artifacts.mjs';
 import { acquireCustody, readPending, runMutation } from './custody.mjs';
 import {
@@ -20,12 +20,19 @@ import {
   recheckIdentity,
   runObservabilityReadCommand,
 } from './identity.mjs';
-import { collectInventory, GRAFANA_ADMIN_SECRET } from './inventory.mjs';
 import {
-  classifyInventory,
+  collectInventory,
+  findAbsentNamespaceRbacCollisions,
+  GRAFANA_ADMIN_SECRET,
+} from './inventory.mjs';
+import { readDevKubeletTrust } from './kubelet-trust.mjs';
+import {
+  classifyOperationalInventory,
   observeObservability,
+  observeOperationalObservability,
   verifyOwnedEnsurePrefix,
   verifyOwnedFinalShape,
+  verifyOwnedHistoryShape,
 } from './readiness.mjs';
 import { OBSERVABILITY_MUTATION_PHASES } from './receipt.mjs';
 
@@ -49,6 +56,40 @@ export const PHASE_TIMEOUT_MS = Object.freeze({
   disruption: 30_000,
 });
 
+const OPERATIONAL_GROUP_KEYS = Object.freeze([
+  'artifactId',
+  'historyId',
+  'structuralReady',
+  'desiredConverged',
+]);
+
+/** Unverified or unmatched outcome: null IDs and false readiness. */
+const NO_MATCH = Object.freeze({
+  artifactId: null,
+  historyId: null,
+  structuralReady: false,
+  desiredConverged: false,
+});
+
+/**
+ * The H05 additive field group from an operational classification. Only an
+ * exactly matched final row carries IDs; everything else is null/false.
+ * @param {{ artifactId?: string | null, historyId?: string | null, structuralReady?: boolean, desiredConverged?: boolean } | null | undefined} classified
+ */
+export function operationalGroup(classified) {
+  if (classified?.artifactId == null || classified?.historyId == null) {
+    return NO_MATCH;
+  }
+  return {
+    artifactId: classified.artifactId,
+    historyId: classified.historyId,
+    structuralReady: classified.structuralReady === true,
+    desiredConverged:
+      classified.structuralReady === true &&
+      classified.desiredConverged === true,
+  };
+}
+
 /**
  * @param {{
  *   ok: boolean,
@@ -59,9 +100,16 @@ export const PHASE_TIMEOUT_MS = Object.freeze({
  *   pending?: boolean,
  *   profile?: ObservabilityProfileId,
  *   operation?: string,
+ *   artifactId?: string | null,
+ *   historyId?: string | null,
+ *   structuralReady?: boolean,
+ *   desiredConverged?: boolean,
  * }} fields
  */
 export function buildWorkerReceipt(fields) {
+  const operational = OPERATIONAL_GROUP_KEYS.some(
+    (key) => fields[key] !== undefined,
+  );
   return {
     schema: 1,
     ok: fields.ok,
@@ -72,6 +120,14 @@ export function buildWorkerReceipt(fields) {
     mutation: fields.mutation,
     completedPhases: fields.completedPhases,
     pending: fields.pending === true,
+    ...(operational
+      ? {
+          artifactId: fields.artifactId ?? null,
+          historyId: fields.historyId ?? null,
+          structuralReady: fields.structuralReady === true,
+          desiredConverged: fields.desiredConverged === true,
+        }
+      : {}),
   };
 }
 
@@ -186,6 +242,11 @@ function structuralObservationReceipt(profileId, contextName, observation) {
     mutation: 'none',
     completedPhases: [],
     pending: observation.pending === true,
+    // Operational observations always carry the group (null/false when
+    // unmatched); a legacy-shaped observation keeps the legacy receipt.
+    ...(observation.artifactId !== undefined
+      ? operationalGroup(observation)
+      : {}),
   });
 }
 
@@ -231,14 +292,15 @@ export async function runObservabilityPlan(profileId, contextName, deps = {}) {
       pending: false,
     });
   }
-  const { desired, predecessor } = loadObservabilityVariants(profileId, {
+  // Normal observation uses the operational selector (09); historical
+  // explicit-descriptor routes stay strict E1 in observeObservability.
+  const observation = (
+    deps.observeOperational ?? observeOperationalObservability
+  )(profileId, {
     run: deps.run,
-    verifyArchive: deps.verifyArchive !== false,
-  });
-  const observation = observeObservability(profileId, {
-    run: deps.run,
-    artifacts: desired,
-    predecessorArtifacts: predecessor,
+    artifactSet: deps.artifactSet,
+    readKubeletTrust: deps.readKubeletTrust,
+    trustRun: deps.trustRun,
     readPending: deps.readPending,
     stateRoot: deps.stateRoot,
     now: deps.now,
@@ -385,6 +447,9 @@ export async function runObservabilityEnsure(
   const workerDeadline = started + WORKER_BUDGET_MS;
   const run = deps.run ?? runObservabilityReadCommand;
 
+  /** Verified identity of the admission observation; null/false otherwise. */
+  let reportGroup = NO_MATCH;
+
   const fail = (state, reasonCode, mutation, pending = mutationAttempted) =>
     buildWorkerReceipt({
       ok: false,
@@ -395,6 +460,7 @@ export async function runObservabilityEnsure(
       mutation,
       completedPhases: completedPhases.slice(),
       pending,
+      ...(mutation === 'none' ? reportGroup : NO_MATCH),
     });
 
   const remainingMs = () => Math.max(0, Math.floor(workerDeadline - now()));
@@ -413,6 +479,7 @@ export async function runObservabilityEnsure(
       mutation: 'none',
       completedPhases: [],
       pending: false,
+      ...NO_MATCH,
     });
   }
 
@@ -426,21 +493,14 @@ export async function runObservabilityEnsure(
       mutation: 'none',
       completedPhases: [],
       pending: false,
+      ...NO_MATCH,
     });
   }
 
-  /** @type {ReturnType<typeof loadObservabilityVariants>['predecessor']} */
-  let predecessorArtifacts = null;
-  let artifacts;
-  try {
-    const variants = loadObservabilityVariants(profileId, {
-      verifyArchive: deps.verifyArchive !== false,
-    });
-    artifacts = variants.desired;
-    predecessorArtifacts = variants.predecessor;
-  } catch {
-    return fail('refused', 'artifact-invalid', 'none', false);
-  }
+  /** @type {ReturnType<typeof loadOperationalArtifactSet> | null} */
+  let artifactSet = null;
+  /** @type {ReturnType<typeof loadArtifacts> | null} */
+  let artifacts = null;
 
   try {
     identity = await (deps.captureIdentity ?? captureIdentity)(
@@ -466,22 +526,68 @@ export async function runObservabilityEnsure(
       return fail('refused', 'refused', 'none', false);
     }
 
-    const collect =
+    // One validated G2 binding, read once under the exclusive custody. The
+    // exact desired descriptor (never an E1 fallback) is bound from it.
+    const readBinding = (currentIdentity) =>
+      deps.readKubeletTrust
+        ? deps.readKubeletTrust(currentIdentity)
+        : readDevKubeletTrust(
+            currentIdentity,
+            deps.trustRun ? { run: deps.trustRun } : {},
+          );
+    try {
+      artifactSet =
+        deps.artifactSet ??
+        loadOperationalArtifactSet(profileId, {
+          verifyArchive: deps.verifyArchive !== false,
+          ...(profileId === 'dev'
+            ? { readKubeletTrust: () => readBinding(identity) }
+            : {}),
+        });
+    } catch {
+      return fail('refused', 'artifact-invalid', 'none', false);
+    }
+    artifacts = artifactSet.desired;
+    const inventoryArtifacts =
+      artifacts ?? [...(artifactSet.admissible ?? [])].reverse()[0] ?? null;
+    if (inventoryArtifacts == null) {
+      return fail('refused', 'artifact-invalid', 'none', false);
+    }
+    const boundBindingSha256 = artifacts?.kubeletTrustBindingSha256 ?? null;
+
+    /** Recheck the live G2 binding digest equals the bound descriptor's. */
+    const assertBinding = () => {
+      if (boundBindingSha256 == null) {
+        return;
+      }
+      let current;
+      try {
+        current = readBinding(identity);
+      } catch {
+        throw new Error('binding-changed');
+      }
+      if (current?.bindingSha256 !== boundBindingSha256) {
+        throw new Error('binding-changed');
+      }
+    };
+
+    const rawCollect =
       deps.collectInventorySnapshot ??
       ((currentIdentity) =>
-        collectInventory(currentIdentity, artifacts, {
+        collectInventory(currentIdentity, inventoryArtifacts, {
           run,
           now,
           deadline: now() + FINAL_OBSERVATION_RESERVE_MS,
           readPending: deps.readPending,
           stateRoot: deps.stateRoot,
+          staticInventory: artifactSet.staticInventory ?? undefined,
         }));
+    const collect = (currentIdentity) => ({
+      ...rawCollect(currentIdentity),
+      profileId,
+    });
 
     const snapshot = collect(identity);
-
-    const admission = classifyInventory({ ...snapshot, profileId }, artifacts, {
-      predecessorArtifacts,
-    });
 
     if (
       snapshot.pending === true &&
@@ -491,7 +597,11 @@ export async function runObservabilityEnsure(
       return fail('not-ready', 'pending', 'none', true);
     }
 
+    // Union admission over every admissible bundle plus the desired one.
+    const admission = classifyOperationalInventory(snapshot, artifactSet);
+
     if (admission.reasonCode === 'upgrade-required') {
+      reportGroup = operationalGroup(admission);
       return fail('not-ready', 'upgrade-required', 'none', false);
     }
 
@@ -505,6 +615,7 @@ export async function runObservabilityEnsure(
         mutation: 'none',
         completedPhases: [],
         pending: false,
+        ...operationalGroup(admission),
       });
     }
 
@@ -517,8 +628,18 @@ export async function runObservabilityEnsure(
       );
     }
 
+    if (artifacts == null) {
+      return fail(
+        'refused',
+        artifactSet.desiredUnavailableReason ?? 'artifact-invalid',
+        'none',
+        false,
+      );
+    }
+
     const runWrite = async (phaseId, command, args) => {
       assertPhaseBudget(remainingMs(), phaseId);
+      assertBinding();
 
       const recheck = (deps.recheckIdentity ?? recheckIdentity)(identity, {
         run,
@@ -553,6 +674,16 @@ export async function runObservabilityEnsure(
 
       if (custody.cancelled || custody.mode !== 'exclusive') {
         throw new Error('phase-failed');
+      }
+      if (phaseId === 'namespace') {
+        // Named cluster RBAC must not exist while the namespace is absent.
+        const preCreate = collect(identity);
+        if (
+          preCreate.namespace?.absent !== true ||
+          findAbsentNamespaceRbacCollisions(preCreate).length > 0
+        ) {
+          throw new Error('rbac-collision');
+        }
       }
       if (!pendingBegun) {
         custody.begin({
@@ -675,7 +806,13 @@ export async function runObservabilityEnsure(
       if (message.includes('foreign-pending')) {
         return 'pending';
       }
-      if (message.includes('identity-changed')) {
+      if (message.includes('rbac-collision')) {
+        return 'not-ready';
+      }
+      if (
+        message.includes('identity-changed') ||
+        message.includes('binding-changed')
+      ) {
         return 'identity-changed';
       }
       if (
@@ -767,54 +904,115 @@ export async function runObservabilityEnsure(
 
     assertPhaseBudget(remainingMs(), 'obs-grafana');
 
-    const finalObservation = deps.finalObservation
-      ? deps.finalObservation()
-      : observeObservability(profileId, {
-          run,
-          identity,
-          artifacts,
-          predecessorArtifacts,
-          now,
-          deadline: now() + FINAL_OBSERVATION_RESERVE_MS,
-          readPending:
-            deps.readPending ??
-            ((ctx) => readPending(ctx, { stateRoot: deps.stateRoot })),
-        });
+    if (completedPhases.length !== OBSERVABILITY_MUTATION_PHASES.length) {
+      return fail('partial', 'phase-failed', 'confirmed', true);
+    }
 
     if (deps.foreignPendingAtFinalize === true) {
       return fail('not-ready', 'pending', 'confirmed', true);
     }
 
-    let shapeReady = false;
-    if (finalObservation.snapshot != null) {
-      const finalizeSnapshot = {
-        ...finalObservation.snapshot,
-        pending: true,
-        pendingValid: true,
-      };
-      const ownedShape = verifyOwnedFinalShape(finalizeSnapshot, artifacts, {
-        identity,
-        custody,
-        predecessorArtifacts,
-        expectedOperation: 'ensure',
-        expectedRevision: 1,
+    /** Recheck identity and binding right before an owned clear. */
+    const recheckForClear = () => {
+      assertBinding();
+      const check = (deps.recheckIdentity ?? recheckIdentity)(identity, {
+        run,
+        now,
+        deadline: workerDeadline,
+        expectedNamespaceUid: identity.tuple.targetNamespaceUid,
       });
-      shapeReady = ownedShape.ok;
+      if (!check.ok) {
+        throw new Error('identity-changed');
+      }
+    };
+
+    if (artifacts.artifactId === 'dev-e2') {
+      // Fresh E2 finalization: the real pending snapshot is verified against
+      // the exact owned e2-fresh row. No state-only or public-ready shortcut.
+      try {
+        assertBinding();
+        const finalObservation = deps.finalObservation
+          ? deps.finalObservation()
+          : { snapshot: collect(identity) };
+        const finalSnapshot = finalObservation?.snapshot;
+        if (finalSnapshot == null) {
+          return fail('not-ready', 'not-ready', 'confirmed', true);
+        }
+        const prefix = verifyCompletedPhasePrefix(
+          finalSnapshot,
+          artifacts,
+          completedPhases,
+          { identity, custody, profile },
+        );
+        if (!prefix.ok) {
+          return fail('not-ready', 'not-ready', 'confirmed', true);
+        }
+        const owned = custody.assertOwnPending();
+        const shape = verifyOwnedHistoryShape(finalSnapshot, artifactSet, {
+          custody,
+          historyId: 'e2-fresh',
+          operationId: owned?.operationId,
+          phase: null,
+          namespaceUid: identity.tuple.targetNamespaceUid,
+          expectedOperation: 'ensure',
+          pendingPhase: 'obs-grafana',
+        });
+        if (!shape.ok) {
+          return fail('not-ready', 'not-ready', 'confirmed', true);
+        }
+        recheckForClear();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return fail(
+          'not-ready',
+          message.includes('binding-changed') ||
+            message.includes('identity-changed')
+            ? 'identity-changed'
+            : 'not-ready',
+          'confirmed',
+          true,
+        );
+      }
     } else {
-      shapeReady = finalObservation.state === 'ready';
-    }
-
-    if (!shapeReady) {
-      return fail(
-        finalObservation.state ?? 'not-ready',
-        finalObservation.reasonCode ?? 'not-ready',
-        'confirmed',
-        true,
-      );
-    }
-
-    if (completedPhases.length !== OBSERVABILITY_MUTATION_PHASES.length) {
-      return fail('partial', 'phase-failed', 'confirmed', true);
+      // Legacy release finalization is unchanged.
+      const finalObservation = deps.finalObservation
+        ? deps.finalObservation()
+        : observeObservability(profileId, {
+            run,
+            identity,
+            artifacts,
+            predecessorArtifacts: null,
+            now,
+            deadline: now() + FINAL_OBSERVATION_RESERVE_MS,
+            readPending:
+              deps.readPending ??
+              ((ctx) => readPending(ctx, { stateRoot: deps.stateRoot })),
+          });
+      let shapeReady = false;
+      if (finalObservation.snapshot != null) {
+        const ownedShape = verifyOwnedFinalShape(
+          { ...finalObservation.snapshot, pending: true, pendingValid: true },
+          artifacts,
+          {
+            identity,
+            custody,
+            predecessorArtifacts: null,
+            expectedOperation: 'ensure',
+            expectedRevision: 1,
+          },
+        );
+        shapeReady = ownedShape.ok;
+      } else {
+        shapeReady = finalObservation.state === 'ready';
+      }
+      if (!shapeReady) {
+        return fail(
+          finalObservation.state ?? 'not-ready',
+          finalObservation.reasonCode ?? 'not-ready',
+          'confirmed',
+          true,
+        );
+      }
     }
 
     try {
@@ -839,6 +1037,19 @@ export async function runObservabilityEnsure(
       mutation: 'confirmed',
       completedPhases: OBSERVABILITY_MUTATION_PHASES.slice(),
       pending: false,
+      ...(artifacts.artifactId === 'dev-e2'
+        ? {
+            artifactId: 'dev-e2',
+            historyId: 'e2-fresh',
+            structuralReady: true,
+            desiredConverged: true,
+          }
+        : {
+            artifactId: artifacts.artifactId,
+            historyId: artifacts.artifactId,
+            structuralReady: true,
+            desiredConverged: true,
+          }),
     });
   } finally {
     adminPassword = null;

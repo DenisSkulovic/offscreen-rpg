@@ -216,12 +216,29 @@ test('release profile renders frozen inventory and five digest-pinned images', (
   assert.equal(bundle.expectedInventory.generatedClaims.length, 2);
 });
 
-test('renderObservabilityDocuments and lintObservability succeed for both profiles', () => {
-  for (const profileId of /** @type {const} */ (['dev', 'release'])) {
-    const docs = renderObservabilityDocuments(profileId, { run: helmRun });
-    assert.ok(docs.length > 0);
-    lintObservability(profileId, { run: helmRun });
+test('release render/lint is exact E1; dev refuses without a trust binding (no E1 fallback)', () => {
+  const docs = renderObservabilityDocuments('release', { run: helmRun });
+  assert.ok(docs.length > 0);
+  lintObservability('release', { run: helmRun });
+  const unavailable = () => {
+    const error = new Error('x');
+    error.code = 'kubelet-trust-unavailable';
+    throw error;
+  };
+  for (const op of [renderObservabilityDocuments, lintObservability]) {
+    assert.throws(
+      () => op('dev', { run: helmRun, readKubeletTrust: unavailable }),
+      /kubelet-trust-unavailable/,
+    );
   }
+  assert.throws(
+    () =>
+      renderObservabilityDocuments('release', {
+        run: helmRun,
+        readKubeletTrust: unavailable,
+      }),
+    /release profile/,
+  );
 });
 
 test('vendor archives match pins.yaml sha256', () => {

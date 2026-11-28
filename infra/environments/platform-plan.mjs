@@ -490,8 +490,8 @@ export function runChartRenderPreflight(
     );
   }
   if (selectedServices.includes('observability')) {
-    lintObservability(profileId, { run });
-    renderObservabilityDocuments(profileId, { run });
+    lintObservability(profileId, { run, ...deps.observability });
+    renderObservabilityDocuments(profileId, { run, ...deps.observability });
   }
 }
 
@@ -718,6 +718,18 @@ export function redactPlatformReceipt(receipt) {
 /**
  * @param {string[]} argv
  */
+/** Validated H05 group from a typed ensure receipt, when present. */
+function ensureGroupFields(typed) {
+  return typed.artifactId === undefined
+    ? {}
+    : {
+        artifactId: typed.artifactId,
+        historyId: typed.historyId,
+        structuralReady: typed.structuralReady,
+        desiredConverged: typed.desiredConverged,
+      };
+}
+
 function observabilityEnsureSpawnExempt(argv) {
   if (argv.length !== 5) {
     return false;
@@ -959,7 +971,9 @@ export function runPlatformPlan(plan, runner, deps = {}) {
           rollback: false,
         };
       }
-      const typed = parseEnsureReceipt(normalized);
+      const typed = parseEnsureReceipt(normalized, {
+        expectedProfile: plan.profileId,
+      });
       if (!typed.ok) {
         progress?.phaseFail(phase.id);
         phaseReceipts.push({
@@ -971,6 +985,7 @@ export function runPlatformPlan(plan, runner, deps = {}) {
           reasonCode: typed.reasonCode,
           pending: typed.pending,
           completedPhases: typed.completedPhases,
+          ...ensureGroupFields(typed),
         });
         for (const remaining of plan.phases.slice(
           plan.phases.indexOf(phase) + 1,
@@ -997,6 +1012,7 @@ export function runPlatformPlan(plan, runner, deps = {}) {
         reasonCode: typed.reasonCode,
         pending: typed.pending,
         completedPhases: typed.completedPhases,
+        ...ensureGroupFields(typed),
       });
       continue;
     }

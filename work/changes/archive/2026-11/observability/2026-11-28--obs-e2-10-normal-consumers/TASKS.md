@@ -1,20 +1,20 @@
 # OBS-E2-10 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: READY / DEPENDENCY-GATED — review 08; 08/09 joins pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DONE source (T01–T03 executed 2026-11-28; receipt in PROOF.md). Shared contracts: [group](../../../../open/observability-infrastructure-visibility/README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
-## T01 | Make fresh ensure explicit | READY (review 08; commission and applicable predecessors required)
+## T01 | Make fresh ensure explicit | DONE source
 DEPTH=PATCH
 Requires: 08,09 joined; full selected E2 artifact frozen. 01 historical API preserved.
 May write: infra/platform/observability/install.mjs; tests/install.test.mjs
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/install.mjs: runObservabilityEnsure, verifyCompletedPhasePrefix, helmInstallArgv, buildWorkerReceipt and final observation/verifyOwnedFinalShape call; 08/09 operational interfaces; [H04/H05 exact finalization/receipt contracts](../README.md#review-07-corrections--owned-shape-and-normal-receipt-contracts)
+Read: infra/platform/observability/install.mjs: runObservabilityEnsure, verifyCompletedPhasePrefix, helmInstallArgv, buildWorkerReceipt and final observation/verifyOwnedFinalShape call; 08/09 operational interfaces; [H04/H05 exact finalization/receipt contracts](../../../../open/observability-infrastructure-visibility/README.md#review-07-corrections--owned-shape-and-normal-receipt-contracts)
 Algorithm: Under existing exclusive custody choose explicit desired E2 for fresh dev only, using one validated G2 binding and recheck digest before each mutation and final observation; absent binding refuses fresh activation, E1 status remains readable; exact release E1 unchanged. Use one union admission, check named RBAC collisions before namespace creation, carry same descriptor through prefix/Helm/final. Use 09 operational collection/owned verification on the same bound set for E2 finalization, not explicit-descriptor historical wrapper. Require real pending snapshot, completed phase prefix and `verifyOwnedHistoryShape(...,{custody,historyId:"e2-fresh",operationId,phase:null,namespaceUid,expectedOperation:"ensure",pendingPhase:"obs-grafana"})`; verify the actual record, no state-only ready shortcut, and recheck identity/binding before clear. Preserve release E1 path. Extend `buildWorkerReceipt` with the exact H05 additive field group for operational ensure results; false/unknown on unverified outcomes. Existing E1 base/developer -> explicit upgrade-required, exact E2 -> no-op, pending/unknown/partial -> refusal; no implicit upgrade. Preserve phase budgets and supervisor; stop if measured artifact/inventory work exceeds existing bound, return planner for bounded budget change.
 Test: node --test infra/platform/observability/tests/install.test.mjs
 Negative: E1/pending/mixed never install over state; exact E2 no writes; no unintended release commands. Fresh E2 finalization positive through exact owned row; absent snapshot, final-looking public pending, old historical route, foreign/replaced record, wrong phase, wrong binding, incomplete phase prefix all refuse/retain fence, no clear.
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Route status, public render and diagnostics | READY (review 08; commission and applicable predecessors required)
+## T02 | Route status, public render and diagnostics | DONE source
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/install.mjs (plan/status and receipt projection); receipt.mjs; tests/install.test.mjs; tests/receipt.test.mjs; infra/platform/observability/readiness.mjs; artifacts.mjs; infra/environments/{infra-cli,platform-plan}.mjs; infra/platform/common/cli.mjs; infra/verification/diagnostic-live.mjs; affected existing tests
@@ -26,7 +26,7 @@ Negative: Render/lint release exactly unchanged; recognized E1 developer not des
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Connect using matched descriptor | READY (review 08; commission and applicable predecessors required)
+## T03 | Connect using matched descriptor | DONE source
 DEPTH=PATCH
 Requires: T02 postcondition and packet prerequisites.
 May write: infra/platform/observability/connect.mjs; tests/forward.test.mjs (connect-related cases only; shared test path collision with 11)

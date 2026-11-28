@@ -5,7 +5,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml, parseAllDocuments } from 'yaml';
 import { readPlatformProfile } from '../common/profile.mjs';
-import { runObservabilityReadCommand } from './identity.mjs';
+import { captureIdentity, runObservabilityReadCommand } from './identity.mjs';
+import { readDevKubeletTrust } from './kubelet-trust.mjs';
 
 const observabilityRoot = dirname(fileURLToPath(import.meta.url));
 const valuesRoot = join(observabilityRoot, 'values');
@@ -1688,13 +1689,58 @@ export function loadObservabilityVariants(profileId, deps = {}) {
  * @param {{ run?: PlatformRun }} [deps]
  */
 export function renderObservabilityDocuments(profileId, deps = {}) {
-  return loadArtifacts(profileId, deps).documents;
+  return loadPublicObservabilityBundle(profileId, deps).documents;
+}
+
+/**
+ * Public render/lint bundle: release is exactly E1 (unchanged); dev is the
+ * desired E2 bundle bound to an injected or real local cluster trust
+ * capture. Missing cluster or invalid trust is the explicit
+ * kubelet-trust-unavailable refusal, never an E1 fallback.
+ * @param {ObservabilityProfileId} profileId
+ * @param {{ run?: PlatformRun, verifyArchive?: boolean, kubeletTrust?: unknown, readKubeletTrust?: () => unknown, trustRun?: (...args: any[]) => any }} [deps]
+ */
+export function loadPublicObservabilityBundle(profileId, deps = {}) {
+  const { kubeletTrust, readKubeletTrust, trustRun, ...common } = deps;
+  if (profileId !== 'dev') {
+    if (kubeletTrust !== undefined || readKubeletTrust || trustRun) {
+      throwArtifactInvalid('e2 inputs supplied to the release profile');
+    }
+    return loadArtifacts(profileId, common);
+  }
+  let trust = kubeletTrust;
+  if (trust === undefined) {
+    try {
+      if (typeof readKubeletTrust === 'function') {
+        trust = readKubeletTrust();
+      } else {
+        const profile = readPlatformProfile('dev');
+        const identity = captureIdentity('dev', profile.contextName, {
+          ...(trustRun ? { run: trustRun } : {}),
+        });
+        try {
+          trust = readDevKubeletTrust(identity, {
+            ...(trustRun ? { run: trustRun } : {}),
+          });
+        } finally {
+          identity.cleanup?.();
+        }
+      }
+    } catch {
+      throwArtifactInvalid(KUBELET_TRUST_UNAVAILABLE_REASON);
+    }
+  }
+  return loadArtifacts('dev', {
+    ...common,
+    variant: E2_ARTIFACT_ID,
+    kubeletTrust: trust,
+  });
 }
 
 /**
  * @param {ObservabilityProfileId} profileId
- * @param {{ run?: PlatformRun }} [deps]
+ * @param {{ run?: PlatformRun, verifyArchive?: boolean, kubeletTrust?: unknown, readKubeletTrust?: () => unknown, trustRun?: (...args: any[]) => any }} [deps]
  */
 export function lintObservability(profileId, deps = {}) {
-  loadArtifacts(profileId, deps);
+  loadPublicObservabilityBundle(profileId, deps);
 }
