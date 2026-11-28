@@ -13,7 +13,7 @@ import { parse as parseYaml } from 'yaml';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(root, '..', '..', '..');
 const read = (p) => readFileSync(join(root, p), 'utf8');
-const clone = (v) => structuredClone(v);
+const clone = (v) => JSON.parse(JSON.stringify(v));
 
 const DASHBOARDS = {
   overview: 'offscreen-overview',
