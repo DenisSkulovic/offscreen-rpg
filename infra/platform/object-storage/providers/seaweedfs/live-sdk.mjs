@@ -177,6 +177,73 @@ export async function readMarkerObject(descriptor, expectedSecret) {
   return result;
 }
 
+const sameSecret = (a, b) => a.uid === b.uid && a.resourceVersion === b.resourceVersion;
+const MARKER_BUCKET_NAME = /^offscreen-e2-marker-[0-9a-f]{32}$/;
+
+/**
+ * Read-only: the marker bucket must be absent (HeadBucket 404). Credentials
+ * stay in memory; the admin Secret UID/resourceVersion must match before and
+ * after. Resolves true only for a definite absence.
+ * @param {string} bucket
+ * @param {{ uid: string, resourceVersion: string }} expectedSecret
+ */
+export async function markerBucketAbsent(bucket, expectedSecret) {
+  if (!MARKER_BUCKET_NAME.test(bucket)) throw new Error('marker bucket name invalid');
+  const profile = readPlatformProfile('dev');
+  if (!sameSecret(adminSecretIdentity(profile), expectedSecret)) throw new Error('marker admin Secret changed');
+  const sdk = requireSdk('@aws-sdk/client-s3');
+  const absent = await withForward(profile, async endpoint => {
+    const client = new sdk.S3Client({ endpoint, region: 'us-east-1', forcePathStyle: true,
+      credentials: credentials(profile, 'object-store-s3'), maxAttempts: 1 });
+    try {
+      await client.send(new sdk.HeadBucketCommand({ Bucket: bucket }),
+        { abortSignal: AbortSignal.timeout(10_000) });
+      return false;
+    } catch (error) {
+      if (error?.$metadata?.httpStatusCode === 404) return true;
+      throw new Error('marker bucket probe failed');
+    } finally {
+      client.destroy();
+    }
+  });
+  if (!sameSecret(adminSecretIdentity(profile), expectedSecret)) throw new Error('marker admin Secret changed');
+  return absent;
+}
+
+/**
+ * The only S3 writes of marker preparation: create exactly this bucket, then
+ * a conditional PutObject (IfNoneMatch "*"). No retry, no delete, no policy.
+ * Any failure is reported generically; the caller keeps its intent.
+ * @param {{ bucket: string, key: string }} descriptor
+ * @param {Buffer} bytes
+ * @param {{ uid: string, resourceVersion: string }} expectedSecret
+ */
+export async function writeMarkerObject(descriptor, bytes, expectedSecret) {
+  if (!MARKER_BUCKET_NAME.test(descriptor.bucket) || descriptor.key !== 'retained-marker.bin' ||
+      !Buffer.isBuffer(bytes) || bytes.length < 32 || bytes.length > MARKER_MAX_BYTES) {
+    throw new Error('marker write request invalid');
+  }
+  const profile = readPlatformProfile('dev');
+  if (!sameSecret(adminSecretIdentity(profile), expectedSecret)) throw new Error('marker admin Secret changed');
+  const sdk = requireSdk('@aws-sdk/client-s3');
+  await withForward(profile, async endpoint => {
+    const client = new sdk.S3Client({ endpoint, region: 'us-east-1', forcePathStyle: true,
+      credentials: credentials(profile, 'object-store-s3'), maxAttempts: 1 });
+    try {
+      await client.send(new sdk.CreateBucketCommand({ Bucket: descriptor.bucket }),
+        { abortSignal: AbortSignal.timeout(10_000) });
+      await client.send(new sdk.PutObjectCommand({ Bucket: descriptor.bucket, Key: descriptor.key,
+        Body: bytes, ContentLength: bytes.length, IfNoneMatch: '*' }),
+      { abortSignal: AbortSignal.timeout(10_000) });
+    } catch {
+      throw new Error('marker write incomplete or unknown');
+    } finally {
+      client.destroy();
+    }
+  });
+  if (!sameSecret(adminSecretIdentity(profile), expectedSecret)) throw new Error('marker admin Secret changed');
+}
+
 /**
  * Bounded loopback GET of the native metrics endpoint. Returns only family
  * names, types and label keys, never sample values.

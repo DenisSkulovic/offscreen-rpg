@@ -1131,3 +1131,197 @@ export async function withObjectStorageMetricsTransition(operation, deps = {}) {
     closeSync(lockFd);
   }
 }
+
+// --- Marker preparation custody boundary (G4b acceptance operation) ---
+//
+// A dedicated, marker-only boundary. It shares the object-store lock path and
+// the durable pending primitives but has its own typed intent, its own
+// capability registry and no Helm or command surface at all. A marker intent
+// is classified `unknown` by readObjectStoragePendingState, so every ordinary
+// observer and writer, and the metrics transition, refuse it.
+
+const MARKER_INTENT_KEYS = [
+  'contextName',
+  'details',
+  'identity',
+  'operation',
+  'operationId',
+  'profileId',
+  'schema',
+  'startedAt',
+];
+const MARKER_DETAIL_KEYS = ['descriptor', 'descriptorPath'];
+const MARKER_DESCRIPTOR_KEYS = ['bucket', 'key', 'schema', 'sha256', 'size'];
+const MARKER_BUCKET_PATTERN = /^offscreen-e2-marker-[0-9a-f]{32}$/;
+
+/**
+ * Exact typed parser for the prepare-marker intent. Returns the record or
+ * null; never tolerates extra, missing or mistyped properties.
+ * @param {unknown} record
+ */
+export function parseMarkerIntent(record) {
+  if (!sameKeys(record, MARKER_INTENT_KEYS)) return null;
+  const r = /** @type {Record<string, any>} */ (record);
+  if (
+    r.schema !== 2 ||
+    r.operation !== 'prepare-marker' ||
+    r.profileId !== 'dev' ||
+    typeof r.contextName !== 'string' ||
+    r.contextName.length === 0 ||
+    typeof r.startedAt !== 'string' ||
+    Number.isNaN(Date.parse(r.startedAt)) ||
+    typeof r.operationId !== 'string' ||
+    r.operationId.length === 0 ||
+    r.identity === null ||
+    typeof r.identity !== 'object' ||
+    Array.isArray(r.identity) ||
+    !sameKeys(r.details, MARKER_DETAIL_KEYS)
+  ) {
+    return null;
+  }
+  const { descriptor, descriptorPath } = r.details;
+  if (
+    typeof descriptorPath !== 'string' ||
+    !descriptorPath.startsWith('/') ||
+    !sameKeys(descriptor, MARKER_DESCRIPTOR_KEYS) ||
+    descriptor.schema !== 1 ||
+    typeof descriptor.bucket !== 'string' ||
+    !MARKER_BUCKET_PATTERN.test(descriptor.bucket) ||
+    descriptor.key !== 'retained-marker.bin' ||
+    typeof descriptor.sha256 !== 'string' ||
+    !SHA256.test(descriptor.sha256) ||
+    !Number.isInteger(descriptor.size) ||
+    descriptor.size < 32 ||
+    descriptor.size > 4096
+  ) {
+    return null;
+  }
+  return r;
+}
+
+/** @type {WeakMap<object, { path: string, text: string, dev: number, ino: number, active: boolean, writeAuthorized: boolean }>} */
+const OWNED_MARKER_SESSIONS = new WeakMap();
+
+/**
+ * Throws unless the handle is an active marker-session capability whose exact
+ * record (bytes, device, inode) is still the one this session wrote. A
+ * metrics-transition handle is never accepted here, nor the reverse.
+ * @param {unknown} handle
+ */
+export function assertOwnedMarkerIntent(handle) {
+  const session =
+    handle !== null && typeof handle === 'object'
+      ? OWNED_MARKER_SESSIONS.get(handle)
+      : undefined;
+  if (!session?.active) {
+    throw new Error('Object storage marker intent capability is not active');
+  }
+  const current = readPendingBytes(session.path);
+  if (
+    current.kind !== 'bytes' ||
+    current.text !== session.text ||
+    current.dev !== session.dev ||
+    current.ino !== session.ino
+  ) {
+    throw new Error('Object storage marker intent changed or is not owned');
+  }
+}
+
+/**
+ * Marker-only custody. Refuses any existing pending record (of any kind) under
+ * the object-store flock. The session records one exact intent, authorizes
+ * the one S3 write phase for that owned intent, and clears only that intent
+ * after the caller has proven the marker and persisted the descriptor.
+ *
+ * @param {(session: {
+ *   remaining: () => number,
+ *   recordIntent: (intent: object) => object,
+ *   authorizeWrite: (handle: object) => void,
+ *   clearIntent: (handle: object) => void,
+ * }) => Promise<unknown>} operation
+ * @param {{ stateRoot?: string, now?: () => number, budgetMs?: number }} [deps]
+ */
+export async function withObjectStorageMarkerPreparation(operation, deps = {}) {
+  const profile = readPlatformProfile('dev');
+  const contextName = profile.contextName;
+  const stateRoot = deps.stateRoot ?? defaultStateRoot();
+  const now = deps.now ?? (() => performance.now());
+  const deadline = now() + (deps.budgetMs ?? INSTALL_BUDGET_MS);
+  const remaining = () => Math.max(0, Math.floor(deadline - now()));
+  const { lock: lockPath, pending: pendingPath } =
+    resolveObjectStorageLockPaths(stateRoot, contextName);
+
+  const lockWait = Math.min(LOCK_WAIT_SECONDS * 1000, remaining());
+  if (lockWait < 1) {
+    throw new Error('Object storage install budget exhausted before lock');
+  }
+  let lockFd;
+  try {
+    lockFd = openAndAcquireLock(lockPath, lockWait);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Object storage lock failed';
+    throw message.includes('unavailable')
+      ? new Error('Object storage lock wait timed out')
+      : error;
+  }
+
+  /** @type {object | undefined} */
+  let issued;
+  try {
+    if (readPendingBytes(pendingPath).kind !== 'absent') {
+      throw new Error(
+        'Object storage mutation refused while pending receipt exists',
+      );
+    }
+    const recordIntent = (intent) => {
+      if (issued) {
+        throw new Error('Object storage marker intent already recorded');
+      }
+      const parsed = parseMarkerIntent(intent);
+      if (!parsed || parsed.contextName !== contextName) {
+        throw new Error('Object storage marker intent is malformed');
+      }
+      const text = JSON.stringify(parsed);
+      writePendingDurable(pendingPath, text);
+      const written = readPendingBytes(pendingPath);
+      if (written.kind !== 'bytes' || written.text !== text) {
+        throw new Error('Object storage marker intent readback mismatch');
+      }
+      const handle = Object.freeze({});
+      OWNED_MARKER_SESSIONS.set(handle, {
+        path: pendingPath,
+        text,
+        dev: written.dev,
+        ino: written.ino,
+        active: true,
+        writeAuthorized: false,
+      });
+      issued = handle;
+      return handle;
+    };
+    const authorizeWrite = (handle) => {
+      assertOwnedMarkerIntent(handle);
+      const session = OWNED_MARKER_SESSIONS.get(handle);
+      if (handle !== issued || session.writeAuthorized) {
+        throw new Error('Object storage marker write already authorized');
+      }
+      // One-shot: set before any write so a failure keeps the fence.
+      session.writeAuthorized = true;
+    };
+    const clearIntent = (handle) => {
+      assertOwnedMarkerIntent(handle);
+      const session = OWNED_MARKER_SESSIONS.get(handle);
+      if (!session.writeAuthorized) {
+        throw new Error('Object storage marker intent retained: no authorized write');
+      }
+      clearPendingDurable(pendingPath);
+      session.active = false;
+    };
+    return await operation({ remaining, recordIntent, authorizeWrite, clearIntent });
+  } finally {
+    const session = issued ? OWNED_MARKER_SESSIONS.get(issued) : undefined;
+    if (session) session.active = false;
+    closeSync(lockFd);
+  }
+}
