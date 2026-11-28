@@ -1,3 +1,5 @@
+import { EventEmitter } from 'node:events';
+import { PassThrough } from 'node:stream';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import {
@@ -19,6 +21,10 @@ import {
   LOCK_WAIT_SECONDS,
   buildDisposableNamespaceDeleteInvocation,
   resolveObjectStorageLockPaths,
+  assertOwnedMetricsIntent,
+  parseMetricsIntent,
+  readObjectStoragePendingState,
+  withObjectStorageMetricsTransition,
   withObjectStorageMutation,
 } from '../providers/seaweedfs/mutation-guard.mjs';
 
@@ -613,4 +619,115 @@ test('oversized child output refuses and retains evidence', async () => {
     readIdentity: async () => ({ state: 'known', identity: sampleIdentity() }),
   }), /incomplete or unknown/);
   assert.equal(existsSync(resolveObjectStorageLockPaths(stateRoot, 'kind-offscreen-dev').pending), true);
+});
+
+
+// --- T02: typed pending state and owned metrics capability ---
+
+const SHA = 'a'.repeat(64);
+function metricsIntent(overrides = {}) {
+  return {
+    schema: 2,
+    operation: 'upgrade-metrics',
+    profileId: 'dev',
+    contextName: 'kind-offscreen-dev',
+    startedAt: '2026-11-28T00:00:00.000Z',
+    operationId: 'op-1',
+    identity: { contextName: 'kind-offscreen-dev' },
+    details: {
+      predecessorRevision: 1,
+      targetRevision: 2,
+      predecessorManifestSha256: SHA,
+      targetManifestSha256: 'b'.repeat(64),
+      namespaceUid: 'n',
+      deploymentUid: 'd',
+      serviceUid: 's',
+      serviceClusterIP: '10.0.0.1',
+      secretUid: 'x',
+      secretResourceVersion: '7',
+      pvcUid: 'c',
+      pvUid: 'v',
+      pvHostPath: '/var/p',
+      oldReplicaSetUid: 'r',
+      oldPodUid: 'p',
+      oldHelmStorageUid: 'h',
+      nodeName: 'node',
+      dataDirectoryIdentity: '1:2',
+      markerSha256: 'c'.repeat(64),
+      markerSize: 64,
+    },
+    ...overrides,
+  };
+}
+
+test('typed parser accepts the exact intent and rejects extra, missing or mistyped fields', () => {
+  assert.ok(parseMetricsIntent(metricsIntent()));
+  assert.equal(parseMetricsIntent(metricsIntent({ extra: 1 })), null);
+  const missing = metricsIntent();
+  delete missing.details.pvUid;
+  assert.equal(parseMetricsIntent(missing), null);
+  const bad = metricsIntent();
+  bad.details.targetRevision = 3;
+  assert.equal(parseMetricsIntent(bad), null);
+  assert.equal(parseMetricsIntent(metricsIntent({ profileId: 'release' })), null);
+});
+
+test('metrics session records intent, issues a capability and rejects forged, changed or stale handles', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'os-metrics-'));
+  const { pending } = resolveObjectStorageLockPaths(stateRoot, 'kind-offscreen-dev');
+  let kept;
+  await withObjectStorageMetricsTransition(
+    async ({ recordIntent }) => {
+      assert.throws(() => assertOwnedMetricsIntent({}), /not active/);
+      assert.throws(() => recordIntent({ schema: 2 }), /malformed/);
+      const handle = recordIntent(metricsIntent());
+      kept = handle;
+      assertOwnedMetricsIntent(handle);
+      assert.equal(readObjectStoragePendingState(stateRoot, 'kind-offscreen-dev').kind, 'metrics');
+      assert.throws(() => recordIntent(metricsIntent()), /already recorded/);
+      writeFileSync(pending, JSON.stringify(metricsIntent({ operationId: 'op-2' })));
+      assert.throws(() => assertOwnedMetricsIntent(handle), /changed or is not owned/);
+    },
+    { stateRoot },
+  );
+  assert.throws(() => assertOwnedMetricsIntent(kept), /not active/);
+  // existing pending is never adopted, resumed or overwritten
+  await assert.rejects(
+    withObjectStorageMetricsTransition(async () => {}, { stateRoot }),
+    /pending receipt exists/,
+  );
+});
+
+test('old writers refuse a metrics pending and exact clear removes only the owned record', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'os-metrics-'));
+  await withObjectStorageMetricsTransition(
+    async ({ recordIntent, clearIntent, dispatchUpgrade }) => {
+      const handle = recordIntent(metricsIntent());
+      assert.throws(() => clearIntent(handle), /no verified dispatch/);
+      await assert.rejects(
+        withObjectStorageMutation('dev', async () => ({ ok: true }), {
+          stateRoot,
+          readIdentity: async () => ({ state: 'known', identity: sampleIdentity() }),
+          mutationCommands: TEST_MUTATION_COMMANDS,
+        }),
+        /pending receipt exists/,
+      );
+      await dispatchUpgrade(handle);
+      await assert.rejects(dispatchUpgrade(handle), /already dispatched/);
+      clearIntent(handle);
+      assert.equal(readObjectStoragePendingState(stateRoot, 'kind-offscreen-dev').kind, 'absent');
+    },
+    {
+      stateRoot,
+      spawnChild: () => {
+        const child = new EventEmitter();
+        child.stdout = new PassThrough();
+        child.stderr = new PassThrough();
+        child.stdin = new PassThrough();
+        child.kill = () => {};
+        setImmediate(() => child.emit('close', 0, null));
+        return child;
+      },
+    },
+  );
 });

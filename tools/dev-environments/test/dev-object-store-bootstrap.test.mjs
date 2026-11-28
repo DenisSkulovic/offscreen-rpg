@@ -45,6 +45,8 @@ test('the rendered store is private, pinned, and uses the dev storage class', ()
   assert.match(manifest, /"runAsNonRoot":true/);
   assert.match(manifest, /"automountServiceAccountToken":false/);
   assert.match(manifest, /"type":"ClusterIP"/);
+  assert.match(manifest, /-metricsPort=9327/);
+  assert.match(manifest, /"name":"metrics","containerPort":9327/);
   assert.doesNotMatch(manifest, /local-path/);
   assert.doesNotMatch(manifest, new RegExp(RELEASE_S3_NAMESPACE));
   assert.doesNotMatch(manifest, /stringData/);

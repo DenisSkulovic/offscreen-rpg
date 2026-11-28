@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 import test from 'node:test';
+import { resolveObjectStorageLockPaths } from '../providers/seaweedfs/mutation-guard.mjs';
 import { RELEASE_API_PORT } from '../../../clusters/kind/manager/config.mjs';
 import { RELEASE_BASELINE_NAMESPACE } from '../../common/commands.mjs';
 import {
@@ -23,6 +24,7 @@ import {
 import {
   ensureObjectStorage,
   isObjectStorageMutatingInvocation,
+  statusObjectStorage,
 } from '../providers/seaweedfs/install.mjs';
 
 const DEPLOYMENT_NAME = 'object-store';
@@ -112,6 +114,7 @@ function buildReleaseChainState(options = {}) {
         name: 'seaweedfs',
         image: 'docker.io/chrislusf/seaweedfs:4.54',
         args: ['mini', '-dir=/data'],
+        ports: [{ name: 's3', containerPort: 8333, protocol: 'TCP' }],
         env,
         securityContext: {
           allowPrivilegeEscalation: false,
@@ -758,4 +761,30 @@ test('legacy unlabeled Secret refuses without writes or credential rotation', as
   assert.equal(result.mutated, false);
   assert.equal(result.state, 'refused');
   assertNoMutations(calls);
+});
+
+
+test('metrics pending refuses status and authorized ensure without any run or write', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'os-install-pend-'));
+  const { pending } = resolveObjectStorageLockPaths(stateRoot, 'kind-offscreen-dev');
+  writeFileSync(pending, JSON.stringify({ schema: 2, operation: 'upgrade-metrics' }), {
+    mode: 0o600,
+  });
+  const calls = [];
+  const run = (...args) => {
+    calls.push(args);
+    throw new Error('run must not be called');
+  };
+  const status = statusObjectStorage('dev', { run, stateRoot });
+  assert.notEqual(status.state, 'native-noop');
+  assert.equal(status.historyId, undefined);
+  const ensured = await ensureObjectStorage('dev', {
+    run,
+    stateRoot,
+    authorize: true,
+    generateCredentials: () => ({ accessKeyId: 'a', secretAccessKey: 'b' }),
+  });
+  assert.equal(ensured.ok, false);
+  assert.equal(ensured.mutated, false);
+  assert.equal(calls.length, 0);
 });

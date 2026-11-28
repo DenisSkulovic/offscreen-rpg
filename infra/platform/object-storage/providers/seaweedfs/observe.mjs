@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { isDeepStrictEqual } from 'node:util';
 import { join } from 'node:path';
@@ -8,6 +9,11 @@ import {
   PLATFORM_COMMAND_TIMEOUT_MS,
 } from '../../../common/commands.mjs';
 import { readPlatformProfile } from '../../../common/profile.mjs';
+import {
+  assertOwnedMetricsIntent,
+  defaultObjectStorageStateRoot,
+  readObjectStoragePendingState,
+} from './mutation-guard.mjs';
 import {
   documentIdentity,
   renderPlatformDocuments,
@@ -236,12 +242,21 @@ function listSecretNames({ profileId, contextName, namespace, run }) {
   } catch {
     return { state: 'unknown', reason: 'secret name inventory malformed' };
   }
-  const names = Array.isArray(body?.items)
-    ? body.items
-        .map((item) => item?.metadata?.name)
-        .filter((name) => typeof name === 'string')
-    : [];
-  return { state: 'ok', names };
+  const items = Array.isArray(body?.items) ? body.items : [];
+  const names = items
+    .map((item) => item?.metadata?.name)
+    .filter((name) => typeof name === 'string');
+  // Metadata and type only; Helm Secret data is never read or decoded.
+  const records = items
+    .filter((item) => typeof item?.metadata?.name === 'string')
+    .map((item) => ({
+      name: item.metadata.name,
+      type: item.type,
+      uid: item.metadata.uid,
+      labels: item.metadata.labels,
+      terminating: item.metadata.deletionTimestamp != null,
+    }));
+  return { state: 'ok', names, records };
 }
 
 /**
@@ -333,7 +348,7 @@ function helmStoragePresent(names) {
  *   namespace: string,
  * }}
  */
-export function observeObjectStorageHistory(profileId, deps = {}) {
+function observeHistoryCore(profileId, deps = {}) {
   const run = guardReadOnlyRun(deps.run ?? runPlatformCommand);
   const profile = readPlatformProfile(profileId);
   const namespace = profile.namespaces.objectStorage;
@@ -441,6 +456,19 @@ export function observeObjectStorageHistory(profileId, deps = {}) {
       releaseName,
       namespace,
     };
+  }
+
+  if (profileId === 'dev') {
+    return observeDevNativeHistory({
+      profileId,
+      profile,
+      namespace,
+      releaseName,
+      release: objectStoreReleases[0],
+      secrets,
+      configMaps,
+      run,
+    });
   }
 
   const release = objectStoreReleases[0];
@@ -577,7 +605,362 @@ export function observeObjectStorageHistory(profileId, deps = {}) {
     reason: 'object-store revision 1 matches native Helm history',
     releaseName,
     namespace,
+    artifactId: 'release-s3-base',
+    historyId: 'release-base-r1',
+    metricsEnabled: false,
   };
+}
+
+/** @type {WeakMap<object, Record<number, string>>} */
+const HISTORY_STORAGE_UIDS = new WeakMap();
+
+const NATIVE_CHART_ID = 'platform-object-storage-seaweedfs-0.1.0';
+const HELM_STORAGE_TYPE = 'helm.sh/release.v1';
+
+/** @type {Record<'base' | 'metrics', { artifactId: string, metricsEnabled: boolean }>} */
+const DEV_VARIANTS = {
+  base: { artifactId: 'dev-s3-base', metricsEnabled: false },
+  metrics: { artifactId: 'dev-s3-metrics', metricsEnabled: true },
+};
+
+/**
+ * Exact user values for a dev variant. The base variant is the current dev
+ * profile with the single added key removed, never a loosened comparison.
+ * @param {'base' | 'metrics'} variant
+ */
+function devVariantValues(variant) {
+  const values = { ...loadNativeProfileValues('dev') };
+  if (variant === 'base') {
+    delete values.metricsEnabled;
+  }
+  return values;
+}
+
+/**
+ * @param {string} reason
+ * @param {'unknown' | 'refused'} state
+ * @param {{ releaseName: string, namespace: string }} base
+ */
+function historyFailure(state, reason, base) {
+  return {
+    state,
+    reason,
+    releaseName: base.releaseName,
+    namespace: base.namespace,
+  };
+}
+
+/**
+ * Verify that one retained dev revision exactly matches one variant. Returns
+ * `{ match: true }`, `{ match: false, state, reason }`.
+ * @param {{
+ *   revision: number,
+ *   variant: 'base' | 'metrics',
+ *   profile: ReturnType<typeof readPlatformProfile>,
+ *   namespace: string,
+ *   releaseName: string,
+ *   run: typeof runPlatformCommand,
+ *   expected: Map<string, object[]>,
+ * }} spec
+ */
+function matchDevRevision(spec) {
+  const { revision, variant, profile, namespace, releaseName, run } = spec;
+  const common = [
+    '--revision',
+    String(revision),
+    '--kube-context',
+    profile.contextName,
+    '--namespace',
+    namespace,
+  ];
+  const valuesResult = run(
+    'helm',
+    ['get', 'values', releaseName, ...common, '-o', 'yaml'],
+    { timeoutMs: PLATFORM_COMMAND_TIMEOUT_MS },
+  );
+  if (commandUnreadable(valuesResult)) {
+    return { match: false, state: 'unknown', reason: 'helm get values failed' };
+  }
+  let installedValues;
+  try {
+    installedValues = parse(valuesResult.stdout ?? '');
+  } catch {
+    return {
+      match: false,
+      state: 'unknown',
+      reason: 'helm values response malformed',
+    };
+  }
+  if (!valuesExactlyEqual(installedValues, devVariantValues(variant))) {
+    return {
+      match: false,
+      state: 'refused',
+      reason: 'installed Helm values differ from native profile',
+    };
+  }
+  const manifestResult = run(
+    'helm',
+    ['get', 'manifest', releaseName, ...common],
+    { timeoutMs: PLATFORM_COMMAND_TIMEOUT_MS },
+  );
+  if (commandUnreadable(manifestResult)) {
+    return {
+      match: false,
+      state: 'unknown',
+      reason: 'helm get manifest failed',
+    };
+  }
+  let installedWorkloads;
+  try {
+    installedWorkloads = parseHelmManifestDocuments(
+      manifestResult.stdout ?? '',
+    );
+  } catch (error) {
+    return {
+      match: false,
+      state: 'unknown',
+      reason: error instanceof Error ? error.message : String(error),
+    };
+  }
+  let expectedWorkloads = spec.expected.get(variant);
+  if (!expectedWorkloads) {
+    try {
+      // Base is the explicit fixed-false overlay; metrics is the profile as is.
+      expectedWorkloads = renderPlatformDocuments(
+        { service: 'object-storage', profile: 'dev', section: 'workloads' },
+        variant === 'base'
+          ? { run, stdinOverlay: { metricsEnabled: false } }
+          : { run },
+      );
+    } catch (error) {
+      return {
+        match: false,
+        state: 'unknown',
+        reason: error instanceof Error ? error.message : String(error),
+      };
+    }
+    spec.expected.set(variant, expectedWorkloads);
+  }
+  if (!workloadsMatch(installedWorkloads, expectedWorkloads)) {
+    return {
+      match: false,
+      state: 'refused',
+      reason: 'installed Helm manifest differs from native chart workloads',
+    };
+  }
+  return { match: true };
+}
+
+/**
+ * Exact Helm revision Secret evidence for revisions 1..N: names, type, labels,
+ * distinct nonterminating UIDs, status equal to the history row, and no
+ * ConfigMap or extra matching record. Metadata only.
+ * @param {{ revision: number, status: string }[]} rows
+ * @param {{ records: object[], names: string[] }} secrets
+ * @param {{ names: string[] }} configMaps
+ * @returns {string | null} refusal reason, or null when exact
+ */
+function devStorageRefusal(rows, secrets, configMaps, uidSink) {
+  if (configMaps.names.some((name) => isObjectStoreHelmStorageName(name))) {
+    return 'object-store Helm storage includes a ConfigMap record';
+  }
+  const matching = secrets.records.filter((record) =>
+    isObjectStoreHelmStorageName(record.name),
+  );
+  if (matching.length !== rows.length) {
+    return 'object-store Helm storage records do not match history';
+  }
+  const uids = new Set();
+  for (const row of rows) {
+    const name = `${HELM_STORAGE_PREFIX}.v${row.revision}`;
+    const found = matching.filter((record) => record.name === name);
+    if (found.length !== 1) {
+      return 'object-store Helm storage record is missing or duplicated';
+    }
+    const record = found[0];
+    if (record.type !== HELM_STORAGE_TYPE) {
+      return 'object-store Helm storage record type is not helm.sh/release.v1';
+    }
+    if (typeof record.uid !== 'string' || record.uid.length === 0) {
+      return 'object-store Helm storage record has no UID';
+    }
+    uids.add(record.uid);
+    if (uidSink) {
+      uidSink[row.revision] = record.uid;
+    }
+    if (record.terminating) {
+      return 'object-store Helm storage record is terminating';
+    }
+    const labels = record.labels ?? {};
+    if (
+      labels.owner !== 'helm' ||
+      labels.name !== OBJECT_STORE_RELEASE_NAME ||
+      labels.version !== String(row.revision) ||
+      labels.status !== row.status
+    ) {
+      return 'object-store Helm storage record labels differ from history';
+    }
+  }
+  if (uids.size !== rows.length) {
+    return 'object-store Helm storage record UIDs are not distinct';
+  }
+  return null;
+}
+
+/**
+ * Dev native history: fresh base, fresh metrics, or upgraded base -> metrics.
+ * @param {{
+ *   profileId: 'dev',
+ *   profile: ReturnType<typeof readPlatformProfile>,
+ *   namespace: string,
+ *   releaseName: string,
+ *   release: Record<string, unknown>,
+ *   secrets: { records: object[], names: string[] },
+ *   configMaps: { names: string[] },
+ *   run: typeof runPlatformCommand,
+ * }} spec
+ */
+function observeDevNativeHistory(spec) {
+  const { profile, namespace, releaseName, release, run } = spec;
+  const base = { releaseName, namespace };
+  const revision = Number(release.revision);
+  const status = String(release.status ?? '');
+  if (revision !== 1 && revision !== 2) {
+    return historyFailure(
+      'refused',
+      `object-store Helm revision is ${String(release.revision)}`,
+      base,
+    );
+  }
+  if (status !== 'deployed') {
+    return historyFailure(
+      'refused',
+      `object-store Helm status is ${status || 'missing'}`,
+      base,
+    );
+  }
+  if (release.chart !== NATIVE_CHART_ID) {
+    return historyFailure(
+      'refused',
+      'object-store Helm chart is not the native chart',
+      base,
+    );
+  }
+
+  const historyResult = run(
+    'helm',
+    [
+      'history',
+      releaseName,
+      '--kube-context',
+      profile.contextName,
+      '--namespace',
+      namespace,
+      '-o',
+      'json',
+    ],
+    { timeoutMs: PLATFORM_COMMAND_TIMEOUT_MS },
+  );
+  const history = parseJsonList(historyResult);
+  if (history.state === 'unknown') {
+    return historyFailure('unknown', `helm history ${history.reason}`, base);
+  }
+  const rows = history.items.map((row) => ({
+    revision: Number(row?.revision),
+    status: String(row?.status ?? ''),
+    chart: row?.chart,
+  }));
+  rows.sort((a, b) => a.revision - b.revision);
+  const wantStatuses =
+    revision === 1 ? ['deployed'] : ['superseded', 'deployed'];
+  if (
+    rows.length !== revision ||
+    rows.some(
+      (row, index) =>
+        row.revision !== index + 1 ||
+        row.status !== wantStatuses[index] ||
+        row.chart !== NATIVE_CHART_ID,
+    )
+  ) {
+    return historyFailure(
+      'refused',
+      'object-store Helm history rows are not exact native history',
+      base,
+    );
+  }
+
+  const storageUids = {};
+  const storageRefusal = devStorageRefusal(
+    rows,
+    spec.secrets,
+    spec.configMaps,
+    storageUids,
+  );
+  if (storageRefusal) {
+    return historyFailure('refused', storageRefusal, base);
+  }
+
+  const expected = new Map();
+  const common = { profile, namespace, releaseName, run, expected };
+  /** @type {'base' | 'metrics'} */
+  let finalVariant = 'metrics';
+  let historyId;
+  if (revision === 1) {
+    let first = matchDevRevision({ ...common, revision: 1, variant: 'base' });
+    finalVariant = 'base';
+    historyId = 'dev-base-r1';
+    if (!first.match && first.state === 'refused') {
+      const second = matchDevRevision({
+        ...common,
+        revision: 1,
+        variant: 'metrics',
+      });
+      if (second.match || second.state !== 'refused') {
+        first = second;
+        finalVariant = 'metrics';
+        historyId = 'dev-metrics-r1';
+      } else if (/values/.test(second.reason ?? '') === false) {
+        // Values matched the metrics variant but the manifest did not.
+        first = second;
+      }
+    }
+    if (!first.match) {
+      return historyFailure(first.state, first.reason, base);
+    }
+  } else {
+    const predecessor = matchDevRevision({
+      ...common,
+      revision: 1,
+      variant: 'base',
+    });
+    if (!predecessor.match) {
+      return historyFailure(predecessor.state, predecessor.reason, base);
+    }
+    const successor = matchDevRevision({
+      ...common,
+      revision: 2,
+      variant: 'metrics',
+    });
+    if (!successor.match) {
+      return historyFailure(successor.state, successor.reason, base);
+    }
+    historyId = 'dev-metrics-r1-r2';
+  }
+  const matched = {
+    state: 'native-compatible',
+    reason:
+      revision === 1
+        ? 'object-store revision 1 matches native Helm history'
+        : 'object-store revisions 1 and 2 match native Helm history',
+    releaseName,
+    namespace,
+    artifactId: DEV_VARIANTS[finalVariant].artifactId,
+    historyId,
+    metricsEnabled: DEV_VARIANTS[finalVariant].metricsEnabled,
+  };
+  // Retained Helm storage UIDs stay out of the public result shape.
+  HISTORY_STORAGE_UIDS.set(matched, storageUids);
+  return matched;
 }
 
 const LEGACY_OCCUPIED_HISTORY_REASON =
@@ -596,6 +979,12 @@ const PRIOR_RECEIPT_FIELDS = [
 
 const CHAIN_IMAGE = 'docker.io/chrislusf/seaweedfs:4.54';
 const CHAIN_ARGS = ['mini', '-dir=/data'];
+const CHAIN_METRICS_ARGS = ['mini', '-dir=/data', '-metricsPort=9327'];
+const BASE_CONTAINER_PORTS = [{ name: 's3', containerPort: 8333 }];
+const METRICS_CONTAINER_PORTS = [
+  ...BASE_CONTAINER_PORTS,
+  { name: 'metrics', containerPort: 9327 },
+];
 
 const NATIVE_ENV = [
   {
@@ -754,9 +1143,14 @@ function validateDataMountinfo(mountinfoText, hostPath, directoryIdentity) {
   if (!opts.includes('rw') || opts.includes('ro')) {
     return { ok: false, reason: '/data mount is not read-write' };
   }
-  if (!mountRootMatchesHostPath(mount.root, hostPath) &&
-      !(directoryIdentity && /^[0-9]+:[0-9]+$/.test(directoryIdentity.node) &&
-        directoryIdentity.node === directoryIdentity.pod)) {
+  if (
+    !mountRootMatchesHostPath(mount.root, hostPath) &&
+    !(
+      directoryIdentity &&
+      /^[0-9]+:[0-9]+$/.test(directoryIdentity.node) &&
+      directoryIdentity.node === directoryIdentity.pod
+    )
+  ) {
     return {
       ok: false,
       reason: '/data mount root does not match bound PV hostPath',
@@ -789,10 +1183,30 @@ function validateContainerEnv(env, mode) {
 }
 
 /**
+ * Container ports with only the API-defaulted TCP protocol normalized.
+ * @param {unknown} ports
+ */
+function normalizedContainerPorts(ports) {
+  if (!Array.isArray(ports)) {
+    return undefined;
+  }
+  return ports.map((port) => {
+    if (!port || typeof port !== 'object') {
+      return port;
+    }
+    const { protocol, ...rest } = port;
+    return protocol === undefined || protocol === 'TCP'
+      ? { ...rest }
+      : { ...rest, protocol };
+  });
+}
+
+/**
  * @param {object} container
  * @param {'native' | 'legacy-dev' | 'legacy-release'} mode
+ * @param {boolean} [metrics] exact native metrics variant
  */
-function validateWorkloadContainer(container, mode) {
+function validateWorkloadContainer(container, mode, metrics = false) {
   if (!container || typeof container !== 'object') {
     return false;
   }
@@ -805,7 +1219,18 @@ function validateWorkloadContainer(container, mode) {
   if (container.command !== undefined) {
     return false;
   }
-  if (!jsonExact(container.args, CHAIN_ARGS)) {
+  if (
+    !jsonExact(container.args, metrics ? CHAIN_METRICS_ARGS : CHAIN_ARGS)
+  ) {
+    return false;
+  }
+  if (
+    mode === 'native' &&
+    !jsonExact(
+      normalizedContainerPorts(container.ports),
+      metrics ? METRICS_CONTAINER_PORTS : BASE_CONTAINER_PORTS,
+    )
+  ) {
     return false;
   }
   if (container.envFrom !== undefined) {
@@ -849,8 +1274,9 @@ function validateWorkloadContainer(container, mode) {
 /**
  * @param {object} podSpec
  * @param {'native' | 'legacy-dev' | 'legacy-release'} mode
+ * @param {boolean} [metrics]
  */
-function validateWorkloadPodSpec(podSpec, mode) {
+function validateWorkloadPodSpec(podSpec, mode, metrics = false) {
   if (!podSpec || typeof podSpec !== 'object') {
     return false;
   }
@@ -882,7 +1308,7 @@ function validateWorkloadPodSpec(podSpec, mode) {
   if (!Array.isArray(containers) || containers.length !== 1) {
     return false;
   }
-  if (!validateWorkloadContainer(containers[0], mode)) {
+  if (!validateWorkloadContainer(containers[0], mode, metrics)) {
     return false;
   }
   const volumes = podSpec.volumes;
@@ -927,6 +1353,73 @@ function validateOwnerLabels(labels, profileId, layer) {
 }
 
 /**
+ * Narrow upgraded topology: the current ReplicaSet carries the exact target
+ * template, one retained predecessor ReplicaSet is owned and scaled to zero,
+ * and exactly one Pod exists (no old or terminating Pod, no extra ReplicaSet).
+ * @param {object} chain
+ * @param {object} deployment
+ * @param {object} replicaSet
+ */
+function validateUpgradedTopology(chain, deployment, replicaSet) {
+  const old = chain.predecessorReplicaSet;
+  if (chain.replicaSetCount !== 2 || !old?.metadata) {
+    return {
+      ok: false,
+      reason: 'object-store upgraded ReplicaSet topology mismatch',
+    };
+  }
+  if (chain.podCount !== 1 || chain.pod?.metadata?.deletionTimestamp != null) {
+    return { ok: false, reason: 'object-store upgraded Pod topology mismatch' };
+  }
+  const owner = controllerOwner(old.metadata.ownerReferences);
+  if (
+    old.metadata.uid === replicaSet.metadata.uid ||
+    old.metadata.labels?.app !== 'object-store' ||
+    !owner ||
+    owner.kind !== 'Deployment' ||
+    owner.name !== OBJECT_STORE_RELEASE_NAME ||
+    owner.uid !== deployment.metadata.uid ||
+    old.metadata.deletionTimestamp != null
+  ) {
+    return {
+      ok: false,
+      reason: 'object-store predecessor ReplicaSet ownership mismatch',
+    };
+  }
+  const zero = (value) => value === undefined || value === 0;
+  if (
+    !zero(old.spec?.replicas) ||
+    !zero(old.status?.replicas) ||
+    !zero(old.status?.readyReplicas) ||
+    !zero(old.status?.availableReplicas) ||
+    !zero(old.status?.fullyLabeledReplicas)
+  ) {
+    return {
+      ok: false,
+      reason: 'object-store predecessor ReplicaSet is not scaled to zero',
+    };
+  }
+  const { 'pod-template-hash': _hash, ...oldLabels } =
+    old.spec?.template?.metadata?.labels ?? {};
+  if (
+    !jsonExact(oldLabels, deployment.spec.template.metadata.labels) ||
+    !validateWorkloadPodSpec(old.spec?.template?.spec, 'native', false)
+  ) {
+    return {
+      ok: false,
+      reason: 'object-store predecessor ReplicaSet template mismatch',
+    };
+  }
+  if (!validateWorkloadPodSpec(replicaSet.spec?.template?.spec, 'native', true)) {
+    return {
+      ok: false,
+      reason: 'object-store current ReplicaSet template mismatch',
+    };
+  }
+  return { ok: true };
+}
+
+/**
  * @param {{
  *   profileId: 'dev' | 'release',
  *   mode: 'native' | 'legacy-dev' | 'legacy-release',
@@ -945,6 +1438,8 @@ function validateOwnerLabels(labels, profileId, layer) {
  */
 function validateLiveStructuralChain(chain) {
   const { profileId, mode, namespace } = chain;
+  const metrics = mode === 'native' && chain.metricsEnabled === true;
+  const upgraded = mode === 'native' && chain.upgraded === true;
   const deployment = chain.deployment;
   const replicaSet = chain.replicaSet;
   const pod = chain.pod;
@@ -995,7 +1490,7 @@ function validateLiveStructuralChain(chain) {
   ) {
     return { ok: false, reason: 'object-store pod template labels mismatch' };
   }
-  if (!validateWorkloadPodSpec(deployTemplate.spec, mode)) {
+  if (!validateWorkloadPodSpec(deployTemplate.spec, mode, metrics)) {
     return { ok: false, reason: 'object-store pod template spec mismatch' };
   }
 
@@ -1019,6 +1514,12 @@ function validateLiveStructuralChain(chain) {
       ok: false,
       reason: 'object-store ReplicaSet ready count mismatch',
     };
+  }
+  if (upgraded) {
+    const topology = validateUpgradedTopology(chain, deployment, replicaSet);
+    if (!topology.ok) {
+      return topology;
+    }
   }
 
   if (!pod?.metadata || !pod?.spec || !pod?.status) {
@@ -1044,7 +1545,7 @@ function validateLiveStructuralChain(chain) {
   if (typeof pod.status.podIP !== 'string' || pod.status.podIP.length === 0) {
     return { ok: false, reason: 'object-store Pod IP missing' };
   }
-  if (!validateWorkloadPodSpec(pod.spec, mode)) {
+  if (!validateWorkloadPodSpec(pod.spec, mode, metrics)) {
     return { ok: false, reason: 'object-store Pod spec mismatch' };
   }
 
@@ -1057,10 +1558,16 @@ function validateLiveStructuralChain(chain) {
   const ports = service.spec.ports;
   if (
     !Array.isArray(ports) ||
-    ports.length !== 1 ||
+    ports.length !== (metrics ? 2 : 1) ||
     ports[0]?.name !== 's3' ||
     ports[0]?.port !== 8333 ||
-    (ports[0]?.targetPort !== 's3' && ports[0]?.targetPort !== 8333)
+    (ports[0]?.targetPort !== 's3' && ports[0]?.targetPort !== 8333) ||
+    (metrics &&
+      (ports[1]?.name !== 'metrics' ||
+        ports[1]?.port !== 9327 ||
+        (ports[1]?.targetPort !== 'metrics' &&
+          ports[1]?.targetPort !== 9327))) ||
+    ports.some((port) => port?.protocol !== undefined && port.protocol !== 'TCP')
   ) {
     return { ok: false, reason: 'object-store Service port mismatch' };
   }
@@ -1073,6 +1580,26 @@ function validateLiveStructuralChain(chain) {
     'object-store'
   ) {
     return { ok: false, reason: 'object-store EndpointSlice label mismatch' };
+  }
+  if (metrics) {
+    const slicePorts = Array.isArray(endpointSlice.ports)
+      ? endpointSlice.ports.map((port) => ({
+          name: port?.name,
+          port: port?.port,
+          protocol: port?.protocol,
+        }))
+      : undefined;
+    const sorted = slicePorts?.sort((a, b) =>
+      String(a.name).localeCompare(String(b.name)),
+    );
+    if (
+      !jsonExact(sorted, [
+        { name: 'metrics', port: 9327, protocol: 'TCP' },
+        { name: 's3', port: 8333, protocol: 'TCP' },
+      ])
+    ) {
+      return { ok: false, reason: 'object-store EndpointSlice port mismatch' };
+    }
   }
   const endpoints = endpointSlice.endpoints;
   if (!Array.isArray(endpoints) || endpoints.length !== 1) {
@@ -1294,9 +1821,17 @@ export function classifyObjectStorageObservation(profileId, observation) {
     successState = 'legacy-structural';
   }
 
+  const metricsEnabled = mode === 'native' && history.metricsEnabled === true;
+  const upgraded =
+    mode === 'native' && history.historyId === 'dev-metrics-r1-r2';
   const structural = validateLiveStructuralChain({
     profileId,
     mode,
+    metricsEnabled,
+    upgraded,
+    predecessorReplicaSet: observation.predecessorReplicaSet,
+    replicaSetCount: observation.replicaSetCount,
+    podCount: observation.podCount,
     namespace,
     deployment: observation.deployment,
     replicaSet: observation.replicaSet,
@@ -1344,6 +1879,15 @@ export function classifyObjectStorageObservation(profileId, observation) {
     reason: structural.reason,
     continuity: identity.continuity,
     namespace,
+    ...(mode === 'native' &&
+    typeof history.historyId === 'string' &&
+    typeof history.artifactId === 'string'
+      ? {
+          artifactId: history.artifactId,
+          historyId: history.historyId,
+          metricsEnabled: history.metricsEnabled === true,
+        }
+      : {}),
   });
 }
 
@@ -1398,10 +1942,18 @@ function exactlyOne(items, predicate) {
  * @param {string} namespace
  * @param {unknown} priorReceipt
  */
-function readLiveChainObservation(run, profile, namespace, priorReceipt) {
+function readLiveChainObservation(
+  run,
+  profile,
+  namespace,
+  priorReceipt,
+  options = {},
+) {
   const contextName = profile.contextName;
+  const owner = options.owner === true;
+  const upgraded = options.historyId === 'dev-metrics-r1-r2';
   const kubeSystem =
-    priorReceipt != null
+    priorReceipt != null || owner
       ? parseKubectlObject(
           run('kubectl', [
             '--context',
@@ -1420,7 +1972,7 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
   }
 
   let namespaceUid;
-  if (priorReceipt != null) {
+  if (priorReceipt != null || owner) {
     const nsRead = parseKubectlObject(
       run('kubectl', [
         '--context',
@@ -1587,8 +2139,12 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
   let secretDataKeys = [];
   /** @type {Record<string, string> | undefined} */
   let secretLabels;
+  let secretUid;
+  let secretResourceVersion;
   if (secretRead.state === 'ok') {
     secretLabels = secretRead.body?.metadata?.labels;
+    secretUid = secretRead.body?.metadata?.uid;
+    secretResourceVersion = secretRead.body?.metadata?.resourceVersion;
     if (secretRead.body?.data && typeof secretRead.body.data === 'object') {
       secretDataKeys = Object.keys(secretRead.body.data).sort();
       for (const key of Object.keys(secretRead.body.data)) {
@@ -1597,10 +2153,6 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
     }
   }
 
-  const replicaSetPick = exactlyOne(
-    replicaSetRead.items ?? [],
-    (item) => item?.metadata?.labels?.app === 'object-store',
-  );
   const readyPods = (podsRead.items ?? []).filter((pod) => {
     const readyCond = Array.isArray(pod?.status?.conditions)
       ? pod.status.conditions.find((c) => c?.type === 'Ready')
@@ -1616,6 +2168,26 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
     readyPods.length === 1
       ? { ok: true, item: readyPods[0] }
       : { ok: false, item: undefined };
+
+  const replicaSets = (replicaSetRead.items ?? []).filter(
+    (item) => item?.metadata?.labels?.app === 'object-store',
+  );
+  let replicaSetPick = exactlyOne(replicaSets, () => true);
+  let predecessorReplicaSet;
+  if (upgraded) {
+    // The ready Pod's controlling ReplicaSet is current; the one other owned
+    // ReplicaSet is the retained predecessor. Any further one is unknown topology.
+    const podOwner = controllerOwner(podPick.item?.metadata?.ownerReferences);
+    const currents = replicaSets.filter(
+      (item) => podOwner && item?.metadata?.uid === podOwner.uid,
+    );
+    const others = replicaSets.filter((item) => !currents.includes(item));
+    replicaSetPick =
+      currents.length === 1 ? { ok: true, item: currents[0] } : { ok: false };
+    if (others.length === 1) {
+      predecessorReplicaSet = others[0];
+    }
+  }
 
   let mountinfo;
   let directoryIdentity;
@@ -1639,35 +2211,101 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
     // case verify directory identity on the exact local node and selected pod.
     const hostPath = pvRead.body?.spec?.hostPath?.path;
     const nodeName = podPick.item.spec?.nodeName;
-    const dataMount = parseMountinfoEntries(mountinfo).find(entry => entry.mountPoint === '/data');
-    if (dataMount && typeof hostPath === 'string' &&
-        !mountRootMatchesHostPath(dataMount.root, hostPath)) {
-      const allowedNodes = [profile.clusterName + '-control-plane', profile.clusterName + '-worker'];
-      const expectedPath = '/var/local-path-provisioner/' + 'pvc-' + pvcBody?.metadata?.uid + '_' + namespace + '_object-store-data';
-      if (!allowedNodes.includes(nodeName) || hostPath !== expectedPath ||
-          process.env.DOCKER_HOST || process.env.DOCKER_CONTEXT || process.env.DOCKER_TLS_VERIFY) {
-        return { state: 'unknown', reason: 'untrusted Kind mount translation target' };
+    const dataMount = parseMountinfoEntries(mountinfo).find(
+      (entry) => entry.mountPoint === '/data',
+    );
+    if (
+      dataMount &&
+      typeof hostPath === 'string' &&
+      (owner || !mountRootMatchesHostPath(dataMount.root, hostPath))
+    ) {
+      const allowedNodes = [
+        profile.clusterName + '-control-plane',
+        profile.clusterName + '-worker',
+      ];
+      const expectedPath =
+        '/var/local-path-provisioner/' +
+        'pvc-' +
+        pvcBody?.metadata?.uid +
+        '_' +
+        namespace +
+        '_object-store-data';
+      if (
+        !allowedNodes.includes(nodeName) ||
+        hostPath !== expectedPath ||
+        process.env.DOCKER_HOST ||
+        process.env.DOCKER_CONTEXT ||
+        process.env.DOCKER_TLS_VERIFY
+      ) {
+        return {
+          state: 'unknown',
+          reason: 'untrusted Kind mount translation target',
+        };
       }
       const context = run('docker', ['context', 'show']);
-      if (!context.ok || !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(context.stdout.trim())) {
+      if (
+        !context.ok ||
+        !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(context.stdout.trim())
+      ) {
         return { state: 'unknown', reason: 'Docker context unreadable' };
       }
-      const endpoint = run('docker', ['context', 'inspect', context.stdout.trim(), '--format', '{{.Endpoints.docker.Host}}']);
+      const endpoint = run('docker', [
+        'context',
+        'inspect',
+        context.stdout.trim(),
+        '--format',
+        '{{.Endpoints.docker.Host}}',
+      ]);
       const transport = endpoint.stdout?.trim();
-      if (!endpoint.ok || !(transport?.startsWith('unix:///') || transport === 'npipe:////./pipe/dockerDesktopLinuxEngine')) {
+      if (
+        !endpoint.ok ||
+        !(
+          transport?.startsWith('unix:///') ||
+          transport === 'npipe:////./pipe/dockerDesktopLinuxEngine'
+        )
+      ) {
         return { state: 'unknown', reason: 'nonlocal Docker endpoint' };
       }
-      const node = run('docker', ['inspect', '--format', '{{ index .Config.Labels "io.x-k8s.kind.cluster" }}', nodeName]);
+      const node = run('docker', [
+        'inspect',
+        '--format',
+        '{{ index .Config.Labels "io.x-k8s.kind.cluster" }}',
+        nodeName,
+      ]);
       if (!node.ok || node.stdout.trim() !== profile.clusterName) {
         return { state: 'unknown', reason: 'Kind node ownership mismatch' };
       }
-      const nodeStat = run('docker', ['exec', nodeName, 'stat', '-Lc', '%d:%i', hostPath]);
-      const podStat = run('kubectl', ['--context', contextName, 'exec', '-n', namespace,
-        podPick.item.metadata.name, '--', 'stat', '-Lc', '%d:%i', '/data']);
+      const nodeStat = run('docker', [
+        'exec',
+        nodeName,
+        'stat',
+        '-Lc',
+        '%d:%i',
+        hostPath,
+      ]);
+      const podStat = run('kubectl', [
+        '--context',
+        contextName,
+        'exec',
+        '-n',
+        namespace,
+        podPick.item.metadata.name,
+        '--',
+        'stat',
+        '-Lc',
+        '%d:%i',
+        '/data',
+      ]);
       if (!nodeStat.ok || !podStat.ok) {
-        return { state: 'unknown', reason: 'storage directory identity unreadable' };
+        return {
+          state: 'unknown',
+          reason: 'storage directory identity unreadable',
+        };
       }
-      directoryIdentity = { node: nodeStat.stdout.trim(), pod: podStat.stdout.trim() };
+      directoryIdentity = {
+        node: nodeStat.stdout.trim(),
+        pod: podStat.stdout.trim(),
+      };
     }
   }
 
@@ -1686,6 +2324,11 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
       deployment:
         deploymentRead.state === 'ok' ? deploymentRead.body : undefined,
       replicaSet: replicaSetPick.ok ? replicaSetPick.item : undefined,
+      predecessorReplicaSet,
+      replicaSetCount: replicaSets.length,
+      podCount: (podsRead.items ?? []).length,
+      secretUid,
+      secretResourceVersion,
       pod: podPick.ok ? podPick.item : undefined,
       service: serviceRead.state === 'ok' ? serviceRead.body : undefined,
       endpointSlice: endpointSlicePick.ok ? endpointSlicePick.item : undefined,
@@ -1703,7 +2346,7 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
  * @param {'dev' | 'release'} profileId
  * @param {{ run?: typeof runPlatformCommand, priorReceipt?: object | null }} [deps]
  */
-export function observeObjectStorageChain(profileId, deps = {}) {
+function observeChainCore(profileId, deps = {}) {
   const run = guardReadOnlyRun(deps.run ?? runPlatformCommand);
   const profile = readPlatformProfile(profileId);
   const namespace = profile.namespaces.objectStorage;
@@ -1711,15 +2354,18 @@ export function observeObjectStorageChain(profileId, deps = {}) {
 
   let history;
   try {
-    history = observeObjectStorageHistory(profileId, { ...deps, run });
+    history = observeHistoryCore(profileId, { ...deps, run });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    return makeChainResult({
+    const failed = makeChainResult({
       state: 'unknown',
       reason: message,
       continuity: 'unclaimed',
       namespace,
     });
+    return deps.owner === true
+      ? { chain: failed, history: undefined, live: undefined }
+      : failed;
   }
 
   const baseObservation = {
@@ -1736,21 +2382,267 @@ export function observeObjectStorageChain(profileId, deps = {}) {
       history.reason === LEGACY_OCCUPIED_HISTORY_REASON);
 
   if (!needsLiveChain) {
-    return classifyObjectStorageObservation(profileId, baseObservation);
+    const chain = classifyObjectStorageObservation(profileId, baseObservation);
+    return deps.owner === true ? { chain, history, live: undefined } : chain;
   }
 
-  const live = readLiveChainObservation(run, profile, namespace, priorReceipt);
+  const live = readLiveChainObservation(run, profile, namespace, priorReceipt, {
+    owner: deps.owner === true,
+    historyId: history.historyId,
+  });
   if (live.state === 'unknown') {
-    return makeChainResult({
+    const unreadable = makeChainResult({
       state: 'unknown',
       reason: live.reason ?? 'live chain observation unreadable',
       continuity: 'unclaimed',
       namespace,
     });
+    return deps.owner === true
+      ? { chain: unreadable, history, live: undefined }
+      : unreadable;
   }
 
-  return classifyObjectStorageObservation(profileId, {
+  const chain = classifyObjectStorageObservation(profileId, {
     ...baseObservation,
     ...live.data,
   });
+  return deps.owner === true ? { chain, history, live: live.data } : chain;
+}
+
+/**
+ * Ordinary public observers refuse any pending record other than the exact
+ * legacy unversioned one (fresh install reads that internally). A metrics
+ * transition, marker intent or unknown record is refused even if the live
+ * chain already has the final shape.
+ * @param {ReturnType<typeof readPlatformProfile>} profile
+ * @param {{ stateRoot?: string, readPendingState?: Function }} deps
+ */
+function pendingRefusal(profile, deps) {
+  let pending;
+  try {
+    pending = (deps.readPendingState ?? readObjectStoragePendingState)(
+      deps.stateRoot ?? defaultObjectStorageStateRoot(),
+      profile.contextName,
+    );
+  } catch {
+    pending = { kind: 'unknown' };
+  }
+  if (pending?.kind === 'absent' || pending?.kind === 'legacy') {
+    return null;
+  }
+  return pending?.kind === 'metrics'
+    ? {
+        state: /** @type {const} */ ('refused'),
+        reason: 'object-store metrics transition is pending',
+      }
+    : {
+        state: /** @type {const} */ ('unknown'),
+        reason: 'object-store pending record is unrecognized',
+      };
+}
+
+/**
+ * @param {'dev' | 'release'} profileId
+ * @param {{ run?: typeof runPlatformCommand, stateRoot?: string }} [deps]
+ */
+export function observeObjectStorageHistory(profileId, deps = {}) {
+  const profile = readPlatformProfile(profileId);
+  const refusal = pendingRefusal(profile, deps);
+  if (refusal) {
+    return {
+      ...refusal,
+      releaseName: OBJECT_STORE_RELEASE_NAME,
+      namespace: profile.namespaces.objectStorage,
+    };
+  }
+  return observeHistoryCore(profileId, deps);
+}
+
+/**
+ * @param {'dev' | 'release'} profileId
+ * @param {{ run?: typeof runPlatformCommand, priorReceipt?: object | null, stateRoot?: string }} [deps]
+ */
+export function observeObjectStorageChain(profileId, deps = {}) {
+  const profile = readPlatformProfile(profileId);
+  const refusal = pendingRefusal(profile, deps);
+  if (refusal) {
+    return makeChainResult({
+      ...refusal,
+      continuity: 'unclaimed',
+      namespace: profile.namespaces.objectStorage,
+    });
+  }
+  const { owner: _ignored, ...ordinary } = deps;
+  return observeChainCore(profileId, ordinary);
+}
+
+const OWNER_HISTORY_IDS = new Set([
+  'dev-base-r1',
+  'dev-metrics-r1',
+  'dev-metrics-r1-r2',
+]);
+
+/**
+ * Dedicated internal observation for the owner metrics transition. It only
+ * runs while the active owned intent capability verifies, before and after
+ * its reads. Never accepts a bypass flag from public observers.
+ * Returns a sanitized private projection: UIDs, versions and stat identity,
+ * never Secret data, and never a fabricated prior receipt.
+ * @param {object} handle opaque capability from the metrics transition guard
+ * @param {'dev-base-r1' | 'dev-metrics-r1' | 'dev-metrics-r1-r2'} expectedHistoryId
+ * @param {{ run?: typeof runPlatformCommand }} [deps]
+ */
+export function observeOwnedMetricsTransition(
+  handle,
+  expectedHistoryId,
+  deps = {},
+) {
+  assertOwnedMetricsIntent(handle);
+  const result = observeOwnerProjection(expectedHistoryId, deps);
+  assertOwnedMetricsIntent(handle);
+  return result;
+}
+
+/**
+ * Read-only owner projection BEFORE the intent exists (the intent embeds this
+ * identity). Only available while no pending record of any kind exists, so it
+ * can never be used to look through a retained transition.
+ * @param {'dev-base-r1' | 'dev-metrics-r1' | 'dev-metrics-r1-r2'} expectedHistoryId
+ * @param {{ run?: typeof runPlatformCommand, stateRoot?: string }} [deps]
+ */
+export function observeOwnerPredecessorBeforeIntent(expectedHistoryId, deps = {}) {
+  const profile = readPlatformProfile('dev');
+  let pending;
+  try {
+    pending = readObjectStoragePendingState(
+      deps.stateRoot ?? defaultObjectStorageStateRoot(),
+      profile.contextName,
+    );
+  } catch {
+    pending = { kind: 'unknown' };
+  }
+  if (pending.kind !== 'absent') {
+    return { ok: false, reason: 'object-store pending record exists' };
+  }
+  return observeOwnerProjection(expectedHistoryId, deps);
+}
+
+/**
+ * Exact manifest digests of the predecessor (fixed-false overlay) and target
+ * dev workload documents: SHA256 of UTF-8 JSON of the parsed documents sorted
+ * by document identity with recursively sorted object keys.
+ * @param {{ run?: typeof runPlatformCommand }} [deps]
+ */
+export function computeMetricsManifestDigests(deps = {}) {
+  const run = guardReadOnlyRun(deps.run ?? runPlatformCommand);
+  const digest = (documents) =>
+    createHash('sha256')
+      .update(
+        JSON.stringify(
+          [...documents]
+            .sort((a, b) => {
+              const x = documentIdentity(a);
+              const y = documentIdentity(b);
+              return x < y ? -1 : x > y ? 1 : 0;
+            })
+            .map(sortKeysDeep),
+        ),
+        'utf8',
+      )
+      .digest('hex');
+  const render = (stdinOverlay) =>
+    renderPlatformDocuments(
+      { service: 'object-storage', profile: 'dev', section: 'workloads' },
+      stdinOverlay ? { run, stdinOverlay } : { run },
+    );
+  return {
+    predecessorManifestSha256: digest(render({ metricsEnabled: false })),
+    targetManifestSha256: digest(render(undefined)),
+  };
+}
+
+function sortKeysDeep(value) {
+  if (Array.isArray(value)) return value.map(sortKeysDeep);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, sortKeysDeep(value[key])]),
+    );
+  }
+  return value;
+}
+
+function observeOwnerProjection(expectedHistoryId, deps = {}) {
+  if (!OWNER_HISTORY_IDS.has(expectedHistoryId)) {
+    return { ok: false, reason: 'expected object-store history is not selected' };
+  }
+  const profile = readPlatformProfile('dev');
+  const observed = observeChainCore('dev', {
+    run: deps.run,
+    owner: true,
+    priorReceipt: null,
+  });
+  const { chain, history, live } = observed;
+  if (chain.state !== 'native-compatible') {
+    return { ok: false, reason: chain.reason ?? 'object-store chain refused' };
+  }
+  if (history?.historyId !== expectedHistoryId) {
+    return { ok: false, reason: 'object-store history does not match expected' };
+  }
+  const storage = HISTORY_STORAGE_UIDS.get(history) ?? {};
+  const upgraded = history.historyId === 'dev-metrics-r1-r2';
+  const projection = {
+    contextName: profile.contextName,
+    historyId: history.historyId,
+    artifactId: history.artifactId,
+    metricsEnabled: history.metricsEnabled,
+    kubeSystemUid: live.kubeSystemUid,
+    namespaceUid: live.namespaceUid,
+    deploymentUid: live.deployment.metadata.uid,
+    serviceUid: live.service.metadata?.uid,
+    serviceClusterIP: live.service.spec?.clusterIP,
+    secretUid: live.secretUid,
+    secretResourceVersion: live.secretResourceVersion,
+    pvcUid: live.pvc.metadata.uid,
+    pvUid: live.pv.metadata.uid,
+    pvHostPath: live.pv.spec.hostPath.path,
+    replicaSetUid: live.replicaSet.metadata.uid,
+    predecessorReplicaSetUid: upgraded
+      ? live.predecessorReplicaSet.metadata.uid
+      : null,
+    podUid: live.pod.metadata.uid,
+    nodeName: live.pod.spec?.nodeName,
+    dataDirectoryIdentity: live.directoryIdentity?.node,
+    helmStorageUids: { ...storage },
+  };
+  const complete = [
+    'kubeSystemUid',
+    'namespaceUid',
+    'deploymentUid',
+    'serviceUid',
+    'serviceClusterIP',
+    'secretUid',
+    'secretResourceVersion',
+    'pvcUid',
+    'pvUid',
+    'pvHostPath',
+    'replicaSetUid',
+    'podUid',
+    'nodeName',
+    'dataDirectoryIdentity',
+  ].every(
+    (key) => typeof projection[key] === 'string' && projection[key].length > 0,
+  );
+  const storageComplete = [1, 2]
+    .slice(0, upgraded ? 2 : 1)
+    .every((rev) => typeof storage[rev] === 'string');
+  if (
+    !complete ||
+    !storageComplete ||
+    live.directoryIdentity?.node !== live.directoryIdentity?.pod
+  ) {
+    return { ok: false, reason: 'owner chain identity is incomplete' };
+  }
+  return { ok: true, chain: projection };
 }

@@ -40,12 +40,20 @@ spec:
         - name: seaweedfs
           image: {{ .Values.image | quote }}
           imagePullPolicy: IfNotPresent
+{{- if and (eq .Values.mode "development") .Values.metricsEnabled }}
+          args: ["mini", "-dir=/data", "-metricsPort=9327"]
+{{- else }}
           args: ["mini", "-dir=/data"]
+{{- end }}
           ports:
             - name: s3
               containerPort: 8333
 {{- if eq .Values.mode "release" }}
               protocol: TCP
+{{- end }}
+{{- if and (eq .Values.mode "development") .Values.metricsEnabled }}
+            - name: metrics
+              containerPort: 9327
 {{- end }}
           env:
             - name: AWS_ACCESS_KEY_ID
