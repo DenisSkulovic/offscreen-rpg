@@ -526,7 +526,13 @@ test('observeObservability with default pending reports absent when namespace mi
           missing: false,
         };
       }
-      if (command === 'kubectl' && args.includes('ignore-not-found')) {
+      if (
+        command === 'kubectl' &&
+        (args.includes('ignore-not-found') ||
+          (args.includes('--ignore-not-found') &&
+            (args.includes('clusterrole') ||
+              args.includes('clusterrolebinding'))))
+      ) {
         return {
           ok: true,
           status: 0,
@@ -689,7 +695,10 @@ test('observeObservability recheck failure forces unreadable', () => {
             stdout:
               command === 'helm'
                 ? '[]'
-                : args.includes('ignore-not-found')
+                : args.includes('ignore-not-found') ||
+                    (args.includes('--ignore-not-found') &&
+                      (args.includes('clusterrole') ||
+                        args.includes('clusterrolebinding')))
                   ? '\n'
                   : '{"items":[]}',
             stderr: '',
@@ -1042,7 +1051,13 @@ test('observeObservability standalone cleanup failure forces unreadable', () => 
           missing: false,
         };
       }
-      if (command === 'kubectl' && args.includes('ignore-not-found')) {
+      if (
+        command === 'kubectl' &&
+        (args.includes('ignore-not-found') ||
+          (args.includes('--ignore-not-found') &&
+            (args.includes('clusterrole') ||
+              args.includes('clusterrolebinding'))))
+      ) {
         return {
           ok: true,
           status: 0,
