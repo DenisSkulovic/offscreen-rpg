@@ -1,6 +1,6 @@
 # OBS-E2-11 | verified source map
 
-Baseline `1fa759b980d275ef4ad9d11590cf080fc807ccd2`: source from clean `c3900da1e15bba456c71dcb799698fe2a0f7db5f` lean export; GitHub comparison confirms the intervening three commits touch only the E2 dossier and Design catalog. Source anchors below refer to that baseline; new paths/symbols are proposed. Review [integration contract](<../../../../designs/open/observability-infrastructure-visibility/INTEGRATION.md>) only at the cited sections. Gates are recorded in the [evidence register](../NATIVE-INPUTS.md).
+Baseline `1fa759b980d275ef4ad9d11590cf080fc807ccd2`: source from clean `c3900da1e15bba456c71dcb799698fe2a0f7db5f` lean export; GitHub comparison confirms the intervening three commits touch only the E2 dossier and Design catalog. Source anchors below refer to that baseline; new paths/symbols are proposed. Review [integration contract](<../../../../../designs/open/observability-infrastructure-visibility/INTEGRATION.md>) only at the cited sections. Gates are recorded in the [evidence register](../../../../open/observability-infrastructure-visibility/NATIVE-INPUTS.md).
 
 - `custody.mjs`: `classifyPending`, `inspectPendingRecord`, `validateStoredUpgrade`, `createHandle`, `acquireCustody`, `runMutation`; legacy pending operation `upgrade` / `collector-upgrade`.
 - `upgrade.mjs`: `main`, `runObservabilityUpgrade`, `helmUpgradeArgv`, `projectUpgradePreservation`, `upgradeHistoryPreserved`, `stableResourceVersions`, `relaySha256`; historical Collector only.

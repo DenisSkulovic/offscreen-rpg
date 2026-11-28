@@ -388,3 +388,42 @@ test('identity is rechecked after transport closure and before clear', async () 
   assert.equal(receipt.ok, true);
   assert.deepEqual(order.slice(-2), ['close', 'recheck']);
 });
+
+test('historical upgrade refuses the E2 evolution flag shapes and E2 requires its own guard', async () => {
+  for (const argv of [['--evolution'], ['--evolution', 'e1'], ['--evolution', 'e2', '--force']]) {
+    const refused = await runObservabilityUpgrade({ argv });
+    assert.equal(refused.reasonCode, 'invalid-invocation');
+    assert.equal(refused.mutation, 'none');
+  }
+  const previous = process.env.OFFSCREEN_OBSERVABILITY_UPGRADE;
+  delete process.env.OFFSCREEN_OBSERVABILITY_UPGRADE;
+  let ran = false;
+  const denied = await runObservabilityUpgrade({
+    argv: ['--evolution', 'e2'],
+    run: async () => {
+      ran = true;
+      return memoryOk;
+    },
+  });
+  assert.equal(denied.reasonCode, 'ensure-not-authorized');
+  assert.equal(ran, false);
+  if (previous != null) process.env.OFFSCREEN_OBSERVABILITY_UPGRADE = previous;
+});
+
+test('historical no-args upgrade refuses an exact E2-shaped cluster before mutation', async () => {
+  const e2Shaped = cloneSnapshot(buildUpgradedDevSnapshot(variants.desired, variants.predecessor));
+  e2Shaped.helmReleases = e2Shaped.helmReleases.map((row) =>
+    row.name === 'obs-prometheus' ? { ...row, revision: '2' } : row,
+  );
+  let mutated = false;
+  const h = harness(e2Shaped, {
+    runMutation: async () => {
+      mutated = true;
+      return { ok: true };
+    },
+  });
+  const receipt = await h.run();
+  assert.equal(receipt.ok, false);
+  assert.equal(receipt.mutation, 'none');
+  assert.equal(mutated, false);
+});

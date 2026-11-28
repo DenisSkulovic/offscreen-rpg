@@ -249,27 +249,21 @@ function classifyPending(record, contextName) {
       !Array.isArray(value.tuple);
     return legacyOk ? 'legacy' : 'invalid';
   }
-  try {
-    validateStoredEnsure(value, contextName);
-    return 'ensure';
-  } catch {
+  for (const [kind, validate] of [
+    ['ensure', validateStoredEnsure],
+    ['upgrade', validateStoredUpgrade],
+    ['upgrade-e2', validateStoredUpgradeE2],
+    ['persistence', validateStoredPersistence],
+    ['outage', validateStoredOutage],
+  ]) {
     try {
-      validateStoredUpgrade(value, contextName);
-      return 'upgrade';
+      validate(value, contextName);
+      return kind;
     } catch {
-      try {
-        validateStoredPersistence(value, contextName);
-        return 'persistence';
-      } catch {
-        try {
-          validateStoredOutage(value, contextName);
-          return 'outage';
-        } catch {
-          return 'invalid';
-        }
-      }
+      // try the next exact schema
     }
   }
+  return 'invalid';
 }
 
 /**
@@ -279,6 +273,7 @@ function isDurableKind(kind) {
   return (
     kind === 'ensure' ||
     kind === 'upgrade' ||
+    kind === 'upgrade-e2' ||
     kind === 'persistence' ||
     kind === 'outage'
   );
@@ -900,6 +895,182 @@ function validateStoredUpgrade(value, contextName) {
   }
   validateUpgradeDetails(value.details);
   validateTuple(value.tuple, contextName, value.phase);
+}
+
+export const UPGRADE_E2_PHASES = Object.freeze([
+  'prometheus-intent',
+  'grafana-intent',
+  'final-verification',
+]);
+const UPGRADE_E2_ORIGINAL_REVISIONS = Object.freeze({
+  'developer-fresh': 1,
+  'developer-upgraded': 2,
+});
+const UPGRADE_E2_DETAIL_KEYS = [
+  'kubeletTrustBindingSha256',
+  'markerIds',
+  'originalCollectorRevision',
+  'originalGrafanaRevision',
+  'originalPrometheusRevision',
+  'predecessorHistoryId',
+  'predecessorId',
+  'predecessorManifestSetSha256',
+  'preservedUids',
+  'targetGrafanaRevision',
+  'targetId',
+  'targetManifestSetSha256',
+  'targetPrometheusRevision',
+];
+const SHA256_PATTERN = /^[0-9a-f]{64}$/;
+const UPGRADE_E2_ERROR = 'refused: observability upgrade-e2 details are invalid';
+
+/**
+ * @param {unknown} map
+ */
+function validateE2IdentityMap(map) {
+  if (map == null || typeof map !== 'object' || Array.isArray(map)) {
+    throw new Error(UPGRADE_E2_ERROR);
+  }
+  const entries = Object.entries(map);
+  if (entries.length < 1 || entries.length > 64) {
+    throw new Error(UPGRADE_E2_ERROR);
+  }
+  const out = {};
+  for (const [key, item] of entries) {
+    if (!/^[A-Za-z0-9._:/-]{1,128}$/.test(key) || !boundedText(item, 256)) {
+      throw new Error(UPGRADE_E2_ERROR);
+    }
+    out[key] = item;
+  }
+  return out;
+}
+
+/**
+ * Exact upgrade-e2 details. The first eleven keys are the 09 owned-verifier
+ * contract; preservedUids and markerIds are nonsecret string identity maps.
+ * @param {unknown} details
+ */
+function validateUpgradeE2Details(details) {
+  if (details == null || typeof details !== 'object' || Array.isArray(details)) {
+    throw new Error(UPGRADE_E2_ERROR);
+  }
+  const value = /** @type {Record<string, unknown>} */ (details);
+  const keys = Object.keys(value);
+  if (
+    keys.length !== UPGRADE_E2_DETAIL_KEYS.length ||
+    UPGRADE_E2_DETAIL_KEYS.some((key) => !Object.hasOwn(value, key))
+  ) {
+    throw new Error(UPGRADE_E2_ERROR);
+  }
+  const originalRevision = Object.hasOwn(
+    UPGRADE_E2_ORIGINAL_REVISIONS,
+    String(value.predecessorHistoryId),
+  )
+    ? UPGRADE_E2_ORIGINAL_REVISIONS[String(value.predecessorHistoryId)]
+    : null;
+  if (
+    value.predecessorId !== 'dev-e1-developer' ||
+    originalRevision == null ||
+    value.targetId !== 'dev-e2' ||
+    value.originalCollectorRevision !== originalRevision ||
+    value.originalPrometheusRevision !== 1 ||
+    value.originalGrafanaRevision !== 1 ||
+    value.targetPrometheusRevision !== 2 ||
+    value.targetGrafanaRevision !== 2
+  ) {
+    throw new Error(UPGRADE_E2_ERROR);
+  }
+  for (const key of [
+    'predecessorManifestSetSha256',
+    'targetManifestSetSha256',
+    'kubeletTrustBindingSha256',
+  ]) {
+    if (typeof value[key] !== 'string' || !SHA256_PATTERN.test(value[key])) {
+      throw new Error(UPGRADE_E2_ERROR);
+    }
+  }
+  return {
+    predecessorId: 'dev-e1-developer',
+    predecessorHistoryId: value.predecessorHistoryId,
+    targetId: 'dev-e2',
+    predecessorManifestSetSha256: value.predecessorManifestSetSha256,
+    targetManifestSetSha256: value.targetManifestSetSha256,
+    kubeletTrustBindingSha256: value.kubeletTrustBindingSha256,
+    originalCollectorRevision: value.originalCollectorRevision,
+    originalPrometheusRevision: 1,
+    originalGrafanaRevision: 1,
+    targetPrometheusRevision: 2,
+    targetGrafanaRevision: 2,
+    preservedUids: validateE2IdentityMap(value.preservedUids),
+    markerIds: validateE2IdentityMap(value.markerIds),
+  };
+}
+
+/**
+ * @param {Record<string, unknown>} value
+ * @param {string} contextName
+ */
+function validateStoredUpgradeE2(value, contextName) {
+  const keys = Object.keys(value);
+  const expected = [
+    'schema',
+    'operationId',
+    'service',
+    'context',
+    'start',
+    'operation',
+    'phase',
+    'tuple',
+    'details',
+  ];
+  if (
+    keys.length !== expected.length ||
+    expected.some((key) => !Object.hasOwn(value, key)) ||
+    value.schema !== 2 ||
+    value.operation !== 'upgrade-e2' ||
+    !UPGRADE_E2_PHASES.includes(/** @type {string} */ (value.phase)) ||
+    value.service !== OBSERVABILITY_SERVICE ||
+    value.context !== contextName ||
+    typeof value.operationId !== 'string' ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      value.operationId,
+    ) ||
+    !isUtcStamp(value.start)
+  ) {
+    throw new Error('refused: observability pending record is invalid');
+  }
+  validateUpgradeE2Details(value.details);
+  validateTuple(value.tuple, contextName, /** @type {string} */ (value.phase));
+}
+
+/**
+ * Explicit verifier result gate. `pendingPhase` is the current durable phase;
+ * only the exact 09 matrix row for that phase may advance or clear.
+ * @param {unknown} verified
+ * @param {string} pendingPhase
+ * @param {string} predecessorHistoryId
+ */
+function assertE2Verified(verified, pendingPhase, predecessorHistoryId) {
+  const fail = () => {
+    throw new Error('refused: observability upgrade-e2 verification is missing');
+  };
+  if (verified == null || typeof verified !== 'object' || Array.isArray(verified)) {
+    return fail();
+  }
+  const result = /** @type {Record<string, unknown>} */ (verified);
+  if (result.ok !== true || result.detail !== 'owned-history-shape') {
+    return fail();
+  }
+  const expected =
+    pendingPhase === 'prometheus-intent'
+      ? { historyId: predecessorHistoryId, phase: 'prometheus-intent' }
+      : { historyId: `e2-from-${predecessorHistoryId}`, phase: null };
+  if (
+    result.historyId !== expected.historyId ||
+    (result.phase ?? null) !== expected.phase
+  ) {
+    return fail();
+  }
 }
 
 function assertEmptyDetails(details) {
@@ -1787,6 +1958,44 @@ function createHandle(input) {
         }
         return;
       }
+      if (request.operation === 'upgrade-e2') {
+        if (request.phase !== 'prometheus-intent') {
+          throw new Error('refused: observability upgrade-e2 phase is invalid');
+        }
+        const details = validateUpgradeE2Details(request.details);
+        const tuple = validateTuple(
+          request.tuple,
+          input.contextName,
+          request.phase,
+        );
+        const record = {
+          schema: 2,
+          operationId: randomUUID(),
+          service: OBSERVABILITY_SERVICE,
+          context: input.contextName,
+          start: new Date().toISOString(),
+          operation: 'upgrade-e2',
+          phase: 'prometheus-intent',
+          tuple,
+          details,
+        };
+        try {
+          createPending(input.pendingPath, record, input.deps);
+          const inspected = inspectPending(input.pendingPath, input.contextName);
+          if (
+            inspected.kind !== 'upgrade-e2' ||
+            stable(inspected.record) !== stable(record)
+          ) {
+            throw new Error('refused: observability pending record changed');
+          }
+          ownedRecord = globalThis.structuredClone(record);
+          ownedIdentity = inspected.identity;
+        } catch (error) {
+          authorityFailed = true;
+          throw error;
+        }
+        return;
+      }
       if (request.operation === 'persistence') {
         const details = validatePersistenceDetails(request.details, request.phase);
         if (details.step !== 0) {
@@ -1916,6 +2125,41 @@ function createHandle(input) {
       const operation = ownedRecord.operation;
       if (operation === 'outage') {
         throw new Error('refused: observability outage cannot use public advance');
+      }
+      if (operation === 'upgrade-e2') {
+        const current = validateUpgradeE2Details(ownedRecord.details);
+        const order = UPGRADE_E2_PHASES.indexOf(
+          /** @type {string} */ (ownedRecord.phase),
+        );
+        if (
+          order < 0 ||
+          order >= UPGRADE_E2_PHASES.length - 1 ||
+          request.phase !== UPGRADE_E2_PHASES[order + 1]
+        ) {
+          throw new Error('refused: observability upgrade-e2 phase out of order');
+        }
+        assertE2Verified(
+          request.verified,
+          /** @type {string} */ (ownedRecord.phase),
+          current.predecessorHistoryId,
+        );
+        const tuple = assertTupleImmutable(request.tuple, request.phase);
+        if (stable(validateUpgradeE2Details(request.details)) !== stable(current)) {
+          throw new Error('refused: observability upgrade-e2 details changed');
+        }
+        const next = {
+          ...ownedRecord,
+          phase: request.phase,
+          tuple,
+          details: current,
+        };
+        try {
+          writeOwnedRecord(next);
+        } catch (error) {
+          authorityFailed = true;
+          throw error;
+        }
+        return;
       }
       if (operation === 'persistence') {
         const current = validatePersistenceDetails(
@@ -2228,7 +2472,7 @@ function createHandle(input) {
         throw error;
       }
     },
-    clear() {
+    clear(request = undefined) {
       requireMutable();
       if (
         ownedRecord == null ||
@@ -2237,6 +2481,17 @@ function createHandle(input) {
       ) {
         return latch(
           new Error('refused: observability pending record is not owned'),
+        );
+      }
+      if (ownedRecord.operation === 'upgrade-e2') {
+        const current = validateUpgradeE2Details(ownedRecord.details);
+        if (ownedRecord.phase !== 'final-verification') {
+          throw new Error('refused: observability upgrade-e2 is not final');
+        }
+        assertE2Verified(
+          request?.verified,
+          'final-verification',
+          current.predecessorHistoryId,
         );
       }
       if (ownedRecord.operation === 'outage') {
