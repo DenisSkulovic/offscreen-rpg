@@ -10,7 +10,7 @@ Add only direct verified HTTPS kubelet scrape jobs and exact additional discover
 
 **Exclusive write owners:** `values/profiles/dev/prometheus.yaml`, `tests/e2-collection.test.mjs`, `coverage/inventory.json`, new `kubelet-trust.mjs`, `tests/kubelet-trust.test.mjs`; no committed real CA, no node configuration. 08/09/10/11/12 consume the frozen binding interface.
 
-**Collisions:** 02/04/05/06 are mutually exclusive overlay writers; no arbitrary imposed order among post-02 metric additions.
+**Collisions:** 02/04/05 are mutually exclusive overlay writers; no arbitrary imposed order among post-02 metric additions.
 
 No unrelated cleanup, E1 re-certification, release mutation, paid work, external telemetry, auto-recovery or permission expansion. No implementation of a missing native fact by guess. This packet must not introduce a new public scope switch.
 

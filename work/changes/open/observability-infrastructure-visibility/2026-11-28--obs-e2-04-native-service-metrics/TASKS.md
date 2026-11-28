@@ -1,10 +1,10 @@
 # OBS-E2-04 | task queue
 Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: PLANNER-BLOCKED — G3 applicable endpoints. Shared contracts: [group](../README.md#frozen-packet-interfaces).
-Tasks: T01 → T02 → T03; selected: none.
+Tasks: T01 → T02 → T03 → T04; selected: none.
 
 ## T01 | Add per-instance native discovery | PLANNER-BLOCKED (native inputs)
 DEPTH=PATCH
-Requires: 02 joined; G3 exact endpoint and family records for selected CNPG, four Temporal roles, RabbitMQ and observability self metrics.
+Requires: 02 joined; PG01 positive native receipt; 06 joined and G4b positive owner receipt; planner-frozen G3/G4 exact endpoints, families, labels and queries for full selected scope; exclusive overlay ownership.
 May write: infra/platform/observability/values/profiles/dev/prometheus.yaml
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
 Read: infra/platform/observability/values/profiles/dev/prometheus.yaml; G3 CNPG and Temporal contract; TARGET sections 2–3
@@ -26,13 +26,25 @@ Negative: Exporter up is not backend healthy; absent service does not create hea
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Test enrollment boundaries | PLANNER-BLOCKED (native inputs)
+## T03 | Enroll proven SeaweedFS endpoint | PLANNER-BLOCKED (G4b native inputs)
 DEPTH=PATCH
-Requires: T02 postcondition and packet prerequisites.
+Requires: T02 postcondition, joined 06 source, positive G4b owner receipt and frozen exact metric/label/panel rows; exclusive overlay ownership.
+May write: infra/platform/observability/values/profiles/dev/prometheus.yaml; infra/platform/observability/coverage/seaweedfs.json
+Must not write: object-store workloads, chart, data, other Change owners, live resources.
+Read: G4b positive owner receipt and planner-frozen rows in NATIVE-INPUTS; dev Prometheus overlay.
+Algorithm: fixed `seaweedfs` job `object-store.offscreen-dev-objects.svc:9327/metrics`, explicit bounded family/label filters, 30s/10s, 5000 samples and target limit 100 per existing selected budgets. Match exact G4b Service/port; materialize exact frozen coverage rows. Never scrape S3, enable arbitrary labels, modify data services or silently omit required coverage. Do not invent metrics or authorize G4b.
+Test: source gate; T04 checks exact enrollment and 08 renders/promtool; 13 live proof.
+Negative: Missing owner receipt, wrong port, absent/unsupported family never treated as healthy or enabled.
+Stop: missing frozen rows or owner receipt, unexpected service/source identity, permission/coverage drift.
+Receipt: exact source postcondition and downstream proof obligations.
+
+## T04 | Test enrollment boundaries | PLANNER-BLOCKED (native inputs)
+DEPTH=PATCH
+Requires: T03 postcondition and packet prerequisites.
 May write: infra/platform/observability/tests/e2-collection.test.mjs
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/tests/e2-collection.test.mjs; coverage/native-services.json
-Algorithm: Assert exact job set, fixed namespaces/labels, ports/families and no wildcard metadata copy, explicit optional/unsupported rows, no service-owner changes.
+Read: infra/platform/observability/tests/e2-collection.test.mjs; coverage/native-services.json; coverage/seaweedfs.json
+Algorithm: Assert exact job set, fixed namespaces/labels, ports/families and no wildcard metadata copy, explicit optional/unsupported rows, positive exact SeaweedFS endpoint/receipt and no S3 endpoint, no service-owner changes.
 Test: node --test infra/platform/observability/tests/e2-collection.test.mjs
 Negative: Wrong selectors, duplicate job, unapproved endpoint or missing coverage disposition fails.
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.

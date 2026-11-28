@@ -1,39 +1,36 @@
 # OBS-E2-06 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: PLANNER-BLOCKED — G4 owner transition details and native feasibility. Shared contracts: [group](../README.md#frozen-packet-interfaces).
-Tasks: T01 → T02 → T03; selected: none.
+Base: `872c39b5c6bc4ebcacca3272d1c613758fc870cd`; refresh against recorded Design integration branch. State: PROPOSED; independent readiness/owner selection pending. Shared contract: [G4a owner transition](../NATIVE-INPUTS.md#g4a-owner-transition-candidate--bounded-seaweedfs-metrics-enablement). Tasks T01 → T02 → T03; selected: none. No G4b prerequisite and no observability overlay writes.
 
-## T01 | Freeze dev target and classifier | PLANNER-BLOCKED (native inputs)
+## T01 | Freeze exact chart variants and Helm history | PROPOSED
 DEPTH=PATCH
-Requires: G4a selected exact owner transition contract and authorization boundaries; native version/port and fixture inputs frozen. Source construction precedes separately authorized G4b proof. Enrollment task T03 additionally requires 02 joined and G4b or explicit owner-ratified exclusion; 08/13 consume that result.
-May write: infra/platform/object-storage/dev-bootstrap.mjs; providers/seaweedfs/chart/templates/deployment.yaml and service.yaml; providers/seaweedfs/observe.mjs; G4a exact dev values
-Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/object-storage/providers/seaweedfs/chart/templates/{deployment,service}.yaml; infra/platform/object-storage/dev-bootstrap.mjs: renderDevObjectStore, assessObjectStoreProbe; infra/platform/object-storage/providers/seaweedfs/observe.mjs: validateWorkloadContainer, validateLiveStructuralChain; accepted G4a
-Algorithm: Use G4a exact dev-only values and explicit named metrics port 9327, same image/data/S3/claim/identity. Classify exact predecessor and target, not any extra args/port. Release parsed manifest and owner verifier unchanged. Fresh dev target and existing predecessor handled according to G4a; ordinary ensure never implicitly mutates occupied predecessor.
-Test: node --test infra/platform/object-storage/tests/object-storage-chart.test.mjs infra/platform/object-storage/tests/readiness.test.mjs
-Negative: Wrong image/args/extra port, foreign data chain or changed release refused.
-Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
-Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
+Requires: G4a selected and reviewed; verified branch.
+May write: infra/platform/object-storage/providers/seaweedfs/chart/{values.yaml,values.schema.json,profiles/development.yaml,templates/deployment.yaml,templates/service.yaml}; providers/seaweedfs/observe.mjs (history functions only); infra/platform/object-storage/tests/{object-storage-chart,readiness}.test.mjs (history/render fixtures); tools/dev-environments/test/dev-object-store-bootstrap.test.mjs (dev render expectation only).
+Must not write: release profile, other Change owners, live resources, guard or tenant permissions.
+Read: chart values/schema/templates; observe.mjs::loadNativeProfileValues, valuesExactlyEqual, workloadsMatch, observeObjectStorageHistory; common/render.mjs::helmPlatformStdin, renderPlatformDocuments; G4a Exact variant and state selection (first paragraph).
+Algorithm: implement fixed metricsEnabled false default, dev true, fail render if release true. Exact old/current dev and retained history rows, explicit fixed false render overlay, old exact user values omitting added key, exact metadata/manifest/storage evidence and additive matched history fields. Preserve old release and legacy refusals. Do not change chart version or unrelated fields. Fixture positive old/fresh/upgrade and release; negative rev3, duplicate/missing/wrong retained storage UID/status/chart/manifest/value, wrong profile, extra args or port. Old and release parsed workload documents unchanged; target differs only args and named ports. No native mutation.
+Test: node --test infra/platform/object-storage/tests/object-storage-chart.test.mjs infra/platform/object-storage/tests/readiness.test.mjs tools/dev-environments/test/dev-object-store-bootstrap.test.mjs
+Stop: unexpected chart/history semantics or scope drift; no broad Helm migration.
+Receipt: exact diff and actual results; no native PASS.
 
-## T02 | Implement owner-controlled transition | PLANNER-BLOCKED (native inputs)
+## T02 | Exact live chain and pending admission | PROPOSED
 DEPTH=PATCH
-Requires: T01 postcondition and packet prerequisites.
-May write: infra/platform/object-storage/providers/seaweedfs/install.mjs; providers/seaweedfs/mutation-guard.mjs; object-storage tests named in G4a
-Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/object-storage/providers/seaweedfs/install.mjs: ensureObjectStorage; infra/platform/object-storage/providers/seaweedfs/mutation-guard.mjs: withObjectStorageMutation; accepted G4a exact operation contract
-Algorithm: Implement only ratified G4a algorithm: explicit separate operation authorization, object owner lock, exact identity and predecessor, no active consumers, positive preexisting object marker, durable intent before one controlled rollout, verify same service/admin/claim/PV/data chain and exact target, same marker readable, then clear owned intent. Fail closed on uncertainty; no force/uninstall/restore/adoption or implicit monitor invocation. Exact target repeat nonmutating.
-Test: node --test infra/platform/object-storage/tests/object-storage-install.test.mjs infra/platform/object-storage/tests/mutation-guard.test.mjs
-Negative: Inject active consumers, wrong UID, failed/unknown write, marker mismatch; zero further mutations; retained fence.
-Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
-Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
+Requires: T01 matched history postcondition.
+May write: infra/platform/object-storage/providers/seaweedfs/observe.mjs, mutation-guard.mjs (pending read/state/capability and specialized lock boundary); infra/platform/object-storage/tests/{readiness,mutation-guard}.test.mjs; install.mjs (status/ensure matched field and public refusal routing only); dev-bootstrap.mjs (additive dev status only).
+Must not write: tenant policy, other Change owners, live resources, old generic mutation authority.
+Read: observe.mjs::validateWorkloadContainer, validateWorkloadPodSpec, validateLiveStructuralChain, classifyObjectStorageObservation, readLiveChainObservation, observeObjectStorageChain; mutation-guard.mjs::readExistingPending, resolveObjectStorageLockPaths, identityMatchesBeforeWrite, identityAdoptAfterWrite; G4a Exact variant/state second paragraph and dedicated pending/capability contract; install.mjs::decideObjectStorageInstall, ensureObjectStorage.
+Algorithm: use matched history to choose exact native variant, check target port and endpoint chain, current RS/Pod and retained single scaled-zero predecessor, reject extra RS or unknown/terminating topology. Add private sanitized owner-chain projection with exact UIDs, Secret version and verified directory stat, never fabricate prior receipt. Add exact typed pending parser and private owned session capability; ordinary public observers refuse metrics/marker/unknown pending (including apparently final shape), preserve exact old pending internal behavior for fresh install. Do not relax generic identity adoption or expose bypass. Status/noop carries matched variant and never upgrades predecessor. Existing S3 readiness callers keep state vocabulary and release behavior. Separate owner transition code can call only dedicated internal observation with active owned capability.
+Test: node --test infra/platform/object-storage/tests/readiness.test.mjs infra/platform/object-storage/tests/mutation-guard.test.mjs infra/platform/object-storage/tests/object-storage-install.test.mjs
+Negative: extra RS, wrong endpoint, unexpected port/args, stale/forged handle, changed/unknown pending, prior receipt mismatch, ordinary observer blocked through target intent; existing fresh install/tenant guard still works.
+Stop: identity/permission/data-safety contradiction, unavailable required source, unsafe general bypass.
+Receipt: source postconditions and focused results; no live operations.
 
-## T03 | Enroll proven endpoint | PLANNER-BLOCKED (native inputs)
+## T03 | Explicit occupied owner operation | PROPOSED
 DEPTH=PATCH
-Requires: T02 postcondition, 02 joined, G4b authorized positive receipt and no concurrent overlay owner; packet prerequisites.
-May write: infra/platform/observability/values/profiles/dev/prometheus.yaml; infra/platform/observability/coverage/seaweedfs.json; infra/platform/observability/tests/e2-collection.test.mjs
-Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/values/profiles/dev/prometheus.yaml; G4b positive owner receipt and G3 native metric families
-Algorithm: Only after authorized owner proof and frozen metric evidence, add static `seaweedfs` job `object-store.offscreen-dev-objects.svc:9327/metrics` if exact Service confirmed by G4. Use bounded families, explicit storage coverage and limits. No S3 scrape. If G4 fails or not authorized, leave this assignment blocked; owner may ratify explicit inventory-only scope, planner revises affected contract before activation.
-Test: node --test infra/platform/observability/tests/e2-collection.test.mjs
-Negative: Missing owner proof or unsupported family never silently enables target or claims full coverage.
-Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
-Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
+Requires: T01/T02; same owner lock and selected matched history interface.
+May write: infra/platform/object-storage/providers/seaweedfs/{install,mutation-guard,observe,live-sdk}.mjs only for selected operation; infra/platform/object-storage/tests/{object-storage-install,mutation-guard,readiness}.test.mjs; new infra/platform/object-storage/tests/metrics-transition.test.mjs.
+Must not write: other Change owners, arbitrary S3 mutations, live resources, actual marker creation, tenant permissions or observability activation.
+Read: install.mjs::objectStorageCliMain, ensureObjectStorage; mutation-guard.mjs::withObjectStorageMutation, openAndAcquireLock, awaitBoundedChild, writePendingDurable, clearPendingDurable; live-sdk.mjs::credentials, withForward; G4a separately authorized owner operation; tools/dev-environments/src/domain/dev-worktree-registry.mjs::readExistingRegistryV2 and application/dev-lifecycle.mjs::devWorktreeRegistryRoot.
+Algorithm: implement only fixed CLI and exact G4a transition, validate both maintenance vars/context, quiescent registry and namespace inventory, host memory, exact predecessor and immutable marker descriptor. Specialized owner-only guard with one exact Helm argv (no generic write callback), durable intent before dispatch, verified successor and retained storage/marker/endpoint readback, clear exact owned record only. Same-target repeat zero writes and no new pending. No new public mutation command for preparation, no automatic recovery; G4b acceptance lead prepares separately if needed. Existing normal installer and provisioner untouched outside additive status/refusal. All private credentials in memory, sanitized failure and receipt only. Use fake runner/injected SDK fixture; positive predecessor → target and target no-op; reject active consumer/lease/process, insufficient memory, malformed descriptor or Secret mismatch, wrong UID/history/RS, unowned or changed pending, lost/ambiguous write, marker failure, endpoint failure or cleanup failure. Each failed/unknown dispatch retains fence and issues zero further writes.
+Test: node --test infra/platform/object-storage/tests/object-storage-chart.test.mjs infra/platform/object-storage/tests/readiness.test.mjs infra/platform/object-storage/tests/object-storage-install.test.mjs infra/platform/object-storage/tests/mutation-guard.test.mjs infra/platform/object-storage/tests/metrics-transition.test.mjs tools/dev-environments/test/dev-object-store-bootstrap.test.mjs tools/dev-environments/test/dev-s3-tenant-live-adapter.test.mjs
+Stop: source drift affecting safety, failed proof, uncertain mutation authority. Do not run native commands or delegate G4b.
+Receipt: exact source SHA, actual focused checks, final command and G4b NOT RUN; coordinator archives before serialized Design join and transfers outstanding native obligation. No Design-main merge.
