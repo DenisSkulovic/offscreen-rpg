@@ -1,6 +1,6 @@
 # DE-E1-01 | Native Temporal host and strict namespace admission
 
-**Kind:** implementation (source construction). **Standing:** PROPOSED, independent readiness pending; no commission. **Base:** `826adbc548b8acff9e49767389848c857432b497`; target `implementation/durable-execution` after E2 and owner commission. [Group](../README.md) owns integration and reconciliation; [source map](../SOURCE-MAP.md). [Selected Design](../../../../designs/open/durable-execution/README.md).
+**Kind:** implementation (source construction). **Standing:** READY (dependency-gated), [review 01](../READINESS-REVIEW-01.md) at `22e788b30d271ce24b8adf83af12f6cbd4c0c478`; no commission. **Base:** `826adbc548b8acff9e49767389848c857432b497`; target `implementation/durable-execution` after E2 and owner commission. [Group](../README.md) owns integration and reconciliation; [source map](../SOURCE-MAP.md). [Selected Design](../../../../designs/open/durable-execution/README.md).
 
 **Outcome:** one Node-only reusable native Client/Worker host with tested lifecycle and additive strict qualification namespace owner route. No Workflow engine, public test export, production registration, SDK upgrade, live resource or provider operation.
 
