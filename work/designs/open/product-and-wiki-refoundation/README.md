@@ -1,6 +1,6 @@
 # Product and wiki refoundation | E1
 
-**Proposed · active design investigation · 2026-11-28.** Integration target: `main`. Source inspected: remote `main` `22e788b30d271ce24b8adf83af12f6cbd4c0c478`; lean snapshot `b962bb63c7163814f0519c205629b5018ffe7121` plus both design patches, verified affected blob hashes. Designer/planner: ChatGPT; product decision owner: repository owner; proposed rewrite executor: Cursor. No Change is ready or commissioned by this dossier.
+**Proposed · self-defense completed on the local candidate · 2026-11-28.** Integration target: `main`. Source inspected: remote `main` `22e788b30d271ce24b8adf83af12f6cbd4c0c478`; lean snapshot `b962bb63c7163814f0519c205629b5018ffe7121` plus the verified remote charter and local cumulative reconstruction revision; inspected dependent owner blobs match the remote baseline. Designer/planner: ChatGPT; product decision owner: repository owner; proposed rewrite executor: Cursor. No Change is ready or commissioned by this dossier.
 
 ## Outcome and boundary
 
@@ -12,15 +12,16 @@ The prior [product renewal](../../archive/product-documentation-renewal/README.m
 
 ## Current evolution
 
-E1 selects the product nucleus, authority split, configurable gameplay and world-neutral direction, and reconstructs seven foundational pages. This is not a copyedit: the selected target is a newly authored reader-facing foundation with retained unique guarantees, not the previous text with extra maturity warnings. It does not settle every gameplay domain, implement rules or design persistence schemas.
+E1 selects the product nucleus, authority split, configurable gameplay and world-neutral direction, and reconstructs seven foundational pages, plus bounded semantic reconciliation of adjacent owners. This is not a copyedit: the selected target is a newly authored reader-facing foundation with retained unique guarantees, not the previous text with extra maturity warnings. It does not settle every gameplay domain, implement rules or design persistence schemas.
 
 | Dossier | Responsibility |
 | --- | --- |
 | [TARGET](TARGET.md) | Product decisions, charter, preserved authority, counterexamples and freeze boundary |
 | [WIKI-ARCHITECTURE](WIKI-ARCHITECTURE.md) | Whole-wiki direction, editorial design, semantic migration and integration method |
-| [E1-RECONSTRUCTION](E1-RECONSTRUCTION.md) | Selected initial page ownership, source-grounded disposition and concrete acceptance specimens |
+| [E1-RECONSTRUCTION](E1-RECONSTRUCTION.md) | Selected initial page ownership, source-grounded disposition, dependent contract reconciliation and concrete acceptance specimens |
+| [SELF-DEFENSE](SELF-DEFENSE.md) | Designer’s skeptical review, resolved objections and submission boundary; not independent committee or ratification |
 
-The independent committee reviews E1, its affected boundaries and the reconstruction strategy, not the unselected details of E2–E5. Self-defense, exact candidate freeze, independent review and owner ratification precede promotion and Change planning. No Change is ready or commissioned. Subsequent packet planning supplies exact edit/heading maps and verifies full-checkout backlink completeness.
+The independent committee reviews E1, its affected boundaries and the reconstruction strategy, not the unselected details of E2–E5. The local candidate has passed designer self-defense. Commit and freeze the exact dossier revision for independent review, then obtain owner ratification before promotion and Change planning. No Change is ready or commissioned. Subsequent packet planning supplies exact edit/heading maps and verifies full-checkout backlink completeness.
 
 ## Later evolutions (candidate scopes, not commissions)
 
@@ -37,6 +38,6 @@ These are outcome boundaries for progressive work, not a fixed packet count or s
 
 Owner direction: D&D optional and suggested; narrative-only and partial mechanics valid; immediate, hybrid and real-time play valid; descriptive Markdown and protected structured documents; arbitrary fictional worlds and chronologies. Parallel-life play (a two-day admitted journey can last two actual days) is a positive specimen, not permission for unbounded standing autonomy.
 
-The dossier now selects the initial reconstruction boundary and proposes its architecture for defense. Next: inspect remaining affected dependent claims, perform formal self-defense against the actual candidate, settle any material residual owner decisions, then present the frozen E1 dossier for independent committee. No new runtime code, model calls or live qualification is needed for this documentation-only evolution. Preserve all in-flight infrastructure, Agent Core and durable execution owners. Later technical renewal must reconcile against then-current source, not freeze today's POC forever.
+The dossier is ready for a focused independent E1 committee **after the local candidate is persisted and its exact SHA verified**. The current remote baseline does not yet contain the reconstruction revision. Review the complete dossier, including the bounded dependent-owner correction scope. Freeze these files during review; unrelated engineering may continue. After a defended committee verdict and owner ratification, promote the selected meaning on the isolated Design implementation branch and prepare the complete rewrite batch. Keep main coherent until joint documentation acceptance and integration. Do not commission writing before these gates. No runtime code, model calls or live qualification is needed. Full-checkout dependency/anchor mapping remains a packet-planning obligation, not an assertion of completed proof.
 
 [Product index](../../../../docs/product/README.md) · [Documentation rules](../../../../.agents/rules/documentation.md) · [Navigation standard](../../../../.agents/references/documentation-navigation-standard.md) · [Target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
