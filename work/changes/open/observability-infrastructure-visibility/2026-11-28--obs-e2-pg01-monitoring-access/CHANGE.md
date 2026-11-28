@@ -1,6 +1,6 @@
 # OBS-E2-PG01 | Dedicated CNPG monitoring connectivity
 
-**Kind:** implementation. **Standing:** PROPOSED, source-determined owner correction, independent readiness review pending; no live permission. **Baseline:** `main` `497176baa34c868107399936f16c432137bbab3e`. Owner accepted narrow CONNECT evolution after the recorded failed collector and denied CONNECT on all five existing databases. [Native evidence](../NATIVE-INPUTS.md) and [group register](../README.md).
+**Kind:** implementation. **Standing:** PLANNER-BLOCKED pending targeted independent re-review of corrected H01/H02; no live permission. [Review 01](../READINESS-REVIEW-01.md) at `9b113bd8e877a6c957750b9ece606223dd15e5a6`. **Baseline:** `main` `497176baa34c868107399936f16c432137bbab3e`. Owner accepted narrow CONNECT evolution after the recorded failed collector and denied CONNECT on all five existing databases. [Native evidence](../NATIVE-INPUTS.md) and [group register](../README.md).
 
 ## Outcome and boundaries
 
@@ -12,7 +12,7 @@ Dev only: restore the existing CNPG-managed `cnpg_metrics_exporter` role's abili
 
 **Collisions:** no concurrent baseline/topology/Temporal/tenant provisioning or competing database owner mutation in occupied proof; explicit maintenance quiescence plus PostgreSQL owner lock, not a claim that the lock covers noncooperating writers. No shared source writes with 01/02/05.
 
-**Closure:** source construction can join after focused fixture gate. Native proof transfers to the Design as a named PG01 owner-qualification obligation before 04 full statistics freeze and 13. Archive the source Change before joining if its assigned focused source gate and reconciliation pass; the Design remains acceptance-pending. No claim that native repair is complete.
+**Closure:** source construction can join after focused fixture gate. Native proof transfers to the Design as a named PG01 owner-qualification obligation before 04 full statistics freeze and 13. Archive the source Change before joining if its assigned focused source gate and reconciliation pass; the Design remains acceptance-pending. No claim that native repair is complete. The exact clean joined Design-branch revision with PG01 construction passed is eligible for separately commissioned PostgreSQL-only native qualification; incomplete E2 activation remains forbidden.
 
 ## Execution
 

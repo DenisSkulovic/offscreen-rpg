@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-**Observability E2:** [OBS-E2-01–13 and PG01 current batch](open/observability-infrastructure-visibility/README.md) prepared against `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; architecture defended, native G1–G4 evidence gates and independent packet readiness remain, no implementation or live commission.
+**Observability E2:** [OBS-E2-01–13 and PG01 current batch](open/observability-infrastructure-visibility/README.md) prepared against `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; architecture defended; 01/02/05 independently Ready (dependency order), PG01 corrections await targeted re-review, remaining native evidence and readiness gates retained; no implementation or live commission.
 
 **Native platform foundations (2026-11-28):** [PostgreSQL](archive/2026-11/platform-operations/2026-11-26--postgres-native-baseline/CHANGE.md) · [Gateway](archive/2026-11/platform-operations/2026-11-26--gateway-native-baseline/CHANGE.md) · [Redis](archive/2026-11/platform-operations/2026-11-26--redis-native-baseline/CHANGE.md) · [RabbitMQ](archive/2026-11/platform-operations/2026-11-26--rabbitmq-native/CHANGE.md) · [Object storage](archive/2026-11/platform-operations/2026-11-26--object-storage-native/CHANGE.md). Done at bounded foundation scope; RabbitMQ/object storage source-only. Residual qualification and cutover gates retained in technical owners. No open Changes in those native foundation batches or new commission.
 
