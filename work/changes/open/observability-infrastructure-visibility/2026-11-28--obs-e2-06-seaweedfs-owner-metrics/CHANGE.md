@@ -4,7 +4,7 @@
 
 ## Outcome and boundaries
 
-Add dedicated 9327 listener on existing dev mini process, retain S3 port, image, Secret, PVC/PV and data. Separate owner transition, no observability-side restart. G4a must freeze exact upgrade invocation/schema and predecessor/target chain before dispatch; this packet does not pretend that this currently exists.
+Add dedicated 9327 listener on existing dev mini process, retain S3 port, image, Secret, PVC/PV and data. Separate owner transition, no observability-side restart. G4a candidate now specifies upgrade invocation/schema and predecessor/target chain in [NATIVE-INPUTS](../NATIVE-INPUTS.md#g4a-owner-transition-candidate--bounded-seaweedfs-metrics-enablement). Proposed construction/native split with 04; packet remains blocked until affected review and owner selection reconcile the task queue and proof. No live permission.
 
 **Requires:** G4a selected exact owner transition contract and authorization boundaries; native version/port and fixture inputs frozen. Source construction precedes separately authorized G4b proof. Enrollment task T03 additionally requires 02 joined and G4b or explicit owner-ratified exclusion; 08/13 consume that result.
 

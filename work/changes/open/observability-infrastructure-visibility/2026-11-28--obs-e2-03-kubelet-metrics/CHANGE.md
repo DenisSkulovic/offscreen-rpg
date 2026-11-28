@@ -1,14 +1,14 @@
 # OBS-E2-03 | Authenticated direct node and container metrics
 
-**Kind:** implementation. **Standing:** PLANNER-BLOCKED — G2; not commissioned. **Baseline:** `main` `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. **Authority:** [defended E2](<../../../../designs/open/observability-infrastructure-visibility/README.md>), [pass 02](<../../../../designs/open/observability-infrastructure-visibility/committee/pass-02.md>) at `0e731739c8a97e6e83896612acec40f89a26516f`; [selected technical direction](<../../../../../docs/technical/platform/observability-native-infrastructure.md>). See [group register](../README.md) for branch, custody, source dependencies and acceptance. Recheck exact source and target before dispatch; no remote or live permission is granted by this packet.
+**Kind:** implementation. **Standing:** PROPOSED — G2 native feasibility passed; scoped binding/resource candidate pending review and owner selection; not commissioned. **Baseline:** `main` `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. **Authority:** [defended E2](<../../../../designs/open/observability-infrastructure-visibility/README.md>), [pass 02](<../../../../designs/open/observability-infrastructure-visibility/committee/pass-02.md>) at `0e731739c8a97e6e83896612acec40f89a26516f`; [selected technical direction](<../../../../../docs/technical/platform/observability-native-infrastructure.md>). See [group register](../README.md) for branch, custody, source dependencies and acceptance. Recheck exact source and target before dispatch; no remote or live permission is granted by this packet.
 
 ## Outcome and boundaries
 
 Add only direct verified HTTPS kubelet scrape jobs and exact additional discovery permissions. No `nodes/proxy`, insecure TLS, CSR approval or host changes.
 
-**Requires:** 02 joined; G2 passes both-node verified serving CA/SAN and scoped auth; frozen trust/address/metric inputs.
+**Requires:** 02 joined and shared overlay ownership available; selected G2 construction freeze in NATIVE-INPUTS reviewed and ratified. No repeat native specimen.
 
-**Exclusive write owners:** `values/profiles/dev/prometheus.yaml`, `tests/e2-collection.test.mjs`, `coverage/inventory.json`, new dev kubelet CA asset only if G2 establishes a dedicated public CA; no node configuration.
+**Exclusive write owners:** `values/profiles/dev/prometheus.yaml`, `tests/e2-collection.test.mjs`, `coverage/inventory.json`, new `kubelet-trust.mjs`, `tests/kubelet-trust.test.mjs`; no committed real CA, no node configuration. 08/09/10/11/12 consume the frozen binding interface.
 
 **Collisions:** 02/04/05/06 are mutually exclusive overlay writers; no arbitrary imposed order among post-02 metric additions.
 

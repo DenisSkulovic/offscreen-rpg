@@ -521,13 +521,177 @@ Frozen `coverage/inventory.json` initial rows (03 extends; 07 uses distinct pane
 ]
 ```
 
+## G2 construction freeze candidate | direct HTTPS and cluster-bound trust
+
+Native specimen PASSED, recorded above (both nodes and both paths, direct `/pods` negative). Source mapping rechecked at `main` `8cb05ff2841d548e52c75cd6dae0e666081f810b`. This is a scoped refinement of the defended collection mechanism, not acceptance of implementation or authorization to run cluster operations. Before 03 commission, review this exact trust/render interface and the resource-path refinement; do not repeat the native specimen or unrelated architecture defense. No live E2 activation before 08–13.
+
+### Trust capture and immutable binding
+
+Use the verified local Kind/Docker boundary, not an untrusted remote presented certificate and not the API CA. No node config changes, extra Helm release, host mount, CSR approval, broad RBAC, or private material. New source `infra/platform/observability/kubelet-trust.mjs` owns read-only `readDevKubeletTrust(identity,{run,now,deadline}) -> {schema:1,contextName,kubeSystemUid,baselineUid,nodes:[{name,nodeUid,dockerId,caSha256,caPem}],bindingSha256}` or throws a bounded sanitized `kubelet-trust-unavailable`. Exact two node names in lexical order; exact own properties and nonempty identities; canonical PEM is one public certificate per node, normalized LF and terminal newline, bounded to 16 KiB each. `bindingSha256` is SHA-256 of UTF-8 JSON of those fields excluding itself in the displayed key order, including normalized PEM. Leaf fingerprints are not in the binding, so ordinary leaf renewal under the same roots does not create an artifact revision. No IP, leaf fingerprint, private key, token or arbitrary Docker inspection output in receipts. Receipt can contain only binding/root SHA-256 and state.
+
+1. Require actual frozen dev identity from `identity.mjs::captureIdentity` and its bounded runner; reject remote Docker/environment overrides as that module already does. `recheckIdentity` before/after capture. Read exact two Node objects using the frozen kubeconfig/context; require distinct UIDs, Running owned Kind Docker containers with exact `io.x-k8s.kind.cluster=offscreen-dev`, roles `control-plane`/`worker`, fixed names, distinct full Docker IDs, control-plane ID equal to frozen tuple, and Node InternalIP equal to that container's `kind` network IPv4. Read-only Docker inspect through the same local endpoint; execute by full verified container ID, not a mutable name. Refuse missing/extra nodes or mismatch. Neither IP nor certificate content from external discovery is an input to trust.
+2. Per node, bounded local `docker exec <id> openssl s_client -connect 127.0.0.1:10250 -servername <exact-node-name> -showcerts` (closed stdin), extract exactly two PEM cert blocks, no untrusted text or private key; read the public disk leaf using `docker exec <id> openssl x509 -in /var/lib/kubelet/pki/kubelet.crt -outform PEM`. Require equal DER fingerprints. Verify self-signed root CA basic constraints, valid time, self-signature, and server-purpose chain + DNS SAN of leaf against only that root; reject CN-only, expired, wrong SAN, non-CA, wrong chain, unexpected cert count, unsupported OpenSSL or missing disk file. Use bounded private temporary directory for public PEM only, `openssl verify -no-CApath -no-CAstore -check_ss_sig -CAfile root.pem root.pem` and `openssl verify -no-CApath -no-CAstore -purpose sslserver -verify_hostname <node> -CAfile root.pem leaf.pem`; also explicitly check DNS SAN contains exact node (no wildcard), DER fingerprints, CA and leaf dates. Use Node `X509Certificate` for parse/fingerprints/date/SAN checks. Never send a bearer token here. In-cluster DNS and actual bearer behavior are already evidenced and repeated only in joint proof. Read node/container identity again and compare before accepting output; repeat frozen identity check. No environment-driven CA path or arbitrary Docker target.
+3. Freeze immutable binding for each operation. Under existing observation/operation custody acquire and recheck the binding before mutation and final verification, never re-render a different target mid-operation. Initial trust for a newly created dev cluster is derived only from this verified local owner boundary during the separately authorized E2 ensure/upgrade. Existing E2 is admitted only when current binding and exact installed Helm artifact match. On root, cluster, node or Docker identity change, missing/expired/unreadable anchor or failed verification, refuse E2 convergence/forward/operation; do not update a live CA, approve CSR, rotate credentials, add revisions or repair automatically. Same-root valid leaf renewal is allowed. Root replacement needs a future explicitly authorized owner-side repair with a new reviewed history row; cluster recreation has no occupied history and obtains a new binding on fresh E2 installation. E1 operation admission is unaffected by inability to derive E2 trust.
+
+### Helm integration and operation routing
+
+The vendored Prometheus 31.0.0 chart `templates/extra-manifests.yaml` runs `tpl` on strings in `extraManifests`; `templates/deploy.yaml` supports `server.extraConfigmapMounts`. Use one new dev-E2 Helm-owned ConfigMap `obs-kubelet-trust`, namespace `offscreen-dev-observability`, exact `offscreen.dev/owner: offscreen-dev` label, annotation `offscreen.dev/kubelet-trust-binding-sha256`, `immutable: true`, single data key `ca.pem`: concatenate normalized root PEMs in node order. The only dynamic values are supplied by 08 from the validated binding as one literal `--set-json offscreenKubeletTrust=<JSON>` argument with exactly `{bindingSha256,caPem}`; no shell expansion. Template uses `required` and `quote` on those two scalar values, not `tpl` on input; roots are parsed canonical certificate PEM, hashes exact 64 lowercase hex. `server.extraConfigmapMounts` adds `{name:kubelet-trust,configMap:obs-kubelet-trust,mountPath:/etc/offscreen/kubelet-trust,readOnly:true}`. TLS file `/etc/offscreen/kubelet-trust/ca.pem`. Do not commit this cluster's CA or introduce another mutable ConfigMap writer. Combined roots are trusted only within this fixed two-node local cluster and normal hostname verification remains required. Do not use this as a general-purpose trust store.
+
+08 owns `loadArtifacts('dev',{variant:'dev-e2',kubeletTrust,...})`, exact validated binding required; `helmValuesArgv` supplies the same explicit JSON to render/install/upgrade. E1 and release ignore no E2 input: reject a supplied E2 trust override for historical variants; historical resolver unchanged. Bundle adds `kubeletTrustBindingSha256` and retains actual immutable input internally; exact render and Helm revision manifests include CA bytes/digest, not a wildcard in comparisons. The inventory includes the new ConfigMap and validates its exact data key, annotation, immutability, release owner and UID. Test fixture roots must be generated/loaded from explicitly test-only public certificates and passed via injected fixture binding; no production default, no fake runtime CA. Public dev render/lint requires real verified local trust (unavailable fails with actionable reason); historical/release renders and offline source fixture tests remain usable without a live cluster. This trade-off is selected to avoid an apparently deployable placeholder artifact. No public flag to supply arbitrary trust.
+
+`loadOperationalArtifactSet(profileId,deps)` adds `desiredArtifactId` and `desiredUnavailableReason` (null when available). If read-only dev trust capture fails, normal selector can still return exact historical E1 descriptors, `desired:null`, `desiredArtifactId:'dev-e2'`, `desiredUnavailableReason:'kubelet-trust-unavailable'`; no substitute desired E1, no partial E2. Static named E2 inventory identities from 08 are still observed, so an unavailable binding never hides an occupied E2 or foreign RBAC/ConfigMap collision. Explicit E2 requests fail without a binding. 09 matches existing E1 normally (desiredConverged=false), but refuses unknown E2 rather than admitting its shape by trusting Helm's own CA content; exact E2 needs independent current binding. 10/11 capture binding under the existing custody before E2 activation, pass the one bound descriptor throughout, and compare digest on pre-write and final readback. 11 records binding digest in E2 pending details, refuses root drift and preserves fence. E1 historical proofs retain E1 resolution and permissions even if current kubelet trust is unavailable. 12 normal proofs use same matched descriptor and recheck. 13 proves trust from actual Prometheus network, bad CA/SAN/changed node identity refusal, root drift no write and same-root leaf renewal fixture, both actual endpoint `up`, exact live mount and RBAC, no unexpected Helm revision/history. Historical revision rows unchanged; P2 content is exact per validated cluster binding. Never reconstruct a desired trust binding from an installed release.
+
+### Exact scrape and resource metrics
+
+Retain dedicated Prometheus SA and existing narrow Pod discovery; add exactly node `get/list/watch` and `nodes/metrics` get, no `nodes/proxy`. Add jobs `kubelet-resource` and `kubelet-cadvisor`, role node discovery, keep `__meta_kubernetes_node_name` matching `^(offscreen-dev-control-plane|offscreen-dev-worker)$`, set `node` from that name, `__address__` to `$1:10250`, HTTPS, fixed paths `/metrics/resource` and `/metrics/cadvisor`, `authorization.credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token`, TLS `ca_file` above, no `insecure_skip_verify`, no generic labelmap. Stable target instance is DNS:10250, cluster/environment/component labels use shared 02 contract. Fixed 30s/10s, target_limit 4 each, sample_limit 5000 resource/20000 cAdvisor, label limits 40/128/512.
+
+**Resource source refinement:** native `/metrics/resource` returned node, Pod and container CPU/working-set families on both nodes with clean namespace/pod/container labels and no container IDs. Use it as the canonical source for *all* CPU/RAM totals; this preserves required E2-R coverage while avoiding cAdvisor raw container IDs and CPU per-core/aggregate overlap. Do not sum both jobs. Keep exactly six resource families in table below, require nonempty namespace/pod for Pod series and namespace/pod/container for container series, exclude `POD` for container series, no arbitrary labels. cAdvisor remains authenticated, independently scraped; keep only conditional network receive/transmit bytes counters with `container="POD"`, nonempty namespace/pod/interface, exclude `lo`; preserve namespace/pod/interface plus fixed identity, drop image/name/id and all other raw labels. The specimen proves family names/keys, not actual sandbox label values or uniqueness. Therefore no network panel/positive domain coverage in this first frozen contract; G5 must check actual retained series uniqueness, sandbox attribution and label values, or explicitly report network unsupported (no zero). If filtering aliases series or causes rejected scrape, do not accept; return precise evidence for planner. Disk/throttling unsupported as selected; no fake samples. Both node resource sources must be current for cluster-wide totals; group aggregates suppressed on missing/stale node targets. Node/pod/container series remain distinct. Grafana panel rows below are exact source declarations for 03/07/08; all rates use 5m and freshness <=90s.
+
+| Resource sample | Native keys retained (in addition to fixed scrape identity) |
+| --- | --- |
+| `node_cpu_usage_seconds_total`, `node_memory_working_set_bytes` | none |
+| `pod_cpu_usage_seconds_total`, `pod_memory_working_set_bytes` | namespace, pod |
+| `container_cpu_usage_seconds_total`, `container_memory_working_set_bytes` | namespace, pod, container |
+| Conditional cAdvisor `container_network_receive_bytes_total`, `container_network_transmit_bytes_total` | namespace, pod, interface; only qualifying sandbox, no raw id/name/image |
+
+Append the following rows to 02's `coverage/inventory.json` without changing its existing rows. Panel queries gate metric freshness before aggregation and require both current node targets for cluster/namespace totals; no absent-to-zero fallback. CPU cores, not percent of physical host; memory working set, not allocation. Per-container views remain absent when no resource series (e.g. completed Pod).
+
+```json
+[
+  {
+    "component": "kubelet-resource",
+    "namespace": null,
+    "workloadSelector": {
+      "nodeNames": [
+        "offscreen-dev-control-plane",
+        "offscreen-dev-worker"
+      ]
+    },
+    "jobs": [
+      "kubelet-resource"
+    ],
+    "requiredFamilies": [
+      "node_cpu_usage_seconds_total",
+      "node_memory_working_set_bytes",
+      "pod_cpu_usage_seconds_total",
+      "pod_memory_working_set_bytes",
+      "container_cpu_usage_seconds_total",
+      "container_memory_working_set_bytes"
+    ],
+    "panels": {
+      "offscreen-overview/104": {
+        "promql": "((sum (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() ((count(((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2))) and on() (count(((node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2)",
+        "unit": "none",
+        "interpretation": "CPU cores across both Kind nodes, only when both resource scrapes current. Require current node family on both nodes; suppress incomplete totals."
+      },
+      "offscreen-nodes/306": {
+        "promql": "sum by (node) (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "CPU cores per Kind node, missing/stale unknown."
+      },
+      "offscreen-nodes/308": {
+        "promql": "(sum by (node) (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) / on(node) (((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"} and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) > 0)",
+        "unit": "percentunit",
+        "interpretation": "CPU cores divided by current positive allocatable; may exceed 100%, not physical host usage."
+      },
+      "offscreen-overview/105": {
+        "promql": "((sum (((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() ((count(((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2))) and on() (count(((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2)",
+        "unit": "bytes",
+        "interpretation": "Working-set bytes across both Kind nodes, only when both resource scrapes current. Require current node family on both nodes; suppress incomplete totals."
+      },
+      "offscreen-nodes/307": {
+        "promql": "sum by (node) (((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "bytes",
+        "interpretation": "Working-set bytes per Kind node, missing/stale unknown."
+      },
+      "offscreen-nodes/309": {
+        "promql": "(sum by (node) (((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) / on(node) (((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"} and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) > 0)",
+        "unit": "percentunit",
+        "interpretation": "Working-set bytes divided by current positive allocatable; may exceed 100%, not physical host usage."
+      },
+      "offscreen-overview/106": {
+        "promql": "((sum by (namespace) (((rate(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() ((count(((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2))) and on() (count(((node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2)",
+        "unit": "none",
+        "interpretation": "Pod CPU cores by namespace across both current nodes; no absent-to-zero. Require current node family on both nodes; suppress incomplete totals."
+      },
+      "offscreen-nodes/310": {
+        "promql": "sum by (node,namespace) (((rate(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Pod CPU cores by node and namespace; do not add container copies."
+      },
+      "offscreen-overview/107": {
+        "promql": "((sum by (namespace) (((pod_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(pod_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() ((count(((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2))) and on() (count(((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2)",
+        "unit": "bytes",
+        "interpretation": "Pod working-set bytes by namespace across both current nodes; no absent-to-zero. Require current node family on both nodes; suppress incomplete totals."
+      },
+      "offscreen-nodes/311": {
+        "promql": "sum by (node,namespace) (((pod_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(pod_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "bytes",
+        "interpretation": "Pod working-set bytes by node and namespace; do not add container copies."
+      },
+      "offscreen-kubernetes/221": {
+        "promql": "sum by (node,namespace,pod,container) (((rate(container_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(container_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Container CPU cores by running workload container; excludes infrastructure; no samples for completed/pending containers."
+      },
+      "offscreen-kubernetes/222": {
+        "promql": "sum by (node,namespace,pod,container) (((container_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(container_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "bytes",
+        "interpretation": "Container working-set bytes by running workload container; excludes infrastructure; no samples for completed/pending containers."
+      }
+    },
+    "coverage": "enabled",
+    "reason": ""
+  },
+  {
+    "component": "kubelet-cadvisor-network",
+    "namespace": null,
+    "workloadSelector": {
+      "nodeNames": [
+        "offscreen-dev-control-plane",
+        "offscreen-dev-worker"
+      ]
+    },
+    "jobs": [
+      "kubelet-cadvisor"
+    ],
+    "requiredFamilies": [],
+    "panels": {},
+    "coverage": "inventory-only",
+    "reason": "Authenticated scrape selected; network family/label keys observed but sandbox values and uniqueness unqualified; no network or disk domain panel. G5 records actual supported coverage."
+  }
+]
+```
+
+## G4a owner transition candidate | bounded SeaweedFS metrics enablement
+
+Rechecked source at `8cb05ff2841d548e52c75cd6dae0e666081f810b`. Native predecessor observation in earlier evidence remains historical. This is an owner-side candidate requiring selection and affected review, not permission to restart the existing store. The source can be constructed before G4b; preserve release E1 and all existing object/tenant guarantees.
+
+### Exact variant and state selection
+
+`providers/seaweedfs/chart/values.yaml` adds `metricsEnabled:false`; schema boolean optional with default false and reject true for release at template render. `profiles/development.yaml` sets true for fresh dev. `deployment.yaml` in dev target adds precisely `-metricsPort=9327` to `['mini','-dir=/data']` and named TCP `metrics` container port 9327; `service.yaml` adds named TCP 9327 target `metrics` (same ClusterIP, S3 8333). Release and predecessor parsed manifests byte-semantically unchanged. Keep image, Recreate, one replica, security/env/data/claim/probes/resources. Chart version 0.1.0 unchanged for exact retained predecessor identity; no fabricated image digests or new release. Render predecessor internally with fixed `{metricsEnabled:false}` stdin overlay via `renderPlatformDocuments` (actual `helmPlatformStdin` supports it); compare old installed user values exactly without newly added key. Target expected user values exactly current dev profile. History states: dev old rev1 deployed, dev metrics fresh rev1 deployed, dev metrics upgraded rev1 superseded + rev2 deployed; release only historical rev1. Verify exact list, history, chart/version, `helm get values` and manifest for each retained revision and corresponding Helm storage Secret metadata/UID bijection, reject extra or unknown. Native-compatible predecessor remains operational for S3, no-op ensure, metrics-not-enabled status; fresh uses target, no implicit upgrade. Exact target no-op. Do not accept old legacy history as upgrade predecessor. Ordinary observation of an upgrade pending is not operational even if final shape exists.
+
+`observe.mjs::validateWorkloadContainer`, `validateWorkloadPodSpec`, `validateLiveStructuralChain` compare exact variant arguments and ports; require target Service both ports and matching endpoint ports/targetRef, same S3 chain. `readLiveChainObservation` currently requires exactly one RS; for upgraded target select the ready Pod's exact controlling RS under the same Deployment, allow only additional retained RS owned by that Deployment and all zero desired/current/ready/available replicas with no live/terminating Pod; no foreign extra RS. Verify same PVC/PV claim/data directory identity and mount. Existing release and legacy admission unchanged. `comparePriorReceiptIdentity` is never relaxed: old receipt mismatch stays mismatch; successful owner transition emits a new exact positive receipt linking original and successor RS/Pod identities and preserved chain. Do not claim continuity without this receipt. Existing object store observers and callers in `dev-shared-core-readiness`, `dev-slot-startup`, `infra-cli` and release credentials must retain current S3 readiness meanings. No change to tenant permissions.
+
+### Separately authorized occupied owner operation
+
+Proposed exact entry `OFFSCREEN_OBJECT_STORAGE_METRICS_UPGRADE=authorized OFFSCREEN_OBJECT_STORAGE_MAINTENANCE=quiesced node infra/platform/object-storage/providers/seaweedfs/install.mjs upgrade-metrics dev --confirm-context kind-offscreen-dev --marker-file <private-local-json>`; reject all other profiles, missing/extra args/vars, alternate context or release. Only exact clean joined Design SHA with passing focused receipt, separately authorized by owner. No ordinary ensure, general Helm upgrade, observability operation or automatic repair. Require operator exclusion of old clients, arbitrary external S3 writers, lifecycle/slot startup/tenant operations throughout (lock alone cannot fence those). Under existing object-store flock, read current v2 registry via `devWorktreeRegistryRoot` + `readExistingRegistryV2`, require no leases; fixed cluster namespace/Pod/controller reads: registered slot namespaces and any `offscreen-dev-<positive integer>` namespace must have no active/nonterminal/terminating Pods, active Jobs or nonzero desired Deployment/StatefulSet replicas; unreadable, missing/malformed registry or unknown state refuses. No parking/killing foreign work. Repeat immediately before dispatch. Check actual memory admission as existing dev install. Operator attestation is not a proof of every arbitrary external client.
+
+Marker is an **already existing synthetic owner-selected object** (not an application document). Private JSON exact `{schema:1,bucket,key,sha256,size}`; bucket `offscreen-e2-marker-<32 lowercase hex>`, key `retained-marker.bin`, hash exact lowercase SHA-256, size integer 32..4096. Require private regular owner file (0600/no symlink, <=4096 bytes), no arbitrary keys or credentials. Marker preparation is a separate owner-authorized S3 operation if none exists; the transition never creates/deletes/overwrites objects or buckets. Extend `live-sdk.mjs` with bounded internal GET via its existing loopback `withForward`, exact admin Secret identity and credentials only in memory, cap bytes and hash while reading; no raw content/path/credentials in output. Require same size/hash before and after; verify same admin Secret UID/resourceVersion, service UID/ClusterIP, namespace, Deployment, claim/PV/claimRef/hostPath/mount identity, image and data. Close forward before Helm dispatch. Missing or mismatch refuses. Receipt contains marker SHA/size only. If a marker cannot be prepared under separate authority, native G4b stays gated; no further source research campaign.
+
+Use same `withObjectStorageMutation` lock path and deadline, but a narrow dedicated transition mode inside owner module: current `identityAdoptAfterWrite` refuses changes to a known Pod name/UID, so do NOT relax it for general install/provision. Only `upgrade-metrics` path permits one replacement of PodName/UID after one fixed guarded Helm invocation, while every other identity field matches; full independently verified successor chain before clear. Persist exact versioned private intent before write `{schema:2,operation:'upgrade-metrics',profileId:'dev',contextName,startedAt,operationId,identity,details:{predecessorRevision:1,targetRevision:2,predecessorManifestSha256,targetManifestSha256,namespaceUid,deploymentUid,serviceUid,serviceClusterIP,secretUid,secretResourceVersion,pvcUid,pvUid,pvHostPath,oldReplicaSetUid,oldPodUid,oldHelmStorageUid,markerSha256,markerSize}}`. Use existing O_EXCL/private/fsync directory, compare current exact owned pending contents/inode before clear, never adopt/resume/overwrite existing record. Keep old install/provision schema/path behavior. Old writers refuse any pending. New ordinary public observers refuse any recognized metrics transition or malformed pending; under own active guard only dedicated internal verification of expected predecessor/target may inspect through the owned intent (do not expose a boolean bypass). Existing fresh install's own internal reads preserve old semantics. Separate owner operation dispatches only `helm upgrade object-store <provider chart> --kube-context kind-offscreen-dev --namespace offscreen-dev-objects --reset-values -f <development profile> --wait --timeout 180s` with existing 185s command bound and 600s total; no --force, --atomic, --reuse-values, rollback or uninstall. No other write. Recheck identity before/after; successor must be exactly rev2, retained old rev1 storage UID/manifests/values; new RS/Pod owned, old Pod gone, exactly one ready target, preserved all other IDs/data, successful marker and `/metrics` on 9327. If command/identity/history/marker/endpoint/cleanup fails or unknown outcome, stop and retain pending; no automatic retry. Exact target repeat zero writes, no new intent, read-only verification; not a way to clear pending. No extra revision, replacement or data mutation authorized.
+
+### Dependency correction candidate
+
+06 T01/T02 owner construction should join and archive on its focused source gate, transferring G4b to Design, analogous to PG01. No incomplete observability activation. Move old 06 T03 enrollment to 04 as a separate bounded task after separately authorized occupied transition proves exact target and returns metric names/keys/units (no guessed panels). This removes a source/native cycle and allows independent owner construction. Candidate must be ratified and reflected in 06/04 proof/standing and group before release; owner marker preparation still needs separate permission and a real descriptor. G4b required before 04 SeaweedFS enrollment, 07 complete dashboards, 08 full artifact and 13. No automatic reduced artifact. Current 06 packet remains planner-blocked until split and exact pending/read-only observer boundary are reviewed/ratified; this text freezes the candidate, not a Ready verdict.
+
 ## Freeze record (current)
 
 | Gate | Current result | Closure owner | Affected |
 | --- | --- | --- | --- |
 | G1 KSM | Registry/runtime pin, render and specimen permissions PASS; observed construction rows frozen; list/Job/degradation proof remains G5 | planner + owner | 02,07,08 |
 | G1 Redis | v1.93.0 rejected; v1.97.0 pin, exclusion flags, disposable command/negative evidence and selected coverage RESOLVED | planner + owner | 05,07,08 |
-| G2 | Direct verified HTTPS + scoped bearer access PASSED on both nodes with node-local roots; durable trust contract and exact panel rows OPEN | owner/cluster owner + planner | 03,07,08 |
+| G2 | Native feasibility PASSED; scoped trust/render and resource coverage candidate frozen above, pending affected readiness/owner selection; integrated G5 NOT RUN | owner/cluster owner + planner | 03,07,08 |
 | G3 | Collector existing scrape PASS; Redis replacement specimen PASS; CNPG missing CONNECT confirmed; owner ACL correction and remaining non-Redis panel contracts OPEN | service owner + planner | 04,05,06,07,08 |
 | G4a/b | Revision-1 predecessor metadata observed; owner contract/transition OPEN | object-store owner + planner/acceptance lead | 06,07,08 |
 | G5 | NOT RUN | acceptance lead + owner | 13 |

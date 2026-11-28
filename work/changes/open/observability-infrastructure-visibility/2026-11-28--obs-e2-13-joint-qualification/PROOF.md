@@ -12,3 +12,5 @@ Run from the dedicated Change worktree root after prerequisites. Do not invoke n
 6. Record PASS/FAIL/NOT RUN per INTEGRATION row, exact authorization and evidence. Joint acceptance may not be inferred from mocked tests or Pods Ready. A failed required native gate blocks its scope; no reduced artifact without owner ratification.
 
 **At join:** review collision-free diff, exact assigned postcondition, focused results, regression limits and ownership. **Joint owner:** Owner/acceptance lead; final design-level acceptance before main merge.. Source success does not certify native deployment.
+
+G2: verify actual Prometheus two-node DNS TLS with exact mounted public CA/binding and restricted token, both jobs/path `up` current; effective denied proxy/exec/Secrets/mutation. Source negatives prove wrong root/node, drift, unavailable desired and same-root leaf renewal; no disruptive root change to occupied cluster. Verify resource labels/CPU+memory uniqueness and conditional cAdvisor network sandbox/interface uniqueness or explicit unsupported result, not zero. Record current binding digest, no private data.
