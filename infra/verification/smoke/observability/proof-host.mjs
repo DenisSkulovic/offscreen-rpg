@@ -15,6 +15,10 @@ import process from 'node:process';
 import { join } from 'node:path';
 
 import {
+  ARTIFACT_HISTORY_ROWS,
+  HISTORY_ROLES,
+} from '../../../platform/observability/artifact-history.mjs';
+import {
   captureIdentity,
   recheckIdentity,
 } from '../../../platform/observability/identity.mjs';
@@ -156,6 +160,94 @@ export function refuseProofInvocation({
     }
   }
   return { refused: false };
+}
+
+const E2_ARTIFACT_ID = 'dev-e2';
+const E1_DEVELOPER_ARTIFACT_ID = 'dev-e1-developer';
+const E1_DEVELOPER_HISTORY_IDS = Object.freeze([
+  'developer-fresh',
+  'developer-upgraded',
+]);
+/** Gates that run a disruptive or specialized E1-only proof. */
+export const E1_ONLY_ADMISSION_GATES = Object.freeze(
+  new Set(['persistence', 'outage', 'resources']),
+);
+/** Gates that classify the installed state before dispatch. */
+export const ADMISSION_GATES = Object.freeze(
+  new Set([
+    'health',
+    'signals',
+    'developer',
+    'persistence',
+    'outage',
+    'resources',
+  ]),
+);
+
+/**
+ * True when the frozen source history carries an E2 row for the profile.
+ * @param {string} profile
+ */
+export function sourceEnablesE2(profile) {
+  return ARTIFACT_HISTORY_ROWS.some(
+    (row) => row.profileId === profile && row.artifactId === E2_ARTIFACT_ID,
+  );
+}
+
+/**
+ * Pure eligibility decision from an operational classification
+ * (classifyOperationalInventory result). Never uses desired convergence to
+ * qualify an installed E1 predecessor. Reads only the matched descriptor
+ * identity; unreadable, absent, foreign, base, pending and mixed states refuse.
+ * @param {string} gate
+ * @param {object | null | undefined} classification
+ */
+export function decideProofAdmission(gate, classification) {
+  const c = classification;
+  if (c == null || c.state === 'unreadable') {
+    return { ok: false, reasonCode: 'admission-unreadable' };
+  }
+  if (c.pending === true) {
+    return { ok: false, reasonCode: 'pending-refused' };
+  }
+  const matched =
+    typeof c.artifactId === 'string' &&
+    typeof c.historyId === 'string' &&
+    c.artifacts != null;
+  if (!matched) {
+    return { ok: false, reasonCode: 'proof-not-admitted' };
+  }
+  if (c.artifactId === E2_ARTIFACT_ID) {
+    if (E1_ONLY_ADMISSION_GATES.has(gate)) {
+      return { ok: false, reasonCode: 'unsupported-evolution' };
+    }
+    if (c.structuralReady === true && c.state === 'ready') {
+      return {
+        ok: true,
+        admission: admissionOf(c, 'e2'),
+      };
+    }
+    return { ok: false, reasonCode: 'proof-not-admitted' };
+  }
+  if (
+    c.artifactId === E1_DEVELOPER_ARTIFACT_ID &&
+    E1_DEVELOPER_HISTORY_IDS.includes(c.historyId) &&
+    c.structuralReady === true &&
+    c.state === 'not-ready' &&
+    c.reasonCode === 'upgrade-required'
+  ) {
+    return { ok: true, admission: admissionOf(c, 'e1-developer') };
+  }
+  return { ok: false, reasonCode: 'proof-not-admitted' };
+}
+
+function admissionOf(c, evolution) {
+  return {
+    evolution,
+    artifactId: c.artifactId,
+    historyId: c.historyId,
+    artifacts: c.artifacts,
+  };
 }
 
 /**
@@ -315,15 +407,113 @@ export function createEvidenceDirectory(repoRoot) {
   return { dir, receiptPath: join(dir, 'receipt.json') };
 }
 
+const HELM_RELEASE_PREFIX = 'sh.helm.release.v1.';
+
+/**
+ * Exact stable workload, storage and Helm-history identities of the matched
+ * artifact/history carried on `session.admission`. Helm storage names come
+ * from the frozen history row (every retained revision of every role),
+ * workloads from the matched descriptor's declared expectedWorkloads (so E2
+ * helper workloads are included), claims from the stable claim list.
+ * @param {{ artifactId?: string, historyId?: string, artifacts?: any } | null | undefined} admission
+ */
+export function deriveStableSpec(admission) {
+  const bundle = admission?.artifacts;
+  const row = ARTIFACT_HISTORY_ROWS.find(
+    (candidate) => candidate.id === admission?.historyId,
+  );
+  if (!bundle || !row || bundle.artifactId !== admission.artifactId) {
+    return { ok: false, reasonCode: 'stable-spec-unavailable' };
+  }
+  const workloadKeys = [];
+  const helmSecretNames = [];
+  for (const role of HISTORY_ROLES) {
+    const release = (bundle.releases ?? []).find((r) => r.role === role);
+    const revisions = row.releases?.[role]?.length ?? 0;
+    const declared = Object.keys(release?.expectedWorkloads ?? {});
+    if (!release?.name || revisions < 1 || declared.length === 0) {
+      return { ok: false, reasonCode: 'stable-spec-unavailable' };
+    }
+    for (let revision = 1; revision <= revisions; revision += 1) {
+      helmSecretNames.push(`${HELM_RELEASE_PREFIX}${release.name}.v${revision}`);
+    }
+    for (const key of declared) {
+      const match = /^namespaced\/[^/]+\/(Deployment|StatefulSet)\/(.+)$/.exec(key);
+      if (!match) return { ok: false, reasonCode: 'stable-spec-unavailable' };
+      workloadKeys.push(`${match[1]}/${match[2]}`);
+    }
+  }
+  return {
+    ok: true,
+    spec: Object.freeze({
+      artifactId: admission.artifactId,
+      historyId: admission.historyId,
+      workloadKeys: Object.freeze([...new Set(workloadKeys)].sort()),
+      pvcNames: STABLE_PVC_NAMES,
+      helmSecretNames: Object.freeze([...new Set(helmSecretNames)].sort()),
+    }),
+  };
+}
+
+const LEGACY_SPEC = Object.freeze({
+  artifactId: null,
+  historyId: null,
+  workloadKeys: STABLE_WORKLOAD_KEYS,
+  pvcNames: STABLE_PVC_NAMES,
+  helmSecretNames: HELM_STORAGE_SECRET_NAMES,
+});
+
+/**
+ * Operational observation must be the admitted artifact/history.
+ * @param {object} observation
+ * @param {{ artifactId?: string | null, historyId?: string | null } | null | undefined} spec
+ */
+export function observationMatchesSpec(observation, spec) {
+  if (!spec?.artifactId) return true;
+  return (
+    observation?.artifactId === spec.artifactId &&
+    observation?.historyId === spec.historyId
+  );
+}
+
+/**
+ * Repeat the classification under held custody and require the admitted
+ * artifact/history to be unchanged.
+ * @param {object} session
+ */
+export async function recheckAdmissionUnchanged(session) {
+  if (!session?.admission) return { ok: true };
+  if (typeof session.reclassifyAdmission !== 'function') {
+    return { ok: false, reasonCode: 'admission-required' };
+  }
+  const again = await session.reclassifyAdmission();
+  if (
+    !again?.ok ||
+    again.admission?.artifactId !== session.admission.artifactId ||
+    again.admission?.historyId !== session.admission.historyId
+  ) {
+    return { ok: false, reasonCode: 'history-changed' };
+  }
+  return { ok: true };
+}
+
+/** Claim each proof actually makes; none claims E2 coverage or disruption. */
+export const PROOF_CLAIMS = Object.freeze({
+  health: 'structural-health',
+  signals: 'synthetic-signals',
+  developer: 'developer-forwards',
+});
+
 /**
  * @param {object} observation
+ * @param {typeof LEGACY_SPEC} [spec]
  */
-export function extractStableIdentities(observation) {
+export function extractStableIdentities(observation, spec = LEGACY_SPEC) {
   const snapshot = observation?.snapshot ?? {};
   const objects = snapshot.objects ?? {};
   /** @type {Record<string, string>} */
   const workloads = {};
-  for (const key of STABLE_WORKLOAD_KEYS) {
+  for (const key of spec.workloadKeys) {
     const uid = objects[key]?.metadata?.uid;
     if (typeof uid === 'string' && uid.length > 0) {
       workloads[key] = uid;
@@ -337,7 +527,7 @@ export function extractStableIdentities(observation) {
     snapshot.namespace?.object?.metadata?.uid ??
     observation?.identity?.tuple?.targetNamespaceUid ??
     null;
-  for (const claimName of STABLE_PVC_NAMES) {
+  for (const claimName of spec.pvcNames) {
     const pvc = objects[`PersistentVolumeClaim/${claimName}`];
     const pvcUid = pvc?.metadata?.uid;
     if (typeof pvcUid === 'string' && pvcUid.length > 0) {
@@ -357,23 +547,30 @@ export function extractStableIdentities(observation) {
   const grafanaAdminUid = uidOf(objects[`Secret/${GRAFANA_ADMIN_SECRET_NAME}`]);
   /** @type {Record<string, string | null>} */
   const helmStorage = {};
-  for (const name of HELM_STORAGE_SECRET_NAMES) {
+  for (const name of spec.helmSecretNames) {
     helmStorage[name] = uidOf(objects[`Secret/${name}`]);
   }
   const collectorPodUid = uidOf(objects[COLLECTOR_POD_KEY]);
   const complete =
     typeof namespaceUid === 'string' &&
     namespaceUid.length > 0 &&
-    STABLE_WORKLOAD_KEYS.every((key) => typeof workloads[key] === 'string') &&
-    STABLE_PVC_NAMES.every(
+    spec.workloadKeys.every((key) => typeof workloads[key] === 'string') &&
+    spec.pvcNames.every(
       (name) =>
         typeof claims[name] === 'string' && typeof volumes[name] === 'string',
     ) &&
     typeof grafanaAdminUid === 'string' &&
-    HELM_STORAGE_SECRET_NAMES.every((name) => typeof helmStorage[name] === 'string') &&
+    spec.helmSecretNames.every((name) => typeof helmStorage[name] === 'string') &&
     typeof collectorPodUid === 'string';
   return {
     complete,
+    artifactId: spec.artifactId,
+    historyId: spec.historyId,
+    keys: {
+      workloads: [...spec.workloadKeys],
+      claims: [...spec.pvcNames],
+      helm: [...spec.helmSecretNames],
+    },
     namespaceUid,
     workloads,
     claims,
@@ -400,6 +597,13 @@ export function stableIdentitiesCompatible(before, after) {
   if (!before?.complete || !after?.complete) {
     return { ok: false, reasonCode: 'identity-incomplete' };
   }
+  if (
+    before.artifactId !== after.artifactId ||
+    before.historyId !== after.historyId ||
+    JSON.stringify(before.keys) !== JSON.stringify(after.keys)
+  ) {
+    return { ok: false, reasonCode: 'history-changed' };
+  }
   if (before.namespaceUid !== after.namespaceUid) {
     return { ok: false, reasonCode: 'namespace-uid-changed' };
   }
@@ -409,17 +613,17 @@ export function stableIdentitiesCompatible(before, after) {
   if (before.collectorPodUid !== after.collectorPodUid) {
     return { ok: false, reasonCode: 'collector-pod-uid-changed' };
   }
-  for (const name of HELM_STORAGE_SECRET_NAMES) {
+  for (const name of before.keys.helm) {
     if (before.helmStorage[name] !== after.helmStorage[name]) {
       return { ok: false, reasonCode: 'helm-storage-uid-changed' };
     }
   }
-  for (const key of STABLE_WORKLOAD_KEYS) {
+  for (const key of before.keys.workloads) {
     if (before.workloads[key] !== after.workloads[key]) {
       return { ok: false, reasonCode: 'workload-uid-changed' };
     }
   }
-  for (const claimName of STABLE_PVC_NAMES) {
+  for (const claimName of before.keys.claims) {
     if (before.claims[claimName] !== after.claims[claimName]) {
       return { ok: false, reasonCode: 'claim-uid-changed' };
     }
@@ -433,15 +637,33 @@ export function stableIdentitiesCompatible(before, after) {
 /**
  * @param {object} observation
  */
-export function assessHealthStructuralObservation(observation) {
-  if (observation?.reasonCode !== 'ready' || observation?.state !== 'ready') {
+export function assessHealthStructuralObservation(
+  observation,
+  spec = LEGACY_SPEC,
+) {
+  if (!observationMatchesSpec(observation, spec)) {
+    return { ok: false, reasonCode: 'history-changed' };
+  }
+  if (observation?.structuralReady !== undefined) {
+    // Operational observation: structural readiness of the matched exact
+    // artifact/history, never desired convergence.
+    if (observation.structuralReady !== true || observation.pending === true) {
+      return {
+        ok: false,
+        reasonCode: observation.pending ? 'pending-refused' : 'not-ready',
+      };
+    }
+  } else if (
+    observation?.reasonCode !== 'ready' ||
+    observation?.state !== 'ready'
+  ) {
     return {
       ok: false,
       reasonCode: observation?.reasonCode ?? 'not-ready',
     };
   }
   const objects = observation?.snapshot?.objects ?? {};
-  for (const key of STABLE_WORKLOAD_KEYS) {
+  for (const key of spec.workloadKeys) {
     const workload = objects[key];
     if (!workload) {
       return { ok: false, reasonCode: 'workload-missing' };
@@ -454,7 +676,7 @@ export function assessHealthStructuralObservation(observation) {
       return { ok: false, reasonCode: 'workload-not-ready' };
     }
   }
-  for (const claimName of STABLE_PVC_NAMES) {
+  for (const claimName of spec.pvcNames) {
     const pvc = objects[`PersistentVolumeClaim/${claimName}`];
     if (!pvc || pvc.status?.phase !== 'Bound') {
       return { ok: false, reasonCode: 'claim-not-bound' };
@@ -495,6 +717,15 @@ export function buildProofReceipt(input) {
     completed: input.completed === true,
     cleanup: input.cleanup === true,
     reasonCode: input.reasonCode ?? null,
+    ...(input.admission
+      ? {
+          artifactId: input.admission.artifactId ?? null,
+          historyId: input.admission.historyId ?? null,
+          claim: PROOF_CLAIMS[input.gate] ?? null,
+          e2Coverage: false,
+          disruptiveCertification: false,
+        }
+      : {}),
   };
 }
 
@@ -512,6 +743,8 @@ export function buildProofReceipt(input) {
  *   captureIdentity?: typeof captureIdentity,
  *   recheckIdentity?: typeof recheckIdentity,
  *   observe?: (session: object) => Promise<object> | object,
+ *   classifyAdmission?: (session: object) => Promise<object> | object,
+ *   e2Enabled?: boolean | ((profile: string) => boolean),
  *   queryDatasourceHealth?: (session: object) => Promise<Record<string, { ok: boolean, status: string }>> | Record<string, { ok: boolean, status: string }>,
  *   repeatObservation?: (session: object) => Promise<object> | object,
  *   runSignals?: (session: object) => Promise<{ ok: boolean, reasonCode?: string | null }> | { ok: boolean, reasonCode?: string | null },
@@ -544,6 +777,22 @@ export async function runProofOperationSession(input) {
       completed: false,
       cleanup: false,
     };
+  }
+
+  if (input.gate === 'partial-install') {
+    const e2 =
+      typeof input.e2Enabled === 'function'
+        ? input.e2Enabled(input.profile)
+        : (input.e2Enabled ?? sourceEnablesE2(input.profile));
+    if (e2) {
+      return {
+        ok: false,
+        phase: 'refused',
+        reasonCode: 'unsupported-evolution',
+        completed: false,
+        cleanup: false,
+      };
+    }
   }
 
   if (input.verifyCleanCheckout) {
@@ -586,6 +835,8 @@ export async function runProofOperationSession(input) {
   /** @type {string | null} */
   let namespaceUid = null;
   let completed = false;
+  /** @type {object | null} */
+  let admissionForReceipt = null;
 
   const writeReceipt = (partial) => {
     const receiptCleanup =
@@ -597,6 +848,7 @@ export async function runProofOperationSession(input) {
       sourceSha,
       clusterUid,
       namespaceUid,
+      admission: admissionForReceipt,
       completed: partial.completed ?? completed,
       cleanup: receiptCleanup,
       reasonCode: partial.reasonCode ?? reasonCode,
@@ -646,7 +898,88 @@ export async function runProofOperationSession(input) {
       deleteProofResources: input.deleteProofResources,
       custody: input.custody ?? null,
       proofCustody: input.proofCustody ?? null,
+      admission: null,
     };
+
+    if (ADMISSION_GATES.has(input.gate)) {
+      const classify = input.classifyAdmission;
+      if (typeof classify !== 'function') {
+        if (E1_ONLY_ADMISSION_GATES.has(input.gate)) {
+          reasonCode = 'admission-required';
+          return { ok: false, phase: 'admission', reasonCode };
+        }
+      } else {
+        /**
+         * Classify the installed state, decide, and bind the matched
+         * descriptor/history. Repeated under custody with identity recheck.
+         */
+        const admit = async (phase) => {
+          if (
+            refusePhaseStart(remainingWorkMs(), HEALTH_PHASE_BUDGET_MS.observe)
+          ) {
+            return { ok: false, reasonCode: 'observe-budget', phase };
+          }
+          const checked = recheck(identity, {
+            now: clock.now,
+            deadline: clock.now() + Math.min(15_000, remainingWorkMs()),
+            expectedNamespaceUid: identity.tuple.targetNamespaceUid,
+          });
+          if (!checked.ok) {
+            return {
+              ok: false,
+              phase: 'identity-recheck',
+              reasonCode:
+                checked.reason === 'namespace-uid-changed'
+                  ? 'namespace-uid-changed'
+                  : checked.reason === 'context-changed'
+                    ? 'context-not-canonical-dev'
+                    : 'cluster-uid-changed',
+            };
+          }
+          const decision = decideProofAdmission(
+            input.gate,
+            await classify(session),
+          );
+          return { ...decision, phase };
+        };
+        const first = await admit('admission');
+        if (!first.ok) {
+          reasonCode = first.reasonCode;
+          return { ok: false, phase: first.phase, reasonCode };
+        }
+        const second = await admit('admission-repeat');
+        if (!second.ok) {
+          reasonCode = second.reasonCode;
+          return { ok: false, phase: second.phase, reasonCode };
+        }
+        if (
+          second.admission.artifactId !== first.admission.artifactId ||
+          second.admission.historyId !== first.admission.historyId
+        ) {
+          reasonCode = 'admission-identity-changed';
+          return { ok: false, phase: 'admission-repeat', reasonCode };
+        }
+        session.admission = second.admission;
+        admissionForReceipt = second.admission;
+        /** Re-run classification under a held custody and compare identity. */
+        session.reclassifyAdmission = async () => {
+          const again = await admit('admission-custody');
+          if (
+            !again.ok ||
+            again.admission.artifactId !== session.admission.artifactId ||
+            again.admission.historyId !== session.admission.historyId
+          ) {
+            return {
+              ok: false,
+              reasonCode: again.ok
+                ? 'admission-identity-changed'
+                : again.reasonCode,
+            };
+          }
+          return { ok: true, admission: again.admission };
+        };
+      }
+    }
 
     if (input.gate === 'persistence') {
       const runPersistence =
@@ -755,6 +1088,12 @@ export async function runProofOperationSession(input) {
         cleanupOk = developer.cleanup === true;
         return { ok: false, phase: 'developer', reasonCode };
       }
+      const developerHistory = await recheckAdmissionUnchanged(session);
+      if (!developerHistory.ok) {
+        reasonCode = developerHistory.reasonCode;
+        cleanupOk = developer.cleanup === true;
+        return { ok: false, phase: 'history-recheck', reasonCode };
+      }
       completed = true;
       cleanupOk = true;
       return { ok: true, phase: 'developer-complete', reasonCode: null };
@@ -784,6 +1123,11 @@ export async function runProofOperationSession(input) {
       if (!signals.ok) {
         reasonCode = signals.reasonCode ?? 'signals-failed';
         return { ok: false, phase: 'signals', reasonCode };
+      }
+      const signalsHistory = await recheckAdmissionUnchanged(session);
+      if (!signalsHistory.ok) {
+        reasonCode = signalsHistory.reasonCode;
+        return { ok: false, phase: 'history-recheck', reasonCode };
       }
       const finalSignalsRecheck = recheck(identity, {
         now: clock.now,
@@ -823,8 +1167,17 @@ export async function runProofOperationSession(input) {
       reasonCode = 'observe-budget';
       return { ok: false, phase: 'observe', reasonCode };
     }
+    let stableSpec = LEGACY_SPEC;
+    if (session.admission) {
+      const derived = deriveStableSpec(session.admission);
+      if (!derived.ok) {
+        reasonCode = derived.reasonCode;
+        return { ok: false, phase: 'observe', reasonCode };
+      }
+      stableSpec = derived.spec;
+    }
     const primary = await observe(session);
-    const structural = assessHealthStructuralObservation(primary);
+    const structural = assessHealthStructuralObservation(primary, stableSpec);
     if (!structural.ok) {
       reasonCode = structural.reasonCode ?? 'not-ready';
       return { ok: false, phase: 'observe', reasonCode };
@@ -843,7 +1196,7 @@ export async function runProofOperationSession(input) {
       return { ok: false, phase: 'datasource', reasonCode };
     }
 
-    const before = extractStableIdentities(primary);
+    const before = extractStableIdentities(primary, stableSpec);
 
     const recheckBeforeRepeat = recheck(identity, {
       now: clock.now,
@@ -865,12 +1218,15 @@ export async function runProofOperationSession(input) {
       return { ok: false, phase: 'repeat', reasonCode };
     }
     const repeated = await repeatObservation(session);
-    const repeatStructural = assessHealthStructuralObservation(repeated);
+    const repeatStructural = assessHealthStructuralObservation(
+      repeated,
+      stableSpec,
+    );
     if (!repeatStructural.ok) {
       reasonCode = repeatStructural.reasonCode ?? 'repeat-not-ready';
       return { ok: false, phase: 'repeat', reasonCode };
     }
-    const after = extractStableIdentities(repeated);
+    const after = extractStableIdentities(repeated, stableSpec);
     const compatible = stableIdentitiesCompatible(before, after);
     if (!compatible.ok) {
       reasonCode = compatible.reasonCode ?? 'identity-changed';

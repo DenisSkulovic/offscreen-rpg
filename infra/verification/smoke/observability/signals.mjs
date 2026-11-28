@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 import { runPlatformCommand } from '../../../platform/common/commands.mjs';
 
+import { recheckAdmissionUnchanged } from './proof-host.mjs';
+
 const MODULE_ROOT = dirname(fileURLToPath(import.meta.url));
 export const SIGNAL_PROBE_PATH = join(MODULE_ROOT, 'signal-probe.py');
 
@@ -292,10 +294,19 @@ export async function runSignalsProof(session, deps = {}) {
       fail(privacy.reasonCode ?? 'privacy-probe-failed');
     }
 
+    const history = await recheckAdmissionUnchanged(session);
+    if (!history.ok) {
+      fail(history.reasonCode);
+    }
+
     terminal = {
       ok: true,
       reasonCode: null,
       proofNamespace: created.namespace,
+      // Synthetic signal proof only: not full coverage, not E2 coverage.
+      claim: 'synthetic-signals',
+      matchedHistoryId: session.admission?.historyId ?? null,
+      matchedArtifactId: session.admission?.artifactId ?? null,
     };
   } catch (error) {
     if (

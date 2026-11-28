@@ -4,7 +4,7 @@ import process from 'node:process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { observeObservability } from '../../../platform/observability/readiness.mjs';
+import { observeOperationalObservability } from '../../../platform/observability/readiness.mjs';
 import { runPlatformCommand } from '../../../platform/common/commands.mjs';
 
 import {
@@ -15,6 +15,7 @@ import {
   parseProofCli,
   refuseProofInvocation,
   runProofOperationSession,
+  sourceEnablesE2,
 } from './proof-host.mjs';
 import { runDeveloperProof } from './developer.mjs';
 import { runSignalsProof } from './signals.mjs';
@@ -36,13 +37,23 @@ async function defaultObserve(session, deps = {}) {
   const run = deps.run ?? runPlatformCommand;
   const remaining = session.remainingWorkMs();
   const deadline = session.clock.now() + Math.min(345_000, remaining);
-  return observeObservability(session.profile, {
+  return observeOperationalObservability(session.profile, {
     run,
     now: session.clock.now,
     deadline,
     identity: session.identity,
     verifyArchive: false,
   });
+}
+
+/**
+ * Operational classification used to admit a proof against the exact
+ * installed artifact/history (never desired convergence).
+ * @param {object} session
+ * @param {{ run?: typeof runPlatformCommand }} [deps]
+ */
+async function defaultClassifyAdmission(session, deps = {}) {
+  return defaultObserve(session, deps);
 }
 
 async function defaultDatasourceHealth(session) {
@@ -62,6 +73,21 @@ async function runLiveProof(parsed, sessionDeps = {}) {
       completed: false,
       cleanup: false,
     };
+  }
+  if (parsed.gate === 'partial-install') {
+    const e2 =
+      typeof sessionDeps.e2Enabled === 'function'
+        ? sessionDeps.e2Enabled(parsed.profile)
+        : (sessionDeps.e2Enabled ?? sourceEnablesE2(parsed.profile));
+    if (e2) {
+      return {
+        ok: false,
+        phase: 'refused',
+        reasonCode: 'unsupported-evolution',
+        completed: false,
+        cleanup: false,
+      };
+    }
   }
   const { dir, receiptPath } = createEvidenceDirectory(REPO_ROOT);
   const io = defaultReceiptIo(dir);
@@ -88,6 +114,9 @@ async function runLiveProof(parsed, sessionDeps = {}) {
     queryDatasourceHealth:
       sessionDeps.queryDatasourceHealth ??
       ((session) => defaultDatasourceHealth(session)),
+    classifyAdmission:
+      sessionDeps.classifyAdmission ??
+      ((session) => defaultClassifyAdmission(session)),
     repeatObservation:
       sessionDeps.repeatObservation ?? ((session) => defaultObserve(session)),
     runDeveloper:
