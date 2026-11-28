@@ -310,6 +310,114 @@ scrapeConfigs:
         action: keep
       - regex: "__name__|job|instance|cluster|env|component|namespace|pod|role|exported_namespace|operation|service_name|type|db_kind|error_type|le"
         action: labelkeep
+  rabbitmq:
+    enabled: true
+    job_name: rabbitmq
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    static_configs:
+      - targets: [rabbitmq.offscreen-dev-rabbitmq.svc:15692]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: rabbitmq
+          namespace: offscreen-dev-rabbitmq
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "rabbitmq_queue_messages|rabbitmq_queue_messages_ready|rabbitmq_queue_messages_unacked|rabbitmq_connections|rabbitmq_queue_messages_published_total|rabbitmq_queue_messages_delivered_total|rabbitmq_queue_messages_acked_total|rabbitmq_alarms_free_disk_space_watermark|rabbitmq_alarms_memory_used_watermark|rabbitmq_process_resident_memory_bytes|rabbitmq_process_open_fds|rabbitmq_process_max_fds"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace"
+        action: labelkeep
+  loki:
+    enabled: true
+    job_name: loki
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    static_configs:
+      - targets: [obs-loki.offscreen-dev-observability.svc:3100]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: loki
+          namespace: offscreen-dev-observability
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "loki_ingester_memory_chunks|loki_ingester_flush_queue_length|loki_ingester_chunks_flush_failures_total|loki_ingester_wal_bytes_in_use"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace"
+        action: labelkeep
+  tempo:
+    enabled: true
+    job_name: tempo
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    static_configs:
+      - targets: [obs-tempo.offscreen-dev-observability.svc:3200]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: tempo
+          namespace: offscreen-dev-observability
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "tempo_distributor_traces_per_batch_count|tempo_distributor_traces_per_batch_sum"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace"
+        action: labelkeep
+  grafana:
+    enabled: true
+    job_name: grafana
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    static_configs:
+      - targets: [obs-grafana.offscreen-dev-observability.svc:80]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: grafana
+          namespace: offscreen-dev-observability
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "grafana_http_request_in_flight|grafana_api_response_status_total"
+        action: keep
+      - source_labels: [__name__, code]
+        separator: ";"
+        regex: "grafana_http_request_in_flight;|grafana_api_response_status_total;[1-5][0-9][0-9]"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace|code"
+        action: labelkeep
 # OBS-E2-05: release-owned fixed Redis exporter. Targets only the existing Redis Service; does not modify Redis.
 # extraManifests is a list of strings rendered through tpl; no base-values entries existed to preserve.
 extraManifests:
