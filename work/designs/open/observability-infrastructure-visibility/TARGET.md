@@ -1,4 +1,4 @@
-# E2 | Selected direction proposed for acceptance
+# E2 | Defended architectural direction (native evidence gates remain)
 
 ## 1. Collection topology and scope
 
