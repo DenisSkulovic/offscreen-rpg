@@ -1,8 +1,8 @@
 # OBS-E2-09 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DEPENDENCY-GATED — exact artifacts from 08. Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: PLANNER-BLOCKED — H04 correction frozen; narrow re-review and 08 join pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
-## T01 | Observe bounded scoped inventory | PROPOSED (readiness/commission pending)
+## T01 | Observe bounded scoped inventory | PLANNER-BLOCKED (H04 correction review pending)
 DEPTH=PATCH
 Requires: 01 pure history table and 08 exact artifact bundle/inventory joined.
 May write: infra/platform/observability/inventory.mjs; tests/inventory.test.mjs
@@ -14,7 +14,7 @@ Negative: RBAC collision on absent namespace, foreign roleRef/subject, forbidden
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Match exact history and storage | PROPOSED (readiness/commission pending)
+## T02 | Match exact history and storage | PLANNER-BLOCKED (H04 correction review pending)
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/readiness.mjs; tests/e2-history.test.mjs
@@ -26,14 +26,14 @@ Negative: Every final row positive; correct numbers wrong current/predecessor ma
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Expose operational classification and owned phases | PROPOSED (readiness/commission pending)
+## T03 | Expose operational classification and owned phases | PLANNER-BLOCKED (H04 correction review pending)
 DEPTH=PATCH
 Requires: T02 postcondition and packet prerequisites.
 May write: infra/platform/observability/readiness.mjs; tests/readiness.test.mjs; tests/snapshot-fixtures.mjs
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/readiness.mjs: classifyInventory, verifyOwnedFinalShape, verifyOwnedEnsurePrefix, observeObservability; 01 intermediate rows; group interface
-Algorithm: Add classifyOperationalInventory(snapshot,artifactSet) returning only exactly one matched final descriptor/history; classify public pending before final readiness, distinguish foreign/mixed/unreadable/absent. Structural E1 developer ready but desired convergence upgrade-required; E1 base not operational; E2 ready only if exact. Add explicit owned history/phase verifier for 11, with operation-owned pending and exact intermediate row; no automatic resume. Preserve prefix/final ensure checks incl namespace/RBAC absent collisions, E1 proof compatibility. Add new observeOperationalObservability facade using one identity-bound bounded observation and recheck; consume G2 readDevKubeletTrust under custody, match E2 only with independently derived exact binding, preserve E1 admission if E2 desired unavailable; never admit a partial/unknown E2 from historical descriptors; leave legacy observeObservability until 10 migration.
+Read: infra/platform/observability/readiness.mjs: classifyInventory, verifyOwnedFinalShape, verifyOwnedEnsurePrefix, observeObservability; 01 intermediate rows; group interface and [H04 exact custody/phase matrix](../README.md#review-07-corrections--owned-shape-and-normal-receipt-contracts); custody.mjs: createHandle.assertOwnPending (read only)
+Algorithm: Add classifyOperationalInventory(snapshot,artifactSet) returning only exactly one matched final descriptor/history; classify public pending before final readiness, distinguish foreign/mixed/unreadable/absent. Structural E1 developer ready but desired convergence upgrade-required; E1 base not operational; E2 ready only if exact. Implement `verifyOwnedHistoryShape` with the exact H04 signature and phase/shape matrix, including the 10 fresh E2 ensure final case. Invoke actual passed `custody.assertOwnPending()` and bind the returned record to the requested operation, operationId, durable phase, namespace, exact predecessor/target/descriptor/history and snapshot; do not treat readPending/inspectPending/booleans as ownership. Use existing exact manifest/history/storage/runtime verifiers; no automatic resume. Preserve prefix/final ensure checks incl namespace/RBAC absent collisions, E1 proof compatibility. Add new observeOperationalObservability facade using one identity-bound bounded observation and recheck; consume G2 readDevKubeletTrust under custody, match E2 only with independently derived exact binding, preserve E1 admission if E2 desired unavailable; never admit a partial/unknown E2 from historical descriptors; leave legacy observeObservability until 10 migration.
 Test: node --test infra/platform/observability/tests/readiness.test.mjs infra/platform/observability/tests/e2-history.test.mjs
-Negative: Pending complete-looking E2, ambiguous matches, mixed P/G, foreign namespace, failed readiness and collision refuse public use; desired status distinct from structural ready.
+Negative: Pending complete-looking E2, ambiguous matches, mixed P/G, foreign namespace, failed readiness and collision refuse public use; desired status distinct from structural ready. H04: missing/nonexclusive custody, foreign valid pending, replaced record, operation/ID/namespace/phase/predecessor/target mismatch, wrong phase-shape pair and final-shaped pending public refusal; positive exact predecessor/intermediate/final and fresh ensure ownership cases.
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.

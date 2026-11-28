@@ -1,8 +1,8 @@
 # OBS-E2-08 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DEPENDENCY-GATED — selected G1–G4 inputs and construction joins. Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: READY — review 07; commission pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
-## T01 | Build explicit E2 render plan | PROPOSED (readiness/commission pending)
+## T01 | Build explicit E2 render plan | READY (review 07; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: 01–07 joined (only approved selected scope); G1–G4 closed or explicit owner-ratified scope correction; accepted manifests/metric rows and canonical contract frozen.
 May write: infra/platform/observability/artifacts.mjs
@@ -14,7 +14,7 @@ Negative: Missing/duplicate helper lock, unexpected dashboard path or release E2
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Freeze exact object allowlist | PROPOSED (readiness/commission pending)
+## T02 | Freeze exact object allowlist | READY (review 07; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/artifacts.mjs; expected-inventory.json
@@ -26,7 +26,7 @@ Negative: Unplanned RBAC/ServiceAccounts/host accesses, extra containers, invali
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Render and verify immutable artifacts | PROPOSED (readiness/commission pending)
+## T03 | Render and verify immutable artifacts | READY (review 07; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: T02 postcondition and packet prerequisites.
 May write: infra/platform/observability/tests/render.test.mjs; tests/e2-artifacts.test.mjs

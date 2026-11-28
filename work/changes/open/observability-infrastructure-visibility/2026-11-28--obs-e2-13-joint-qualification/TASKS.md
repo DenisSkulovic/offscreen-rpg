@@ -1,8 +1,8 @@
 # OBS-E2-13 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DEPENDENCY-GATED — joined source plus explicit native permissions. Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: READY / DEPENDENCY-GATED — review 07; all constituent joins and separately authorized qualification pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03 → T04; selected: none.
 
-## T01 | Exact joined source gate | PROPOSED (readiness/commission pending)
+## T01 | Exact joined source gate | READY (review 07; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: 01–12 and PG01 integrated (or explicitly owner-ratified exclusions and amended selected artifact); gates G1–G4 closed for selected scope; exact clean Design branch SHA; owner approves bounded native operations and safe capacity.
 May write: infra/platform/observability/tests/e2-joint.test.mjs
@@ -14,7 +14,7 @@ Negative: Any source/refusal/release regression blocks live dispatch; do not reg
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Qualify occupied dev transition | PROPOSED (readiness/commission pending)
+## T02 | Qualify occupied dev transition | READY (review 07; commission and applicable predecessors required)
 DEPTH=VERIFY
 Requires: T01 postcondition and packet prerequisites.
 May write: No source writes; owner-authorized evidence only
@@ -26,7 +26,7 @@ Negative: No release operation, no restart/disruption suite; unsupported/mixed/p
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Qualify coverage and dashboard experience | PROPOSED (readiness/commission pending)
+## T03 | Qualify coverage and dashboard experience | READY (review 07; commission and applicable predecessors required)
 DEPTH=VERIFY
 Requires: T02 postcondition and packet prerequisites.
 May write: No source writes; authorized query/forward evidence only
@@ -38,7 +38,7 @@ Negative: Missing scrape or inventory confidence, backend unhealthy despite up, 
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T04 | Reconcile durable technical owners and close | PROPOSED (readiness/commission pending)
+## T04 | Reconcile durable technical owners and close | READY (review 07; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: T03 postcondition and packet prerequisites.
 May write: Canonical docs, STATUS.md, actual Design/Change receipts, catalogs and ledger under coordinator ownership

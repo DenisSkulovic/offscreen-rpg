@@ -1,8 +1,8 @@
 # OBS-E2-12 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DEPENDENCY-GATED — 08/09 operational classifier. Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: READY / DEPENDENCY-GATED — review 07; 08/09 joins pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
-## T01 | Make eligibility explicit before dispatch | PROPOSED (readiness/commission pending)
+## T01 | Make eligibility explicit before dispatch | READY (review 07; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: 08/09 joined; 01 history rows. 11 pending schema must be recognized by existing/new readers before activation, but source construction independent of upgrade implementation.
 May write: infra/verification/smoke/observability/proof.mjs; proof-host.mjs; tests/proof.test.mjs
@@ -14,7 +14,7 @@ Negative: Each E2 unsupported gate invoked directly via dispatcher has zero clus
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Fence direct disruption and legacy paths | PROPOSED (readiness/commission pending)
+## T02 | Fence direct disruption and legacy paths | READY (review 07; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/verification/smoke/observability/disruptions.mjs; partial-install.mjs; resources.mjs; tests/proof.test.mjs; tests/proof-resources.test.mjs
@@ -26,7 +26,7 @@ Negative: Direct helper without matched eligibility, E2 session, legacy partial-
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Use matched identity for nondisruptive proofs | PROPOSED (readiness/commission pending)
+## T03 | Use matched identity for nondisruptive proofs | READY (review 07; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: T02 postcondition and packet prerequisites.
 May write: infra/verification/smoke/observability/proof-host.mjs; signals.mjs; developer.mjs; tests/proof.test.mjs

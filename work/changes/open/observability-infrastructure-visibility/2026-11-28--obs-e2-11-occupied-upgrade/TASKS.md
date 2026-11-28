@@ -1,20 +1,20 @@
 # OBS-E2-11 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DEPENDENCY-GATED — 08/09 exact artifact/history interfaces. Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: PLANNER-BLOCKED — H04 correction frozen; narrow re-review and 08/09 joins pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
-## T01 | Extend durable custody schema | PROPOSED (readiness/commission pending)
+## T01 | Extend durable custody schema | PLANNER-BLOCKED (H04 correction review pending)
 DEPTH=PATCH
 Requires: 08/09 joined; G1–G4 selected scope frozen; 12 must finish before any E2 live activation; no live permission during construction.
 May write: infra/platform/observability/custody.mjs; tests/custody.test.mjs
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/custody.mjs: classifyPending, inspectPending, validateStoredUpgrade, createHandle, runMutation; group E2 pending contract
-Algorithm: Add distinct E2 operation `upgrade-e2` using existing durable record envelope, version and lock path; fixed three phases, immutable preservation/intent details including exact G2 trust binding SHA-256; exact schema reject extras/malformed. Begin only E1 developer history, allowed revision steps 1->2 P/G; compare-and-swap advance only from current owned record after explicit verifier result; final clear only final-verification. Reuse private fsync/rename/inherited lock and cancellation. Old reader rejects unknown E2 record, new reader still fences legacy/invalid; no resume API.
+Read: infra/platform/observability/custody.mjs: classifyPending, inspectPending, validateStoredUpgrade, createHandle, runMutation; group E2 pending contract and [H04 exact custody/phase matrix](../README.md#review-07-corrections--owned-shape-and-normal-receipt-contracts)
+Algorithm: Add distinct E2 operation `upgrade-e2` using existing durable record envelope, version and lock path; fixed three phases, immutable preservation/intent details including exact G2 trust binding SHA-256; exact schema reject extras/malformed. Begin only E1 developer history, allowed revision steps 1->2 P/G; compare-and-swap advance only from current owned record after explicit verifier result; final clear only final-verification. Reuse private fsync/rename/inherited lock and cancellation. Preserve `assertOwnPending()` as the real mutable-capability check returning the current cloned owned record, extending only exact E2 discriminator/details support; do not replace it with pending inspection or a caller-supplied operation ID. Old reader rejects unknown E2 record, new reader still fences legacy/invalid; no resume API.
 Test: node --test infra/platform/observability/tests/custody.test.mjs
-Negative: Invalid history/phase/hash/identity, stale record, out-of-order phase, lost ownership, malformed or legacy pending cannot be cleared/adopted.
+Negative: Invalid history/phase/hash/identity, stale record, out-of-order phase, lost ownership, malformed or legacy pending cannot be cleared/adopted. Valid foreign/replaced pending, missing/nonexclusive capability and incorrect phase/operation/namespace/predecessor/target refuse with no advance/clear.
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Project preservation and marker primitives | PROPOSED (readiness/commission pending)
+## T02 | Project preservation and marker primitives | PLANNER-BLOCKED (H04 correction review pending)
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/e2-preservation.mjs (new); forward.mjs; tests/e2-upgrade.test.mjs
@@ -26,14 +26,14 @@ Negative: Missing/changed PVC or historical Secret UID, changed unupgraded backe
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Implement ordered two-phase upgrade | PROPOSED (readiness/commission pending)
+## T03 | Implement ordered two-phase upgrade | PLANNER-BLOCKED (H04 correction review pending)
 DEPTH=PATCH
 Requires: T02 postcondition and packet prerequisites.
 May write: infra/platform/observability/upgrade.mjs; upgrade-e2.mjs (new); tests/upgrade.test.mjs; tests/e2-upgrade.test.mjs
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/upgrade.mjs: main, runObservabilityUpgrade, helmUpgradeArgv; 09 exact owned phase verifier; custody.mjs E2 schema; e2-preservation.mjs
-Algorithm: CLI accepts no args historical or exactly `--evolution e2`, with existing OFFSCREEN_OBSERVABILITY_UPGRADE=authorized guard. Historical upgrade refuses E2 before mutation. E2 captures exact identity and custody, one verified G2 binding and same descriptor; recheck binding digest before every write and final clear, drift refuses and retains owned fence after intent; refuses base/unknown/pending/foreign, exact final E2 repeat nonmutating, requires E1 developer and memory/allocatable headroom plus positive markers. Persist prometheus-intent, supervised exact P Helm upgrade, verify P2/G1 and retained metrics, then durable grafana-intent, exact G upgrade, verify P2/G2, durable final-verification, verify all preservation/coverage/transport and clear owned pending. Same identity and exact phase before every write; no --force/--reuse-values/--atomic or rollback. Fail/interrupt/lost identity retains pending and stops; emit bounded phase and last proven postcondition.
+Read: infra/platform/observability/upgrade.mjs: main, runObservabilityUpgrade, helmUpgradeArgv; 09 exact owned phase verifier and H04 phase/shape matrix; custody.mjs E2 schema; e2-preservation.mjs
+Algorithm: CLI accepts no args historical or exactly `--evolution e2`, with existing OFFSCREEN_OBSERVABILITY_UPGRADE=authorized guard. Historical upgrade refuses E2 before mutation. E2 captures exact identity and custody, one verified G2 binding and same descriptor; recheck binding digest before every write and final clear, drift refuses and retains owned fence after intent; refuses base/unknown/pending/foreign, exact final E2 repeat nonmutating, requires E1 developer and memory/allocatable headroom plus positive markers. Persist prometheus-intent, supervised exact P Helm upgrade, verify P2/G1 and retained metrics, then durable grafana-intent, exact G upgrade, verify P2/G2, durable final-verification, verify all preservation/coverage/transport and clear owned pending. Pass the original live exclusive custody handle, exact operationId, namespaceUid, expectedOperation=upgrade-e2, pendingPhase and historyId/phase from the H04 matrix into each owned verifier call: predecessor and intermediate at prometheus-intent, intermediate and final at grafana-intent, final at final-verification. No fabricated pending flags or synthetic capability; require fresh successful owned verification plus existing preservation/marker checks before advance/clear. Same identity and exact phase before every write; no --force/--reuse-values/--atomic or rollback. Fail/interrupt/lost identity retains pending and stops; emit bounded phase and last proven postcondition.
 Test: node --test infra/platform/observability/tests/upgrade.test.mjs infra/platform/observability/tests/e2-upgrade.test.mjs
-Negative: Historical-on-E2, E2-on-base, mixed/unknown, invalid argv/authorization, each Helm/marker failure and final-shaped pending all refuse/no later writes; both E1 histories positive with fake runners.
+Negative: Historical-on-E2, E2-on-base, mixed/unknown, invalid argv/authorization, each Helm/marker failure and final-shaped pending all refuse/no later writes; both E1 histories positive with fake runners. Valid foreign/replaced record, capability/operation/phase/identity mismatch and wrong shape refuse without later Helm write, advance or clear.
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
