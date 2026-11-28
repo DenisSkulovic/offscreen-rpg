@@ -98,3 +98,7 @@ sum by (namespace) (container_memory_working_set_bytes{container!="",container!=
 ```
 
 No fabricated dashboard numbers. A successful query is not necessarily a useful result: verify nonempty current series, units, expected identity and absence semantics. Capture actual coverage, not just screenshots. Source-only design artifact validation does not establish any of these native gates.
+
+## Constituent source receipts and transferred joint obligations
+
+- **OBS-E2-01** (source `3bb5e6be1806` on `change/obs-e2-01-historical-artifacts`): added internal artifact IDs `dev-e1-base`, `dev-e1-developer`, `release-e1` (`dev-e2` reserved, refuses until 08) and the pure `artifact-history.mjs` rows and E2 phases. Focused source tests PASS; no native or E2 render proof. **Transferred, not passed:** 08 adds the validated `dev-e2` bundle and consumes the IDs; 09 verifies inventory/history against these rows; G5 joint qualification in 13 owns native proof.
