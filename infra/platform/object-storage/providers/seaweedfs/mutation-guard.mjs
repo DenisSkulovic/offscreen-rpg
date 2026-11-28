@@ -10,6 +10,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  readSync,
   unlinkSync,
   writeSync,
 } from 'node:fs';
@@ -80,6 +81,10 @@ export function resolveObjectStorageLockPaths(stateRoot, contextName) {
 }
 
 function defaultStateRoot() {
+  return DEFAULT_STATE_ROOT;
+}
+
+export function defaultObjectStorageStateRoot() {
   return DEFAULT_STATE_ROOT;
 }
 
@@ -774,4 +779,296 @@ export function createObjectStorageIdentityReader(deps = {}) {
     throw new Error('identity reader requires injected run');
   }
   return (profileId) => defaultReadIdentity(profileId, run);
+}
+
+// --- Pending state classification and the owner metrics transition boundary ---
+
+const PENDING_MAX_BYTES = 16 * 1024;
+const LEGACY_PENDING_KEYS = ['contextName', 'identity', 'profileId', 'startedAt'];
+const METRICS_INTENT_KEYS = [
+  'contextName',
+  'details',
+  'identity',
+  'operation',
+  'operationId',
+  'profileId',
+  'schema',
+  'startedAt',
+];
+const METRICS_STRING_DETAILS = [
+  'predecessorManifestSha256',
+  'targetManifestSha256',
+  'namespaceUid',
+  'deploymentUid',
+  'serviceUid',
+  'serviceClusterIP',
+  'secretUid',
+  'secretResourceVersion',
+  'pvcUid',
+  'pvUid',
+  'pvHostPath',
+  'oldReplicaSetUid',
+  'oldPodUid',
+  'oldHelmStorageUid',
+  'nodeName',
+  'dataDirectoryIdentity',
+  'markerSha256',
+];
+const METRICS_DETAIL_KEYS = [
+  'predecessorRevision',
+  'targetRevision',
+  'markerSize',
+  ...METRICS_STRING_DETAILS,
+].sort();
+const SHA256 = /^[0-9a-f]{64}$/;
+
+function sameKeys(value, keys) {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.keys(value).sort().join('\0') === [...keys].sort().join('\0')
+  );
+}
+
+/**
+ * Exact typed parser for the upgrade-metrics intent. Returns the parsed
+ * record or null; never tolerates extra, missing or mistyped properties.
+ * @param {unknown} record
+ */
+export function parseMetricsIntent(record) {
+  if (!sameKeys(record, METRICS_INTENT_KEYS)) return null;
+  const r = /** @type {Record<string, any>} */ (record);
+  if (
+    r.schema !== 2 ||
+    r.operation !== 'upgrade-metrics' ||
+    r.profileId !== 'dev' ||
+    typeof r.contextName !== 'string' ||
+    r.contextName.length === 0 ||
+    typeof r.startedAt !== 'string' ||
+    Number.isNaN(Date.parse(r.startedAt)) ||
+    typeof r.operationId !== 'string' ||
+    r.operationId.length === 0 ||
+    r.identity === null ||
+    typeof r.identity !== 'object' ||
+    Array.isArray(r.identity)
+  ) {
+    return null;
+  }
+  const d = r.details;
+  if (!sameKeys(d, METRICS_DETAIL_KEYS)) return null;
+  if (
+    d.predecessorRevision !== 1 ||
+    d.targetRevision !== 2 ||
+    !Number.isInteger(d.markerSize) ||
+    d.markerSize < 32 ||
+    d.markerSize > 4096
+  ) {
+    return null;
+  }
+  for (const key of METRICS_STRING_DETAILS) {
+    if (typeof d[key] !== 'string' || d[key].length === 0) return null;
+  }
+  if (
+    !SHA256.test(d.predecessorManifestSha256) ||
+    !SHA256.test(d.targetManifestSha256) ||
+    !SHA256.test(d.markerSha256) ||
+    !/^[0-9]+:[0-9]+$/.test(d.dataDirectoryIdentity)
+  ) {
+    return null;
+  }
+  return r;
+}
+
+/**
+ * Bounded private no-follow read of the canonical pending path. Reports only
+ * `absent`, `legacy` (the exact old unversioned receipt), `metrics` (exact
+ * typed owner intent) or `unknown` (anything else, including partial,
+ * oversize, malformed, marker intents and other schemas).
+ * @param {string} stateRoot
+ * @param {string} contextName
+ */
+export function readObjectStoragePendingState(stateRoot, contextName) {
+  const { pending } = resolveObjectStorageLockPaths(stateRoot, contextName);
+  const read = readPendingBytes(pending);
+  if (read.kind !== 'bytes') return { kind: read.kind };
+  let record;
+  try {
+    record = JSON.parse(read.text);
+  } catch {
+    return { kind: 'unknown' };
+  }
+  if (record !== null && typeof record === 'object' && 'schema' in record) {
+    return parseMetricsIntent(record)
+      ? { kind: 'metrics' }
+      : { kind: 'unknown' };
+  }
+  if (
+    sameKeys(record, LEGACY_PENDING_KEYS) &&
+    typeof record.profileId === 'string' &&
+    typeof record.contextName === 'string' &&
+    typeof record.startedAt === 'string' &&
+    record.identity !== null &&
+    typeof record.identity === 'object'
+  ) {
+    return { kind: 'legacy' };
+  }
+  return { kind: 'unknown' };
+}
+
+/**
+ * @param {string} path
+ * @returns {{ kind: 'absent' | 'unknown' } | { kind: 'bytes', text: string, dev: number, ino: number }}
+ */
+function readPendingBytes(path) {
+  let opened;
+  try {
+    opened = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+  } catch (error) {
+    return { kind: error?.code === 'ENOENT' ? 'absent' : 'unknown' };
+  }
+  try {
+    const stat = fstatSync(opened);
+    assertPrivate(stat, false);
+    const named = lstatSync(path);
+    if (
+      stat.nlink !== 1 ||
+      named.isSymbolicLink() ||
+      named.ino !== stat.ino ||
+      named.dev !== stat.dev ||
+      stat.size > PENDING_MAX_BYTES
+    ) {
+      return { kind: 'unknown' };
+    }
+    const buffer = Buffer.alloc(stat.size);
+    let offset = 0;
+    while (offset < buffer.length) {
+      const n = readSync(opened, buffer, offset, buffer.length - offset, offset);
+      if (n === 0) break;
+      offset += n;
+    }
+    if (offset !== buffer.length) return { kind: 'unknown' };
+    return {
+      kind: 'bytes',
+      text: buffer.toString('utf8'),
+      dev: stat.dev,
+      ino: stat.ino,
+    };
+  } catch {
+    return { kind: 'unknown' };
+  } finally {
+    closeSync(opened);
+  }
+}
+
+/** @type {WeakMap<object, { path: string, text: string, dev: number, ino: number, active: boolean }>} */
+const OWNED_METRICS_SESSIONS = new WeakMap();
+
+/**
+ * Throws unless the handle is an active session capability whose exact
+ * record (bytes, device, inode) is still the one this session wrote.
+ * @param {unknown} handle
+ */
+export function assertOwnedMetricsIntent(handle) {
+  const session =
+    handle !== null && typeof handle === 'object'
+      ? OWNED_METRICS_SESSIONS.get(handle)
+      : undefined;
+  if (!session?.active) {
+    throw new Error('Object storage metrics intent capability is not active');
+  }
+  const current = readPendingBytes(session.path);
+  if (
+    current.kind !== 'bytes' ||
+    current.text !== session.text ||
+    current.dev !== session.dev ||
+    current.ino !== session.ino
+  ) {
+    throw new Error('Object storage metrics intent changed or is not owned');
+  }
+}
+
+/**
+ * Dedicated lock boundary for the owner metrics transition. It reuses the
+ * object-store lock path, refuses any existing pending record, and offers no
+ * generic write callback: only exact typed intent recording and clearing.
+ * The Helm dispatch of the transition is not available here.
+ *
+ * @param {(session: {
+ *   remaining: () => number,
+ *   recordIntent: (intent: object) => object,
+ *   clearIntent: (handle: object) => void,
+ * }) => Promise<unknown>} operation
+ * @param {{ stateRoot?: string, now?: () => number, budgetMs?: number, contextName?: string }} [deps]
+ */
+export async function withObjectStorageMetricsTransition(operation, deps = {}) {
+  const profile = readPlatformProfile('dev');
+  const contextName = profile.contextName;
+  const stateRoot = deps.stateRoot ?? defaultStateRoot();
+  const now = deps.now ?? (() => performance.now());
+  const deadline = now() + (deps.budgetMs ?? INSTALL_BUDGET_MS);
+  const remaining = () => Math.max(0, Math.floor(deadline - now()));
+  const { lock: lockPath, pending: pendingPath } =
+    resolveObjectStorageLockPaths(stateRoot, contextName);
+
+  const lockWait = Math.min(LOCK_WAIT_SECONDS * 1000, remaining());
+  if (lockWait < 1) {
+    throw new Error('Object storage install budget exhausted before lock');
+  }
+  let lockFd;
+  try {
+    lockFd = openAndAcquireLock(lockPath, lockWait);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Object storage lock failed';
+    throw message.includes('unavailable')
+      ? new Error('Object storage lock wait timed out')
+      : error;
+  }
+
+  /** @type {object | undefined} */
+  let issued;
+  try {
+    if (readPendingBytes(pendingPath).kind !== 'absent') {
+      throw new Error(
+        'Object storage mutation refused while pending receipt exists',
+      );
+    }
+    const recordIntent = (intent) => {
+      if (issued) {
+        throw new Error('Object storage metrics intent already recorded');
+      }
+      const parsed = parseMetricsIntent(intent);
+      if (!parsed || parsed.contextName !== contextName) {
+        throw new Error('Object storage metrics intent is malformed');
+      }
+      const text = JSON.stringify(parsed);
+      writePendingDurable(pendingPath, text);
+      const written = readPendingBytes(pendingPath);
+      if (written.kind !== 'bytes' || written.text !== text) {
+        throw new Error('Object storage metrics intent readback mismatch');
+      }
+      const handle = Object.freeze({});
+      OWNED_METRICS_SESSIONS.set(handle, {
+        path: pendingPath,
+        text,
+        dev: written.dev,
+        ino: written.ino,
+        active: true,
+      });
+      issued = handle;
+      return handle;
+    };
+    const clearIntent = (handle) => {
+      assertOwnedMetricsIntent(handle);
+      clearPendingDurable(pendingPath);
+      OWNED_METRICS_SESSIONS.get(handle).active = false;
+    };
+    return await operation({ remaining, recordIntent, clearIntent });
+  } finally {
+    // The capability dies with custody; the record itself is retained.
+    const session = issued ? OWNED_METRICS_SESSIONS.get(issued) : undefined;
+    if (session) session.active = false;
+    closeSync(lockFd);
+  }
 }

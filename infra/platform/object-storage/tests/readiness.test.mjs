@@ -1,5 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import {
+  readObjectStoragePendingState,
+  resolveObjectStorageLockPaths,
+} from '../providers/seaweedfs/mutation-guard.mjs';
 import {
   DEV_S3_CONTEXT,
   DEV_S3_NAMESPACE,
@@ -96,6 +103,7 @@ function buildChainPodSpec(options = {}) {
     initContainer = false,
     extraContainer = false,
     extraEnv = false,
+    metrics = false,
   } = options;
   const env = buildChainContainerEnv(mode);
   if (extraEnv) {
@@ -105,7 +113,19 @@ function buildChainPodSpec(options = {}) {
     {
       name: 'seaweedfs',
       image: 'docker.io/chrislusf/seaweedfs:4.54',
-      args: ['mini', '-dir=/data'],
+      args: metrics
+        ? ['mini', '-dir=/data', '-metricsPort=9327']
+        : ['mini', '-dir=/data'],
+      ...(mode === 'native'
+        ? {
+            ports: metrics
+              ? [
+                  { name: 's3', containerPort: 8333, protocol: 'TCP' },
+                  { name: 'metrics', containerPort: 9327 },
+                ]
+              : [{ name: 's3', containerPort: 8333 }],
+          }
+        : {}),
       env,
       securityContext: {
         allowPrivilegeEscalation: false,
@@ -181,6 +201,7 @@ function buildChainState(options = {}) {
     initContainer: options.initContainer,
     extraContainer: options.extraContainer,
     extraEnv: options.extraEnv,
+    metrics: options.metrics,
   });
   const pvcUid = options.pvcClaimRefUid ?? uids.pvc;
   const endpointTargetUid = options.endpointTargetUid ?? uids.pod;
@@ -387,7 +408,7 @@ function answerChainKubectl(args, chain) {
     return {
       ok: true,
       status: 0,
-      stdout: JSON.stringify({ items: [chain.replicaSet] }),
+      stdout: JSON.stringify({ items: chain.replicaSets ?? [chain.replicaSet] }),
     };
   }
   if (resource === 'pods') {
@@ -1845,4 +1866,127 @@ test('prior receipt kubeSystemUid mismatch refuses with mismatched continuity', 
   });
   assert.equal(result.state, 'refused');
   assert.equal(result.continuity, 'mismatched');
+});
+
+
+// --- T02: metrics variants, upgraded topology and pending admission ---
+
+function metricsChain(options = {}) {
+  const chain = buildChainState({ profileId: 'dev', metrics: true });
+  chain.service.spec.ports.push({
+    name: 'metrics',
+    port: 9327,
+    targetPort: 'metrics',
+  });
+  chain.service.metadata.uid = 'uid-svc';
+  chain.service.spec.clusterIP = '10.96.0.9';
+  chain.endpointSlice.ports = [
+    { name: 's3', port: 8333, protocol: 'TCP' },
+    { name: 'metrics', port: 9327, protocol: 'TCP' },
+  ];
+  if (options.upgraded) {
+    const oldSpec = buildChainPodSpec({});
+    const labels = chain.deployment.spec.template.metadata.labels;
+    chain.replicaSet.spec = {
+      template: { metadata: { labels }, spec: chain.deployment.spec.template.spec },
+    };
+    chain.oldRs = {
+      metadata: {
+        name: 'object-store-old',
+        uid: 'uid-rs-old',
+        labels: { app: 'object-store' },
+        ownerReferences: [
+          {
+            kind: 'Deployment',
+            name: DEPLOYMENT_NAME,
+            uid: chain.uids.deployment,
+            controller: true,
+          },
+        ],
+      },
+      spec: {
+        replicas: 0,
+        template: {
+          metadata: { labels: { ...labels, 'pod-template-hash': 'abc' } },
+          spec: oldSpec,
+        },
+      },
+      status: { replicas: 0 },
+    };
+    chain.replicaSets = [chain.replicaSet, chain.oldRs];
+  }
+  return chain;
+}
+
+function observeMetrics(variant, chain, extra = {}) {
+  const { run } = createHistoryMockRun({
+    variant,
+    chainEnabled: true,
+    chainState: chain,
+    targetNamespaceAbsent: false,
+  });
+  const root = mkdtempSync(join(tmpdir(), 'os-obs-'));
+  return observeObjectStorageChain('dev', { run, stateRoot: root, ...extra });
+}
+
+test('metrics and upgraded chains match the exact variant and carry matched fields', () => {
+  const fresh = observeMetrics('metrics', metricsChain());
+  assert.equal(fresh.state, 'native-compatible', fresh.reason);
+  assert.equal(fresh.historyId, 'dev-metrics-r1');
+  assert.equal(fresh.metricsEnabled, true);
+  const up = observeMetrics('upgrade', metricsChain({ upgraded: true }));
+  assert.equal(up.state, 'native-compatible', up.reason);
+  assert.equal(up.historyId, 'dev-metrics-r1-r2');
+  const base = observeMetrics('base', buildChainState({ profileId: 'dev' }));
+  assert.equal(base.historyId, 'dev-base-r1');
+  assert.equal(base.metricsEnabled, false);
+});
+
+for (const [label, mutate] of [
+  ['wrong endpoint port', (c) => { c.endpointSlice.ports[1].port = 9999; }],
+  ['missing endpoint ports', (c) => { delete c.endpointSlice.ports; }],
+  ['unexpected arg', (c) => { c.deployment.spec.template.spec.containers[0].args.push('-x'); c.pod.spec.containers[0].args.push('-x'); }],
+  ['unexpected container port', (c) => { c.pod.spec.containers[0].ports.push({ name: 'x', containerPort: 1 }); }],
+  ['service metrics port missing', (c) => { c.service.spec.ports.pop(); }],
+]) {
+  test(`metrics chain refuses ${label}`, () => {
+    const chain = metricsChain();
+    mutate(chain);
+    assert.equal(observeMetrics('metrics', chain).state, 'refused');
+  });
+}
+
+test('upgraded topology refuses extra RS, nonzero predecessor, old Pod and forged template', () => {
+  const extra = metricsChain({ upgraded: true });
+  extra.replicaSets.push({ ...extra.oldRs, metadata: { ...extra.oldRs.metadata, uid: 'uid-rs-3' } });
+  assert.equal(observeMetrics('upgrade', extra).state, 'refused');
+  const scaled = metricsChain({ upgraded: true });
+  scaled.oldRs.status.readyReplicas = 1;
+  assert.equal(observeMetrics('upgrade', scaled).state, 'refused');
+  const oldRsArgs = metricsChain({ upgraded: true });
+  oldRsArgs.oldRs.spec.template.spec.containers[0].args = ['mini', '-dir=/data', '-metricsPort=9327'];
+  assert.equal(observeMetrics('upgrade', oldRsArgs).state, 'refused');
+  const single = metricsChain({ upgraded: true });
+  single.replicaSets = [single.replicaSet];
+  assert.equal(observeMetrics('upgrade', single).state, 'refused');
+});
+
+test('ordinary observers refuse metrics, unknown and final-shaped pending; legacy passes', () => {
+  const root = mkdtempSync(join(tmpdir(), 'os-pend-'));
+  const { pending } = resolveObjectStorageLockPaths(root, DEV_S3_CONTEXT);
+  const chain = metricsChain({ upgraded: true });
+  const run = () =>
+    createHistoryMockRun({
+      variant: 'upgrade',
+      chainEnabled: true,
+      chainState: chain,
+      targetNamespaceAbsent: false,
+    }).run;
+  assert.equal(observeObjectStorageChain('dev', { run: run(), stateRoot: root }).state, 'native-compatible');
+  writeFileSync(pending, JSON.stringify({ profileId: 'dev', contextName: DEV_S3_CONTEXT, startedAt: 'x', identity: {} }), { mode: 0o600 });
+  assert.equal(observeObjectStorageChain('dev', { run: run(), stateRoot: root }).state, 'native-compatible');
+  writeFileSync(pending, JSON.stringify({ schema: 2, operation: 'upgrade-metrics' }), { mode: 0o600 });
+  assert.equal(observeObjectStorageChain('dev', { run: run(), stateRoot: root }).state, 'unknown');
+  assert.equal(observeObjectStorageHistory('dev', { run: run(), stateRoot: root }).state, 'unknown');
+  assert.equal(readObjectStoragePendingState(root, DEV_S3_CONTEXT).kind, 'unknown');
 });

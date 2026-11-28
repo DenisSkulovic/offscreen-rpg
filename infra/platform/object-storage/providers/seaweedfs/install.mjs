@@ -57,13 +57,27 @@ function historyAllowsHelmAfterFreshCreate(history) {
 }
 
 /**
+ * @param {{ artifactId?: string, historyId?: string, metricsEnabled?: boolean }} decision
+ */
+function matchedFields(decision) {
+  return decision.historyId === undefined
+    ? {}
+    : {
+        artifactId: decision.artifactId,
+        historyId: decision.historyId,
+        metricsEnabled: decision.metricsEnabled === true,
+      };
+}
+
+/**
  * @param {'dev' | 'release'} profileId
- * @param {{ run?: import('../../../common/commands.mjs').runPlatformCommand }} [deps]
+ * @param {{ run?: import('../../../common/commands.mjs').runPlatformCommand, stateRoot?: string }} [deps]
  */
 function decideObjectStorageInstall(profileId, deps = {}) {
   const run = deps.run ?? runPlatformCommand;
   const profile = readPlatformProfile(profileId);
-  const history = observeObjectStorageHistory(profileId, { run });
+  const observeDeps = { run, stateRoot: deps.stateRoot };
+  const history = observeObjectStorageHistory(profileId, observeDeps);
 
   /** @type {ReturnType<typeof observeObjectStorageChain> | null} */
   let chain = null;
@@ -72,13 +86,15 @@ function decideObjectStorageInstall(profileId, deps = {}) {
     (history.state === 'refused' &&
       history.reason === LEGACY_OCCUPIED_HISTORY_REASON)
   ) {
-    chain = observeObjectStorageChain(profileId, { run });
+    chain = observeObjectStorageChain(profileId, observeDeps);
   }
 
   /** @type {'absent' | 'native-noop' | 'refused' | 'unknown'} */
   let state;
   /** @type {string} */
   let reason;
+  /** Matched native variant (never the desired one); absent unless native-noop. */
+  let matched = {};
 
   if (history.state === 'unknown') {
     state = 'unknown';
@@ -92,6 +108,11 @@ function decideObjectStorageInstall(profileId, deps = {}) {
   ) {
     state = 'native-noop';
     reason = chain.reason ?? history.reason;
+    matched = {
+      artifactId: chain.artifactId ?? history.artifactId,
+      historyId: chain.historyId ?? history.historyId,
+      metricsEnabled: (chain.metricsEnabled ?? history.metricsEnabled) === true,
+    };
   } else if (chain?.state === 'legacy-structural') {
     state = 'refused';
     reason = chain.reason;
@@ -109,6 +130,7 @@ function decideObjectStorageInstall(profileId, deps = {}) {
     namespace: profile.namespaces.objectStorage,
     state,
     reason,
+    ...matched,
   };
 }
 
@@ -125,6 +147,7 @@ export function planObjectStorage(profileId, deps = {}) {
     namespace: decision.namespace,
     state: decision.state,
     reason: decision.reason,
+    ...matchedFields(decision),
     actions: [],
   };
 }
@@ -142,6 +165,7 @@ export function statusObjectStorage(profileId, deps = {}) {
     namespace: decision.namespace,
     state: decision.state,
     reason: decision.reason,
+    ...matchedFields(decision),
     actions: [],
   };
 }
@@ -161,7 +185,10 @@ export function statusObjectStorage(profileId, deps = {}) {
  */
 export async function ensureObjectStorage(profileId, deps = {}) {
   const run = deps.run ?? runPlatformCommand;
-  const decision = decideObjectStorageInstall(profileId, { run });
+  const decision = decideObjectStorageInstall(profileId, {
+    run,
+    stateRoot: deps.stateRoot,
+  });
   const base = {
     mode: /** @type {const} */ ('ensure'),
     profileId,
@@ -169,6 +196,7 @@ export async function ensureObjectStorage(profileId, deps = {}) {
     namespace: decision.namespace,
     state: decision.state,
     reason: decision.reason,
+    ...matchedFields(decision),
     actions: /** @type {object[]} */ ([]),
   };
 
