@@ -1,6 +1,6 @@
 # Observability E2 | Infrastructure visibility
 
-**Standing:** Open E2 architecture candidate for independent review of the selected design and its affected integration boundaries; not owner-accepted or commissioned. **Owner:** repository owner, supported by designer. **Investigation baseline:** `main` `c3900da1e15bba456c71dcb799698fe2a0f7db5f`, clean frozen export 2026-11-28 (includes CLI01). Candidate SHA is the subsequent actual committed dossier, not this baseline. **Next review:** independent committee on that exact candidate. **Next decision:** owner ratification of reviewed scope and closure of the explicitly gated source/native facts in [EVIDENCE.md](EVIDENCE.md). No live mutation or paid work authorized.
+**Standing:** Open E2 architecture candidate for independent review of the selected design and its affected integration boundaries; not owner-accepted or commissioned. **Owner:** repository owner, supported by designer. **Investigation baseline:** `main` `c3900da1e15bba456c71dcb799698fe2a0f7db5f`, clean frozen export 2026-11-28 (includes CLI01). Candidate SHA is the subsequent actual committed dossier, not this baseline. **Previous review:** [pass 01](committee/pass-01.md), REVISE AND RE-DEFEND, candidate `7451b840978b7cf11926ff4d7252d193b43459c8`. **Next review:** targeted independent re-review of H01 on the actual committed correction candidate; reuse unaffected conclusions. G1-G4 remain evidence-gated, G5 remains construction/qualification. **Next decision:** owner ratification of reviewed scope and closure of the explicitly gated source/native facts in [EVIDENCE.md](EVIDENCE.md). No live mutation or paid work authorized.
 
 ## Outcome
 
@@ -36,6 +36,7 @@ Every workload should be visible in inventory; not every container has a meaning
 - [Target and architecture](TARGET.md): collection, permissions, coverage, dashboard contracts and remaining decisions.
 - [Integration and acceptance](INTEGRATION.md): source anchors, occupied upgrade, ownership, execution ordering and evidence.
 - [Evidence and self-defense](EVIDENCE.md): source specimens, alternatives, unresolved bounded feasibility checks and review scope.
+- [Independent committee pass 01](committee/pass-01.md): complete historical verdict, bound to its own candidate, not acceptance of the revised dossier.
 - Existing canonical owners: [native infrastructure](../../../../docs/technical/platform/observability-native-infrastructure.md), [telemetry and diagnostics](../../../../docs/technical/observability/telemetry-and-diagnostics.md), [operator experience](../../../../docs/technical/platform/infrastructure-operator-experience.md), [observability runbook](../../../../docs/runbooks/kubernetes-observability.md).
 - Predecessor: [E1 owner acceptance](../../archive/observability-developer/OWNER-ACCEPTANCE.md) and [A/V matrix](../../archive/observability-developer/ACCEPTANCE.md). Preserve historical findings and NOT RUN evidence. E2 does not retroactively certify E1.
 
