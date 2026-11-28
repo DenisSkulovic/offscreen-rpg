@@ -1,0 +1,21 @@
+# Dev-only E2 overlay: native file provider for repository-owned dashboards (OBS-E2-07).
+# Dashboard JSON lives in dashboards/*.json; 08 supplies it as deterministic
+# `--set-file dashboards.offscreen.<name>.json=<repo asset>` arguments, so the chart mounts each file at
+# /var/lib/grafana/dashboards/offscreen/<name>.json. No sidecar, no remote download, no UI persistence.
+# Base values (admin Secret, datasource UIDs, stateless Grafana) are not changed here.
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: offscreen
+        orgId: 1
+        folder: Offscreen
+        type: file
+        disableDeletion: false
+        allowUiUpdates: false
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/offscreen
+grafana.ini:
+  dashboards:
+    default_home_dashboard_path: /var/lib/grafana/dashboards/offscreen/overview.json
