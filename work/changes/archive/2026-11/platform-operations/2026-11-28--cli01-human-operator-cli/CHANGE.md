@@ -1,6 +1,6 @@
 # CLI01 | Human-first Offscreen command entry point
 
-**Kind:** implementation (focused PATCH/CONTRACT). **State:** Ready for explicit owner acceptance/commission of [E1](../../../designs/open/human-operator-cli/README.md); no live authorization. **Baseline:** `main` / `f686b80d273a8f784d8121c50ac3d9017f35cdfa` (snapshot). **Goal:** one small discoverable adapter and truthful cluster inventory, with native owner workflow. No predecessors or sibling Changes. Source-only scope; owner live walkthrough remains separate. One coordinated assignment, no subagent swarm or companion files.
+**Kind:** implementation (focused PATCH/CONTRACT). **State:** DONE at source tier (2026-11-28), archived on `implementation/human-operator-cli`. Design [E1](../../../../../designs/archive/human-operator-cli/README.md); no live authorization. **Baseline:** `main` / `f686b80d273a8f784d8121c50ac3d9017f35cdfa` (snapshot). **Goal:** one small discoverable adapter and truthful cluster inventory, with native owner workflow. No predecessors or sibling Changes. Source-only scope; owner live walkthrough remains separate. One coordinated assignment, no subagent swarm or companion files.
 
 ## Integration and authority
 
@@ -35,3 +35,12 @@ Update `docs/technical/platform/infrastructure-operator-experience.md` (command 
 Focused proof (repo root, once at join): `node --test scripts/repo-tools/offscreen.test.mjs infra/environments/infra-cli.test.mjs infra/environments/infra-cli-operation.test.mjs` plus `git diff --check` and real no-host `pnpm offscreen --help`, `pnpm offscreen cluster --help`. Tests must cover static help and malformed args zero host calls, both profiles and exact argv for platform/default human/JSON/none, dev up/instance/attach refusal, release status boolean separation and malformed/nonzero, all delegated paths, absent/running/stopped/mixed/foreign or failed inventory, exact stopped refusal with zero mutation, JSON single value, exit propagation. Use fake runner for every live-capable operation; no actual Docker/Kubernetes/Helm/Tilt commands in tests. Preserve legacy script values. Local mechanical fixes allowed; stop on material ownership/contract drift or failed indispensable proof after focused repair.
 
 **Closure:** record actual checks and source tier in this file; archive it before join under `work/changes/archive/2026-11/platform-operations/`; reconcile existing catalogs and design ledger under join lock, promote accepted E1 to existing docs, archive design with exact provenance and residual owner walkthrough NOT RUN. Use existing lifecycle command with `--design human-operator-cli` where supported and actual recorded target; integrate Change into design branch, verify open packet absent/archive present, retire clean worktree, then integrate the complete design branch to main under existing policy. Report final SHA and commands, no claims of live qualification. No successor commission or queue mutation.
+
+
+## Closure receipt (2026-11-28)
+
+- **Source:** `scripts/repo-tools/offscreen.mjs`, `offscreen.test.mjs`, root `package.json` `offscreen` script, and the two named docs; commit on `change/cli01-human-operator-cli`. Baseline `7422f20ad` (main with committed planning files).
+- **Checks run:** `node --test scripts/repo-tools/offscreen.test.mjs infra/environments/infra-cli.test.mjs infra/environments/infra-cli-operation.test.mjs` 58/58 PASS (fake runners); `git diff --check` PASS; `node scripts/repo-tools/offscreen.mjs --help` and `cluster --help` PASS, unknown command exits 2.
+- **Not run:** `pnpm offscreen --help` (the linked worktree had a symlinked `node_modules`, so pnpm aborted its modules check; same script verified directly); any live Docker, Kind, Kubernetes, Helm or Tilt command; owner walkthrough.
+- **Drift:** none material. `postgres` requires an explicit `--env` token; `verify` requires `--suite`; leaf `--help` for delegated groups prints local group help.
+- **Source tier:** source-tested only. Deferred native stopped-node lifecycle limit recorded in `docs/technical/platform/infrastructure-operator-experience.md`.

@@ -8,6 +8,7 @@
   "scripts": {
     "obs:connect": "node infra/platform/observability/connect.mjs",
     "obs:upgrade": "node infra/platform/observability/upgrade.mjs",
+    "offscreen": "node scripts/repo-tools/offscreen.mjs",
     "dev": "node tools/dev-environments/src/cli/dev-tilt.mjs",
     "dev:new": "node tools/dev-environments/src/cli/dev-tilt.mjs new",
     "dev:reserve": "node tools/dev-environments/src/cli/dev-tilt.mjs reserve",
