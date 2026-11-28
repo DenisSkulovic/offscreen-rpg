@@ -1,5 +1,5 @@
 # OBS-E2-03 | task queue
-Base: `8cb05ff2841d548e52c75cd6dae0e666081f810b`; refresh against recorded Design integration branch. State: PROPOSED; affected readiness and owner selection pending. Shared contracts: [G2 construction freeze](../NATIVE-INPUTS.md#g2-construction-freeze-candidate--direct-https-and-cluster-bound-trust).
+Base: `8cb05ff2841d548e52c75cd6dae0e666081f810b`; refresh against recorded Design integration branch. State: READY for construction, independent review 03; dispatch only after owner ratification/commission and synchronization. Shared contracts: [G2 construction freeze](../NATIVE-INPUTS.md#g2-construction-freeze-candidate--direct-https-and-cluster-bound-trust).
 Tasks: T01 → T02 → T03; selected: none. 02 must have joined before overlay edits; 05/04 overlay ownership serialized. No new native investigation by workers.
 
 ## T01 | Capture verified cluster-bound public trust | PROPOSED
@@ -17,7 +17,7 @@ DEPTH=PATCH
 Requires: T01 source postcondition, 02 joined, exclusive overlay ownership.
 May write: infra/platform/observability/values/profiles/dev/prometheus.yaml
 Read: 02 dev overlay; G2 Helm integration and exact scrape contract; vendored Prometheus 31.0.0 templates/extra-manifests.yaml and templates/deploy.yaml.
-Algorithm: add exact release-owned ConfigMap template and read-only mount, require two values passed by 08, append to existing extraManifests rather than replace. Preserve 02/05 objects and previous RBAC. Add narrow nodes discovery + nodes/metrics get, fixed two HTTPS DNS targets and SA file, exact paths/limits/families and filters from G2. Resource is sole CPU/RAM source; cAdvisor network conditional only, no raw id/image/name labels. No other jobs or historical base changes. Render integration waits for 08; no production placeholder CA.
+Algorithm: add exact release-owned ConfigMap template and read-only mount, require two values passed by 08, append to existing extraManifests rather than replace. Preserve 02/05 objects and previous RBAC. Add narrow nodes discovery + nodes/metrics get and explicitly enable the dedicated Prometheus server Pod SA token mount (M04; no KSM permission expansion; 04 owns Pod discovery permissions), fixed two HTTPS DNS targets and SA file, exact paths/limits/families and filters from G2. Resource is sole CPU/RAM source; cAdvisor network conditional only, no raw id/image/name labels. No other jobs or historical base changes. Render integration waits for 08; no production placeholder CA.
 Test: source gate, T03 fixtures, 08 exact Helm render/promtool, 13 native.
 Stop: chart anchor mismatch, forbidden RBAC or unsafe TLS/label policy.
 Receipt: exact overlay postcondition.

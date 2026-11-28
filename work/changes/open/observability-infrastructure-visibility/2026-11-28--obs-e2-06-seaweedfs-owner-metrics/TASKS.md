@@ -1,5 +1,5 @@
 # OBS-E2-06 | task queue
-Base: `872c39b5c6bc4ebcacca3272d1c613758fc870cd`; refresh against recorded Design integration branch. State: PROPOSED; independent readiness/owner selection pending. Shared contract: [G4a owner transition](../NATIVE-INPUTS.md#g4a-owner-transition-candidate--bounded-seaweedfs-metrics-enablement). Tasks T01 → T02 → T03; selected: none. No G4b prerequisite and no observability overlay writes.
+Base: `872c39b5c6bc4ebcacca3272d1c613758fc870cd`; refresh against recorded Design integration branch. State: READY for construction, independent review 03; dispatch only after owner ratification/commission and synchronization. Shared contract: [G4a owner transition](../NATIVE-INPUTS.md#g4a-owner-transition-candidate--bounded-seaweedfs-metrics-enablement). Tasks T01 → T02 → T03; selected: none. No G4b prerequisite and no observability overlay writes.
 
 ## T01 | Freeze exact chart variants and Helm history | PROPOSED
 DEPTH=PATCH
