@@ -42,6 +42,8 @@ import {
 
 const MARKER_KEY = 'retained-marker.bin';
 const MARKER_BYTES = 64;
+// Absence probe (25s) + write (35s) + readback (25s), refused before any mutation.
+const PREPARE_MIN_BUDGET_MS = 85_000;
 
 class MarkerRefusal extends Error {
   constructor(message) {
@@ -179,9 +181,9 @@ export async function prepareObjectStorageMarker(request, deps = {}) {
       readRegistry: deps.readRegistry ?? readExistingRegistryV2,
     });
   const sdk = () => import('./live-sdk.mjs');
-  const bucketAbsent = deps.bucketAbsent ?? (async (bucket, secret) => (await sdk()).markerBucketAbsent(bucket, secret));
-  const writeMarker = deps.writeMarker ?? (async (d, bytes, secret) => (await sdk()).writeMarkerObject(d, bytes, secret));
-  const readMarker = deps.readMarker ?? (async (d, secret) => (await sdk()).readMarkerObject(d, secret));
+  const bucketAbsent = deps.bucketAbsent ?? (async (bucket, secret, options) => (await sdk()).markerBucketAbsent(bucket, secret, options));
+  const writeMarker = deps.writeMarker ?? (async (d, bytes, secret, options) => (await sdk()).writeMarkerObject(d, bytes, secret, options));
+  const readMarker = deps.readMarker ?? (async (d, secret, options) => (await sdk()).readMarkerObject(d, secret, options));
   const persistDescriptor = deps.persistDescriptor ?? writeDescriptorFile;
 
   let handle;
@@ -197,6 +199,7 @@ export async function prepareObjectStorageMarker(request, deps = {}) {
         memory();
         const before = obs.before('dev-base-r1', observeDeps);
         if (!before.ok) return refuse(before.reason);
+        if (session.remaining() < PREPARE_MIN_BUDGET_MS) return refuse('custody budget is insufficient');
         const c = before.chain;
         const secret = { uid: c.secretUid, resourceVersion: c.secretResourceVersion };
 
@@ -211,7 +214,7 @@ export async function prepareObjectStorageMarker(request, deps = {}) {
 
         let absent;
         try {
-          absent = await bucketAbsent(descriptor.bucket, secret);
+          absent = await bucketAbsent(descriptor.bucket, secret, { budgetMs: session.remaining() });
         } catch {
           throw new MarkerRefusal('marker bucket absence could not be verified');
         }
@@ -219,6 +222,7 @@ export async function prepareObjectStorageMarker(request, deps = {}) {
         // Repeat immediately before the first write.
         quiescence();
         memory();
+        if (session.remaining() < PREPARE_MIN_BUDGET_MS - 25_000) return refuse('custody budget is insufficient');
         handle = session.recordIntent({
           schema: 2,
           operation: 'prepare-marker',
@@ -235,11 +239,11 @@ export async function prepareObjectStorageMarker(request, deps = {}) {
         }
         session.authorizeWrite(handle);
         writeStarted = true;
-        await writeMarker({ bucket: descriptor.bucket, key: descriptor.key }, bytes, secret);
+        await writeMarker({ bucket: descriptor.bucket, key: descriptor.key }, bytes, secret, { budgetMs: session.remaining() });
 
         let read;
         try {
-          read = await readMarker({ bucket: descriptor.bucket, key: descriptor.key }, secret);
+          read = await readMarker({ bucket: descriptor.bucket, key: descriptor.key }, secret, { budgetMs: session.remaining() });
         } catch {
           throw new MarkerRefusal('marker readback failed');
         }
