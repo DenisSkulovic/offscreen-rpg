@@ -62,6 +62,18 @@ const PIN = /^registry\.k8s\.io\/kube-state-metrics\/kube-state-metrics@sha256:[
 const sameSet = (a, b) => a.length === b.length && new Set(a).size === a.length && [...a].sort().join() === [...b].sort().join();
 const split = (r) => String(r).split('|');
 
+const KUBELET_JOBS = ['kubelet-resource', 'kubelet-cadvisor'];
+const KUBELET_MANIFEST_COUNT = 3;
+const TRUST_SENTINEL = { binding: 'b'.repeat(64), ca: 'ca-under-test' };
+/** Parse one extraManifests string; the two trust ConfigMap Helm expressions are replaced by fixed sentinels. */
+function parseManifest(m) {
+  const text = String(m)
+    .replace(/\{\{ required "[^"]*bindingSha256[^"]*" [^}]*\}\}/, JSON.stringify(TRUST_SENTINEL.binding))
+    .replace(/\{\{ required "[^"]*caPem[^"]*" [^}]*\}\}/, JSON.stringify(TRUST_SENTINEL.ca))
+    .replaceAll('{{ .Release.Namespace }}', 'ns-under-test');
+  return parseYaml(text);
+}
+
 /** Effective enabled scrape jobs after helm map-merge of base scrapeConfigs and the overlay. */
 function mergedJobs({ base, overlay }) {
   const merged = { ...(base.scrapeConfigs ?? {}) };
@@ -107,8 +119,9 @@ function validateOverlay(cfg) {
   if (new Set(names).size !== names.length) p.push('duplicate-job');
   const targets = jobs.flatMap((j) => (j.static_configs ?? []).flatMap((s) => s.targets ?? []));
   if (new Set(targets).size !== targets.length) p.push('duplicate-target');
-  if (!sameSet(names, ['prometheus', 'collector', 'kube-state-metrics', 'kube-state-metrics-self', 'redis-exporter'])) p.push('job-set');
+  if (!sameSet(names, ['prometheus', 'collector', 'kube-state-metrics', 'kube-state-metrics-self', 'redis-exporter', ...KUBELET_JOBS])) p.push('job-set');
   for (const j of jobs) {
+    if (KUBELET_JOBS.includes(j.name)) continue; // exact node-discovery shape is asserted by validateKubeletJobs
     if (j.kubernetes_sd_configs || (j.relabel_configs ?? []).some((r) => r.action === 'labelmap' || /annotation/.test(JSON.stringify(r)))) p.push(`generic-job:${j.name}`);
   }
   if (cfg.overlay.extraScrapeConfigs) p.push('extraScrapeConfigs');
@@ -120,7 +133,8 @@ function validateOverlay(cfg) {
   if (rj && (rj.scheme !== 'http' || rj.honor_labels !== false || rj.relabel_configs || rj.kubernetes_sd_configs || rj.params)) p.push('redis-job-shape');
   // Existing jobs keep their base semantics.
   if (JSON.stringify(byName.collector?.static_configs) !== JSON.stringify([{ targets: ['obs-collector:8888'] }])) p.push('collector-changed');
-  if (Object.keys(cfg.overlay.scrapeConfigs ?? {}).some((k) => !['kube-state-metrics', 'kube-state-metrics-self', 'redis-exporter'].includes(k))) p.push('overlay-extra-job');
+  if (Object.keys(cfg.overlay.scrapeConfigs ?? {}).some((k) => !['kube-state-metrics', 'kube-state-metrics-self', 'redis-exporter', ...KUBELET_JOBS].includes(k))) p.push('overlay-extra-job');
+  p.push(...validateKubeletJobs(cfg), ...validateKubeletServer(cfg.overlay), ...validateKubeletManifests(cfg.overlay));
   return p;
 }
 
@@ -150,7 +164,7 @@ function validateRedisLock(text, overlay) {
 }
 
 function redisManifests(overlay) {
-  const docs = (overlay.extraManifests ?? []).map((m) => parseYaml(String(m).replaceAll('{{ .Release.Namespace }}', 'ns-under-test')));
+  const docs = (overlay.extraManifests ?? []).map(parseManifest);
   const named = docs.filter((d) => d?.metadata?.name === 'obs-redis-exporter');
   return { all: docs, deployment: named.find((d) => d.kind === 'Deployment'), service: named.find((d) => d.kind === 'Service'), count: named.length };
 }
@@ -159,7 +173,8 @@ function redisManifests(overlay) {
 function validateRedisManifests(overlay) {
   const p = [];
   const { all, deployment: d, service: s, count } = redisManifests(overlay);
-  if (all.length !== 2 || count !== 2 || !d || !s) return ['redis-manifest-set'];
+  // 02/05 shape: the two exporter objects plus exactly the three OBS-E2-03 kubelet objects (validateKubeletManifests owns those).
+  if (all.length !== 2 + KUBELET_MANIFEST_COUNT || count !== 2 || !d || !s) return ['redis-manifest-set'];
   if (d.metadata.namespace !== 'ns-under-test' || s.metadata.namespace !== 'ns-under-test') p.push('redis-namespace');
   const spec = d.spec?.template?.spec ?? {};
   const cs = spec.containers ?? [];
@@ -177,6 +192,148 @@ function validateRedisManifests(overlay) {
   return p;
 }
 
+// ---- OBS-E2-03: frozen kubelet jobs, trust mount and RBAC (NATIVE-INPUTS "G2 construction freeze") ----
+const canon = (v) => JSON.stringify(v, (_k, x) => (x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => (a < b ? -1 : 1))) : x));
+const KUBELET_NODE_RE = '^(offscreen-dev-control-plane|offscreen-dev-worker)$';
+const RESOURCE_FAMILIES = ['node_cpu_usage_seconds_total', 'node_memory_working_set_bytes', 'pod_cpu_usage_seconds_total', 'pod_memory_working_set_bytes', 'container_cpu_usage_seconds_total', 'container_memory_working_set_bytes'];
+const NETWORK_FAMILIES = ['container_network_receive_bytes_total', 'container_network_transmit_bytes_total'];
+// The cAdvisor job's `component` label is pinned as T02 wrote it; the coverage row component is `kubelet-cadvisor-network`
+// (see receipt: G2 does not state the label value; the 02 convention is label == coverage component).
+const CADVISOR_COMPONENT_LABEL = 'kubelet-cadvisor-network';
+const kubeletRelabel = (component) => [
+  { source_labels: ['__meta_kubernetes_node_name'], regex: KUBELET_NODE_RE, action: 'keep' },
+  { source_labels: ['__meta_kubernetes_node_name'], regex: '(.*)', target_label: 'node', replacement: '$1' },
+  { source_labels: ['__meta_kubernetes_node_name'], regex: '(.*)', target_label: '__address__', replacement: '$1:10250' },
+  { target_label: 'cluster', replacement: 'offscreen-dev' },
+  { target_label: 'env', replacement: 'dev' },
+  { target_label: 'component', replacement: component },
+];
+const kubeletJob = (name, path, sampleLimit, component, metricRelabel) => ({
+  enabled: true, job_name: name, metrics_path: path, scheme: 'https', scrape_interval: '30s', scrape_timeout: '10s',
+  sample_limit: sampleLimit, label_limit: 40, label_name_length_limit: 128, label_value_length_limit: 512, target_limit: 4, honor_labels: false,
+  authorization: { credentials_file: '/var/run/secrets/kubernetes.io/serviceaccount/token' },
+  tls_config: { ca_file: '/etc/offscreen/kubelet-trust/ca.pem', insecure_skip_verify: false },
+  kubernetes_sd_configs: [{ role: 'node' }],
+  relabel_configs: kubeletRelabel(component),
+  metric_relabel_configs: metricRelabel,
+});
+const EXPECTED_KUBELET = {
+  'kubelet-resource': kubeletJob('kubelet-resource', '/metrics/resource', 5000, 'kubelet-resource', [
+    { source_labels: ['__name__', 'namespace', 'pod', 'container'], separator: ';', regex: '(node_cpu_usage_seconds_total|node_memory_working_set_bytes);;;|(pod_cpu_usage_seconds_total|pod_memory_working_set_bytes);[^;]+;[^;]+;|(container_cpu_usage_seconds_total|container_memory_working_set_bytes);[^;]+;[^;]+;[^;]+', action: 'keep' },
+    { source_labels: ['__name__', 'container'], separator: ';', regex: 'container_(cpu_usage_seconds_total|memory_working_set_bytes);POD', action: 'drop' },
+    { regex: '__name__|job|instance|cluster|env|component|node|namespace|pod|container', action: 'labelkeep' },
+  ]),
+  'kubelet-cadvisor': kubeletJob('kubelet-cadvisor', '/metrics/cadvisor', 20000, CADVISOR_COMPONENT_LABEL, [
+    { source_labels: ['__name__', 'container', 'namespace', 'pod', 'interface'], separator: ';', regex: 'container_network_(receive|transmit)_bytes_total;POD;[^;]+;[^;]+;[^;]+', action: 'keep' },
+    { source_labels: ['interface'], regex: 'lo', action: 'drop' },
+    { regex: '__name__|job|instance|cluster|env|component|node|namespace|pod|interface', action: 'labelkeep' },
+  ]),
+};
+
+/** Exactly the two frozen kubelet jobs: fixed node filter and DNS address, SA-token auth, file CA, bounded labels, no generic discovery. */
+function validateKubeletJobs(cfg) {
+  const p = [];
+  const jobs = Object.fromEntries(mergedJobs(cfg).map((j) => [j.name, j]));
+  for (const name of KUBELET_JOBS) {
+    const j = jobs[name];
+    if (!j) { p.push(`${name}.missing`); continue; }
+    if (cfg.overlay.scrapeConfigs?.[name] === undefined) p.push(`${name}.not-in-overlay`);
+    if (j.tls_config?.insecure_skip_verify !== false) p.push(`${name}.insecure`);
+    if (j.tls_config?.ca_file !== '/etc/offscreen/kubelet-trust/ca.pem' || j.tls_config?.ca || j.tls_config?.ca_ref || j.tls_config?.cert_file) p.push(`${name}.ca-reference`);
+    if (j.scheme !== 'https') p.push(`${name}.scheme`);
+    if (j.proxy_url || j.proxy_from_environment || j.proxy_connect_header || j.follow_redirects || j.static_configs || j.params) p.push(`${name}.proxy-or-target`);
+    const rel = j.relabel_configs ?? [];
+    if (rel.some((r) => r.action === 'labelmap' || /annotation|label_|pod|service|proxy/.test(JSON.stringify(r)))) p.push(`${name}.arbitrary-metadata`);
+    if (rel[0]?.regex !== KUBELET_NODE_RE || JSON.stringify(rel[0]?.source_labels) !== '["__meta_kubernetes_node_name"]') p.push(`${name}.node-filter`);
+    if (rel[2]?.target_label !== '__address__' || rel[2]?.replacement !== '$1:10250') p.push(`${name}.address`);
+    if (j.metrics_path !== EXPECTED_KUBELET[name].metrics_path) p.push(`${name}.path`);
+    if (canon(cfg.overlay.scrapeConfigs?.[name]) !== canon(EXPECTED_KUBELET[name])) p.push(`${name}.frozen-shape`);
+  }
+  // Each cAdvisor/resource family has exactly one aggregation owner: CPU/RAM only from the resource job, network only from cAdvisor.
+  const keepOf = (n) => (jobs[n]?.metric_relabel_configs ?? []).find((m) => m.action === 'keep')?.regex ?? '';
+  const res = keepOf('kubelet-resource');
+  const cad = keepOf('kubelet-cadvisor');
+  if (/cpu|memory|working_set/.test(cad)) p.push('duplicate-cpu-ram-source');
+  if (/network/.test(res)) p.push('network-in-resource-job');
+  return p;
+}
+
+/** Dedicated Prometheus SA: token mount enabled; trust ConfigMap mounted read-only at the fixed path; nothing else under server. */
+function validateKubeletServer(overlay) {
+  const p = [];
+  if (canon(overlay.server) !== canon({ automountServiceAccountToken: true, extraConfigmapMounts: [{ name: 'kubelet-trust', configMap: 'obs-kubelet-trust', mountPath: '/etc/offscreen/kubelet-trust', subPath: '', readOnly: true }] })) p.push('kubelet-server-mount');
+  if (canon(overlay.serviceAccounts) !== canon({ server: { create: true, name: 'obs-prometheus' } })) p.push('kubelet-service-account');
+  return p;
+}
+
+/** Trust ConfigMap (data via two required+quote scalars, never tpl'd, no committed PEM) and the narrow node-only ClusterRole and binding. */
+function validateKubeletManifests(overlay) {
+  const p = [];
+  const raw = overlay.extraManifests ?? [];
+  const docs = raw.map((m, i) => ({ m: String(m), d: parseManifest(m), i }));
+  const kub = docs.filter(({ d }) => ['obs-kubelet-trust', 'obs-prometheus-kubelet'].includes(d?.metadata?.name));
+  if (kub.length !== KUBELET_MANIFEST_COUNT) return ['kubelet-manifest-set'];
+  const find = (kind) => kub.filter(({ d }) => d.kind === kind);
+  const [cm, cr, crb] = [find('ConfigMap'), find('ClusterRole'), find('ClusterRoleBinding')];
+  if (cm.length !== 1 || cr.length !== 1 || crb.length !== 1) return ['kubelet-manifest-set'];
+  const eq = (code, a, b) => { if (canon(a) !== canon(b)) p.push(code); };
+  eq('kubelet-trust-configmap', cm[0].d, {
+    apiVersion: 'v1', kind: 'ConfigMap',
+    metadata: { name: 'obs-kubelet-trust', namespace: 'ns-under-test', labels: { 'offscreen.dev/owner': 'offscreen-dev' }, annotations: { 'offscreen.dev/kubelet-trust-binding-sha256': TRUST_SENTINEL.binding } },
+    immutable: true, data: { 'ca.pem': TRUST_SENTINEL.ca },
+  });
+  const t = cm[0].m;
+  if ((t.match(/\{\{\s*required /g) ?? []).length !== 2 || (t.match(/\| quote/g) ?? []).length !== 2 || /\btpl\b|BEGIN CERTIFICATE|\.Files|lookup/.test(t)) p.push('kubelet-trust-template');
+  eq('kubelet-clusterrole', cr[0].d, {
+    apiVersion: 'rbac.authorization.k8s.io/v1', kind: 'ClusterRole', metadata: { name: 'obs-prometheus-kubelet' },
+    rules: [{ apiGroups: [''], resources: ['nodes'], verbs: ['get', 'list', 'watch'] }, { apiGroups: [''], resources: ['nodes/metrics'], verbs: ['get'] }],
+  });
+  eq('kubelet-clusterrolebinding', crb[0].d, {
+    apiVersion: 'rbac.authorization.k8s.io/v1', kind: 'ClusterRoleBinding', metadata: { name: 'obs-prometheus-kubelet' },
+    roleRef: { apiGroup: 'rbac.authorization.k8s.io', kind: 'ClusterRole', name: 'obs-prometheus-kubelet' },
+    subjects: [{ kind: 'ServiceAccount', name: 'obs-prometheus', namespace: 'ns-under-test' }],
+  });
+  return p;
+}
+
+/** Coverage rows for the kubelet jobs: families must be kept by the job; the network row is inventory-only with no panel. */
+function validateKubeletCoverage(rows, cfg) {
+  const p = [];
+  const res = rows.filter((r) => r.component === 'kubelet-resource');
+  const net = rows.filter((r) => r.component === 'kubelet-cadvisor-network');
+  if (res.length !== 1 || net.length !== 1) return ['kubelet-coverage-rows'];
+  const [r] = res;
+  const [n] = net;
+  const nodeSel = { nodeNames: ['offscreen-dev-control-plane', 'offscreen-dev-worker'] };
+  for (const row of [r, n]) if (canon(row.workloadSelector) !== canon(nodeSel) || row.namespace !== null) p.push(`kubelet-selector:${row.component}`);
+  if (canon(r.jobs) !== canon(['kubelet-resource']) || r.coverage !== 'enabled' || r.reason !== '') p.push('kubelet-resource-identity');
+  if (!sameSet(r.requiredFamilies, RESOURCE_FAMILIES)) p.push('kubelet-resource-families');
+  const keep = mergedJobs(cfg).find((j) => j.name === 'kubelet-resource')?.metric_relabel_configs?.find((m) => m.action === 'keep');
+  const kept = String(keep?.regex ?? '').match(/[a-z_]+_(?:total|bytes)/g) ?? [];
+  if (!sameSet([...new Set(kept)], RESOURCE_FAMILIES)) p.push('kubelet-resource-job-families-equal-coverage');
+  const ids = Object.keys(r.panels);
+  if (ids.length !== 12 || new Set(ids).size !== 12) p.push('kubelet-panel-count');
+  const queries = Object.values(r.panels).map((x) => x.promql);
+  if (new Set(queries).size !== queries.length) p.push('kubelet-duplicate-panel-query');
+  const allIds = rows.flatMap((x) => Object.keys(x.panels));
+  if (new Set(allIds).size !== allIds.length) p.push('panel-id-not-unique');
+  for (const [id, x] of Object.entries(r.panels)) {
+    const q = x.promql;
+    if (!q.includes('job="kubelet-resource"') || /container_network|job="kubelet-cadvisor"/.test(q)) p.push(`kubelet-panel-source:${id}`);
+    if (!q.includes('<= 90')) p.push(`kubelet-panel-freshness:${id}`);
+    if (!q.includes('up{job="kubelet-resource"} == 1')) p.push(`kubelet-panel-up-gate:${id}`);
+    if (/\bor\b|\bunless\b|vector\(/.test(q)) p.push(`kubelet-panel-default-fill:${id}`);
+    if (/rate\(/.test(q) && !q.includes('[5m]')) p.push(`kubelet-panel-rate-window:${id}`);
+  }
+  // Cluster and namespace totals require both current node targets.
+  for (const id of ['offscreen-overview/104', 'offscreen-overview/105', 'offscreen-overview/106', 'offscreen-overview/107']) if (!r.panels[id]?.promql.includes('== 2')) p.push(`kubelet-total-needs-both-nodes:${id}`);
+  // Network: conditional only, no positive domain coverage.
+  if (canon(n.jobs) !== canon(['kubelet-cadvisor']) || n.coverage !== 'inventory-only' || !n.reason || n.requiredFamilies.length !== 0 || Object.keys(n.panels).length !== 0) p.push('kubelet-network-not-conditional');
+  const cad = mergedJobs(cfg).find((j) => j.name === 'kubelet-cadvisor')?.metric_relabel_configs?.find((m) => m.action === 'keep')?.regex ?? '';
+  if (!NETWORK_FAMILIES.every((f) => new RegExp(`^${cad.split(';')[0]}$`).test(f))) p.push('kubelet-network-families');
+  return p;
+}
+
 const FIELDS = ['component', 'namespace', 'workloadSelector', 'jobs', 'requiredFamilies', 'panels', 'coverage', 'reason'];
 function validateCoverage(rows, cfg) {
   const p = [];
@@ -191,7 +348,7 @@ function validateCoverage(rows, cfg) {
     if (!r.workloadSelector || typeof r.workloadSelector !== 'object' || !Object.keys(r.workloadSelector).length) p.push(`selector:${r.component}`);
     if (!['enabled', 'inventory-only', 'not-applicable'].includes(r.coverage)) p.push(`coverage:${r.component}`);
     if (r.coverage !== 'enabled' && !r.reason) p.push(`reason:${r.component}`);
-    if (!r.panels || !Object.keys(r.panels).length) p.push(`panels:${r.component}`);
+    if (!r.panels || (r.coverage === 'enabled' && !Object.keys(r.panels).length)) p.push(`panels:${r.component}`);
     for (const [id, pn] of Object.entries(r.panels ?? {})) {
       if (!/^offscreen-[a-z-]+\/\d+$/.test(id) || !pn.promql || !pn.unit || !pn.interpretation) p.push(`panel:${id}`);
     }
@@ -200,7 +357,7 @@ function validateCoverage(rows, cfg) {
       const job = jobs[jn];
       if (!job) { p.push(`unknown-job:${jn}`); continue; }
       const keep = (job.metric_relabel_configs ?? []).find((m) => m.action === 'keep');
-      const allowed = keep ? split(keep.regex) : [];
+      const allowed = keep ? (KUBELET_JOBS.includes(jn) ? (String(keep.regex).match(/[a-z_]+_(?:total|bytes)/g) ?? []) : split(keep.regex)) : [];
       for (const f of r.requiredFamilies ?? []) if (!allowed.includes(f)) p.push(`family-not-allowed:${jn}:${f}`);
     }
   }
@@ -279,7 +436,7 @@ test('collectors are exactly the ten selected', () => {
 });
 
 test('coverage rows are unique, schema-valid and cross-reference the allowlists', () => {
-  assert.deepEqual(base.coverage.map((r) => r.component), ['kubernetes-inventory', 'kubernetes-inventory-health']);
+  assert.deepEqual(base.coverage.map((r) => r.component), ['kubernetes-inventory', 'kubernetes-inventory-health', 'kubelet-resource', 'kubelet-cadvisor-network']);
   assert.deepEqual(validateCoverage(base.coverage, base), []);
 });
 
@@ -469,3 +626,186 @@ for (const [name, fn] of Object.entries(REDIS_COVERAGE_NEGATIVES)) {
     assert.notDeepEqual(validateRedisCoverage(rows, base), []);
   });
 }
+
+// ---- OBS-E2-03 T03: kubelet jobs, trust mount, RBAC and resource coverage ----
+const kubeletRows = (c) => c.coverage.filter((r) => r.component.startsWith('kubelet-'));
+const sc = (x, job) => x.overlay.scrapeConfigs[job];
+const kubeletManifestIndex = (x, kind) => x.overlay.extraManifests.findIndex((m) => new RegExp(`^ *kind: ${kind}$`, 'm').test(m) && /obs-(kubelet-trust|prometheus-kubelet)/.test(m));
+
+test('kubelet: frozen jobs, mount, SA token, trust ConfigMap and RBAC satisfy the contract', () => {
+  assert.deepEqual(validateKubeletJobs(base), []);
+  assert.deepEqual(validateKubeletServer(base.overlay), []);
+  assert.deepEqual(validateKubeletManifests(base.overlay), []);
+  assert.deepEqual(validateOverlay(base), []);
+  assert.deepEqual(validateRedisManifests(base.overlay), []);
+  assert.equal(base.overlay.extraManifests.length, 5);
+});
+
+test('kubelet: both jobs use fixed HTTPS DNS targets, SA token file, file CA, node filter and bounded limits', () => {
+  for (const [name, path, limit] of [['kubelet-resource', '/metrics/resource', 5000], ['kubelet-cadvisor', '/metrics/cadvisor', 20000]]) {
+    const j = sc(base, name);
+    assert.equal(j.scheme, 'https');
+    assert.equal(j.metrics_path, path);
+    assert.equal(j.sample_limit, limit);
+    assert.equal(j.target_limit, 4);
+    assert.deepEqual([j.scrape_interval, j.scrape_timeout, j.label_limit, j.label_name_length_limit, j.label_value_length_limit], ['30s', '10s', 40, 128, 512]);
+    assert.deepEqual(j.authorization, { credentials_file: '/var/run/secrets/kubernetes.io/serviceaccount/token' });
+    assert.deepEqual(j.tls_config, { ca_file: '/etc/offscreen/kubelet-trust/ca.pem', insecure_skip_verify: false });
+    assert.deepEqual(j.kubernetes_sd_configs, [{ role: 'node' }]);
+    assert.equal(j.static_configs, undefined);
+    assert.equal(j.relabel_configs[0].regex, KUBELET_NODE_RE);
+    assert.equal(j.relabel_configs[2].replacement, '$1:10250');
+    assert.ok(!j.relabel_configs.some((r) => r.action === 'labelmap'));
+    assert.ok(!JSON.stringify(j).includes('proxy'));
+    // bounded labels: the final labelkeep carries no raw container id/name/image
+    const lk = j.metric_relabel_configs.at(-1);
+    assert.equal(lk.action, 'labelkeep');
+    assert.ok(!/\b(id|image|name|uid)\b/.test(lk.regex.replace('__name__', '')));
+  }
+});
+
+test('kubelet: CPU/RAM has one source (resource job); cAdvisor keeps only conditional network counters', () => {
+  const resKeep = sc(base, 'kubelet-resource').metric_relabel_configs[0].regex;
+  const cadKeep = sc(base, 'kubelet-cadvisor').metric_relabel_configs[0].regex;
+  assert.deepEqual([...new Set(resKeep.match(/[a-z_]+_(?:total|bytes)/g))].sort(), [...RESOURCE_FAMILIES].sort());
+  assert.ok(!/network/.test(resKeep));
+  assert.ok(/^container_network_\(receive\|transmit\)_bytes_total;POD;/.test(cadKeep));
+  assert.ok(!/cpu|memory|working_set/.test(cadKeep));
+  assert.equal(sc(base, 'kubelet-cadvisor').metric_relabel_configs[1].regex, 'lo');
+  assert.ok(sc(base, 'kubelet-resource').metric_relabel_configs[1].regex.endsWith(';POD'));
+  const kubeletJobsEnabled = mergedJobs(base).filter((j) => /kubelet|cadvisor|node/.test(j.name)).map((j) => j.name).sort();
+  assert.deepEqual(kubeletJobsEnabled, ['kubelet-cadvisor', 'kubelet-resource']);
+});
+
+test('kubelet coverage: two exact rows, unique panels, resource-only sources, network inventory-only without panel', () => {
+  assert.equal(base.coverage.length, 4);
+  assert.deepEqual(validateKubeletCoverage(base.coverage, base), []);
+  assert.deepEqual(validateCoverage(base.coverage, base), []);
+  const res = base.coverage.find((r) => r.component === 'kubelet-resource');
+  assert.equal(Object.keys(res.panels).length, 12);
+  assert.ok(Object.keys(res.panels).every((id) => /^offscreen-(overview|nodes|kubernetes)\/\d+$/.test(id)));
+  const net = base.coverage.find((r) => r.component === 'kubelet-cadvisor-network');
+  assert.equal(net.coverage, 'inventory-only');
+  assert.deepEqual(net.panels, {});
+  assert.deepEqual(net.requiredFamilies, []);
+  assert.ok(!JSON.stringify(base.coverage).includes('container_network'));
+  const allIds = base.coverage.flatMap((r) => Object.keys(r.panels));
+  assert.equal(new Set(allIds).size, allIds.length);
+  const comps = [...base.coverage, ...base.redisCoverage].map((r) => r.component);
+  assert.equal(new Set(comps).size, comps.length);
+});
+
+const KUBELET_JOB_NEGATIVES = {
+  'wrong job name': (x) => { x.overlay.scrapeConfigs['kubelet-resource'].job_name = 'kubelet'; },
+  'wrong address replacement': (x) => { sc(x, 'kubelet-resource').relabel_configs[2].replacement = '$1:10255'; },
+  'raw node address (no DNS)': (x) => { sc(x, 'kubelet-cadvisor').relabel_configs[2].replacement = '10.0.0.1:10250'; },
+  'node filter widened': (x) => { sc(x, 'kubelet-resource').relabel_configs[0].regex = '.*'; },
+  'node filter removed': (x) => { sc(x, 'kubelet-resource').relabel_configs.shift(); },
+  'wrong CA reference': (x) => { sc(x, 'kubelet-resource').tls_config.ca_file = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'; },
+  'inline CA instead of file': (x) => { delete sc(x, 'kubelet-resource').tls_config.ca_file; sc(x, 'kubelet-resource').tls_config.ca = 'x'; },
+  'insecure_skip_verify': (x) => { sc(x, 'kubelet-cadvisor').tls_config.insecure_skip_verify = true; },
+  'insecure flag removed': (x) => { delete sc(x, 'kubelet-cadvisor').tls_config.insecure_skip_verify; },
+  'plain http': (x) => { sc(x, 'kubelet-resource').scheme = 'http'; },
+  'proxy_url': (x) => { sc(x, 'kubelet-resource').proxy_url = 'http://proxy:3128'; },
+  'apiserver nodes/proxy path': (x) => { sc(x, 'kubelet-resource').metrics_path = '/api/v1/nodes/n/proxy/metrics/resource'; },
+  'arbitrary path': (x) => { sc(x, 'kubelet-resource').metrics_path = '/metrics'; },
+  'bearer token inline': (x) => { sc(x, 'kubelet-resource').authorization = { credentials: 'abc' }; },
+  'wrong token file': (x) => { sc(x, 'kubelet-resource').authorization.credentials_file = '/tmp/token'; },
+  'arbitrary family (resource)': (x) => { sc(x, 'kubelet-resource').metric_relabel_configs[0].regex += '|container_fs_usage_bytes'; },
+  'arbitrary family (cadvisor)': (x) => { sc(x, 'kubelet-cadvisor').metric_relabel_configs[0].regex = 'container_.*'; },
+  'cpu in cadvisor (duplicate aggregation)': (x) => { sc(x, 'kubelet-cadvisor').metric_relabel_configs[0].regex = 'container_(cpu_usage_seconds_total|network_receive_bytes_total);POD;[^;]+;[^;]+;[^;]+'; },
+  'cadvisor job also enables resource families': (x) => { sc(x, 'kubelet-cadvisor').metric_relabel_configs[0].regex = sc(x, 'kubelet-resource').metric_relabel_configs[0].regex; },
+  'third kubelet-like job duplicating CPU': (x) => { x.overlay.scrapeConfigs['kubelet-resource-2'] = { ...clone(sc(x, 'kubelet-resource')), job_name: 'kubelet-resource-2' }; },
+  'generic labelmap': (x) => { sc(x, 'kubelet-resource').relabel_configs.push({ action: 'labelmap', regex: '__meta_kubernetes_node_label_(.+)' }); },
+  'arbitrary metadata label': (x) => { sc(x, 'kubelet-cadvisor').relabel_configs.push({ source_labels: ['__meta_kubernetes_node_annotation_x'], target_label: 'x' }); },
+  'static target added': (x) => { sc(x, 'kubelet-resource').static_configs = [{ targets: ['10.0.0.1:10250'] }]; },
+  'pod discovery role': (x) => { sc(x, 'kubelet-resource').kubernetes_sd_configs = [{ role: 'pod' }]; },
+  'label allowlist widened': (x) => { sc(x, 'kubelet-resource').metric_relabel_configs[2].regex += '|id|image|name'; },
+  'label keep removed': (x) => { sc(x, 'kubelet-cadvisor').metric_relabel_configs.pop(); },
+  'lo not dropped': (x) => { sc(x, 'kubelet-cadvisor').metric_relabel_configs[1].regex = 'none'; },
+  'POD container not excluded': (x) => { sc(x, 'kubelet-resource').metric_relabel_configs.splice(1, 1); },
+  'sample limit raised': (x) => { sc(x, 'kubelet-cadvisor').sample_limit = 100000; },
+  'target limit raised': (x) => { sc(x, 'kubelet-resource').target_limit = 40; },
+  'interval changed': (x) => { sc(x, 'kubelet-resource').scrape_interval = '15s'; },
+  'honor_labels': (x) => { sc(x, 'kubelet-resource').honor_labels = true; },
+  'job removed': (x) => { delete x.overlay.scrapeConfigs['kubelet-cadvisor']; },
+};
+for (const [name, fn] of Object.entries(KUBELET_JOB_NEGATIVES)) {
+  test(`negative: kubelet job ${name} is rejected`, () => {
+    const x = mutate(fn);
+    assert.notDeepEqual(validateOverlay(x), []);
+  });
+}
+
+const KUBELET_MOUNT_RBAC_NEGATIVES = {
+  'token automount disabled': (x) => { x.overlay.server.automountServiceAccountToken = false; },
+  'token automount removed': (x) => { delete x.overlay.server.automountServiceAccountToken; },
+  'mount writable': (x) => { x.overlay.server.extraConfigmapMounts[0].readOnly = false; },
+  'mount other ConfigMap': (x) => { x.overlay.server.extraConfigmapMounts[0].configMap = 'obs-prometheus'; },
+  'mount other path': (x) => { x.overlay.server.extraConfigmapMounts[0].mountPath = '/etc/config'; },
+  'second mount': (x) => { x.overlay.server.extraConfigmapMounts.push({ name: 'x', configMap: 'x', mountPath: '/x', readOnly: true }); },
+  'other server key': (x) => { x.overlay.server.extraSecretMounts = []; },
+  'other service account': (x) => { x.overlay.serviceAccounts.server.name = 'default'; },
+  'nodes/proxy added': (x) => { x.overlay.extraManifests[kubeletManifestIndex(x, 'ClusterRole')] = x.overlay.extraManifests[kubeletManifestIndex(x, 'ClusterRole')].replace('resources: [nodes/metrics]', 'resources: [nodes/metrics, nodes/proxy]'); },
+  'nodes/metrics verbs widened': (x) => { const i = kubeletManifestIndex(x, 'ClusterRole'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('verbs: [get]', 'verbs: [get, create]'); },
+  'pod permission added': (x) => { const i = kubeletManifestIndex(x, 'ClusterRole'); x.overlay.extraManifests[i] += '  - apiGroups: [""]\n    resources: [pods]\n    verbs: [get, list, watch]\n'; },
+  'wildcard resource': (x) => { const i = kubeletManifestIndex(x, 'ClusterRole'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('resources: [nodes]', 'resources: ["*"]'); },
+  'binding to other subject': (x) => { const i = kubeletManifestIndex(x, 'ClusterRoleBinding'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('name: obs-prometheus\n', 'name: default\n'); },
+  'binding to cluster-admin': (x) => { const i = kubeletManifestIndex(x, 'ClusterRoleBinding'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('name: obs-prometheus-kubelet\nsubjects', 'name: cluster-admin\nsubjects'); },
+  'ClusterRole removed': (x) => { x.overlay.extraManifests.splice(kubeletManifestIndex(x, 'ClusterRole'), 1); },
+  'trust ConfigMap not immutable': (x) => { const i = kubeletManifestIndex(x, 'ConfigMap'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('immutable: true', 'immutable: false'); },
+  'trust ConfigMap other name': (x) => { const i = kubeletManifestIndex(x, 'ConfigMap'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('name: obs-kubelet-trust', 'name: obs-kubelet-trust-x'); },
+  'trust ConfigMap owner label removed': (x) => { const i = kubeletManifestIndex(x, 'ConfigMap'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('offscreen.dev/owner: offscreen-dev', 'offscreen.dev/owner: other'); },
+  'trust ConfigMap extra data key': (x) => { const i = kubeletManifestIndex(x, 'ConfigMap'); x.overlay.extraManifests[i] += '  extra.pem: x\n'; },
+  'trust ConfigMap committed PEM': (x) => { const i = kubeletManifestIndex(x, 'ConfigMap'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace(/ca\.pem: .*/, 'ca.pem: "-----BEGIN CERTIFICATE-----"'); },
+  'trust ConfigMap CA not required': (x) => { const i = kubeletManifestIndex(x, 'ConfigMap'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace(/ca\.pem: .*/, 'ca.pem: {{ .Values.offscreenKubeletTrust.caPem | quote }}'); },
+  'trust ConfigMap tpl on input': (x) => { const i = kubeletManifestIndex(x, 'ConfigMap'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace(/(ca\.pem: \{\{ required "[^"]*" )/, '$1(tpl '); },
+  'extra manifest beyond frozen set': (x) => { x.overlay.extraManifests.push('apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: x\n'); },
+};
+for (const [name, fn] of Object.entries(KUBELET_MOUNT_RBAC_NEGATIVES)) {
+  test(`negative: kubelet mount/SA/RBAC/ConfigMap ${name} is rejected`, () => {
+    const x = mutate(fn);
+    assert.ok(validateOverlay(x).length > 0 || validateRedisManifests(x.overlay).length > 0);
+  });
+}
+
+test('negative: redis manifest set no longer accepts a bare two-manifest shape or a missing kubelet manifest', () => {
+  const x = mutate((y) => { y.overlay.extraManifests = y.overlay.extraManifests.slice(0, 2); });
+  assert.notDeepEqual(validateRedisManifests(x.overlay), []);
+  assert.notDeepEqual(validateKubeletManifests(x.overlay), []);
+});
+
+const KUBELET_COVERAGE_NEGATIVES = {
+  'resource row dropped': (r) => { r.splice(2, 1); },
+  'network row dropped': (r) => { r.pop(); },
+  'duplicate resource row': (r) => r.push(clone(r[2])),
+  'network panel added (positive coverage)': (r) => { r[3].panels['offscreen-nodes/312'] = { promql: 'container_network_receive_bytes_total{job="kubelet-cadvisor"}', unit: 'Bps', interpretation: 'x' }; },
+  'network promoted to enabled': (r) => { r[3].coverage = 'enabled'; r[3].reason = ''; },
+  'network family claimed required': (r) => { r[3].requiredFamilies = [...NETWORK_FAMILIES]; },
+  'resource panel sourced from cadvisor': (r) => { const id = 'offscreen-nodes/306'; r[2].panels[id].promql = r[2].panels[id].promql.replaceAll('kubelet-resource', 'kubelet-cadvisor'); },
+  'duplicate panel query (duplicate aggregation)': (r) => { r[2].panels['offscreen-nodes/310'].promql = r[2].panels['offscreen-nodes/306'].promql; },
+  'panel id collides with another row': (r) => { r[2].panels['offscreen-messaging-cache/701'] = r[2].panels['offscreen-nodes/306']; delete r[2].panels['offscreen-nodes/306']; r[0].panels['offscreen-messaging-cache/701'] = clone(r[2].panels['offscreen-messaging-cache/701']); },
+  'staleness bound removed': (r) => { r[2].panels['offscreen-nodes/307'].promql = r[2].panels['offscreen-nodes/307'].promql.replaceAll('<= 90', '<= 99999'); },
+  'cluster total no longer needs both nodes': (r) => { r[2].panels['offscreen-overview/104'].promql = r[2].panels['offscreen-overview/104'].promql.replaceAll('== 2', '>= 1'); },
+  'absent-to-zero fallback': (r) => { r[2].panels['offscreen-overview/105'].promql += ' or vector(0)'; },
+  'family not kept by the job': (r) => { r[2].requiredFamilies.push('container_fs_usage_bytes'); },
+  'family dropped from coverage': (r) => { r[2].requiredFamilies.pop(); },
+  'wrong node selector': (r) => { r[2].workloadSelector = { nodeNames: ['offscreen-dev-worker'] }; },
+  'unknown job': (r) => { r[2].jobs = ['kubelet']; },
+};
+for (const [name, fn] of Object.entries(KUBELET_COVERAGE_NEGATIVES)) {
+  test(`negative: kubelet coverage ${name} is rejected`, () => {
+    const rows = clone(base.coverage);
+    fn(rows);
+    assert.ok(validateKubeletCoverage(rows, base).length > 0 || validateCoverage(rows, base).length > 0);
+  });
+}
+
+test('negative: a cAdvisor row cannot contribute a CPU/RAM family to coverage', () => {
+  const x = mutate((y) => { y.coverage[3].requiredFamilies = ['container_cpu_usage_seconds_total']; y.coverage[3].jobs = ['kubelet-cadvisor']; });
+  assert.notDeepEqual(validateKubeletCoverage(x.coverage, x).concat(validateCoverage(x.coverage, x)), []);
+});
+
+test('kubeletRows helper covers exactly the two frozen rows', () => {
+  assert.deepEqual(kubeletRows(base).map((r) => r.component), ['kubelet-resource', 'kubelet-cadvisor-network']);
+});

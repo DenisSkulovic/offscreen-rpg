@@ -1,5 +1,5 @@
 # OBS-E2-03 | task queue
-Base: `8cb05ff2841d548e52c75cd6dae0e666081f810b`; refresh against recorded Design integration branch. State: READY for construction, independent review 03; dispatch only after owner ratification/commission and synchronization. Shared contracts: [G2 construction freeze](../NATIVE-INPUTS.md#g2-construction-freeze-candidate--direct-https-and-cluster-bound-trust).
+Base: `8cb05ff2841d548e52c75cd6dae0e666081f810b`; refresh against recorded Design integration branch. State: READY for construction, independent review 03; dispatch only after owner ratification/commission and synchronization. Shared contracts: [G2 construction freeze](../../../../open/observability-infrastructure-visibility/NATIVE-INPUTS.md#g2-construction-freeze-candidate--direct-https-and-cluster-bound-trust).
 Tasks: T01 → T02 → T03; selected: none. 02 must have joined before overlay edits; 05/04 overlay ownership serialized. No new native investigation by workers.
 
 ## T01 | Capture verified cluster-bound public trust | PROPOSED

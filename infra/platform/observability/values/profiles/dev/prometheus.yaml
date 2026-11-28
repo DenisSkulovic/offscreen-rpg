@@ -4,6 +4,17 @@ serviceAccounts:
   server:
     create: true
     name: obs-prometheus
+# OBS-E2-03: the dedicated server SA token is needed only for the two kubelet jobs (base values disable it).
+# Release-owned trust ConfigMap obs-kubelet-trust is mounted read-only; its content comes from the 08-supplied
+# `--set-json offscreenKubeletTrust={bindingSha256,caPem}` and is never committed here.
+server:
+  automountServiceAccountToken: true
+  extraConfigmapMounts:
+    - name: kubelet-trust
+      configMap: obs-kubelet-trust
+      mountPath: /etc/offscreen/kubelet-trust
+      subPath: ""
+      readOnly: true
 kube-state-metrics:
   enabled: true
   fullnameOverride: obs-kube-state-metrics
@@ -110,6 +121,103 @@ scrapeConfigs:
         action: keep
       - regex: __name__|job|instance|cluster|env|component
         action: labelkeep
+  kubelet-resource:
+    enabled: true
+    job_name: kubelet-resource
+    metrics_path: /metrics/resource
+    scheme: https
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 4
+    honor_labels: false
+    authorization:
+      credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    tls_config:
+      ca_file: /etc/offscreen/kubelet-trust/ca.pem
+      insecure_skip_verify: false
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: ^(offscreen-dev-control-plane|offscreen-dev-worker)$
+        action: keep
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.*)
+        target_label: node
+        replacement: $1
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.*)
+        target_label: __address__
+        replacement: $1:10250
+      - target_label: cluster
+        replacement: offscreen-dev
+      - target_label: env
+        replacement: dev
+      - target_label: component
+        replacement: kubelet-resource
+    metric_relabel_configs:
+      - source_labels: [__name__, namespace, pod, container]
+        separator: ";"
+        regex: (node_cpu_usage_seconds_total|node_memory_working_set_bytes);;;|(pod_cpu_usage_seconds_total|pod_memory_working_set_bytes);[^;]+;[^;]+;|(container_cpu_usage_seconds_total|container_memory_working_set_bytes);[^;]+;[^;]+;[^;]+
+        action: keep
+      - source_labels: [__name__, container]
+        separator: ";"
+        regex: container_(cpu_usage_seconds_total|memory_working_set_bytes);POD
+        action: drop
+      - regex: __name__|job|instance|cluster|env|component|node|namespace|pod|container
+        action: labelkeep
+  kubelet-cadvisor:
+    enabled: true
+    job_name: kubelet-cadvisor
+    metrics_path: /metrics/cadvisor
+    scheme: https
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 20000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 4
+    honor_labels: false
+    authorization:
+      credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    tls_config:
+      ca_file: /etc/offscreen/kubelet-trust/ca.pem
+      insecure_skip_verify: false
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: ^(offscreen-dev-control-plane|offscreen-dev-worker)$
+        action: keep
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.*)
+        target_label: node
+        replacement: $1
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.*)
+        target_label: __address__
+        replacement: $1:10250
+      - target_label: cluster
+        replacement: offscreen-dev
+      - target_label: env
+        replacement: dev
+      - target_label: component
+        replacement: kubelet-cadvisor-network
+    metric_relabel_configs:
+      - source_labels: [__name__, container, namespace, pod, interface]
+        separator: ";"
+        regex: container_network_(receive|transmit)_bytes_total;POD;[^;]+;[^;]+;[^;]+
+        action: keep
+      - source_labels: [interface]
+        regex: lo
+        action: drop
+      - regex: __name__|job|instance|cluster|env|component|node|namespace|pod|interface
+        action: labelkeep
 # OBS-E2-05: release-owned fixed Redis exporter. Targets only the existing Redis Service; does not modify Redis.
 # extraManifests is a list of strings rendered through tpl; no base-values entries existed to preserve.
 extraManifests:
@@ -175,3 +283,41 @@ extraManifests:
           port: 9121
           targetPort: metrics
           protocol: TCP
+  - |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: obs-kubelet-trust
+      namespace: {{ .Release.Namespace }}
+      labels:
+        offscreen.dev/owner: offscreen-dev
+      annotations:
+        offscreen.dev/kubelet-trust-binding-sha256: {{ required "offscreenKubeletTrust.bindingSha256 is required (supplied by the artifact loader)" (required "offscreenKubeletTrust is required (supplied by the artifact loader)" .Values.offscreenKubeletTrust).bindingSha256 | quote }}
+    immutable: true
+    data:
+      ca.pem: {{ required "offscreenKubeletTrust.caPem is required (supplied by the artifact loader)" (required "offscreenKubeletTrust is required (supplied by the artifact loader)" .Values.offscreenKubeletTrust).caPem | quote }}
+  - |
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: obs-prometheus-kubelet
+    rules:
+      - apiGroups: [""]
+        resources: [nodes]
+        verbs: [get, list, watch]
+      - apiGroups: [""]
+        resources: [nodes/metrics]
+        verbs: [get]
+  - |
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: obs-prometheus-kubelet
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: obs-prometheus-kubelet
+    subjects:
+      - kind: ServiceAccount
+        name: obs-prometheus
+        namespace: {{ .Release.Namespace }}
