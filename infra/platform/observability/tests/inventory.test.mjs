@@ -12,6 +12,10 @@ import {
   defaultReadPending,
   EXPECTED_HELM_RELEASES,
   LEGACY_DIRECT_OBJECTS,
+  assessClusterBindingOwnership,
+  findAbsentNamespaceRbacCollisions,
+  lookupLegacyNamespacedObject,
+  scopedObjectKey,
 } from '../inventory.mjs';
 import { classifyInventory } from '../readiness.mjs';
 import { loadArtifacts } from '../artifacts.mjs';
@@ -756,5 +760,406 @@ test('collectInventory rejects late deadline after successful helm read', () => 
         deadline: 60_000,
       }),
     /unreadable: deadline/,
+  );
+});
+
+// ---- OBS-E2-09 T01: scoped identity, cluster RBAC, retained P/G history ----
+
+const RBAC_NAMES = ['obs-kube-state-metrics', 'obs-prometheus-kubelet'];
+const BINDING_SA = {
+  'obs-kube-state-metrics': 'obs-kube-state-metrics',
+  'obs-prometheus-kubelet': 'obs-prometheus',
+};
+
+function rbacObject(kind, name, overrides = {}) {
+  const base = {
+    apiVersion: 'rbac.authorization.k8s.io/v1',
+    kind,
+    metadata: { name, uid: `uid-${kind}-${name}` },
+  };
+  if (kind === 'ClusterRole') {
+    base.rules = [{ apiGroups: [''], resources: ['pods'], verbs: ['get'] }];
+  } else {
+    base.roleRef = {
+      apiGroup: 'rbac.authorization.k8s.io',
+      kind: 'ClusterRole',
+      name,
+    };
+    base.subjects = [
+      {
+        kind: 'ServiceAccount',
+        name: BINDING_SA[name],
+        namespace: 'offscreen-dev-observability',
+      },
+    ];
+  }
+  return { ...base, ...overrides };
+}
+
+const NOT_FOUND = {
+  ok: true,
+  status: 0,
+  stdout: '\n',
+  stderr: '',
+  timedOut: false,
+  missing: false,
+};
+
+/** Namespace-aware fake: rbac maps `Kind/name` to an object or a raw result. */
+function scopedHarness({ namespaceAbsent = true, rbac = {}, helm, calls }) {
+  const identity = fakeIdentity();
+  return (command, args) => {
+    calls?.push([command, ...args]);
+    const resource = args[args.indexOf('get') + 1];
+    if (command === 'kubectl' && resource === 'namespace') {
+      return namespaceAbsent
+        ? NOT_FOUND
+        : okJson({
+            apiVersion: 'v1',
+            kind: 'Namespace',
+            metadata: { name: identity.namespace, uid: 'ns-uid' },
+          });
+    }
+    if (
+      command === 'kubectl' &&
+      (resource === 'clusterrole' || resource === 'clusterrolebinding')
+    ) {
+      const name = args[args.indexOf('get') + 2];
+      const kind = resource === 'clusterrole' ? 'ClusterRole' : 'ClusterRoleBinding';
+      const hit = rbac[`${kind}/${name}`];
+      if (hit === undefined) return NOT_FOUND;
+      if (hit.ok === false) return hit;
+      return okJson(hit);
+    }
+    if (command === 'kubectl' && resource === '--raw') {
+      return okJson({ items: [], metadata: {} });
+    }
+    if (command === 'kubectl' && args.includes('--ignore-not-found')) {
+      return NOT_FOUND;
+    }
+    if (command === 'helm' && helm) return helm(command, args);
+    return okJson({ items: [] });
+  };
+}
+
+function collectScoped(run, identity = fakeIdentity()) {
+  const artifacts = loadArtifacts('dev', { verifyArchive: false });
+  return collectInventory(identity, artifacts, {
+    run,
+    now: () => 0,
+    deadline: 60_000,
+    readPending: () => ({ pending: false, valid: true }),
+  });
+}
+
+test('scopedObjectKey requires a namespace except for explicit cluster RBAC', () => {
+  assert.equal(
+    scopedObjectKey('ns', 'Deployment', 'a'),
+    'ns/Deployment/a',
+  );
+  assert.equal(
+    scopedObjectKey('', 'ClusterRole', 'obs-prometheus-kubelet'),
+    '/ClusterRole/obs-prometheus-kubelet',
+  );
+  assert.throws(() => scopedObjectKey('', 'Deployment', 'a'), /unreadable/);
+  assert.throws(() => scopedObjectKey('ns', 'ClusterRole', 'a'), /unreadable/);
+  assert.throws(() => scopedObjectKey('ns', 'Deployment', ''), /unreadable/);
+});
+
+test('legacy namespaced lookup adapter is retained alongside scoped keys', () => {
+  const snapshot = collectScoped(
+    scopedHarness({ namespaceAbsent: false, helm: () => okJson([]) }),
+  );
+  assert.equal(lookupLegacyNamespacedObject(snapshot, 'ConfigMap', 'x'), undefined);
+  assert.deepEqual(Object.keys(snapshot.objects), []);
+  const withObject = {
+    objects: { 'ConfigMap/x': { kind: 'ConfigMap' } },
+  };
+  assert.deepEqual(lookupLegacyNamespacedObject(withObject, 'ConfigMap', 'x'), {
+    kind: 'ConfigMap',
+  });
+});
+
+test('collectInventory observes exact named cluster RBAC even when the namespace is absent', () => {
+  const calls = [];
+  const rbac = {};
+  for (const name of RBAC_NAMES) {
+    rbac[`ClusterRole/${name}`] = rbacObject('ClusterRole', name);
+  }
+  const snapshot = collectScoped(
+    scopedHarness({ namespaceAbsent: true, rbac, calls }),
+  );
+  assert.equal(snapshot.namespace.absent, true);
+  const roleKey = scopedObjectKey('', 'ClusterRole', 'obs-prometheus-kubelet');
+  assert.equal(snapshot.clusterRbac[roleKey].absent, false);
+  assert.equal(snapshot.clusterRbac[roleKey].object.metadata.uid.length > 0, true);
+  assert.ok(Array.isArray(snapshot.clusterRbac[roleKey].object.rules));
+  assert.equal(
+    snapshot.clusterRbac[scopedObjectKey('', 'ClusterRoleBinding', 'obs-prometheus-kubelet')].absent,
+    true,
+  );
+  assert.deepEqual(
+    Object.keys(snapshot.clusterRbac).sort(),
+    [
+      '/ClusterRole/obs-kube-state-metrics',
+      '/ClusterRole/obs-prometheus-kubelet',
+      '/ClusterRoleBinding/obs-kube-state-metrics',
+      '/ClusterRoleBinding/obs-prometheus-kubelet',
+    ],
+  );
+  // exact named reads only, never an enumeration
+  const rbacCalls = calls.filter(
+    (c) => c.includes('clusterrole') || c.includes('clusterrolebinding'),
+  );
+  assert.equal(rbacCalls.length, 4);
+  assert.ok(rbacCalls.every((c) => c.includes('--ignore-not-found')));
+  assert.ok(!calls.some((c) => c.includes('clusterroles') || c.includes('--all-namespaces')));
+});
+
+test('RBAC collision on absent namespace is reported, not adopted', () => {
+  const rbac = {
+    'ClusterRole/obs-prometheus-kubelet': rbacObject(
+      'ClusterRole',
+      'obs-prometheus-kubelet',
+    ),
+  };
+  const snapshot = collectScoped(scopedHarness({ rbac }));
+  assert.deepEqual(findAbsentNamespaceRbacCollisions(snapshot), [
+    '/ClusterRole/obs-prometheus-kubelet',
+  ]);
+  const clean = collectScoped(scopedHarness({}));
+  assert.deepEqual(findAbsentNamespaceRbacCollisions(clean), []);
+  assert.deepEqual(
+    findAbsentNamespaceRbacCollisions({
+      namespace: { absent: false },
+      clusterRbac: snapshot.clusterRbac,
+    }),
+    [],
+  );
+});
+
+test('binding ownership assessment accepts exact and refuses foreign roleRef, subject and terminating', () => {
+  const ns = 'offscreen-dev-observability';
+  const name = 'obs-prometheus-kubelet';
+  const wrap = (object) => ({ absent: false, object });
+  assert.deepEqual(
+    assessClusterBindingOwnership(wrap(rbacObject('ClusterRoleBinding', name)), name, ns),
+    { ok: true },
+  );
+  const foreignRef = rbacObject('ClusterRoleBinding', name, {
+    roleRef: {
+      apiGroup: 'rbac.authorization.k8s.io',
+      kind: 'ClusterRole',
+      name: 'cluster-admin',
+    },
+  });
+  assert.equal(assessClusterBindingOwnership(wrap(foreignRef), name, ns).reason, 'rbac-foreign-roleref');
+  const foreignSubject = rbacObject('ClusterRoleBinding', name, {
+    subjects: [
+      ...rbacObject('ClusterRoleBinding', name).subjects,
+      { kind: 'ServiceAccount', name: 'intruder', namespace: 'other' },
+    ],
+  });
+  assert.equal(assessClusterBindingOwnership(wrap(foreignSubject), name, ns).reason, 'rbac-foreign-subject');
+  const wrongNs = assessClusterBindingOwnership(
+    wrap(rbacObject('ClusterRoleBinding', name)),
+    name,
+    'other-namespace',
+  );
+  assert.equal(wrongNs.reason, 'rbac-foreign-subject');
+  const terminating = rbacObject('ClusterRoleBinding', name);
+  terminating.metadata.deletionTimestamp = '2026-11-28T00:00:00Z';
+  assert.equal(assessClusterBindingOwnership(wrap(terminating), name, ns).reason, 'rbac-terminating');
+  const noUid = rbacObject('ClusterRoleBinding', name);
+  delete noUid.metadata.uid;
+  assert.equal(assessClusterBindingOwnership(wrap(noUid), name, ns).reason, 'rbac-uid');
+  assert.equal(assessClusterBindingOwnership({ absent: true }, name, ns).reason, 'rbac-absent');
+  assert.equal(assessClusterBindingOwnership(wrap(foreignRef), 'someone-else', ns).reason, 'rbac-unknown-identity');
+});
+
+test('forbidden or malformed cluster RBAC read refuses as unreadable', () => {
+  const forbidden = {
+    ok: false,
+    status: 1,
+    stdout: '',
+    stderr: 'Error from server (Forbidden): clusterroles is forbidden',
+    timedOut: false,
+    missing: false,
+  };
+  assert.throws(
+    () =>
+      collectScoped(
+        scopedHarness({ rbac: { 'ClusterRole/obs-kube-state-metrics': forbidden } }),
+      ),
+    /unreadable: rbac-obs-kube-state-metrics/,
+  );
+  assert.throws(
+    () =>
+      collectScoped(
+        scopedHarness({
+          rbac: {
+            'ClusterRole/obs-kube-state-metrics': rbacObject(
+              'ClusterRoleBinding',
+              'obs-kube-state-metrics',
+            ),
+          },
+        }),
+      ),
+    /unreadable: rbac-shape/,
+  );
+  assert.throws(
+    () =>
+      collectScoped(
+        scopedHarness({
+          rbac: {
+            'ClusterRole/obs-kube-state-metrics': rbacObject(
+              'ClusterRole',
+              'obs-kube-state-metrics',
+              { metadata: { name: 'obs-kube-state-metrics', namespace: 'x' } },
+            ),
+          },
+        }),
+      ),
+    /unreadable: rbac-shape/,
+  );
+});
+
+test('wrong context refuses before any read', () => {
+  const calls = [];
+  const identity = { ...fakeIdentity(), contextName: 'kind-someone-else' };
+  assert.throws(
+    () => collectScoped(scopedHarness({ calls }), identity),
+    /unreadable: context-mismatch/,
+  );
+  assert.equal(calls.length, 0);
+});
+
+test('duplicate scoped identity refuses', () => {
+  const dup = {
+    kind: 'ConfigMap',
+    metadata: { name: 'same', uid: 'u', namespace: 'offscreen-dev-observability' },
+  };
+  const identity = fakeIdentity();
+  const base = scopedHarness({ namespaceAbsent: false });
+  assert.throws(
+    () =>
+      collectScoped((command, args) => {
+        if (command === 'kubectl' && args.join(' ').includes('/configmaps?')) {
+          return okJson({ items: [dup, { ...dup, metadata: { ...dup.metadata, uid: 'u2' } }], metadata: {} });
+        }
+        return base(command, args);
+      }, identity),
+    /unreadable: duplicate-object/,
+  );
+});
+
+function pgHistoryRow(release, revision) {
+  return {
+    ...helmHistoryRow(release, revision),
+    status: revision === 1 ? 'superseded' : 'deployed',
+  };
+}
+
+function pgHarness({ revisionOne = true, failRevisionOne = false, manifestCalls }) {
+  const artifacts = loadArtifacts('dev', { verifyArchive: false });
+  const identity = fakeIdentity();
+  const rows = helmRowsFromArtifacts(artifacts, identity).map((row) =>
+    row.name === 'obs-prometheus' || row.name === 'obs-grafana'
+      ? { ...row, revision: '2' }
+      : row,
+  );
+  const run = scopedHarness({
+    namespaceAbsent: false,
+    helm: (_c, args) => {
+      if (args.includes('list')) return okJson(rows);
+      if (args.includes('history')) {
+        const name = args[args.indexOf('history') + 1];
+        const release = artifacts.releases.find((r) => r.name === name);
+        if (name === 'obs-prometheus' || name === 'obs-grafana') {
+          return okJson(
+            revisionOne
+              ? [pgHistoryRow(release, 1), pgHistoryRow(release, 2)]
+              : [pgHistoryRow(release, 2)],
+          );
+        }
+        return okJson([helmHistoryRow(release)]);
+      }
+      if (args.includes('manifest')) {
+        const name = args[args.indexOf('manifest') + 1];
+        const revision = args[args.indexOf('--revision') + 1];
+        manifestCalls?.push(`${name}@${revision}`);
+        if (failRevisionOne && revision === '1' && name === 'obs-grafana') {
+          return {
+            ok: false,
+            status: 1,
+            stdout: '',
+            stderr: 'Error: release: not found',
+            timedOut: false,
+            missing: false,
+          };
+        }
+        return {
+          ok: true,
+          status: 0,
+          stdout: MIN_MANIFEST,
+          stderr: '',
+          timedOut: false,
+          missing: false,
+        };
+      }
+      return okJson([]);
+    },
+  });
+  return { run, identity };
+}
+
+test('retained revision 1 manifests are fetched for P/G only when history indicates revision 2', () => {
+  const manifestCalls = [];
+  const { run, identity } = pgHarness({ manifestCalls });
+  const snapshot = collectScoped(run, identity);
+  for (const name of ['obs-prometheus', 'obs-grafana']) {
+    assert.ok(manifestCalls.includes(`${name}@2`));
+    assert.ok(manifestCalls.includes(`${name}@1`));
+    assert.equal(snapshot.helmManifests[name].revision, '2');
+    assert.ok(Array.isArray(snapshot.helmManifests[name].previousDocuments));
+  }
+  // no inference or fetch for single-revision releases
+  assert.ok(!manifestCalls.includes('obs-loki@1') || manifestCalls.filter((c) => c === 'obs-loki@1').length === 1);
+  assert.equal(snapshot.helmManifests['obs-loki'].previousDocuments, undefined);
+  assert.equal(snapshot.helmManifests['obs-tempo'].previousDocuments, undefined);
+  assert.equal(snapshot.helmReleases.length, EXPECTED_HELM_RELEASES.length);
+});
+
+test('single-revision P/G history fetches no retained manifest', () => {
+  const manifestCalls = [];
+  const artifacts = loadArtifacts('dev', { verifyArchive: false });
+  const identity = fakeIdentity();
+  const run = scopedHarness({
+    namespaceAbsent: false,
+    helm: (_c, args) => {
+      if (args.includes('list')) return okJson(helmRowsFromArtifacts(artifacts, identity));
+      if (args.includes('history')) {
+        const name = args[args.indexOf('history') + 1];
+        return okJson([helmHistoryRow(artifacts.releases.find((r) => r.name === name))]);
+      }
+      manifestCalls.push(args[args.indexOf('--revision') + 1]);
+      return { ok: true, status: 0, stdout: MIN_MANIFEST, stderr: '', timedOut: false, missing: false };
+    },
+  });
+  const snapshot = collectScoped(run, identity);
+  assert.ok(manifestCalls.every((r) => r === '1'));
+  assert.equal(snapshot.helmManifests['obs-prometheus'].previousDocuments, undefined);
+});
+
+test('missing retained P/G revision refuses', () => {
+  const missingHistory = pgHarness({ revisionOne: false });
+  assert.throws(
+    () => collectScoped(missingHistory.run, missingHistory.identity),
+    /unreadable: helm-retained-revision-missing/,
+  );
+  const failedFetch = pgHarness({ failRevisionOne: true });
+  assert.throws(
+    () => collectScoped(failedFetch.run, failedFetch.identity),
+    /unreadable: helm-manifest-obs-grafana/,
   );
 });

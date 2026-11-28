@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { parseAllDocuments } from 'yaml';
 import { runPlatformCommand } from '../common/commands.mjs';
 import {
@@ -6,6 +7,7 @@ import {
 } from './identity.mjs';
 import { OBSERVABILITY_RELEASE_ORDER } from './artifacts.mjs';
 import { readPending as custodyReadPending } from './custody.mjs';
+import { readPlatformProfile } from '../common/profile.mjs';
 
 export const INVENTORY_KINDS = Object.freeze([
   'serviceaccount',
@@ -112,11 +114,245 @@ function refuseRead(result, label) {
 }
 
 /**
+ * Legacy namespace-implicit key (`Kind/name`). Retained for historical callers.
  * @param {string} kind
  * @param {string} name
  */
 function objectKey(kind, name) {
   return `${kind}/${name}`;
+}
+
+/**
+ * Legacy adapter: look up a namespaced object by the historical `Kind/name` key.
+ * @param {{ objects?: Record<string, object> }} snapshot
+ * @param {string} kind
+ * @param {string} name
+ */
+export function lookupLegacyNamespacedObject(snapshot, kind, name) {
+  const objects = snapshot?.objects ?? {};
+  const key = objectKey(kind, name);
+  return Object.hasOwn(objects, key) ? objects[key] : undefined;
+}
+
+export const CLUSTER_RBAC_KINDS = Object.freeze([
+  'ClusterRole',
+  'ClusterRoleBinding',
+]);
+
+/**
+ * Canonical scoped identity `namespace/Kind/name`. An empty namespace is valid
+ * only for the explicit cluster role / binding kinds; every other kind requires
+ * a namespace so a cluster identity can never be implied.
+ * @param {string} namespace
+ * @param {string} kind
+ * @param {string} name
+ */
+export function scopedObjectKey(namespace, kind, name) {
+  if (
+    typeof namespace !== 'string' ||
+    typeof kind !== 'string' ||
+    kind.length === 0 ||
+    typeof name !== 'string' ||
+    name.length === 0
+  ) {
+    throwUnreadable('scoped-identity');
+  }
+  if (namespace.length === 0 && !CLUSTER_RBAC_KINDS.includes(kind)) {
+    throwUnreadable('scoped-identity-namespace');
+  }
+  if (namespace.length > 0 && CLUSTER_RBAC_KINDS.includes(kind)) {
+    throwUnreadable('scoped-identity-cluster-kind');
+  }
+  return `${namespace}/${kind}/${name}`;
+}
+
+/**
+ * @param {Record<string, object>} scoped
+ * @param {string} key
+ * @param {object} value
+ */
+function addScopedObject(scoped, key, value) {
+  if (Object.hasOwn(scoped, key)) throwUnreadable('duplicate-identity');
+  scoped[key] = value;
+}
+
+/** Exact service account subject of each owned E2 cluster binding. */
+const E2_CLUSTER_BINDING_SUBJECT = Object.freeze({
+  'obs-kube-state-metrics': 'obs-kube-state-metrics',
+  'obs-prometheus-kubelet': 'obs-prometheus',
+});
+
+/**
+ * Exact known named E2 cluster RBAC identities: the union of the supplied
+ * descriptor rows and the static E2 inventory. Never enumerates the cluster.
+ * @param {{ expectedInventory?: { direct?: unknown[] } }} artifacts
+ * @param {{ staticInventory?: { direct?: unknown[] } }} deps
+ * @param {string} profileId
+ * @returns {{ kind: string, name: string }[]}
+ */
+function knownClusterRbacIdentities(artifacts, deps, profileId) {
+  if (profileId !== 'dev') return [];
+  let staticDirect = deps.staticInventory?.direct;
+  if (!staticDirect) {
+    try {
+      staticDirect = JSON.parse(
+        readFileSync(new URL('./expected-inventory.json', import.meta.url), 'utf8'),
+      )['dev-e2']?.direct;
+    } catch {
+      throwUnreadable('e2-static-inventory');
+    }
+  }
+  const rows = [
+    ...(Array.isArray(staticDirect) ? staticDirect : []),
+    ...(Array.isArray(artifacts?.expectedInventory?.direct)
+      ? artifacts.expectedInventory.direct
+      : []),
+  ];
+  /** @type {Map<string, { kind: string, name: string }>} */
+  const found = new Map();
+  for (const row of rows) {
+    if (!Array.isArray(row) || row.length < 4) throwUnreadable('e2-static-inventory');
+    const [, kind, namespace, name] = row;
+    if (!CLUSTER_RBAC_KINDS.includes(kind)) continue;
+    const key = scopedObjectKey(namespace, kind, name);
+    found.set(key, { kind, name });
+  }
+  return [...found.values()].sort((a, b) =>
+    `${a.kind}/${a.name}`.localeCompare(`${b.kind}/${b.name}`),
+  );
+}
+
+/**
+ * Read one exact named cluster role or binding. No list, no adoption.
+ * @param {import('./identity.mjs').captureIdentity extends (...args: any[]) => infer R ? R : never} identity
+ * @param {{ kind: string, name: string }} spec
+ * @param {typeof runPlatformCommand} run
+ * @param {number} deadline
+ * @param {() => number} now
+ */
+function readClusterRbacObservation(identity, spec, run, deadline, now) {
+  assertDeadline(deadline, now);
+  const result = run(
+    'kubectl',
+    [
+      '--kubeconfig',
+      identity.snapshotPath,
+      '--context',
+      identity.contextName,
+      '--request-timeout=10s',
+      'get',
+      spec.kind.toLowerCase(),
+      spec.name,
+      '--ignore-not-found',
+      '-o',
+      'json',
+    ],
+    { timeoutMs: remainingMs(deadline, now) },
+  );
+  assertDeadline(deadline, now);
+  refuseRead(result, `rbac-${spec.name}`);
+  const trimmed = (result.stdout ?? '').trim();
+  if (trimmed.length === 0) return { absent: true };
+  let object;
+  try {
+    object = JSON.parse(trimmed);
+  } catch {
+    throwUnreadable('rbac-json');
+  }
+  if (
+    !object ||
+    object.kind !== spec.kind ||
+    object.metadata?.name !== spec.name ||
+    (typeof object.metadata?.namespace === 'string' &&
+      object.metadata.namespace.length > 0)
+  ) {
+    throwUnreadable('rbac-shape');
+  }
+  const observed = {
+    apiVersion: object.apiVersion,
+    kind: object.kind,
+    metadata: {
+      name: object.metadata.name,
+      namespace: '',
+      uid: object.metadata.uid,
+      resourceVersion: object.metadata.resourceVersion,
+      labels: object.metadata.labels,
+      annotations: object.metadata.annotations,
+      ownerReferences: object.metadata.ownerReferences,
+      deletionTimestamp: object.metadata.deletionTimestamp,
+    },
+  };
+  if (spec.kind === 'ClusterRole') {
+    observed.rules = object.rules;
+    observed.aggregationRule = object.aggregationRule;
+  } else {
+    observed.roleRef = object.roleRef;
+    observed.subjects = object.subjects;
+  }
+  return { absent: false, object: observed };
+}
+
+/**
+ * Exact ownership assessment of one observed cluster RBAC binding. Pure.
+ * Refuses foreign roleRef, foreign subjects, terminating or UID-less objects.
+ * @param {{ absent: boolean, object?: any }} observation
+ * @param {string} name
+ * @param {string} namespace
+ * @returns {{ ok: boolean, reason?: string }}
+ */
+export function assessClusterBindingOwnership(observation, name, namespace) {
+  const sa = E2_CLUSTER_BINDING_SUBJECT[name];
+  if (!sa) return { ok: false, reason: 'rbac-unknown-identity' };
+  if (observation?.absent) return { ok: false, reason: 'rbac-absent' };
+  const object = observation?.object;
+  if (object?.kind !== 'ClusterRoleBinding') {
+    return { ok: false, reason: 'rbac-shape' };
+  }
+  if (
+    typeof object.metadata?.uid !== 'string' ||
+    object.metadata.uid.length === 0
+  ) {
+    return { ok: false, reason: 'rbac-uid' };
+  }
+  if (object.metadata.deletionTimestamp) {
+    return { ok: false, reason: 'rbac-terminating' };
+  }
+  const ref = object.roleRef;
+  if (
+    !ref ||
+    ref.apiGroup !== 'rbac.authorization.k8s.io' ||
+    ref.kind !== 'ClusterRole' ||
+    ref.name !== name ||
+    Object.keys(ref).length !== 3
+  ) {
+    return { ok: false, reason: 'rbac-foreign-roleref' };
+  }
+  const subjects = object.subjects;
+  if (
+    !Array.isArray(subjects) ||
+    subjects.length !== 1 ||
+    subjects[0]?.kind !== 'ServiceAccount' ||
+    subjects[0]?.name !== sa ||
+    subjects[0]?.namespace !== namespace ||
+    Object.keys(subjects[0]).length !== 3
+  ) {
+    return { ok: false, reason: 'rbac-foreign-subject' };
+  }
+  return { ok: true };
+}
+
+/**
+ * Cluster RBAC present while the target namespace is absent is a collision:
+ * the names are exact E2 names, but nothing owns them yet.
+ * @param {{ namespace?: { absent?: boolean }, clusterRbac?: Record<string, { absent: boolean }> }} snapshot
+ * @returns {string[]} colliding canonical identities
+ */
+export function findAbsentNamespaceRbacCollisions(snapshot) {
+  if (!snapshot?.namespace?.absent) return [];
+  return Object.entries(snapshot.clusterRbac ?? {})
+    .filter(([, observation]) => observation.absent === false)
+    .map(([key]) => key)
+    .sort();
 }
 
 /**
@@ -541,6 +777,25 @@ const CLUSTER_SCOPED_MANIFEST_KINDS = new Set([
 ]);
 
 const COLLECTOR_RELEASE_NAME = 'obs-collector';
+/** Prometheus and Grafana retain revision 1 only after the E2 upgrade. */
+const RETAINED_PG_RELEASES = new Set(['obs-prometheus', 'obs-grafana']);
+
+/**
+ * @param {{ revision: string }[]} history
+ */
+function historyIndicatesRevisionTwo(history) {
+  return history.some((row) => row.revision === '2');
+}
+
+/**
+ * Revision 1 must be present and superseded; never inferred.
+ * @param {{ revision: string, status: string }[]} history
+ */
+function historyRetainsRevisionOne(history) {
+  return history.some(
+    (row) => row.revision === '1' && row.status === 'superseded',
+  );
+}
 
 /**
  * @param {import('./identity.mjs').captureIdentity extends (...args: any[]) => infer R ? R : never} identity
@@ -913,9 +1168,19 @@ export function collectInventory(identity, artifacts, deps = {}) {
   const knownReleaseNames = new Set(EXPECTED_HELM_RELEASES);
 
   assertDeadline(deadline, now);
+  if (
+    typeof identity.contextName !== 'string' ||
+    identity.contextName !== readPlatformProfile(identity.profileId).contextName
+  ) {
+    throwUnreadable('context-mismatch');
+  }
   const namespace = readNamespaceObservation(identity, run, deadline, now);
   /** @type {Record<string, object>} */
   const objects = {};
+  /** @type {Record<string, object>} */
+  const scopedObjects = {};
+  /** @type {Record<string, { absent: boolean, object?: object }>} */
+  const clusterRbac = {};
   let totalObjects = 0;
 
   if (!namespace.absent) {
@@ -928,8 +1193,33 @@ export function collectInventory(identity, artifacts, deps = {}) {
       for (const item of items) {
         const key = objectKey(item.kind, item.metadata?.name);
         if (Object.hasOwn(objects, key)) throwUnreadable('duplicate-object');
-        objects[key] = sanitizeListedObject(item, collectorConfigMapName);
+        const sanitized = sanitizeListedObject(item, collectorConfigMapName);
+        objects[key] = sanitized;
+        addScopedObject(
+          scopedObjects,
+          scopedObjectKey(identity.namespace, item.kind, item.metadata?.name),
+          sanitized,
+        );
       }
+    }
+  }
+
+  for (const spec of knownClusterRbacIdentities(
+    artifacts,
+    deps,
+    identity.profileId,
+  )) {
+    const key = scopedObjectKey('', spec.kind, spec.name);
+    const observation = readClusterRbacObservation(
+      identity,
+      spec,
+      run,
+      deadline,
+      now,
+    );
+    addScopedObject(clusterRbac, key, observation);
+    if (!observation.absent) {
+      addScopedObject(scopedObjects, key, observation.object);
     }
   }
 
@@ -989,6 +1279,27 @@ export function collectInventory(identity, artifacts, deps = {}) {
           identity.namespace,
         );
       }
+      if (
+        RETAINED_PG_RELEASES.has(row.name) &&
+        identity.profileId === 'dev' &&
+        historyIndicatesRevisionTwo(helmHistory[row.name])
+      ) {
+        if (row.revision !== '2' || !historyRetainsRevisionOne(helmHistory[row.name])) {
+          throwUnreadable('helm-retained-revision-missing');
+        }
+        const previousManifest = fetchHelmManifest(
+          identity,
+          row.name,
+          '1',
+          run,
+          deadline,
+          now,
+        );
+        entry.previousDocuments = parseHelmManifestDocuments(
+          previousManifest,
+          identity.namespace,
+        );
+      }
       helmManifests[row.name] = entry;
     }
   }
@@ -1016,6 +1327,8 @@ export function collectInventory(identity, artifacts, deps = {}) {
     profileId: identity.profileId,
     namespace,
     objects,
+    scopedObjects,
+    clusterRbac,
     helmReleases,
     helmHistory,
     helmManifests,
