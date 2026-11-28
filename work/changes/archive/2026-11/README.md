@@ -10,6 +10,10 @@ Done and Cancelled packets from November 2026. Hot queue: [work/changes/README.m
 - [RabbitMQ](platform-operations/2026-11-26--rabbitmq-native/CHANGE.md) — source foundation accepted; live qualification gated.
 - [Object storage](platform-operations/2026-11-26--object-storage-native/CHANGE.md) — source foundation accepted; live qualification gated.
 
+## Human operator CLI (1)
+
+- [CLI01](platform-operations/2026-11-28--cli01-human-operator-cli/CHANGE.md) — `pnpm offscreen` entry point; source-tested, owner live walkthrough NOT RUN.
+
 ## admin (8)
 
 - [2026-11-14--admin-game-ai-diagnostics](../../../../work/changes/archive/2026-11/admin/2026-11-14--admin-game-ai-diagnostics/CHANGE.md)
