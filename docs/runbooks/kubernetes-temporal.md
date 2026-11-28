@@ -51,6 +51,12 @@ kubectl --context kind-offscreen-dev -n offscreen-dev-temporal \
 
 Keep terminal running and open http://localhost:8233. Restart forwarding after web Pod replacement; use hard refresh if old assets are cached. UI 2.58.1 includes upstream Chrome CSP correction; do not disable browser security. No external ingress or public bind.
 
+## Durable Execution qualification (selected)
+
+This is the owner-ratified E1 admission and cleanup contract, not an executable runbook yet. The strict operator entrypoint is pending construction; do not substitute the existing tolerant namespace helper or ad hoc namespace registration. See [strict owner contract](../../infra/platform/temporal/README.md#strict-qualification-namespace-admission-selected).
+
+After accepted Observability E2 is integrated, use a clean qualified candidate revision, separate operator authorization and capacity check, verified dev cluster identity, owned loopback forwards and fresh reserved qualification namespace name with one-day retention. Require strict acknowledged creation and exact verified namespace ID/retention before either maintained suite starts; use dedicated fresh queues. Refuse existing or ambiguous state, transport failure, already-exists, uncertain create or failed verification. Never retry creation, adopt or delete an uncertain namespace. Record residuals. Use finite process/run deadlines; stop owned Workers/forwards, settle or cancel only owned executions where safe, retain histories to expire. No default, release or slot namespace, no foreign state changes, no namespace/database/cluster deletion and no credential contents in receipts. Exact invocation, verification commands and timeout bounds belong to the construction/qualification packet and are reconciled here after implementation. Native history/recovery and retrieved spans are joint qualification evidence, not implied by a healthy server.
+
 ## Failure and maintenance
 
 If ensure refuses, stop and inspect Helm list, Deployment/Pod events and CNPG CR status. For a failed schema hook, inspect its Job/Pod logs locally with credential redaction. Do not dump Secret values, raw Helm-generated credentials or full sensitive environment. CNPG can temporarily report Secret forbidden before its own RBAC converges; the installer waits for semantic reconciliation. Do not patch operator RBAC manually. Partial resource state is intentionally preserved; do not blindly rerun, adopt, delete, or rotate credentials.

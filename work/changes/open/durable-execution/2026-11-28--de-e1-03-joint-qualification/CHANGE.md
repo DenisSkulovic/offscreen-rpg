@@ -1,0 +1,7 @@
+# DE-E1-03 | Joint native execution qualification and closure
+
+**Kind:** integration/qualification with evidence and canonical reconciliation. **Standing:** PROPOSED, dependency-gated; independent readiness pending. No live or implementation commission. **Base:** `826adbc548b8acff9e49767389848c857432b497`; target `implementation/durable-execution`. Requires exact clean joined 01/02, accepted E2 on main and verified dev target, operator capacity/permission. [Group](../README.md), [Design](../../../../designs/open/durable-execution/README.md), [proof](PROOF.md).
+
+**Outcome:** one exact qualified candidate with native plain + Agent Core matrix, actual trace and native metric visibility, preserved four-app compatibility and durable receipt. Acceptance lead and operator own substantial checks; not a coding-agent research campaign. No app deployment, namespace deletion, release activation, paid call or protected DB mutation. No new implementation functionality. Failure retains Change open and actual receipt; source correction returned to planner (localized fixes under explicit authority, exact retest). No quiet waivers. Canonical reconciliation/Design closure only after owner acceptance.
+
+[TASKS](TASKS.md) T01 offline joint compatibility → T02 authorized native run/visibility → T03 exact receipt and closure. Source joins 01/02 are not evidence. Use no release image-closure test (historical AC08 H01); retain actual old limitations. If native authorization/availability pending stop at that boundary with completed offline evidence.

@@ -1,12 +1,16 @@
 # Monorepo package organization
 
-**Standing:** Owner-accepted E1 engineering foundation, source `15869a5c2456469ec3b53168d62ab041e0d4afe0`. [Agent Core technical contract](../docs/technical/platform/agent-core.md) and [bounded acceptance](../work/designs/archive/agent-core-monorepo-map/OWNER-ACCEPTANCE.md). Existing flat identities and app closures preserved. No production consumer, relocation, additional workspace activation or comprehensive native qualification implied.
+**Standing:** Owner-accepted E1 engineering foundation, source `15869a5c2456469ec3b53168d62ab041e0d4afe0`. [Agent Core technical contract](../docs/technical/platform/agent-core.md) and [bounded acceptance](../work/designs/archive/agent-core-monorepo-map/OWNER-ACCEPTANCE.md). Existing flat identities and app closures preserved. No production consumer, relocation, additional workspace activation or comprehensive native qualification implied by that acceptance. Durable Execution E1 separately selects a new technical workspace, not yet activated (below).
 
 ## Organization and E1 migration boundary
 
 Use `packages/<family>/<leaf>/` with one family level and short globally unique `@offscreen/<name>` workspace identities; family directories are navigation, not workspaces, dependency permissions or deployment boundaries. The five families are domain (product behavior), ai (reusable inference and agents), commerce (entitlement/spend/settlement), platform (shared application services), foundation (lower-level technical mechanisms). Apps and tools remain their own root families.
 
-Retain `packages/*` and add the five explicit `packages/<family>/*` workspace globs. Activate only `packages/ai/agent-core`; all existing flat paths and package identities remain. AC03 source created those globs, the `@offscreen/agent-core` manifest, and the five README leaves. AC08 compiled `@offscreen/agent-core` and ran its offline package tests. Joint proof and live qualification remain NOT RUN. The five new README-only candidates are `ai/inference`, `ai/model-routing`, `ai/ai-providers`, `domain/library`, `foundation/document-versioning`; no manifests, source, exports or dependencies for placeholders. A family itself must not have a package manifest. No duplicate workspace names. Physical relocation requires later path/build/migration/rollback audit. Existing app runtime/build closures must not change in E1; dev image copy/install of all packages is not equivalent to a production closure.
+Retain `packages/*` and add the five explicit `packages/<family>/*` workspace globs. The Agent Core E1 activation was limited to `packages/ai/agent-core`; all existing flat paths and package identities remain. AC03 source created those globs, the `@offscreen/agent-core` manifest, and the five README leaves. AC08 compiled `@offscreen/agent-core` and ran its offline package tests. Joint proof and live qualification remain NOT RUN. The five new README-only candidates are `ai/inference`, `ai/model-routing`, `ai/ai-providers`, `domain/library`, `foundation/document-versioning`; no manifests, source, exports or dependencies for placeholders. A family itself must not have a package manifest. No duplicate workspace names. Physical relocation requires later path/build/migration/rollback audit. Existing app runtime/build closures must not change in E1; dev image copy/install of all packages is not equivalent to a production closure.
+
+## Selected next workspace: Temporal Runtime
+
+Durable Execution E1 was owner-ratified 2026-11-28, architecture defended at `a2e5eea430df62bc9527c85978f8b93f5e9fc154`. Select exactly one additional grouped workspace, `packages/platform/temporal-runtime` (`@offscreen/temporal-runtime`), under the existing `platform/*` glob. It is not yet implemented or activated. Native SDK host custody only, Node root, no Workflow-sandbox entrypoint; Agent Core consumes it as a test-only dev dependency. The two maintained native qualification consumers are not two Workflow types. Legacy `packages/workflows`, app closures and identities stay unchanged. See [execution contract](../docs/technical/platform/execution-and-delivery.md#native-temporal-host-foundation-durable-execution-e1). Require actual workspace/build/runtime closure checks and joint acceptance before claiming realization; no new production consumer.
 
 ## Existing flat packages and possible placement
 
@@ -24,7 +28,7 @@ The inventory below is the 23 flat workspaces observed at the reviewed baseline,
 
 ## Longer-term responsibility candidates
 
-Only the E1 activation is selected. Candidate names and splits are hypotheses, not implementation assignments. Existing `documents`, Storyteller, usage-policy and other owners remain authoritative until separately accepted migrations.
+Only the Agent Core E1 activation and the separate Durable Execution E1 target above are selected. Other candidate names and splits are hypotheses, not implementation assignments. Existing `documents`, Storyteller, usage-policy and other owners remain authoritative until separately accepted migrations.
 
 | Family | Candidate package | Status | Owns | Excludes |
 |---|---|---|---|---|
@@ -46,7 +50,7 @@ Only the E1 activation is selected. Candidate names and splits are hypotheses, n
 | platform | notifications | Discovery candidate | User-facing event delivery and preferences | Agent authority |
 | platform | observability | Candidate | Shared tracing/metrics/log conventions, correlation and redaction | Authoritative execution or financial ledger |
 | platform | search/retrieval | Discovery candidate | Generic indexing, query and ranking mechanisms if warranted | Library visibility policy, canonical facts |
-| platform | workflows | Candidate | Durable orchestration integration; Temporal boundary open | Duplicate execution truth |
+| platform | temporal-runtime | Selected by Durable Execution E1; not implemented | Native Temporal Client/Worker custody and lifecycle | Domain Workflow semantics, duplicate business execution truth, legacy migration |
 | foundation | cache | Outside core | Reusable cache infrastructure | Authoritative agent state or policy |
 | foundation | document-versioning | Direction | Structured JSON content, revision identities, reconstruction, change operations, Markdown serialization/rendering | Library membership, campaign history, authorization, storage selection |
 | foundation | object-storage | Candidate | Storage adapter and integrity/error contract | Library semantics |

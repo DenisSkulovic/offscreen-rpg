@@ -1,0 +1,9 @@
+# DE-E1-01 | Native Temporal host and strict namespace admission
+
+**Kind:** implementation (source construction). **Standing:** PROPOSED, independent readiness pending; no commission. **Base:** `826adbc548b8acff9e49767389848c857432b497`; target `implementation/durable-execution` after E2 and owner commission. [Group](../README.md) owns integration and reconciliation; [source map](../SOURCE-MAP.md). [Selected Design](../../../../designs/open/durable-execution/README.md).
+
+**Outcome:** one Node-only reusable native Client/Worker host with tested lifecycle and additive strict qualification namespace owner route. No Workflow engine, public test export, production registration, SDK upgrade, live resource or provider operation.
+
+**Owns:** new `packages/platform/temporal-runtime` (source, offline tests, README, manifest/tsconfig), `pnpm-lock.yaml`, additive `infra/platform/temporal/namespaces.mjs` and its namespace tests. Update package map and existing Temporal owner docs only to reflect actual construction; do not mark native proof passed. No Agent Core changes, app, E2 or legacy Workflow edits.
+
+Read [tasks](TASKS.md) and exact linked [contracts](EXECUTION.md); [proof](PROOF.md) is the Change gate. T01 → T02 → T03; one bounded direct task/child at a time. T03 independent of host logic but same Change, serial to minimize coordination. Requires accepted E2 main integration, affected source reconciliation and readiness/commission. Archive and join only after assigned offline checks. Transfer all joint proof to Design; no native qualification or main merge. Record actual commands/results and source SHA, preserve failures.

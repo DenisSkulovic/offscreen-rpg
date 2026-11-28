@@ -1,0 +1,10 @@
+# DE-E1-03 | acceptance lead / operator tasks
+
+## T01 | Joined compatibility
+Read [Offline joint gate](PROOF.md#offline-joint-gate), group receipt, `scripts/repo-tools/module-graph.mjs` declaredEdges/loadPackages, Agent Core owner acceptance/technical limitations. Verify clean exact joined source and prerequisites; compare graph and importers against post-E2 Design base, run actual four-app builds/typechecks and focused offline gates once. No Docker or live app execution. Keep evidence tied to candidate and baseline. Stop relevant failure; distinguish old unchanged failure vs new, do not waive required gate. No source edits except separately authorized corrective route.
+
+## T02 | Authorized maintained qualification
+Requires T01, explicit live approval, capacity and E2 ready, operator-owned forwards. Read [Native gate](PROOF.md#native-gate), both qualification entrypoints, `docs/runbooks/kubernetes-temporal.md`/`kubernetes-observability.md`, strict admission contract. Run one joint suite with fresh strict namespace, capture native case receipts, actual trace queries and Grafana inspection, bounded native Temporal scrape coverage; separate controlled exporter failure fixture check per proof (no E2 disruption). Record exact source and identity, failures, residuals. Stop on uncertain custody or missing required proof. Cleanup only own resources; no namespace deletion/repair, provider calls or platform changes.
+
+## T03 | Accept and reconcile
+Requires T01/T02 complete and owner accepts exact candidate. Read [Closure](PROOF.md#closure), group register and Design's transferred obligations. Persist dated evidence and actual status, reconcile owners and original AC08 limitations, archive packet and join Design branch with verified receipt; integrate main only after Design-level acceptance and final drift check. No rewriting unrelated docs or claiming new proof. On any gate incomplete keep open, record exact next owner/action.
