@@ -34,7 +34,7 @@
 
 ## Current / immediate work
 
-- [Observability E2 / OBS-E2-01–13 and PG01](observability-infrastructure-visibility/README.md): current-sprint batch; 01/02/05 Ready (dependency order), PG01 targeted re-review pending, other gates retained; not commissioned. No global queue change.
+- [Observability E2 / OBS-E2-01–13 and PG01](observability-infrastructure-visibility/README.md): current-sprint batch; 01/02/05 Ready (dependency order), PG01 independently Ready (review 02), other gates retained; commission and join receipts belong to the active Design branch. No global queue change.
 
 **2026-11-23 source-only commissions:** [TURN03-R2C scripted player-smoke composition](../archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) is archived Done at injected-trace tier, 9/9. [TURN03-R2D](../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) is archived Done at injected-query tier, 6/6. Neither produces cross-Pod PASS. R2A and R2B remain archived Done at source-only tier. Parent TURN03 cancelled; legacy operator not commissioned.
 
