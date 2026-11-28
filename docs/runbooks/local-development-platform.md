@@ -2,6 +2,20 @@
 
 Current baseline 91bc2af40a94cdf9a95ee7db31a846d60f3abd0c. See [selected target](../technical/platform/local-developer-platform.md) and [permanent verification catalog](../../infra/verification/CAPABILITIES.md). The target commands in that design are NOT implemented until explicitly recorded as such. Use the existing commands below and their linked runbooks. No new live authorization.
 
+## Human walkthrough (`pnpm offscreen`; source-tested, owner walkthrough NOT RUN)
+
+1. Start Docker Desktop (WSL integration on).
+2. `pnpm offscreen status` shows dev/release Kind node state (container observation, not Kubernetes readiness).
+3. `pnpm offscreen cluster start dev` ensures the cluster via the guarded `infra:up --services none` route.
+4. `pnpm offscreen platform up dev --services core` (`plan`/`status` are read-only; `none`, `all` or a comma list also work; omitted services are not stopped).
+5. `pnpm offscreen dev up` starts the application; `pnpm offscreen dev stop` parks your owned slot. `pnpm offscreen release down` removes release application resources, not cluster nodes.
+
+Other routes: `release up|status`, `postgres plan|ensure|status --env ...`, `obs connect`, `verify --suite ...`; `pnpm offscreen --help` lists them.
+
+**Stopped nodes.** If `cluster start` reports STOPPED it will not start Docker nodes for you. After confirming no other session or job uses them, run `docker start <cluster>-control-plane <cluster>-worker` and `kubectl --context <context> wait --for=condition=Ready nodes --all --timeout=180s`, then retry. Stopping nodes is owner-only and manual, not a qualified suspension protocol: first stop owned applications (`dev stop`), verify no other active sessions or jobs, quiesce stateful services by their own procedures ([PostgreSQL](kubernetes-postgres.md), [RabbitMQ](kubernetes-rabbitmq.md), [dev stacks and Tilt](dev-worktree-stacks.md)), never scale everything down or delete volumes, and never stop an unknown or shared cluster. Scale a standalone Deployment only with a known intended replica count and exclusive ownership.
+
+**Native inspection** (the CLI does not wrap these): `docker ps -a`, `kind get clusters`, `kubectl config get-contexts` (optional `kd`/`kr` aliases for the dev/release contexts), `kubectl --context <ctx> get nodes`, `get pods -A`, `get deploy,sts -A`, `get pvc -A`, `get events -A`, `logs`, `helm list -A --kube-context <ctx>`.
+
 | Need | Current command / route |
 | --- | --- |
 | Plan selected dev/release platform ensures | `pnpm infra:plan --env dev --services core` (default JSON; add `--human` for plain text) |
