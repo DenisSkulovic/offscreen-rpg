@@ -501,20 +501,56 @@ export function helmValuesArgv(release) {
 }
 
 /** @typedef {'desired' | 'predecessor'} ObservabilityArtifactVariant */
+/** @typedef {'dev-e1-base' | 'dev-e1-developer' | 'release-e1'} ObservabilityArtifactId */
+
+/** Internal immutable E1 artifact IDs and the profile each belongs to. */
+const E1_ARTIFACT_IDS = Object.freeze({
+  'dev-e1-base': { profileId: 'dev', variant: 'predecessor' },
+  'dev-e1-developer': { profileId: 'dev', variant: 'desired' },
+  'release-e1': { profileId: 'release', variant: 'desired' },
+});
+
+/** Reserved; refuses until a later Change adds a validated E2 bundle. */
+const RESERVED_E2_ARTIFACT_ID = 'dev-e2';
 
 /**
+ * Resolve a historical alias or a named artifact ID to the internal variant
+ * and artifact ID.
  * @param {ObservabilityProfileId} profileId
- * @param {ObservabilityArtifactVariant | undefined} variant
+ * @param {ObservabilityArtifactVariant | ObservabilityArtifactId | string | undefined} selector
+ * @returns {{ artifactId: ObservabilityArtifactId, variant: ObservabilityArtifactVariant }}
  */
-function assertArtifactVariantAllowed(profileId, variant) {
-  const selected = variant ?? 'desired';
-  if (selected !== 'desired' && selected !== 'predecessor') {
+function assertArtifactVariantAllowed(profileId, selector) {
+  const selected = selector ?? 'desired';
+  if (selected === 'desired' || selected === 'predecessor') {
+    if (profileId === 'release' && selected === 'predecessor') {
+      throwArtifactInvalid('release predecessor refused');
+    }
+    const artifactId =
+      profileId === 'release'
+        ? 'release-e1'
+        : selected === 'desired'
+          ? 'dev-e1-developer'
+          : 'dev-e1-base';
+    return { artifactId, variant: selected };
+  }
+  if (selected === RESERVED_E2_ARTIFACT_ID) {
+    throwArtifactInvalid('artifact dev-e2 is not available');
+  }
+  if (
+    typeof selected !== 'string' ||
+    !Object.hasOwn(E1_ARTIFACT_IDS, selected)
+  ) {
     throwArtifactInvalid('unknown artifact variant');
   }
-  if (profileId === 'release' && selected === 'predecessor') {
-    throwArtifactInvalid('release predecessor refused');
+  const entry = E1_ARTIFACT_IDS[/** @type {ObservabilityArtifactId} */ (selected)];
+  if (entry.profileId !== profileId) {
+    throwArtifactInvalid('artifact id does not belong to profile');
   }
-  return selected;
+  return {
+    artifactId: /** @type {ObservabilityArtifactId} */ (selected),
+    variant: entry.variant,
+  };
 }
 
 /**
@@ -674,6 +710,7 @@ function renderValidatedPlan(plan, run, namespace) {
  * @param {ReturnType<typeof readPlatformProfile>} profile
  * @param {Record<string, unknown>} expected
  * @param {Record<string, string>} imageLocks
+ * @param {ObservabilityArtifactId} artifactId
  */
 function finalizeArtifactBundle(
   profileId,
@@ -681,6 +718,7 @@ function finalizeArtifactBundle(
   profile,
   expected,
   imageLocks,
+  artifactId,
 ) {
   /** @type {Record<string, unknown>[]} */
   const documents = [];
@@ -696,6 +734,7 @@ function finalizeArtifactBundle(
   assertInventoryMatch(profileId, expected, allDirect, allGenerated);
 
   return {
+    artifactId,
     profile,
     releases: renderedReleases.map((row) => {
       const { inventory, ...rest } = row;
@@ -710,7 +749,7 @@ function finalizeArtifactBundle(
 
 /**
  * @param {ObservabilityProfileId} profileId
- * @param {{ run?: PlatformRun, verifyArchive?: boolean, imageLocks?: Record<string, string>, pins?: ReturnType<typeof loadPins>, variant?: ObservabilityArtifactVariant }} [deps]
+ * @param {{ run?: PlatformRun, verifyArchive?: boolean, imageLocks?: Record<string, string>, pins?: ReturnType<typeof loadPins>, variant?: ObservabilityArtifactVariant | ObservabilityArtifactId }} [deps]
  */
 export function loadArtifacts(profileId, deps = {}) {
   if (profileId !== 'dev' && profileId !== 'release') {
@@ -718,7 +757,10 @@ export function loadArtifacts(profileId, deps = {}) {
   }
   const run = deps.run ?? defaultHelmRun;
   const verifyArchive = deps.verifyArchive !== false;
-  const variant = assertArtifactVariantAllowed(profileId, deps.variant);
+  const { artifactId, variant } = assertArtifactVariantAllowed(
+    profileId,
+    deps.variant,
+  );
   const profile = readPlatformProfile(profileId);
   const namespace = profile.namespaces.observability;
   if (typeof namespace !== 'string' || namespace.length === 0) {
@@ -757,6 +799,7 @@ export function loadArtifacts(profileId, deps = {}) {
     profile,
     expected,
     imageLocks,
+    artifactId,
   );
 }
 
@@ -808,6 +851,7 @@ export function loadObservabilityVariants(profileId, deps = {}) {
     profile,
     expected,
     imageLocks,
+    profileId === 'release' ? 'release-e1' : 'dev-e1-developer',
   );
 
   if (profileId === 'release') {
@@ -838,6 +882,7 @@ export function loadObservabilityVariants(profileId, deps = {}) {
     profile,
     expected,
     imageLocks,
+    'dev-e1-base',
   );
   return { desired, predecessor };
 }
