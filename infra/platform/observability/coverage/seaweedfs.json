@@ -1,0 +1,117 @@
+[
+  {
+    "component": "seaweedfs",
+    "namespace": "offscreen-dev-objects",
+    "workloadSelector": {
+      "app": "object-store"
+    },
+    "jobs": [
+      "seaweedfs"
+    ],
+    "requiredFamilies": [
+      "SeaweedFS_master_is_leader",
+      "SeaweedFS_s3_in_flight_upload_bytes",
+      "SeaweedFS_s3_in_flight_upload_count",
+      "SeaweedFS_volumeServer_max_volumes",
+      "SeaweedFS_volumeServer_file_read_failures",
+      "SeaweedFS_volumeServer_file_write_failures",
+      "SeaweedFS_volumeServer_storage_io_error_total",
+      "SeaweedFS_s3_in_flight_requests",
+      "SeaweedFS_volumeServer_volumes",
+      "SeaweedFS_volumeServer_read_only_volumes",
+      "SeaweedFS_filer_request_total",
+      "SeaweedFS_volumeServer_request_total",
+      "SeaweedFS_s3_request_total",
+      "SeaweedFS_volumeServer_request_seconds_bucket",
+      "SeaweedFS_volumeServer_request_seconds_count",
+      "SeaweedFS_volumeServer_request_seconds_sum",
+      "SeaweedFS_s3_request_seconds_bucket",
+      "SeaweedFS_s3_request_seconds_count",
+      "SeaweedFS_s3_request_seconds_sum"
+    ],
+    "panels": {
+      "offscreen-storage/610": {
+        "promql": "up{job=\"seaweedfs\"} and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90)",
+        "unit": "none",
+        "interpretation": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/611": {
+        "promql": "((SeaweedFS_master_is_leader{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_master_is_leader{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Master leader indicator; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/612": {
+        "promql": "((SeaweedFS_s3_in_flight_upload_bytes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_s3_in_flight_upload_bytes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "bytes",
+        "interpretation": "S3 upload bytes in flight; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/613": {
+        "promql": "((SeaweedFS_s3_in_flight_upload_count{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_s3_in_flight_upload_count{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "S3 uploads in flight; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/614": {
+        "promql": "((SeaweedFS_volumeServer_max_volumes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_volumeServer_max_volumes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Configured maximum volumes, not bytes; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/615": {
+        "promql": "((rate(SeaweedFS_volumeServer_file_read_failures{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_file_read_failures{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "ops",
+        "interpretation": "Volume file read failures/s; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/616": {
+        "promql": "((rate(SeaweedFS_volumeServer_file_write_failures{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_file_write_failures{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "ops",
+        "interpretation": "Volume file write failures/s; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/617": {
+        "promql": "((rate(SeaweedFS_volumeServer_storage_io_error_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_storage_io_error_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "ops",
+        "interpretation": "Volume/shard storage EIO errors/s; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/618": {
+        "promql": "((SeaweedFS_s3_in_flight_requests{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_s3_in_flight_requests{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "S3 requests in flight by operation type; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/619": {
+        "promql": "((SeaweedFS_volumeServer_volumes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_volumeServer_volumes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Default/empty-collection volumes or shards by type, not a global count; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/620": {
+        "promql": "((SeaweedFS_volumeServer_read_only_volumes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_volumeServer_read_only_volumes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Default/empty-collection read-only volumes by type, not a global count; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/621": {
+        "promql": "((rate(SeaweedFS_filer_request_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_filer_request_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "ops",
+        "interpretation": "Filer request rate by type/status; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/622": {
+        "promql": "((rate(SeaweedFS_volumeServer_request_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_request_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "ops",
+        "interpretation": "Volume-server request rate by type/status; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/623": {
+        "promql": "((rate(SeaweedFS_s3_request_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_s3_request_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+        "unit": "ops",
+        "interpretation": "Bucketless S3 request rate by type/status only, not global; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/624": {
+        "promql": "histogram_quantile(0.95, sum by (job,instance,type,le) (((rate(SeaweedFS_volumeServer_request_seconds_bucket{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_request_seconds_bucket{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90)))) and on(job,instance,type) (sum by (job,instance,type) (((rate(SeaweedFS_volumeServer_request_seconds_count{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_request_seconds_count{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))) > 0)",
+        "unit": "s",
+        "interpretation": "Volume-server p95 request time by type, seconds; S3 excludes all nonempty bucket names; missing/stale unknown, never synthetic zero."
+      },
+      "offscreen-storage/625": {
+        "promql": "histogram_quantile(0.95, sum by (job,instance,type,le) (((rate(SeaweedFS_s3_request_seconds_bucket{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_s3_request_seconds_bucket{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90)))) and on(job,instance,type) (sum by (job,instance,type) (((rate(SeaweedFS_s3_request_seconds_count{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_s3_request_seconds_count{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))) > 0)",
+        "unit": "s",
+        "interpretation": "Bucketless S3 p95 request time by type, seconds; S3 excludes all nonempty bucket names; missing/stale unknown, never synthetic zero."
+      }
+    },
+    "coverage": "enabled",
+    "reason": ""
+  }
+]

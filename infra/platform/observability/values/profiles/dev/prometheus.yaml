@@ -218,6 +218,236 @@ scrapeConfigs:
         action: drop
       - regex: __name__|job|instance|cluster|env|component|node|namespace|pod|interface
         action: labelkeep
+  postgres-cnpg:
+    enabled: true
+    job_name: postgres-cnpg
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: [offscreen-dev-postgres]
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace]
+        regex: offscreen-dev-postgres
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_label_cnpg_io_cluster, __meta_kubernetes_pod_label_app_kubernetes_io_name, __meta_kubernetes_pod_container_name, __meta_kubernetes_pod_container_port_name, __meta_kubernetes_pod_container_port_number]
+        separator: ";"
+        regex: "dev-pg;postgresql;postgres;metrics;9187"
+        action: keep
+      - target_label: cluster
+        replacement: offscreen-dev
+      - target_label: env
+        replacement: dev
+      - target_label: component
+        replacement: postgres
+      - target_label: namespace
+        replacement: offscreen-dev-postgres
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "cnpg_pg_database_size_bytes|cnpg_pg_stat_database_xact_commit|cnpg_pg_stat_database_xact_rollback|cnpg_pg_stat_database_deadlocks|cnpg_pg_stat_database_blks_hit|cnpg_pg_stat_database_blks_read|cnpg_pg_stat_database_temp_bytes|cnpg_pg_stat_database_temp_files|cnpg_backends_total|cnpg_backends_max_tx_duration_seconds|cnpg_pg_settings_setting|cnpg_collector_up|cnpg_backends_waiting_total|cnpg_collector_last_collection_error|cnpg_last_error|cnpg_last_update_timestamp|cnpg_collector_replica_mode|cnpg_pg_replication_in_recovery|cnpg_pg_replication_is_wal_receiver_up|cnpg_pg_replication_lag|cnpg_pg_replication_streaming_replicas"
+        action: keep
+      - source_labels: [__name__, datname, application_name, usename, state, name, exported_cluster]
+        separator: ";"
+        regex: "(cnpg_pg_database_size_bytes|cnpg_pg_stat_database_xact_commit|cnpg_pg_stat_database_xact_rollback|cnpg_pg_stat_database_deadlocks|cnpg_pg_stat_database_blks_hit|cnpg_pg_stat_database_blks_read|cnpg_pg_stat_database_temp_bytes|cnpg_pg_stat_database_temp_files);(postgres|dev|temporal|temporal_visibility|dev_[1-9][0-9]*);;;;;|(cnpg_backends_total|cnpg_backends_max_tx_duration_seconds);(postgres|dev|temporal|temporal_visibility|dev_[1-9][0-9]*);(|cnpg_metrics_exporter);(postgres|dev|temporal|cnpg_metrics_exporter|dev_[1-9][0-9]*_(mig|run));(active|idle|idle in transaction|idle in transaction \\(aborted\\)|fastpath function call|disabled);;|cnpg_pg_settings_setting;;;;;max_connections;|cnpg_collector_up;;;;;;dev-pg|(cnpg_backends_waiting_total|cnpg_collector_last_collection_error|cnpg_last_error|cnpg_last_update_timestamp|cnpg_collector_replica_mode|cnpg_pg_replication_in_recovery|cnpg_pg_replication_is_wal_receiver_up|cnpg_pg_replication_lag|cnpg_pg_replication_streaming_replicas);;;;;;"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace|pod|datname|application_name|usename|state|name|exported_cluster"
+        action: labelkeep
+  temporal-server:
+    enabled: true
+    job_name: temporal-server
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: [offscreen-dev-temporal]
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace]
+        regex: offscreen-dev-temporal
+        action: keep
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_instance, __meta_kubernetes_pod_label_app_kubernetes_io_name, __meta_kubernetes_pod_label_app_kubernetes_io_component, __meta_kubernetes_pod_container_name, __meta_kubernetes_pod_container_port_name, __meta_kubernetes_pod_container_port_number]
+        separator: ";"
+        regex: "temporal;temporal;(frontend;temporal-frontend|history;temporal-history|matching;temporal-matching|worker;temporal-worker);metrics;9090"
+        action: keep
+      - target_label: cluster
+        replacement: offscreen-dev
+      - target_label: env
+        replacement: dev
+      - target_label: component
+        replacement: temporal
+      - target_label: namespace
+        replacement: offscreen-dev-temporal
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_pod_label_app_kubernetes_io_component]
+        target_label: role
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "service_requests|service_error_with_type|persistence_requests|persistence_sql_in_use|service_latency_bucket|service_latency_count|service_latency_sum|persistence_latency_bucket|persistence_latency_count|persistence_latency_sum"
+        action: keep
+      - source_labels: [__name__, exported_namespace]
+        separator: ";"
+        regex: "(service_requests|service_error_with_type|persistence_requests|service_latency_bucket|service_latency_count|service_latency_sum|persistence_latency_bucket|persistence_latency_count|persistence_latency_sum);(system|_unknown_)|persistence_sql_in_use;"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace|pod|role|exported_namespace|operation|service_name|type|db_kind|error_type|le"
+        action: labelkeep
+  rabbitmq:
+    enabled: true
+    job_name: rabbitmq
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    static_configs:
+      - targets: [rabbitmq.offscreen-dev-rabbitmq.svc:15692]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: rabbitmq
+          namespace: offscreen-dev-rabbitmq
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "rabbitmq_queue_messages|rabbitmq_queue_messages_ready|rabbitmq_queue_messages_unacked|rabbitmq_connections|rabbitmq_queue_messages_published_total|rabbitmq_queue_messages_delivered_total|rabbitmq_queue_messages_acked_total|rabbitmq_alarms_free_disk_space_watermark|rabbitmq_alarms_memory_used_watermark|rabbitmq_process_resident_memory_bytes|rabbitmq_process_open_fds|rabbitmq_process_max_fds"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace"
+        action: labelkeep
+  loki:
+    enabled: true
+    job_name: loki
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    static_configs:
+      - targets: [obs-loki.offscreen-dev-observability.svc:3100]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: loki
+          namespace: offscreen-dev-observability
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "loki_ingester_memory_chunks|loki_ingester_flush_queue_length|loki_ingester_chunks_flush_failures_total|loki_ingester_wal_bytes_in_use"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace"
+        action: labelkeep
+  tempo:
+    enabled: true
+    job_name: tempo
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    static_configs:
+      - targets: [obs-tempo.offscreen-dev-observability.svc:3200]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: tempo
+          namespace: offscreen-dev-observability
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "tempo_distributor_traces_per_batch_count|tempo_distributor_traces_per_batch_sum"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace"
+        action: labelkeep
+  grafana:
+    enabled: true
+    job_name: grafana
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    static_configs:
+      - targets: [obs-grafana.offscreen-dev-observability.svc:80]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: grafana
+          namespace: offscreen-dev-observability
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "grafana_http_request_in_flight|grafana_api_response_status_total"
+        action: keep
+      - source_labels: [__name__, code]
+        separator: ";"
+        regex: "grafana_http_request_in_flight;|grafana_api_response_status_total;[1-5][0-9][0-9]"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace|code"
+        action: labelkeep
+  seaweedfs:
+    enabled: true
+    job_name: seaweedfs
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 100
+    honor_labels: false
+    static_configs:
+      - targets: [object-store.offscreen-dev-objects.svc:9327]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: seaweedfs
+          namespace: offscreen-dev-objects
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "SeaweedFS_master_is_leader|SeaweedFS_s3_in_flight_upload_bytes|SeaweedFS_s3_in_flight_upload_count|SeaweedFS_volumeServer_max_volumes|SeaweedFS_volumeServer_file_read_failures|SeaweedFS_volumeServer_file_write_failures|SeaweedFS_volumeServer_storage_io_error_total|SeaweedFS_s3_in_flight_requests|SeaweedFS_volumeServer_volumes|SeaweedFS_volumeServer_read_only_volumes|SeaweedFS_filer_request_total|SeaweedFS_volumeServer_request_total|SeaweedFS_s3_request_total|SeaweedFS_volumeServer_request_seconds_bucket|SeaweedFS_volumeServer_request_seconds_count|SeaweedFS_volumeServer_request_seconds_sum|SeaweedFS_s3_request_seconds_bucket|SeaweedFS_s3_request_seconds_count|SeaweedFS_s3_request_seconds_sum"
+        action: keep
+      - source_labels: [__name__, bucket, collection]
+        separator: ";"
+        regex: "(SeaweedFS_master_is_leader|SeaweedFS_s3_in_flight_upload_bytes|SeaweedFS_s3_in_flight_upload_count|SeaweedFS_volumeServer_max_volumes|SeaweedFS_volumeServer_file_read_failures|SeaweedFS_volumeServer_file_write_failures|SeaweedFS_volumeServer_storage_io_error_total|SeaweedFS_s3_in_flight_requests|SeaweedFS_volumeServer_volumes|SeaweedFS_volumeServer_read_only_volumes|SeaweedFS_filer_request_total|SeaweedFS_volumeServer_request_total|SeaweedFS_s3_request_total|SeaweedFS_volumeServer_request_seconds_bucket|SeaweedFS_volumeServer_request_seconds_count|SeaweedFS_volumeServer_request_seconds_sum|SeaweedFS_s3_request_seconds_bucket|SeaweedFS_s3_request_seconds_count|SeaweedFS_s3_request_seconds_sum);;"
+        action: keep
+      - regex: "__name__|job|instance|cluster|env|component|namespace|type|code|le|bucket|collection"
+        action: labelkeep
 # OBS-E2-05: release-owned fixed Redis exporter. Targets only the existing Redis Service; does not modify Redis.
 # extraManifests is a list of strings rendered through tpl; no base-values entries existed to preserve.
 extraManifests:
@@ -308,6 +538,9 @@ extraManifests:
       - apiGroups: [""]
         resources: [nodes/metrics]
         verbs: [get]
+      - apiGroups: [""]
+        resources: [pods]
+        verbs: [get, list, watch]
   - |
     apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
