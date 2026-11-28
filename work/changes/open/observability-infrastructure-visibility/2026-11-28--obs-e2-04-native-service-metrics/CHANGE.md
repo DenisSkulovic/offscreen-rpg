@@ -6,7 +6,7 @@
 
 Enroll fixed vendor endpoints without changing their workloads or configurations. The coverage declaration must account for optional operators/control-plane as inventory-only unless verified; do not collect arbitrary data.
 
-**Requires:** 02 joined; G3 exact endpoint and family records for selected CNPG, four Temporal roles, RabbitMQ and observability self metrics.
+**Requires:** 02 joined; PG01 positive native receipt for PostgreSQL statistics; G3 exact endpoint and family records for selected CNPG, four Temporal roles, RabbitMQ and observability self metrics.
 
 **Exclusive write owners:** `values/profiles/dev/prometheus.yaml`, `tests/e2-collection.test.mjs`; new `coverage/native-services.json` (proposed machine-readable fragment).
 

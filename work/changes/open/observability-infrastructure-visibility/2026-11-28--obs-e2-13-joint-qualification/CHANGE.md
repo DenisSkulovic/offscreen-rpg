@@ -6,7 +6,7 @@
 
 Concentrated G5: prove exact source candidate, occupied preservation and real Grafana visibility; fresh specimen separately authorized. If an indispensable proof fails, return exact owner correction, do not hide failure or merge main.
 
-**Requires:** 01–12 integrated (or explicitly owner-ratified exclusions and amended selected artifact); gates G1–G4 closed for selected scope; exact clean Design branch SHA; owner approves bounded native operations and safe capacity.
+**Requires:** 01–12 and PG01 integrated (or explicitly owner-ratified exclusions and amended selected artifact); gates G1–G4 closed for selected scope; exact clean Design branch SHA; owner approves bounded native operations and safe capacity.
 
 **Exclusive write owners:** Final verification fixtures and docs only: `infra/platform/observability/tests/e2-joint.test.mjs` (new), `docs/technical/platform/observability-native-infrastructure.md`, `docs/runbooks/kubernetes-observability.md`, object-storage technical owner for G4, `STATUS.md`, Design receipt/catalog/ledger via coordinator. No unrelated code rewrites.
 

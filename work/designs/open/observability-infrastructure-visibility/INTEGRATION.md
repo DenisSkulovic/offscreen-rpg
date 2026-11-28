@@ -69,7 +69,7 @@ Observability does not own node certificates, object-store rollout, Redis ACLs o
 
 ## Current construction batch
 
-The complete proposed [OBS-E2-01–13 group](../../../changes/open/observability-infrastructure-visibility/README.md) is prepared. Its group README owns the dependency graph, branch, write collisions and closure; its [native input register](../../../changes/open/observability-infrastructure-visibility/NATIVE-INPUTS.md) owns the remaining bounded factual freeze. No new architecture review is required for ordinary gate closure. No dispatch or live mutation is authorized by planning. Preserve the acceptance matrix below as the joint proof authority; exact selected contracts transfer to permanent owners at acceptance. No unrelated E1 certification or additional future evolution is implied.
+The complete proposed [OBS-E2-01–13 and PG01 group](../../../changes/open/observability-infrastructure-visibility/README.md) is prepared. Its group README owns the dependency graph, branch, write collisions and closure; its [native input register](../../../changes/open/observability-infrastructure-visibility/NATIVE-INPUTS.md) owns the remaining bounded factual freeze. No new architecture review is required for ordinary gate closure. No dispatch or live mutation is authorized by planning. Preserve the acceptance matrix below as the joint proof authority; exact selected contracts transfer to permanent owners at acceptance. No unrelated E1 certification or additional future evolution is implied.
 
 ## Acceptance matrix
 

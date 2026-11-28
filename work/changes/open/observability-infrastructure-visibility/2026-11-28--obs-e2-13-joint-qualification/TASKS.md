@@ -4,7 +4,7 @@ Tasks: T01 → T02 → T03 → T04; selected: none.
 
 ## T01 | Exact joined source gate | PROPOSED (readiness/commission pending)
 DEPTH=PATCH
-Requires: 01–12 integrated (or explicitly owner-ratified exclusions and amended selected artifact); gates G1–G4 closed for selected scope; exact clean Design branch SHA; owner approves bounded native operations and safe capacity.
+Requires: 01–12 and PG01 integrated (or explicitly owner-ratified exclusions and amended selected artifact); gates G1–G4 closed for selected scope; exact clean Design branch SHA; owner approves bounded native operations and safe capacity.
 May write: infra/platform/observability/tests/e2-joint.test.mjs
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
 Read: infra/platform/observability/tests/; infra/verification/smoke/observability/tests/; INTEGRATION Acceptance matrix; 08 immutable render receipts

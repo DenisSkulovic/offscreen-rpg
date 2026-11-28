@@ -1,12 +1,12 @@
 # OBS-E2-02 | Kubernetes inventory and bounded Prometheus identity
 
-**Kind:** implementation. **Standing:** PLANNER-BLOCKED — G1 KSM pin and effective KSM chart/render inputs; not commissioned. **Baseline:** `main` `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. **Authority:** [defended E2](<../../../../designs/open/observability-infrastructure-visibility/README.md>), [pass 02](<../../../../designs/open/observability-infrastructure-visibility/committee/pass-02.md>) at `0e731739c8a97e6e83896612acec40f89a26516f`; [selected technical direction](<../../../../../docs/technical/platform/observability-native-infrastructure.md>). See [group register](../README.md) for branch, custody, source dependencies and acceptance. Recheck exact source and target before dispatch; no remote or live permission is granted by this packet.
+**Kind:** implementation. **Standing:** PROPOSED — native specimen and construction rows frozen; independent readiness pending; not commissioned. **Baseline:** `main` `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. **Authority:** [defended E2](<../../../../designs/open/observability-infrastructure-visibility/README.md>), [pass 02](<../../../../designs/open/observability-infrastructure-visibility/committee/pass-02.md>) at `0e731739c8a97e6e83896612acec40f89a26516f`; [selected technical direction](<../../../../../docs/technical/platform/observability-native-infrastructure.md>). See [group register](../README.md) for branch, custody, source dependencies and acceptance. Recheck exact source and target before dispatch; no remote or live permission is granted by this packet.
 
 ## Outcome and boundaries
 
 Build the dev-only KSM foundation and base E2 scrape limits. No node/exporter/service additions yet. This is a construction overlay, not independently activated.
 
-**Requires:** 01 integrated for named descriptor conventions; G1 KSM pin frozen, KSM service/collector and chart permissions proven as specified in NATIVE-INPUTS.
+**Requires:** 01 integrated; frozen G1 chart/pin/permissions and exact observed coverage rows in NATIVE-INPUTS; conditional Job/list/degradation proof assigned to G5.
 
 **Exclusive write owners:** `values/profiles/dev/prometheus.yaml` (new), `locks/e2-images.tsv` (new), `tests/e2-collection.test.mjs` (new), `coverage/inventory.json` (new); later metric owners append narrowly; 08 owns artifact integration.
 
