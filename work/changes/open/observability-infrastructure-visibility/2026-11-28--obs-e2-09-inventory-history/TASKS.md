@@ -1,8 +1,8 @@
 # OBS-E2-09 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: READY / DEPENDENCY-GATED — review 08; 08 join pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DONE source (T01–T03 executed 2026-11-28; receipt in PROOF.md). Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
-## T01 | Observe bounded scoped inventory | READY (review 08; commission and applicable predecessors required)
+## T01 | Observe bounded scoped inventory | DONE source
 DEPTH=PATCH
 Requires: 01 pure history table and 08 exact artifact bundle/inventory joined.
 May write: infra/platform/observability/inventory.mjs; tests/inventory.test.mjs
@@ -14,7 +14,7 @@ Negative: RBAC collision on absent namespace, foreign roleRef/subject, forbidden
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Match exact history and storage | READY (review 08; commission and applicable predecessors required)
+## T02 | Match exact history and storage | DONE source
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/readiness.mjs; tests/e2-history.test.mjs
@@ -26,7 +26,7 @@ Negative: Every final row positive; correct numbers wrong current/predecessor ma
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Expose operational classification and owned phases | READY (review 08; commission and applicable predecessors required)
+## T03 | Expose operational classification and owned phases | DONE source
 DEPTH=PATCH
 Requires: T02 postcondition and packet prerequisites.
 May write: infra/platform/observability/readiness.mjs; tests/readiness.test.mjs; tests/snapshot-fixtures.mjs
