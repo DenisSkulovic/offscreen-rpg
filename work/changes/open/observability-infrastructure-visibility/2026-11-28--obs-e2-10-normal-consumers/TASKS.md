@@ -1,8 +1,8 @@
 # OBS-E2-10 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: PLANNER-BLOCKED — H05 correction frozen; narrow re-review and 08/09 joins pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: READY / DEPENDENCY-GATED — review 08; 08/09 joins pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
-## T01 | Make fresh ensure explicit | PLANNER-BLOCKED (H05 correction review pending)
+## T01 | Make fresh ensure explicit | READY (review 08; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: 08,09 joined; full selected E2 artifact frozen. 01 historical API preserved.
 May write: infra/platform/observability/install.mjs; tests/install.test.mjs
@@ -14,19 +14,19 @@ Negative: E1/pending/mixed never install over state; exact E2 no writes; no unin
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Route status, public render and diagnostics | PLANNER-BLOCKED (H05 correction review pending)
+## T02 | Route status, public render and diagnostics | READY (review 08; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/install.mjs (plan/status and receipt projection); receipt.mjs; tests/install.test.mjs; tests/receipt.test.mjs; infra/platform/observability/readiness.mjs; artifacts.mjs; infra/environments/{infra-cli,platform-plan}.mjs; infra/platform/common/cli.mjs; infra/verification/diagnostic-live.mjs; affected existing tests
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
 Read: infra/platform/observability/install.mjs: runObservabilityPlan, runObservabilityStatus, buildWorkerReceipt, structuralObservationReceipt; receipt.mjs: RECEIPT_CLOSED_KEYS, KNOWN_REASON_CODES, validateObservationReceiptBody, validateEnsureReceiptBody, evaluateObservationReceipt, toObservationReceipt, parseEnsureReceipt; readiness.mjs: observeObservability; artifacts.mjs: renderObservabilityDocuments, lintObservability; infra/environments/infra-cli.mjs: observabilityReadinessToServiceState; platform-plan.mjs: ensure receipt projection; infra/verification/diagnostic-live.mjs: runObservabilityDiagnosticWorker; group H05 contract
-Algorithm: Normal observation wrapper defaults to operational selector; explicit historical supplied descriptor still supports E1 only with its original semantics. Explicitly migrate runObservabilityPlan (and delegated status) to observeOperationalObservability rather than its historical explicit descriptor route. Project artifactId/historyId, structuralReady, desiredConverged from real observation through structuralObservationReceipt/buildWorkerReceipt, diagnostic worker, strict receipt parser and infra status/plan projections per H05; validate complete additive field group and exact final ID/profile pairs and booleans, preserve legacy schema and guards; add exact trust-unavailable reason only. Normal plan/status report artifactId/historyId, structuralReady, desiredConverged; preserve existing machine status/reason/exit behavior (E1 upgrade-required not ready for desired), diagnostics must not certify E1 as E2. Public render/lint dev desired E2 with real local trust capture (no cluster or invalid trust returns kubelet-trust-unavailable; source fixtures use injected binding), release exact E1; do not redefine historical desired. Preserve all existing platform CLI flags and CLI01 wrappers.
+Algorithm: Normal observation wrapper defaults to operational selector; explicit historical supplied descriptor still supports E1 only with its original semantics. Explicitly migrate runObservabilityPlan (and delegated status) to observeOperationalObservability rather than its historical explicit descriptor route. Project artifactId/historyId, structuralReady, desiredConverged from real observation through structuralObservationReceipt/buildWorkerReceipt, diagnostic worker, strict receipt parser and infra status/plan projections per H05; validate complete additive field group and exact final ID/profile pairs and booleans, preserve legacy schema and guards; bind the existing platform-plan `parseEnsureReceipt` expectedProfile option to `plan.profileId` (review 08 section 4), including wrong-profile rejection; add exact trust-unavailable reason only. Normal plan/status report artifactId/historyId, structuralReady, desiredConverged; preserve existing machine status/reason/exit behavior (E1 upgrade-required not ready for desired), diagnostics must not certify E1 as E2. Public render/lint dev desired E2 with real local trust capture (no cluster or invalid trust returns kubelet-trust-unavailable; source fixtures use injected binding), release exact E1; do not redefine historical desired. Preserve all existing platform CLI flags and CLI01 wrappers.
 Test: node --test infra/environments/infra-cli.test.mjs infra/environments/platform-plan.test.mjs infra/platform/observability/tests/diagnostic-worker.test.mjs infra/platform/observability/tests/install.test.mjs infra/platform/observability/tests/receipt.test.mjs
 Negative: Render/lint release exactly unchanged; recognized E1 developer not desired-converged; pending never ready; unknown artifact refuses. Actual plan/status entrypoints: E1 developer both histories, E2 exact, unavailable binding with/without admitted E1, pending; worker-to-parser-to-diagnostic/CLI projection round trip with four fields. Reject partial/extra field group, unknown pair, wrong profile, invalid flags and pending/false desired-ready; preserve old receipt/exit/mutation tests.
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Connect using matched descriptor | PLANNER-BLOCKED (H05 correction review pending)
+## T03 | Connect using matched descriptor | READY (review 08; commission and applicable predecessors required)
 DEPTH=PATCH
 Requires: T02 postcondition and packet prerequisites.
 May write: infra/platform/observability/connect.mjs; tests/forward.test.mjs (connect-related cases only; shared test path collision with 11)
