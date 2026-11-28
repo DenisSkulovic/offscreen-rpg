@@ -4,6 +4,7 @@ import { connect as netConnect, createServer } from 'node:net';
 import { constants } from 'node:fs';
 import { runPlatformCommand } from '../common/commands.mjs';
 import { GRAFANA_ADMIN_SECRET } from './inventory.mjs';
+import { inspectPendingRecord } from './custody.mjs';
 import { accessSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import process from 'node:process';
@@ -535,6 +536,9 @@ export const FORWARD_ALLOWLIST = {
   },
 };
 
+/** Internal E2 upgrade marker authorizations; only the adapter below adds entries. */
+const E2_MARKER_HELD = new WeakSet();
+
 const FORWARD_LINE = /^Forwarding from 127\.0\.0\.1:(\d+) -> (\d+)$/;
 const HANDLING_LINE = /^Handling connection for (\d+)$/;
 
@@ -591,7 +595,7 @@ export async function openForwards(identity, held, options) {
       refuse('refused: forward binding is not allowed');
     }
     seen.add(binding.key);
-    if (spec.diagnostic && held.mode !== 'proof') {
+    if (spec.diagnostic && held.mode !== 'proof' && !E2_MARKER_HELD.has(held)) {
       refuse('refused: diagnostic forward requires a proof lock');
     }
     if (!spec.diagnostic && held.mode === 'shared' && held.pending === true) {
@@ -818,6 +822,107 @@ export async function openForwards(identity, held, options) {
     await stopAll();
     throw error;
   }
+}
+
+const E2_MARKER_PRE_INTENT_KEYS = ['diagnosticHttp', 'prometheus', 'loki', 'tempo'];
+const E2_MARKER_REPLAY_KEYS = ['prometheus', 'loki', 'tempo'];
+const E2_PHASES = ['prometheus-intent', 'grafana-intent', 'final-verification'];
+
+/**
+ * Narrow internal adapter for the E2 occupied-upgrade marker session. It is
+ * not proof mode and not a public diagnostic permission: it needs the actual
+ * live exclusive custody handle and an exact E1 developer predecessor.
+ *
+ * stage 'pre-intent': no pending record may exist (and none is owned); the one
+ *   ephemeral loopback 4318 diagnosticHttp binding plus query bindings.
+ * stage 'replay': the handle must own an upgrade-e2 record; only fixed query
+ *   bindings (prometheus/loki/tempo), never a collector/diagnostic forward.
+ *
+ * @param {object} identity
+ * @param {any} custody Active exclusive custody handle.
+ * @param {{
+ *   stage: 'pre-intent' | 'replay',
+ *   authorized: true,
+ *   verifyIdentity: () => boolean,
+ *   predecessor?: { artifactId: string, historyId: string },
+ *   stateRoot?: string,
+ *   deadline?: number | null,
+ *   now?: () => number,
+ *   signal?: AbortSignal,
+ *   artifacts?: { targetPorts?: Record<string, number> },
+ *   startChild?: typeof startOwnedChild,
+ * }} options
+ */
+export async function openE2UpgradeMarkerForwards(identity, custody, options) {
+  if (options?.authorized !== true) {
+    refuse('refused: e2 marker forward is not authorized');
+  }
+  if (
+    custody == null ||
+    custody.mode !== 'exclusive' ||
+    !Number.isInteger(custody.fd) ||
+    typeof custody.assertOwnPending !== 'function' ||
+    custody.cancelled === true
+  ) {
+    refuse('refused: e2 marker forward requires exclusive custody');
+  }
+  if (typeof options.verifyIdentity !== 'function' || options.verifyIdentity() !== true) {
+    refuse('refused: e2 marker forward identity changed');
+  }
+  const contextName = identity?.tuple?.contextName ?? identity?.contextName;
+  if (typeof contextName !== 'string') {
+    refuse('refused: forward identity is incomplete');
+  }
+  /** @type {string[]} */
+  let keys;
+  if (options.stage === 'pre-intent') {
+    if (
+      options.predecessor?.artifactId !== 'dev-e1-developer' ||
+      !['developer-fresh', 'developer-upgraded'].includes(
+        options.predecessor?.historyId,
+      )
+    ) {
+      refuse('refused: e2 marker forward requires the E1 developer predecessor');
+    }
+    const pending = inspectPendingRecord(contextName, {
+      stateRoot: options.stateRoot,
+    });
+    if (pending.outcome !== 'absent') {
+      refuse('refused: e2 marker forward requires no pending receipt');
+    }
+    keys = E2_MARKER_PRE_INTENT_KEYS;
+  } else if (options.stage === 'replay') {
+    /** @type {any} */
+    let record;
+    try {
+      record = custody.assertOwnPending();
+    } catch {
+      refuse('refused: e2 marker forward requires the owned upgrade record');
+    }
+    if (
+      record?.operation !== 'upgrade-e2' ||
+      !E2_PHASES.includes(record.phase) ||
+      record.context !== contextName
+    ) {
+      refuse('refused: e2 marker forward requires the owned upgrade record');
+    }
+    keys = E2_MARKER_REPLAY_KEYS;
+  } else {
+    refuse('refused: e2 marker forward stage is invalid');
+  }
+  const held = { fd: custody.fd, mode: 'exclusive', pending: false };
+  E2_MARKER_HELD.add(held);
+  return openForwards(identity, held, {
+    bindings: keys.map((key) => ({
+      key,
+      localPort: key === 'diagnosticHttp' ? 0 : FORWARD_ALLOWLIST[key].local,
+    })),
+    deadline: options.deadline,
+    now: options.now,
+    signal: options.signal,
+    artifacts: options.artifacts,
+    startChild: options.startChild,
+  });
 }
 
 const RESPONSE_LIMIT = 64 * 1024;
