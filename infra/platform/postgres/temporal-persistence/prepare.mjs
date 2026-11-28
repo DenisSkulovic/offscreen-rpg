@@ -298,19 +298,74 @@ function waitApplied(access, type, created, deadline, secretVersion) {
   throw new Error(`CNPG reconciliation timed out: ${name}`);
 }
 
-function verifyDatabase(access, database, open) {
+// Dev-only monitoring exception. The CNPG collector role may hold exactly one
+// extra ACL entry on a Temporal store: CONNECT, no grant option, granted by the
+// database owner. Everything below is evaluated by PostgreSQL in one snapshot.
+const MONITOR_ROLE = 'cnpg_metrics_exporter';
+// `r` is the candidate role row. Membership uses pg_has_role(..., 'MEMBER'),
+// which also sees NOINHERIT and transitive paths, so any non-superuser role
+// that could ever be or assume the exporter makes the role unsafe.
+const MONITOR_ROLE_SAFE = `r.rolname = '${MONITOR_ROLE}' AND r.rolcanlogin
+  AND NOT (r.rolsuper OR r.rolcreatedb OR r.rolcreaterole OR r.rolreplication OR r.rolbypassrls)
+  AND pg_has_role(r.oid, 'pg_monitor', 'MEMBER')
+  AND NOT EXISTS (
+    SELECT FROM pg_roles o
+    WHERE o.oid <> r.oid AND NOT o.rolsuper AND pg_has_role(o.oid, r.oid, 'MEMBER')
+  )`;
+const MONITOR_GRANT_EXACT = `a.privilege_type = 'CONNECT' AND NOT a.is_grantable
+  AND a.grantor = d.datdba
+  AND EXISTS (SELECT FROM pg_roles r WHERE r.oid = a.grantee AND ${MONITOR_ROLE_SAFE})`;
+
+function permittedMonitorGrant(profileId) {
+  if (profileId === 'dev') return true;
+  // Release stays owner-only; any other profile is a caller error, not a default.
+  if (profileId === 'release') return false;
+  throw new Error('unknown Temporal persistence profile');
+}
+
+/** @returns {'absent' | 'safe' | 'unsafe'} state of the CNPG collector role. */
+function monitorRoleState(access) {
+  const state = access.sql(`SELECT CASE
+    WHEN NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${MONITOR_ROLE}') THEN 'absent'
+    WHEN EXISTS (SELECT FROM pg_roles r WHERE ${MONITOR_ROLE_SAFE}) THEN 'safe'
+    ELSE 'unsafe' END`);
+  return state === 'absent' || state === 'safe' ? state : 'unsafe';
+}
+
+export function verifyDatabase(access, database, open, profileId) {
   const expectedConnections = open ? 'true' : 'false';
+  const offending = permittedMonitorGrant(profileId)
+    ? `a.grantee <> d.datdba AND NOT (${MONITOR_GRANT_EXACT})`
+    : 'a.grantee <> d.datdba';
   if (access.sql(`SELECT EXISTS (
     SELECT FROM pg_database d
     WHERE d.datname = '${database}' AND pg_get_userbyid(d.datdba) = 'temporal'
       AND d.datallowconn = ${expectedConnections}
       AND NOT EXISTS (
         SELECT FROM aclexplode(COALESCE(d.datacl, acldefault('d', d.datdba))) a
-        WHERE a.grantee <> d.datdba
+        WHERE ${offending}
       )
   )`) !== 't') {
     throw new Error(`Temporal database ownership or ACL mismatch: ${database}`);
   }
+}
+
+// Grant exact monitor CONNECT on a store that is still closed, if the verified
+// collector role exists. Never creates or alters the role. Returns the monitoring
+// disposition so callers can report a gated state instead of failing provisioning.
+function grantMonitoringOnClosedStore(access, database, profileId) {
+  if (!permittedMonitorGrant(profileId)) return 'release-owner-only';
+  const state = monitorRoleState(access);
+  if (state === 'absent') return 'role-absent';
+  if (state === 'unsafe') return 'role-unsafe';
+  access.sql(`GRANT CONNECT ON DATABASE "${database}" TO "${MONITOR_ROLE}"`);
+  if (access.sql(`SELECT EXISTS (
+    SELECT FROM pg_database d, aclexplode(COALESCE(d.datacl, acldefault('d', d.datdba))) a
+    WHERE d.datname = '${database}' AND ${MONITOR_GRANT_EXACT}
+  )`) !== 't') {
+    throw new Error(`Temporal monitoring grant mismatch: ${database}`);
+  }
+  return 'granted';
 }
 
 const FRESH_SCHEMA_CHECK = `SELECT
@@ -344,6 +399,7 @@ export function prepareFreshTemporalPersistence(
 
   // Refuse all pre-existing identities before generating credentials or writing.
   assertFresh(access);
+  const monitoring = [];
   const deadline = Date.now() + RECONCILE_TIMEOUT_MS;
   const password = randomBytes(32).toString('base64url');
   const secret = access.create({
@@ -375,12 +431,13 @@ export function prepareFreshTemporalPersistence(
       throw new Error(`Temporal database did not reconcile closed: ${database}`);
     }
     access.sql(`REVOKE CONNECT, TEMPORARY ON DATABASE "${database}" FROM PUBLIC`);
-    verifyDatabase(access, database, false);
+    monitoring.push(grantMonitoringOnClosedStore(access, database, profile.id));
+    verifyDatabase(access, database, false, profile.id);
     created = access.patch(DATABASE_RESOURCE, created.metadata.name, created, {
       allowConnections: true,
     });
     waitApplied(access, DATABASE_RESOURCE, created, deadline);
-    verifyDatabase(access, database, true);
+    verifyDatabase(access, database, true, profile.id);
     if (access.sql(FRESH_SCHEMA_CHECK, database) !== 't') {
       throw new Error(`Temporal database is not an empty owner-writable store: ${database}`);
     }
@@ -426,8 +483,17 @@ export function prepareFreshTemporalPersistence(
     throw new Error('Temporal source credential changed during provisioning');
   }
 
-  // Return only identity; the Temporal namespace owner projects the Secret.
-  return { namespace: profile.namespaces.postgres, secretName: SECRET, secretVersion };
+  // Return only identity and monitoring disposition; the Temporal namespace
+  // owner projects the Secret. Monitoring is ready only if every store was granted.
+  return {
+    namespace: profile.namespaces.postgres,
+    secretName: SECRET,
+    secretVersion,
+    monitoring: monitoring.every((state) => state === 'granted')
+      ? 'ready'
+      : monitoring.includes('role-unsafe') ? 'refused-role-unsafe'
+        : monitoring.includes('role-absent') ? 'not-ready-role-absent' : 'not-applicable',
+  };
 }
 
 
@@ -464,7 +530,7 @@ export function verifyExistingTemporalPersistence(profileId, { run = runPlatform
         return { ok: false, reason: 'temporal-declaration-identity' };
       }
     }
-    for (const database of DATABASES) verifyDatabase(access, database, true);
+    for (const database of DATABASES) verifyDatabase(access, database, true, profile.id);
     if (access.sql(`SELECT EXISTS (
       SELECT FROM pg_roles WHERE rolname = 'temporal' AND rolcanlogin
       AND NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls OR rolinherit)

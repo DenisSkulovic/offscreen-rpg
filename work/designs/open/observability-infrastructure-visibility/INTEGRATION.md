@@ -71,6 +71,10 @@ Observability does not own node certificates, object-store rollout, Redis ACLs o
 
 The complete proposed [OBS-E2-01–13 and PG01 group](../../../changes/open/observability-infrastructure-visibility/README.md) is prepared. Its group README owns the dependency graph, branch, write collisions and closure; its [native input register](../../../changes/open/observability-infrastructure-visibility/NATIVE-INPUTS.md) owns the remaining bounded factual freeze. No new architecture review is required for ordinary gate closure. No dispatch or live mutation is authorized by planning. Preserve the acceptance matrix below as the joint proof authority; exact selected contracts transfer to permanent owners at acceptance. No unrelated E1 certification or additional future evolution is implied.
 
+## Transferred constituent obligations
+
+- **PG01 owner qualification (NOT RUN; transferred from archived OBS-E2-PG01, source `71213163a4176d7834f3bf4b22e6bc2d895f016a`):** before 04 freezes full PostgreSQL statistics and before 13, and only after separately authorized owner commission of an exact clean joined `implementation/observability-infrastructure-visibility` SHA containing PG01, run PostgreSQL-only `monitoring-access.mjs status` then `apply` for `postgres`, `dev`, `dev_1`, `temporal`, `temporal_visibility`. Prerequisites: clean HEAD/branch verified, both maintenance variables set, all competing writers/provisioning/activation quiesced, no ordinary observability ensure, no E2 activation. Verify role properties, exact CONNECT without grant option, PUBLIC denied, unchanged owner/migration/runtime/Temporal graph, `verifyExistingTemporalPersistence`, then loopback collector `/metrics` with `cnpg_collector_up=1`, `cnpg_collector_last_collection_error=0` and actual transaction/connection/lock families. HTTP 200 alone fails. On residual collector error retain evidence; do not broaden ACLs or retry automatically. Record tested SHA, native output and families for 04/07 freeze.
+
 ## Acceptance matrix
 
 | Gate | Concrete required evidence |
