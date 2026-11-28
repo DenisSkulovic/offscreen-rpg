@@ -1,0 +1,2 @@
+role	immutable-reference
+kube-state-metrics	registry.k8s.io/kube-state-metrics/kube-state-metrics@sha256:01171220c7c059afc85034ffe687bfe7249e41c0cc46fbe9a5128503ceee3016
