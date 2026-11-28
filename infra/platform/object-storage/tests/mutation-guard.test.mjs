@@ -1,3 +1,5 @@
+import { EventEmitter } from 'node:events';
+import { PassThrough } from 'node:stream';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import {
@@ -699,8 +701,9 @@ test('metrics session records intent, issues a capability and rejects forged, ch
 test('old writers refuse a metrics pending and exact clear removes only the owned record', async () => {
   const stateRoot = mkdtempSync(join(tmpdir(), 'os-metrics-'));
   await withObjectStorageMetricsTransition(
-    async ({ recordIntent, clearIntent }) => {
+    async ({ recordIntent, clearIntent, dispatchUpgrade }) => {
       const handle = recordIntent(metricsIntent());
+      assert.throws(() => clearIntent(handle), /no verified dispatch/);
       await assert.rejects(
         withObjectStorageMutation('dev', async () => ({ ok: true }), {
           stateRoot,
@@ -709,9 +712,22 @@ test('old writers refuse a metrics pending and exact clear removes only the owne
         }),
         /pending receipt exists/,
       );
+      await dispatchUpgrade(handle);
+      await assert.rejects(dispatchUpgrade(handle), /already dispatched/);
       clearIntent(handle);
       assert.equal(readObjectStoragePendingState(stateRoot, 'kind-offscreen-dev').kind, 'absent');
     },
-    { stateRoot },
+    {
+      stateRoot,
+      spawnChild: () => {
+        const child = new EventEmitter();
+        child.stdout = new PassThrough();
+        child.stderr = new PassThrough();
+        child.stdin = new PassThrough();
+        child.kill = () => {};
+        setImmediate(() => child.emit('close', 0, null));
+        return child;
+      },
+    },
   );
 });

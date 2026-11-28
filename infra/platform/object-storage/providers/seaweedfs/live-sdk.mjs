@@ -22,10 +22,10 @@ function credentials(profile, name, slotId, expected) {
   return { accessKeyId, secretAccessKey };
 }
 
-async function withForward(profile, action) {
+async function withForward(profile, action, remotePort = 8333) {
   const child = spawn('kubectl', ['--context', profile.contextName, '-n',
     profile.namespaces.objectStorage, 'port-forward', '--address', '127.0.0.1',
-    'service/object-store', ':8333'], { stdio: ['ignore', 'pipe', 'pipe'] });
+    'service/object-store', ':' + remotePort], { stdio: ['ignore', 'pipe', 'pipe'] });
   let closed = false;
   const exited = new Promise(resolve => {
     child.once('close', () => { closed = true; resolve(); });
@@ -39,7 +39,7 @@ async function withForward(profile, action) {
       child.on('close', () => finish(reject, new Error('forward closed')));
       const data = chunk => {
         output = (output + chunk.toString()).slice(-4096);
-        const match = /Forwarding from 127\.0\.0\.1:(\d+) -> 8333/.exec(output);
+        const match = new RegExp('Forwarding from 127\\.0\\.0\\.1:(\\d+) -> ' + remotePort).exec(output);
         if (match) finish(resolve, Number(match[1]));
       };
       child.stdout.on('data', data);
@@ -123,4 +123,102 @@ export async function observeDevS3Sdk(tenant, observation, expectedBucketNames) 
       for (const client of clients) client.destroy();
     }
   });
+}
+
+const MARKER_MAX_BYTES = 4096;
+const METRICS_MAX_BYTES = 2 * 1024 * 1024;
+
+function adminSecretIdentity(profile) {
+  const raw = execFileSync('kubectl', ['--context', profile.contextName, '-n',
+    profile.namespaces.objectStorage, 'get', 'secret', 'object-store-s3', '-o', 'json'],
+  { encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'] });
+  const meta = JSON.parse(raw).metadata ?? {};
+  return { uid: meta.uid, resourceVersion: meta.resourceVersion };
+}
+
+/**
+ * Bounded GET of the retained synthetic marker. Credentials stay in memory;
+ * returns only size and SHA-256. The admin Secret UID/resourceVersion must
+ * equal `expectedSecret` before and after the read.
+ * @param {{ bucket: string, key: string }} descriptor
+ * @param {{ uid: string, resourceVersion: string }} expectedSecret
+ */
+export async function readMarkerObject(descriptor, expectedSecret) {
+  const profile = readPlatformProfile('dev');
+  const same = (id) => id.uid === expectedSecret.uid && id.resourceVersion === expectedSecret.resourceVersion;
+  if (!same(adminSecretIdentity(profile))) throw new Error('marker admin Secret changed');
+  const sdk = requireSdk('@aws-sdk/client-s3');
+  const { createHash } = await import('node:crypto');
+  const result = await withForward(profile, async endpoint => {
+    const client = new sdk.S3Client({ endpoint, region: 'us-east-1', forcePathStyle: true,
+      credentials: credentials(profile, 'object-store-s3'), maxAttempts: 1 });
+    try {
+      const response = await client.send(new sdk.GetObjectCommand({ Bucket: descriptor.bucket, Key: descriptor.key }),
+        { abortSignal: AbortSignal.timeout(10_000) });
+      const length = response.ContentLength;
+      if (!Number.isInteger(length) || length < 0 || length > MARKER_MAX_BYTES) {
+        response.Body?.destroy?.();
+        throw new Error('marker length invalid');
+      }
+      const hash = createHash('sha256');
+      let size = 0;
+      for await (const chunk of response.Body) {
+        size += chunk.length;
+        if (size > MARKER_MAX_BYTES) { response.Body.destroy(); throw new Error('marker too large'); }
+        hash.update(chunk);
+      }
+      if (size !== length) throw new Error('marker length mismatch');
+      return { size, sha256: hash.digest('hex') };
+    } finally {
+      client.destroy();
+    }
+  });
+  if (!same(adminSecretIdentity(profile))) throw new Error('marker admin Secret changed');
+  return result;
+}
+
+/**
+ * Bounded loopback GET of the native metrics endpoint. Returns only family
+ * names, types and label keys, never sample values.
+ */
+export async function scrapeMetricFamilies() {
+  const profile = readPlatformProfile('dev');
+  return withForward(profile, async endpoint => {
+    const response = await fetch(endpoint + '/metrics', { signal: AbortSignal.timeout(10_000) });
+    if (response.status !== 200) throw new Error('metrics endpoint status');
+    const chunks = [];
+    let size = 0;
+    for await (const chunk of response.body) {
+      size += chunk.length;
+      if (size > METRICS_MAX_BYTES) throw new Error('metrics body too large');
+      chunks.push(chunk);
+    }
+    return parseMetricFamilies(Buffer.concat(chunks).toString('utf8'));
+  }, 9327);
+}
+
+/** @param {string} text */
+export function parseMetricFamilies(text) {
+  const types = new Map();
+  const labels = new Map();
+  let samples = 0;
+  for (const line of text.split('\n')) {
+    if (!line) continue;
+    const type = /^# TYPE ([a-zA-Z_:][a-zA-Z0-9_:]*) (counter|gauge|histogram|summary|untyped)$/.exec(line);
+    if (type) { types.set(type[1], type[2]); continue; }
+    if (line.startsWith('#')) continue;
+    const sample = /^([a-zA-Z_:][a-zA-Z0-9_:]*)(?:\{([^}]*)\})? [^ ]+(?: [0-9]+)?$/.exec(line);
+    if (!sample) throw new Error('metrics sample malformed');
+    samples += 1;
+    const keys = labels.get(sample[1]) ?? new Set();
+    for (const pair of (sample[2] ?? '').split(',')) {
+      const key = /^\s*([a-zA-Z_][a-zA-Z0-9_]*)=/.exec(pair)?.[1];
+      if (key) keys.add(key);
+    }
+    labels.set(sample[1], keys);
+  }
+  if (samples === 0) throw new Error('metrics sample set empty');
+  return [...labels.keys()].sort().map(name => ({
+    name, type: types.get(name) ?? 'untyped', labelKeys: [...labels.get(name)].sort(),
+  }));
 }

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { isDeepStrictEqual } from 'node:util';
 import { join } from 'node:path';
@@ -2497,6 +2498,82 @@ export function observeOwnedMetricsTransition(
   deps = {},
 ) {
   assertOwnedMetricsIntent(handle);
+  const result = observeOwnerProjection(expectedHistoryId, deps);
+  assertOwnedMetricsIntent(handle);
+  return result;
+}
+
+/**
+ * Read-only owner projection BEFORE the intent exists (the intent embeds this
+ * identity). Only available while no pending record of any kind exists, so it
+ * can never be used to look through a retained transition.
+ * @param {'dev-base-r1' | 'dev-metrics-r1' | 'dev-metrics-r1-r2'} expectedHistoryId
+ * @param {{ run?: typeof runPlatformCommand, stateRoot?: string }} [deps]
+ */
+export function observeOwnerPredecessorBeforeIntent(expectedHistoryId, deps = {}) {
+  const profile = readPlatformProfile('dev');
+  let pending;
+  try {
+    pending = readObjectStoragePendingState(
+      deps.stateRoot ?? defaultObjectStorageStateRoot(),
+      profile.contextName,
+    );
+  } catch {
+    pending = { kind: 'unknown' };
+  }
+  if (pending.kind !== 'absent') {
+    return { ok: false, reason: 'object-store pending record exists' };
+  }
+  return observeOwnerProjection(expectedHistoryId, deps);
+}
+
+/**
+ * Exact manifest digests of the predecessor (fixed-false overlay) and target
+ * dev workload documents: SHA256 of UTF-8 JSON of the parsed documents sorted
+ * by document identity with recursively sorted object keys.
+ * @param {{ run?: typeof runPlatformCommand }} [deps]
+ */
+export function computeMetricsManifestDigests(deps = {}) {
+  const run = guardReadOnlyRun(deps.run ?? runPlatformCommand);
+  const digest = (documents) =>
+    createHash('sha256')
+      .update(
+        JSON.stringify(
+          [...documents]
+            .sort((a, b) => {
+              const x = documentIdentity(a);
+              const y = documentIdentity(b);
+              return x < y ? -1 : x > y ? 1 : 0;
+            })
+            .map(sortKeysDeep),
+        ),
+        'utf8',
+      )
+      .digest('hex');
+  const render = (stdinOverlay) =>
+    renderPlatformDocuments(
+      { service: 'object-storage', profile: 'dev', section: 'workloads' },
+      stdinOverlay ? { run, stdinOverlay } : { run },
+    );
+  return {
+    predecessorManifestSha256: digest(render({ metricsEnabled: false })),
+    targetManifestSha256: digest(render(undefined)),
+  };
+}
+
+function sortKeysDeep(value) {
+  if (Array.isArray(value)) return value.map(sortKeysDeep);
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, sortKeysDeep(value[key])]),
+    );
+  }
+  return value;
+}
+
+function observeOwnerProjection(expectedHistoryId, deps = {}) {
   if (!OWNER_HISTORY_IDS.has(expectedHistoryId)) {
     return { ok: false, reason: 'expected object-store history is not selected' };
   }
@@ -2506,7 +2583,6 @@ export function observeOwnedMetricsTransition(
     owner: true,
     priorReceipt: null,
   });
-  assertOwnedMetricsIntent(handle);
   const { chain, history, live } = observed;
   if (chain.state !== 'native-compatible') {
     return { ok: false, reason: chain.reason ?? 'object-store chain refused' };

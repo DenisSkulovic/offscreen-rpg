@@ -1,5 +1,16 @@
 import process from 'node:process';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
+import {
+  closeSync,
+  constants,
+  fstatSync,
+  lstatSync,
+  openSync,
+  readFileSync,
+  readSync,
+} from 'node:fs';
+import { homedir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   readPlatformObject,
@@ -12,13 +23,19 @@ import {
 } from '../../../common/render.mjs';
 import {
   HELM_WAIT_SECONDS,
+  withObjectStorageMetricsTransition,
   withObjectStorageMutation,
 } from './mutation-guard.mjs';
 import {
   OBJECT_STORE_RELEASE_NAME,
+  computeMetricsManifestDigests,
   observeObjectStorageChain,
   observeObjectStorageHistory,
+  observeOwnedMetricsTransition,
+  observeOwnerPredecessorBeforeIntent,
 } from './observe.mjs';
+import { MIN_HOST_MEMORY_MIB, parseMeminfoMiB } from '../../../../clusters/kind/manager/host-probe.mjs';
+import { readExistingRegistryV2 } from '../../../../../tools/dev-environments/src/domain/dev-worktree-registry.mjs';
 
 export const OBJECT_STORE_ADMIN_SECRET = 'object-store-s3';
 
@@ -369,6 +386,362 @@ export async function ensureObjectStorage(profileId, deps = {}) {
   }
 }
 
+
+// --- Explicit occupied owner operation: upgrade-metrics (G4a) ---
+
+const MARKER_BUCKET = /^offscreen-e2-marker-[0-9a-f]{32}$/;
+const SLOT_NAMESPACE = /^offscreen-dev-[1-9][0-9]*$/;
+
+class OwnerRefusal extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'OwnerRefusal';
+  }
+}
+
+/**
+ * Exact marker descriptor `{schema:1,bucket,key,sha256,size}`; no other keys.
+ * @param {unknown} value
+ */
+export function parseMarkerDescriptor(value) {
+  const keys = ['bucket', 'key', 'schema', 'sha256', 'size'];
+  if (
+    value === null ||
+    typeof value !== 'object' ||
+    Array.isArray(value) ||
+    Object.keys(value).sort().join() !== keys.join()
+  ) {
+    throw new OwnerRefusal('marker descriptor is malformed');
+  }
+  const d = /** @type {Record<string, any>} */ (value);
+  if (
+    d.schema !== 1 ||
+    typeof d.bucket !== 'string' ||
+    !MARKER_BUCKET.test(d.bucket) ||
+    d.key !== 'retained-marker.bin' ||
+    typeof d.sha256 !== 'string' ||
+    !/^[0-9a-f]{64}$/.test(d.sha256) ||
+    !Number.isInteger(d.size) ||
+    d.size < 32 ||
+    d.size > 4096
+  ) {
+    throw new OwnerRefusal('marker descriptor is malformed');
+  }
+  return { schema: 1, bucket: d.bucket, key: d.key, sha256: d.sha256, size: d.size };
+}
+
+/**
+ * Private regular owner file: 0600, no symlink, nlink 1, <= 4096 bytes,
+ * fstat/lstat same device and inode.
+ * @param {string} path
+ */
+export function readMarkerDescriptorFile(path) {
+  let fd;
+  try {
+    fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+  } catch {
+    throw new OwnerRefusal('marker file is unreadable');
+  }
+  try {
+    const stat = fstatSync(fd);
+    const named = lstatSync(path);
+    if (
+      !stat.isFile() ||
+      named.isSymbolicLink() ||
+      stat.dev !== named.dev ||
+      stat.ino !== named.ino ||
+      stat.nlink !== 1 ||
+      (stat.mode & 0o777) !== 0o600 ||
+      (typeof process.getuid === 'function' && stat.uid !== process.getuid()) ||
+      stat.size > 4096
+    ) {
+      throw new OwnerRefusal('marker file is not a private regular file');
+    }
+    const buffer = Buffer.alloc(stat.size);
+    let offset = 0;
+    while (offset < buffer.length) {
+      const n = readSync(fd, buffer, offset, buffer.length - offset, offset);
+      if (n === 0) break;
+      offset += n;
+    }
+    if (offset !== buffer.length) throw new OwnerRefusal('marker file is unreadable');
+    let parsed;
+    try {
+      parsed = JSON.parse(buffer.toString('utf8'));
+    } catch {
+      throw new OwnerRefusal('marker descriptor is malformed');
+    }
+    return parseMarkerDescriptor(parsed);
+  } finally {
+    closeSync(fd);
+  }
+}
+
+function canonicalRegistryRoot() {
+  return join(homedir(), '.local', 'state', 'offscreen-rpg', 'dev-worktree-registry');
+}
+
+/**
+ * Read-only quiescence proof: v2 registry without lease or process identity,
+ * and no active workload in any registered or numbered slot namespace.
+ * @param {{ run: import('../../../common/commands.mjs').runPlatformCommand, contextName: string, registryRoot: string, readRegistry: (root: string) => any }} input
+ */
+export function assertMetricsQuiescence({ run, contextName, registryRoot, readRegistry }) {
+  let registry;
+  try {
+    registry = readRegistry(registryRoot);
+  } catch {
+    throw new OwnerRefusal('dev registry is unreadable or malformed');
+  }
+  const environments = Object.values(registry?.environmentsById ?? {});
+  if (registry?.version !== 2 || !registry.environmentsById) {
+    throw new OwnerRefusal('dev registry is not a valid v2 registry');
+  }
+  for (const record of environments) {
+    if (record.lease !== null || record.processIdentity !== null) {
+      throw new OwnerRefusal('dev registry has an active lease or process');
+    }
+  }
+  const registered = new Set(environments.map((record) => record.namespace));
+  const read = (args) => {
+    const result = run('kubectl', ['--context', contextName, ...args, '-o', 'json'], { timeoutMs: 15_000 });
+    if (!result?.ok) throw new OwnerRefusal('cluster inventory is unreadable');
+    try {
+      const parsed = JSON.parse(result.stdout ?? '');
+      if (!Array.isArray(parsed.items)) throw new Error('x');
+      return parsed.items;
+    } catch {
+      throw new OwnerRefusal('cluster inventory is unreadable');
+    }
+  };
+  const namespaces = read(['get', 'namespaces'])
+    .map((item) => item?.metadata?.name)
+    .filter((name) => registered.has(name) || SLOT_NAMESPACE.test(name ?? ''));
+  for (const namespace of namespaces) {
+    for (const pod of read(['get', 'pods', '-n', namespace])) {
+      const phase = pod?.status?.phase;
+      if (pod?.metadata?.deletionTimestamp || (phase !== 'Succeeded' && phase !== 'Failed')) {
+        throw new OwnerRefusal('slot namespace has an active Pod');
+      }
+    }
+    for (const job of read(['get', 'jobs', '-n', namespace])) {
+      if ((job?.status?.active ?? 0) > 0) throw new OwnerRefusal('slot namespace has an active Job');
+    }
+    for (const kind of ['deployments', 'statefulsets']) {
+      for (const item of read(['get', kind, '-n', namespace])) {
+        if ((item?.spec?.replicas ?? 1) !== 0) throw new OwnerRefusal('slot namespace has a running controller');
+      }
+    }
+  }
+}
+
+const STABLE_CHAIN_KEYS = [
+  'contextName', 'kubeSystemUid', 'namespaceUid', 'deploymentUid', 'serviceUid',
+  'serviceClusterIP', 'secretUid', 'secretResourceVersion', 'pvcUid', 'pvUid',
+  'pvHostPath', 'nodeName', 'dataDirectoryIdentity',
+];
+
+/**
+ * The exact G4a transition. Zero writes unless the predecessor matches and
+ * every precondition holds; every failure after the intent is recorded
+ * retains it and issues no further write.
+ * @param {{ markerDescriptor: object, confirmContext: string }} request
+ * @param {object} [deps]
+ */
+export async function upgradeObjectStorageMetrics(request, deps = {}) {
+  const run = deps.run ?? runPlatformCommand;
+  const profile = readPlatformProfile('dev');
+  const base = {
+    mode: /** @type {const} */ ('upgrade-metrics'),
+    profileId: /** @type {const} */ ('dev'),
+    context: profile.contextName,
+    namespace: profile.namespaces.objectStorage,
+  };
+  const refuse = (reason, extra = {}) => ({ ...base, ok: false, mutated: false, intentRetained: false, reason, ...extra });
+  if (request.confirmContext !== profile.contextName) return refuse('confirmed context does not match');
+  let marker;
+  try {
+    marker = parseMarkerDescriptor(request.markerDescriptor);
+  } catch (error) {
+    return refuse(error.message);
+  }
+  const env = deps.env ?? process.env;
+  if (
+    env.OFFSCREEN_OBJECT_STORAGE_METRICS_UPGRADE !== 'authorized' ||
+    env.OFFSCREEN_OBJECT_STORAGE_MAINTENANCE !== 'quiesced'
+  ) {
+    return refuse('owner metrics upgrade is not authorized');
+  }
+  const registryRoot = deps.registryRoot ?? canonicalRegistryRoot();
+  const override = env.OFFSCREEN_DEV_WORKTREE_REGISTRY?.trim();
+  if (deps.registryRoot === undefined && override && resolve(override) !== registryRoot) {
+    return refuse('noncanonical dev registry override refused');
+  }
+  const observeDeps = { run, stateRoot: deps.stateRoot };
+  // Injection seams for fixtures; defaults are the real read-only observers.
+  const obs = {
+    history: observeObjectStorageHistory,
+    chain: observeObjectStorageChain,
+    before: observeOwnerPredecessorBeforeIntent,
+    owned: observeOwnedMetricsTransition,
+    ...deps.observers,
+  };
+  const memory = () => {
+    let text;
+    try {
+      text = (deps.readMeminfo ?? (() => readFileSync('/proc/meminfo', 'utf8')))();
+    } catch {
+      throw new OwnerRefusal('host memory is unreadable');
+    }
+    const { memAvailableMiB } = parseMeminfoMiB(text);
+    if (memAvailableMiB === null || memAvailableMiB < MIN_HOST_MEMORY_MIB) {
+      throw new OwnerRefusal('host memory is insufficient');
+    }
+  };
+  const quiescence = () =>
+    (deps.assertQuiescence ?? assertMetricsQuiescence)({
+      run,
+      contextName: profile.contextName,
+      registryRoot,
+      readRegistry: deps.readRegistry ?? readExistingRegistryV2,
+    });
+  const readMarker = deps.readMarker ?? (async (descriptor, secret) => (await import('./live-sdk.mjs')).readMarkerObject(descriptor, secret));
+  const scrapeMetrics = deps.scrapeMetrics ?? (async () => (await import('./live-sdk.mjs')).scrapeMetricFamilies());
+  const verifyMarker = async (secret) => {
+    let read;
+    try {
+      read = await readMarker({ bucket: marker.bucket, key: marker.key }, secret);
+    } catch {
+      throw new OwnerRefusal('marker readback failed');
+    }
+    if (read?.sha256 !== marker.sha256 || read?.size !== marker.size) {
+      throw new OwnerRefusal('marker readback does not match descriptor');
+    }
+  };
+
+  let handle;
+  let dispatched = false;
+  try {
+    return await withObjectStorageMetricsTransition(
+      async (session) => {
+        // Zero-write repeat: exact target history is verified read-only.
+        const history = obs.history('dev', observeDeps);
+        if (history.historyId === 'dev-metrics-r1' || history.historyId === 'dev-metrics-r1-r2') {
+          const chain = obs.chain('dev', observeDeps);
+          if (chain.state !== 'native-compatible' || chain.historyId !== history.historyId) {
+            return refuse(chain.reason ?? 'object-store chain refused');
+          }
+          return { ...base, ok: true, mutated: false, intentRetained: false, state: 'native-noop', historyId: history.historyId };
+        }
+        if (history.historyId !== 'dev-base-r1') {
+          return refuse(history.reason ?? 'object-store history is not the exact predecessor');
+        }
+        quiescence();
+        memory();
+        const before = obs.before('dev-base-r1', observeDeps);
+        if (!before.ok) return refuse(before.reason);
+        await verifyMarker({ uid: before.chain.secretUid, resourceVersion: before.chain.secretResourceVersion });
+        const digests = (deps.computeDigests ?? computeMetricsManifestDigests)({ run });
+        // Repeat immediately before the write.
+        quiescence();
+        memory();
+        const c = before.chain;
+        handle = session.recordIntent({
+          schema: 2,
+          operation: 'upgrade-metrics',
+          profileId: 'dev',
+          contextName: profile.contextName,
+          startedAt: new Date().toISOString(),
+          operationId: (deps.operationId ?? randomUUID)(),
+          identity: { ...c },
+          details: {
+            predecessorRevision: 1,
+            targetRevision: 2,
+            predecessorManifestSha256: digests.predecessorManifestSha256,
+            targetManifestSha256: digests.targetManifestSha256,
+            namespaceUid: c.namespaceUid,
+            deploymentUid: c.deploymentUid,
+            serviceUid: c.serviceUid,
+            serviceClusterIP: c.serviceClusterIP,
+            secretUid: c.secretUid,
+            secretResourceVersion: c.secretResourceVersion,
+            pvcUid: c.pvcUid,
+            pvUid: c.pvUid,
+            pvHostPath: c.pvHostPath,
+            oldReplicaSetUid: c.replicaSetUid,
+            oldPodUid: c.podUid,
+            oldHelmStorageUid: c.helmStorageUids?.[1],
+            nodeName: c.nodeName,
+            dataDirectoryIdentity: c.dataDirectoryIdentity,
+            markerSha256: marker.sha256,
+            markerSize: marker.size,
+          },
+        });
+        const recheck = obs.owned(handle, 'dev-base-r1', { run });
+        if (!recheck.ok || JSON.stringify(recheck.chain) !== JSON.stringify(c)) {
+          throw new OwnerRefusal('predecessor identity changed before dispatch');
+        }
+        dispatched = true;
+        await session.dispatchUpgrade(handle);
+
+        const after = obs.owned(handle, 'dev-metrics-r1-r2', { run });
+        if (!after.ok) throw new OwnerRefusal(after.reason);
+        const n = after.chain;
+        if (
+          STABLE_CHAIN_KEYS.some((key) => n[key] !== c[key]) ||
+          n.predecessorReplicaSetUid !== c.replicaSetUid ||
+          n.replicaSetUid === c.replicaSetUid ||
+          n.podUid === c.podUid ||
+          n.helmStorageUids?.[1] !== c.helmStorageUids?.[1] ||
+          !n.helmStorageUids?.[2] ||
+          n.helmStorageUids[2] === n.helmStorageUids[1]
+        ) {
+          throw new OwnerRefusal('successor chain does not preserve the predecessor identity');
+        }
+        await verifyMarker({ uid: n.secretUid, resourceVersion: n.secretResourceVersion });
+        let families;
+        try {
+          families = await scrapeMetrics();
+        } catch {
+          throw new OwnerRefusal('metrics endpoint verification failed');
+        }
+        if (!Array.isArray(families) || families.length === 0) {
+          throw new OwnerRefusal('metrics endpoint verification failed');
+        }
+        const final = obs.owned(handle, 'dev-metrics-r1-r2', { run });
+        if (!final.ok || JSON.stringify(final.chain) !== JSON.stringify(n)) {
+          throw new OwnerRefusal('successor chain changed before finalization');
+        }
+        session.clearIntent(handle);
+        return {
+          ...base,
+          ok: true,
+          mutated: true,
+          intentRetained: false,
+          state: 'transition-proven',
+          predecessorHistoryId: 'dev-base-r1',
+          historyId: 'dev-metrics-r1-r2',
+          manifestDigests: digests,
+          replicaSets: { old: c.replicaSetUid, new: n.replicaSetUid },
+          pods: { old: c.podUid, new: n.podUid },
+          retainedMarker: { sha256: marker.sha256, size: marker.size },
+          metricFamilies: families,
+        };
+      },
+      { stateRoot: deps.stateRoot, now: deps.now, budgetMs: deps.budgetMs, spawnChild: deps.spawnChild },
+    );
+  } catch (error) {
+    const safe =
+      error instanceof Error &&
+      (error.name === 'OwnerRefusal' || error.message.startsWith('Object storage'));
+    return {
+      ...refuse(safe ? error.message : 'metrics transition failed (details withheld)'),
+      mutated: dispatched,
+      intentRetained: handle !== undefined,
+    };
+  }
+}
+
 /**
  * @param {string} command
  * @param {string[]} args
@@ -398,6 +771,31 @@ function objectStorageCliExitCodeForState(state) {
  * @param {string[]} args
  */
 async function objectStorageCliMain(args) {
+  if (args[0] === 'upgrade-metrics') {
+    if (
+      args.length !== 6 ||
+      args[1] !== 'dev' ||
+      args[2] !== '--confirm-context' ||
+      args[4] !== '--marker-file' ||
+      !args[3] ||
+      !args[5]
+    ) {
+      process.exitCode = 2;
+      return;
+    }
+    let result;
+    try {
+      result = await upgradeObjectStorageMetrics({
+        confirmContext: args[3],
+        markerDescriptor: readMarkerDescriptorFile(args[5]),
+      });
+    } catch (error) {
+      result = { mode: 'upgrade-metrics', ok: false, mutated: false, reason: error.name === 'OwnerRefusal' ? error.message : 'metrics upgrade refused' };
+    }
+    process.stdout.write(`${JSON.stringify(result)}\n`);
+    process.exitCode = result.ok ? 0 : 1;
+    return;
+  }
   const [command, profileId, extra] = args;
   if (
     extra ||

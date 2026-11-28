@@ -24,6 +24,10 @@ import {
 } from '../../../common/commands.mjs';
 import { DEV_BASELINE_NAMESPACE } from '../../../../clusters/kind/manager/dev-bootstrap.mjs';
 import { readPlatformProfile } from '../../../common/profile.mjs';
+import {
+  resolvePlatformChartPath,
+  resolvePlatformProfilePath,
+} from '../../../common/render.mjs';
 
 export const LOCK_WAIT_SECONDS = 30;
 export const INSTALL_BUDGET_MS = 600_000;
@@ -821,6 +825,7 @@ const METRICS_DETAIL_KEYS = [
   ...METRICS_STRING_DETAILS,
 ].sort();
 const SHA256 = /^[0-9a-f]{64}$/;
+const MIN_DISPATCH_REMAINING_MS = 190_000;
 
 function sameKeys(value, keys) {
   return (
@@ -961,7 +966,7 @@ function readPendingBytes(path) {
   }
 }
 
-/** @type {WeakMap<object, { path: string, text: string, dev: number, ino: number, active: boolean }>} */
+/** @type {WeakMap<object, { path: string, text: string, dev: number, ino: number, active: boolean, dispatched?: boolean, dispatchOk?: boolean }>} */
 const OWNED_METRICS_SESSIONS = new WeakMap();
 
 /**
@@ -992,14 +997,16 @@ export function assertOwnedMetricsIntent(handle) {
  * Dedicated lock boundary for the owner metrics transition. It reuses the
  * object-store lock path, refuses any existing pending record, and offers no
  * generic write callback: only exact typed intent recording and clearing.
- * The Helm dispatch of the transition is not available here.
+ * The only write besides the intent record is the single hardcoded Helm
+ * upgrade (`dispatchUpgrade`), available once, only for the owned intent.
  *
  * @param {(session: {
  *   remaining: () => number,
  *   recordIntent: (intent: object) => object,
+ *   dispatchUpgrade: (handle: object) => Promise<void>,
  *   clearIntent: (handle: object) => void,
  * }) => Promise<unknown>} operation
- * @param {{ stateRoot?: string, now?: () => number, budgetMs?: number, contextName?: string }} [deps]
+ * @param {{ stateRoot?: string, now?: () => number, budgetMs?: number, spawnChild?: typeof spawn }} [deps]
  */
 export async function withObjectStorageMetricsTransition(operation, deps = {}) {
   const profile = readPlatformProfile('dev');
@@ -1059,12 +1066,64 @@ export async function withObjectStorageMetricsTransition(operation, deps = {}) {
       issued = handle;
       return handle;
     };
+    const dispatchUpgrade = async (handle) => {
+      assertOwnedMetricsIntent(handle);
+      const session = OWNED_METRICS_SESSIONS.get(handle);
+      if (handle !== issued || session.dispatched) {
+        throw new Error('Object storage metrics upgrade already dispatched');
+      }
+      const budget = remaining();
+      if (budget < MIN_DISPATCH_REMAINING_MS) {
+        throw new Error('Object storage metrics upgrade budget too small');
+      }
+      // Fixed argv: no caller-supplied command, flag or value.
+      const argv = [
+        'upgrade',
+        'object-store',
+        resolvePlatformChartPath('object-storage'),
+        '--kube-context',
+        contextName,
+        '--namespace',
+        profile.namespaces.objectStorage,
+        '--reset-values',
+        '-f',
+        resolvePlatformProfilePath('object-storage', 'dev'),
+        '--wait',
+        '--timeout',
+        `${HELM_WAIT_SECONDS}s`,
+      ];
+      // One-shot: marked before spawn so any failure or unknown outcome keeps
+      // the fence and no second write can ever be issued.
+      session.dispatched = true;
+      session.dispatchOk = false;
+      const child = (deps.spawnChild ?? spawn)('helm', argv, {
+        stdio: ['pipe', 'pipe', 'pipe', lockFd],
+        windowsHide: true,
+      });
+      const result = await awaitBoundedChild(
+        child,
+        HELM_WAIT_SECONDS * 1000 + 5_000,
+      );
+      if (!result.ok || result.unknown) {
+        throw new Error('Object storage metrics upgrade incomplete or unknown');
+      }
+      session.dispatchOk = true;
+    };
     const clearIntent = (handle) => {
       assertOwnedMetricsIntent(handle);
+      const session = OWNED_METRICS_SESSIONS.get(handle);
+      if (!session.dispatched || session.dispatchOk !== true) {
+        throw new Error('Object storage metrics intent retained: no verified dispatch');
+      }
       clearPendingDurable(pendingPath);
-      OWNED_METRICS_SESSIONS.get(handle).active = false;
+      session.active = false;
     };
-    return await operation({ remaining, recordIntent, clearIntent });
+    return await operation({
+      remaining,
+      recordIntent,
+      dispatchUpgrade,
+      clearIntent,
+    });
   } finally {
     // The capability dies with custody; the record itself is retained.
     const session = issued ? OWNED_METRICS_SESSIONS.get(issued) : undefined;
