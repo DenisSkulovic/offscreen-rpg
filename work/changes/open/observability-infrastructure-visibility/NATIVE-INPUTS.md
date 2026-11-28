@@ -1,6 +1,6 @@
 # E2 | native input closure (planner/operator evidence only)
 
-**Status:** G1 registry identities and both runtime image identities resolved; KSM native specimen passed; scoped authorization predicates passed. G2 serving trust failed with the API CA, Redis slow-log exclusion, G3 CNPG/Collector and remaining frozen panel contracts, and G4 owner transition remain OPEN. Verified remote planning base `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. [Defended dossier](../../../designs/open/observability-infrastructure-visibility/EVIDENCE.md) owns architecture and scope. This is the one bounded evidence handoff for all affected packets, not an implementation research assignment. Owner ran the read-only native probe at the committed batch SHA; planner records the observed subset below. No native commands executed by planner; no fabricated digest, cert, endpoint, family or PASS. G5 is downstream construction and qualification. Owner must explicitly authorize any live probe creating resources, executing a helper container, or mutating data. Read-only metadata/port-forwards need correct fixed dev target and must not disclose credentials. No release commands, no provider spend.
+**Status:** G1 KSM specimen passed; Redis v1.97.0 replacement native specimen PASSED with frozen coverage. G2 node-local trusted HTTPS feasibility and Collector existing scrape PASSED. Durable trust provisioning, remaining KSM/native metric contracts, CNPG monitoring CONNECT owner correction and G4 transition remain OPEN. Verified remote planning base `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. [Defended dossier](../../../designs/open/observability-infrastructure-visibility/EVIDENCE.md) owns architecture and scope. This is the one bounded evidence handoff for all affected packets, not an implementation research assignment. Owner ran the read-only native probe at the committed batch SHA; planner records the observed subset below. No native commands executed by planner; no fabricated digest, cert, endpoint, family or PASS. G5 is downstream construction and qualification. Owner must explicitly authorize any live probe creating resources, executing a helper container, or mutating data. Read-only metadata/port-forwards need correct fixed dev target and must not disclose credentials. No release commands, no provider spend.
 
 ## G1 | helper image identity
 
@@ -8,7 +8,7 @@
 
 ```bash
 docker buildx imagetools inspect registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.20.0
-docker buildx imagetools inspect docker.io/oliver006/redis_exporter:v1.93.0
+docker buildx imagetools inspect docker.io/oliver006/redis_exporter:v1.97.0
 kubectl --context kind-offscreen-dev get nodes -o custom-columns=NAME:.metadata.name,OS:.status.nodeInfo.operatingSystem,ARCH:.status.nodeInfo.architecture
 ```
 
@@ -39,7 +39,7 @@ kubectl --context kind-offscreen-dev -n offscreen-dev-redis get pods,svc --show-
 kubectl --context kind-offscreen-dev -n offscreen-dev-observability get pods,svc --show-labels
 ```
 
-Use explicit dev loopback port-forward to the actual named Pod/Service and confirmed remote port, one at a time, for native endpoint inspection. For example, only if service mapping confirms it: `kubectl --context kind-offscreen-dev -n offscreen-dev-rabbitmq port-forward svc/rabbitmq 25692:15692 --address 127.0.0.1`, then `curl -fsS http://127.0.0.1:25692/metrics` locally; summarize metric family names, label **keys** and units, redact values and stop forward. No generic scrape or credentials sent to unverified endpoint. For CNPG and four Temporal roles prove exact Pod container/name/labels/port protocol (9187, 9090 selected), RabbitMQ aggregate 15692, Loki/Tempo/Grafana paths verified against actual rendered services, Prometheus/Collector existing jobs retained. Optional operator/control-plane endpoints remain inventory-only unless already safely verified. Redis v1.93.0: inspect exact tagged upstream source/flags, prove fixed target, disabled alternate scrape endpoint/config command, no key/stream/scan/script/client-list/value collection, emitted label keys and no data writes on separately authorized disposable exporter specimen; unauthenticated Redis remains local trust limitation, not ACL guarantee. No paid traffic. SeaweedFS native family proof comes with G4b.
+Use explicit dev loopback port-forward to the actual named Pod/Service and confirmed remote port, one at a time, for native endpoint inspection. For example, only if service mapping confirms it: `kubectl --context kind-offscreen-dev -n offscreen-dev-rabbitmq port-forward svc/rabbitmq 25692:15692 --address 127.0.0.1`, then `curl -fsS http://127.0.0.1:25692/metrics` locally; summarize metric family names, label **keys** and units, redact values and stop forward. No generic scrape or credentials sent to unverified endpoint. For CNPG and four Temporal roles prove exact Pod container/name/labels/port protocol (9187, 9090 selected), RabbitMQ aggregate 15692, Loki/Tempo/Grafana paths verified against actual rendered services, Prometheus/Collector existing jobs retained. Optional operator/control-plane endpoints remain inventory-only unless already safely verified. Redis v1.97.0 (active replacement; see owner replacement specimen): inspect exact tagged upstream source/flags, prove fixed target, disabled alternate scrape endpoint/config command, no key/stream/scan/script/client-list/value collection, emitted label keys and no data writes on separately authorized disposable exporter specimen; unauthenticated Redis remains local trust limitation, not ACL guarantee. No paid traffic. SeaweedFS native family proof comes with G4b.
 
 Record **one row per endpoint**: component, exact namespace/workload selector/container, service/port/path/scheme and trust/auth mode, actual successful query/metric family/label keys/unit, allowed labels, specific dashboard query+unit and meaning, expected job, missing/unsupported rationale, command status and date. Include one proven family per required panel and health/freshness negative semantics. Planner freezes the exact per-component coverage JSON rows (including panel IDs, PromQL, units and semantics) in this register or a linked evidence file before affected dispatch; 02/03/04/05/06 materialize those rows in their owned files, 07 consumes the same frozen rows without waiting for source joins and 08 checks equality. Implementation agents must not invent native metric names or labels. No unsupported fallback presented as healthy.
 
@@ -147,14 +147,106 @@ CNPG Cluster reports healthy state; default queries enabled and ConfigMap `cnpg-
 
 Collector existing Prometheus query `up{job="collector"}` returned 1; `count by (__name__) ({job="collector"})` showed `otelcol_exporter_queue_capacity`, `otelcol_exporter_queue_size` (three series each), `otelcol_process_cpu_seconds`, `otelcol_process_memory_rss`, `otelcol_process_uptime`, `otelcol_processor_batch_metadata_cardinality`, `promhttp_metric_handler_errors_total`, `target_info`, and scrape metadata. This resolves the previous port-forward failure as not establishing a scrape outage. No ingestion/drop/export counters in this query result: preserve existing pipeline and obtain actual positive families via authorized E1 synthetic signal path or mark absent honestly; no automatic zero or new pipeline. G5 not run.
 
+## Owner replacement specimen | 2026-11-28 01:34 UTC
+
+Source: `offscreen-e2-redis-cnpg.txt`, SHA256 `0542f164cf2d50299b2e9c19eb10d8401049cdd75b40d69753a122260c7c230d`, owner run at `1cf128c151d0c7a2813e16d74c51585009a11f08`, same dev kube-system UID `d3a42b05-3ef1-4008-a1de-fe689a8aa41a`. Both sections completed, no section errors; temporary namespace verified gone. No existing database grants or SeaweedFS changes. Reconciliation base `54f4244d6a6371e5189a5f78450736a0041a3858`.
+
+### Redis: replacement selected, native specimen PASS
+
+Select v1.97.0 in place of rejected v1.93.0. Registry index `sha256:f5f903fbe77571d455ede0453b084d6840bc62fc105efac001034421cab83b99`; Linux/amd64 manifest `sha256:d16780dcfefc6e42f48682ecc5fbd6dd3207938b1ee88f766b838436a4e27e6e`; canonical runtime image `docker.io/oliver006/redis_exporter@sha256:d16780dcfefc6e42f48682ecc5fbd6dd3207938b1ee88f766b838436a4e27e6e`. Both exclusion flags supported on exact image, runtime digest matched, `redis_up=1`, 185 families/266 samples, alternate `/scrape` HTTP 404, disposable key data unchanged. Command delta only `client|setname` 1, `info` 2, `latency|histogram` 1, `latency|latest` 1. No observed key/value reads, slowlog/commandlog, config changes, scans or writes. This is a bounded specimen, not server-enforced authorization or proof of every future command path. Existing Redis remains trusted-local unauthenticated. Preserve earlier negative v1.93.0 evidence as historical; never deploy that pin.
+
+Frozen OBS-E2-05 arguments: `--redis.addr=redis://redis.offscreen-dev-redis.svc:6379` plus `--disable-scrape-endpoint`, `--config-command=-`, `--disable-exporting-key-values`, `--export-client-list=false`, `--check-keys=`, `--check-single-keys=`, `--check-streams=`, `--exclude-slowlog-metrics`, `--exclude-commandlog-metrics`. Exporter HTTP port 9121 `/metrics` (specimen forward); static job `redis-exporter` to `obs-redis-exporter:9121` in `offscreen-dev-observability`. Exact selected native families below each have no native label keys; preserve fixed target labels and Prometheus-generated `up`/scrape metadata. Metric relabel keep anchored exact family names, not all `redis_.*`. No broad copying of `err`, `cmd`, client/instance metadata, process or key identifiers. The exporter may expose other metrics locally but the selected Prometheus collection stores only these families. Preserve configured sample/target limits. Scope and native endpoint behavior confirmed on disposable Redis; service DNS and actual owned backend qualification remain G5. Source readiness review and 02 join still required, not live enrollment permission.
+
+Frozen `coverage/redis.json` declaration (copy the JSON array verbatim; 07 reserves panel IDs 701–709 in the shared messaging dashboard, 08 verifies equality). Units are Grafana `bytes`, `ops`, `percentunit`, `none`; dashboard no-data must not render as healthy or zero. Overview status consumes the same freshness and health predicates, not a second Redis metric contract.
+
+```json
+[
+  {
+    "component": "redis",
+    "namespace": "offscreen-dev-redis",
+    "workloadSelector": {
+      "app.kubernetes.io/name": "redis",
+      "app.kubernetes.io/instance": "redis"
+    },
+    "jobs": [
+      "redis-exporter"
+    ],
+    "requiredFamilies": [
+      "redis_up",
+      "redis_memory_used_bytes",
+      "redis_keyspace_hits_total",
+      "redis_keyspace_misses_total",
+      "redis_evicted_keys_total",
+      "redis_connected_clients",
+      "redis_commands_processed_total"
+    ],
+    "panels": {
+      "offscreen-messaging-cache/701": {
+        "promql": "up{job=\"redis-exporter\"} and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)",
+        "unit": "none",
+        "interpretation": "Scrape state 1/0 only for a current target; missing or stale unknown."
+      },
+      "offscreen-messaging-cache/702": {
+        "promql": "redis_up{job=\"redis-exporter\"} and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90))) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)",
+        "unit": "none",
+        "interpretation": "Backend 1/0 distinct from scrape state; missing or stale unknown."
+      },
+      "offscreen-messaging-cache/703": {
+        "promql": "((redis_memory_used_bytes{job=\"redis-exporter\"}) and on(job,instance) (time() - timestamp(redis_memory_used_bytes{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "bytes",
+        "interpretation": "Backend used memory; current healthy scrape and backend required."
+      },
+      "offscreen-messaging-cache/704": {
+        "promql": "((rate(redis_keyspace_hits_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_hits_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "ops",
+        "interpretation": "Keyspace hits per second over 5m; no data if absent."
+      },
+      "offscreen-messaging-cache/705": {
+        "promql": "((rate(redis_keyspace_misses_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_misses_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "ops",
+        "interpretation": "Keyspace misses per second over 5m; no data if absent."
+      },
+      "offscreen-messaging-cache/706": {
+        "promql": "((((rate(redis_keyspace_hits_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_hits_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))) / ((((rate(redis_keyspace_hits_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_hits_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))) + (((rate(redis_keyspace_misses_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_misses_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))))) and on(job,instance) (((((rate(redis_keyspace_hits_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_hits_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))) + (((rate(redis_keyspace_misses_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_misses_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90))))) > 0)",
+        "unit": "percentunit",
+        "interpretation": "Hit fraction only for a positive denominator; zero traffic is undefined, not zero percent."
+      },
+      "offscreen-messaging-cache/707": {
+        "promql": "((rate(redis_evicted_keys_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_evicted_keys_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "ops",
+        "interpretation": "Evictions per second over 5m; zero valid only with current positive observation."
+      },
+      "offscreen-messaging-cache/708": {
+        "promql": "((redis_connected_clients{job=\"redis-exporter\"}) and on(job,instance) (time() - timestamp(redis_connected_clients{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Connected clients; no client identifiers."
+      },
+      "offscreen-messaging-cache/709": {
+        "promql": "((rate(redis_commands_processed_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_commands_processed_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "ops",
+        "interpretation": "Redis commands processed per second over 5m, including exporter traffic; not application-only."
+      }
+    },
+    "coverage": "enabled",
+    "reason": ""
+  }
+]
+```
+
+### CNPG: missing CONNECT confirmed; owner correction needed
+
+Catalog proves `cnpg_metrics_exporter` exists with LOGIN, non-superuser and `pg_monitor` membership; effective CONNECT false for all five connectable observed databases (`postgres`, `dev`, `dev_1`, `temporal`, `temporal_visibility`). Together with prior `cnpg_collector_up=0`, collection error and permission-denied categories, this confirms a necessary missing privilege, not proof that granting it alone resolves every query. The pinned vendor default ConfigMap in `infra/platform/postgres/vendor/cnpg-1.30.2.yaml` includes `pg_extensions` targeting `'*'`; do not assume a grant on postgres alone restores all default queries.
+
+Source contradiction requiring PostgreSQL-owner decision: `chart/profiles/development.yaml` and `bootstrap/compatibility.mjs` intentionally revoke PUBLIC CONNECT/TEMPORARY; `temporal-persistence/prepare.mjs::verifyDatabase` rejects every explicit non-owner ACL grant, called from both `prepareFreshTemporalPersistence` and `verifyExistingTemporalPersistence`. Direct GRANT on the Temporal pair would make existing admission fail. Do not execute broad GRANT, restore PUBLIC CONNECT, switch to superuser exporter, alter `pg_monitor`, or bypass owner ACL verification. Recommended separately commissioned repair is explicit CONNECT only (no grant option or TEMPORARY) for the exact dedicated CNPG role on the approved monitored dev DBs, coupled to PostgreSQL baseline/tenant/Temporal creation and existing-admission contracts; verify no unrelated role access, no application data access/write grant or new memberships, preserve database owners and current PUBLIC isolation, and prove successful native stats. `dev_1` must be verified against its actual tenant database owner before selecting it. Preserve release behavior and coordinate a separate owner-authorized occupied repair under maintenance custody. If owner does not accept the ACL evolution, explicitly ratify narrower PostgreSQL coverage, never hide collector failure. This is not yet an implementation-ready DB repair or live SQL authorization. 04 remains gated for selected full DB statistics; unrelated Redis/01 work does not depend on this finding.
+
 ## Freeze record (current)
 
 | Gate | Current result | Closure owner | Affected |
 | --- | --- | --- | --- |
 | G1 KSM | Registry/runtime pin, render and specimen permissions PASS; remaining exact coverage rows and unobserved list/job semantics OPEN | planner + owner | 02,07,08 |
-| G1 Redis | v1.93.0 rejected; v1.97.0 replacement candidate, immutable pin and disposable negative proof OPEN | planner + owner | 05,07,08 |
+| G1 Redis | v1.93.0 rejected; v1.97.0 pin, exclusion flags, disposable command/negative evidence and selected coverage RESOLVED | planner + owner | 05,07,08 |
 | G2 | Direct verified HTTPS + scoped bearer access PASSED on both nodes with node-local roots; durable trust contract and exact panel rows OPEN | owner/cluster owner + planner | 03,07,08 |
-| G3 | Collector existing scrape PASS; CNPG permission fault confirmed; exact privilege cause, full panel contracts and replacement Redis proof OPEN | service owner + planner | 04,05,06,07,08 |
+| G3 | Collector existing scrape PASS; Redis replacement specimen PASS; CNPG missing CONNECT confirmed; owner ACL correction and remaining non-Redis panel contracts OPEN | service owner + planner | 04,05,06,07,08 |
 | G4a/b | Revision-1 predecessor metadata observed; owner contract/transition OPEN | object-store owner + planner/acceptance lead | 06,07,08 |
 | G5 | NOT RUN | acceptance lead + owner | 13 |
 

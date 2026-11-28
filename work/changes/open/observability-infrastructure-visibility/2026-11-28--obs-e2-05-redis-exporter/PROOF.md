@@ -4,4 +4,4 @@ Run from the dedicated Change worktree root after prerequisites. Do not invoke n
 
 `node --test infra/platform/observability/tests/e2-collection.test.mjs`; exact tag flags/commands are native gate evidence, not guessed by executor.
 
-**At join:** review collision-free diff, exact assigned postcondition, focused results, regression limits and ownership. **Joint owner:** 07/08/13; G3 exporter proof remains necessary.. Source success does not certify native deployment.
+**At join:** review collision-free diff, exact assigned postcondition, focused results, regression limits and ownership. **Joint owner:** 07/08/13; G3 disposable specimen passed; G5 actual owned backend and exact render remain outstanding. Source success does not certify native deployment.
