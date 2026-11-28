@@ -1,6 +1,6 @@
 # Product and wiki refoundation | E1
 
-**Proposed · active design investigation · 2026-11-28.** Integration target: `main`. Source inspected: `b962bb63c7163814f0519c205629b5018ffe7121` (clean lean snapshot; remote main matched at kickoff). Designer/planner: ChatGPT; product decision owner: repository owner; proposed rewrite executor: Cursor. No Change is ready or commissioned by this dossier.
+**Proposed · active design investigation · 2026-11-28.** Integration target: `main`. Source inspected: remote `main` `22e788b30d271ce24b8adf83af12f6cbd4c0c478`; lean snapshot `b962bb63c7163814f0519c205629b5018ffe7121` plus both design patches, verified affected blob hashes. Designer/planner: ChatGPT; product decision owner: repository owner; proposed rewrite executor: Cursor. No Change is ready or commissioned by this dossier.
 
 ## Outcome and boundary
 
@@ -12,7 +12,15 @@ The prior [product renewal](../../archive/product-documentation-renewal/README.m
 
 ## Current evolution
 
-E1 selects only the product nucleus, its authority split and its world-neutral mechanical direction, then reconstructs the affected foundational product pages and establishes the semantic migration method. It does not settle all gameplay domains, final rules or storage schemas. [TARGET.md](TARGET.md) contains the decision agenda, source observations, counterexamples and freeze/acceptance criteria. A subsequent independent review is required for material new architecture before promotion; editorial execution follows the existing documentation-only Change gate. Do not create implementation packets while relevant decisions remain open.
+E1 selects the product nucleus, authority split, configurable gameplay and world-neutral direction, and reconstructs seven foundational pages. This is not a copyedit: the selected target is a newly authored reader-facing foundation with retained unique guarantees, not the previous text with extra maturity warnings. It does not settle every gameplay domain, implement rules or design persistence schemas.
+
+| Dossier | Responsibility |
+| --- | --- |
+| [TARGET](TARGET.md) | Product decisions, charter, preserved authority, counterexamples and freeze boundary |
+| [WIKI-ARCHITECTURE](WIKI-ARCHITECTURE.md) | Whole-wiki direction, editorial design, semantic migration and integration method |
+| [E1-RECONSTRUCTION](E1-RECONSTRUCTION.md) | Selected initial page ownership, source-grounded disposition and concrete acceptance specimens |
+
+The independent committee reviews E1, its affected boundaries and the reconstruction strategy, not the unselected details of E2–E5. Self-defense, exact candidate freeze, independent review and owner ratification precede promotion and Change planning. No Change is ready or commissioned. Subsequent packet planning supplies exact edit/heading maps and verifies full-checkout backlink completeness.
 
 ## Later evolutions (candidate scopes, not commissions)
 
@@ -25,8 +33,10 @@ E1 selects only the product nucleus, its authority split and its world-neutral m
 
 These are outcome boundaries for progressive work, not a fixed packet count or serial gate on unrelated work. Staff/admin, commercial, privacy and trust documentation is in the eventual coverage boundary, but no new policies or permissions are selected by this evolution. Do not open speculative child Designs until their decision scope is current. Use separate Designs if a later scope needs independent architecture defense. No new Undertaking or queue is needed for the initial bounded E1.
 
-## Next decision and checkpoint
+## Next checkpoint
 
-Owner clarification on 2026-11-28 selects configurable storytelling RPG identity (D&D suggested but optional, including partial and narrative-only play), independently optional real-time-dependent progression, and descriptive Markdown with structured protected mechanics. [TARGET.md](TARGET.md) records the clarified charter. Complete the affected claim/heading/backlink map, settle remaining E1 meaning and review the integrated charter; obtain owner ratification as applicable, promote accepted meaning and prepare the complete bounded rewrite batch. E2 owns exact supported gameplay combinations, presets, dependency and reconfiguration policy, not E1. Keep the existing repository workflow, independent Change branches and Design integration branch policy. Do not mutate active Observability E2, Durable Execution or other ongoing contracts.
+Owner direction: D&D optional and suggested; narrative-only and partial mechanics valid; immediate, hybrid and real-time play valid; descriptive Markdown and protected structured documents; arbitrary fictional worlds and chronologies. Parallel-life play (a two-day admitted journey can last two actual days) is a positive specimen, not permission for unbounded standing autonomy.
+
+The dossier now selects the initial reconstruction boundary and proposes its architecture for defense. Next: inspect remaining affected dependent claims, perform formal self-defense against the actual candidate, settle any material residual owner decisions, then present the frozen E1 dossier for independent committee. No new runtime code, model calls or live qualification is needed for this documentation-only evolution. Preserve all in-flight infrastructure, Agent Core and durable execution owners. Later technical renewal must reconcile against then-current source, not freeze today's POC forever.
 
 [Product index](../../../../docs/product/README.md) · [Documentation rules](../../../../.agents/rules/documentation.md) · [Navigation standard](../../../../.agents/references/documentation-navigation-standard.md) · [Target-first renewal](../../../../.agents/rules/target-driven-renewal.md).
