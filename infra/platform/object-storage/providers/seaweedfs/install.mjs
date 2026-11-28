@@ -390,6 +390,8 @@ export async function ensureObjectStorage(profileId, deps = {}) {
 // --- Explicit occupied owner operation: upgrade-metrics (G4a) ---
 
 const MARKER_BUCKET = /^offscreen-e2-marker-[0-9a-f]{32}$/;
+// Dispatch needs 190s remaining after the pre-write marker read (25s).
+const METRICS_UPGRADE_MIN_BUDGET_MS = 190_000 + 25_000;
 const SLOT_NAMESPACE = /^offscreen-dev-[1-9][0-9]*$/;
 
 class OwnerRefusal extends Error {
@@ -605,12 +607,12 @@ export async function upgradeObjectStorageMetrics(request, deps = {}) {
       registryRoot,
       readRegistry: deps.readRegistry ?? readExistingRegistryV2,
     });
-  const readMarker = deps.readMarker ?? (async (descriptor, secret) => (await import('./live-sdk.mjs')).readMarkerObject(descriptor, secret));
+  const readMarker = deps.readMarker ?? (async (descriptor, secret, options) => (await import('./live-sdk.mjs')).readMarkerObject(descriptor, secret, options));
   const scrapeMetrics = deps.scrapeMetrics ?? (async () => (await import('./live-sdk.mjs')).scrapeMetricFamilies());
-  const verifyMarker = async (secret) => {
+  const verifyMarker = async (secret, budgetMs) => {
     let read;
     try {
-      read = await readMarker({ bucket: marker.bucket, key: marker.key }, secret);
+      read = await readMarker({ bucket: marker.bucket, key: marker.key }, secret, { budgetMs });
     } catch {
       throw new OwnerRefusal('marker readback failed');
     }
@@ -638,9 +640,12 @@ export async function upgradeObjectStorageMetrics(request, deps = {}) {
         }
         quiescence();
         memory();
+        // Refuse before any mutation unless the custody budget covers the
+        // marker reads, the guarded dispatch and the bounded final proof.
+        if (session.remaining() < METRICS_UPGRADE_MIN_BUDGET_MS) return refuse('custody budget is insufficient');
         const before = obs.before('dev-base-r1', observeDeps);
         if (!before.ok) return refuse(before.reason);
-        await verifyMarker({ uid: before.chain.secretUid, resourceVersion: before.chain.secretResourceVersion });
+        await verifyMarker({ uid: before.chain.secretUid, resourceVersion: before.chain.secretResourceVersion }, session.remaining());
         const digests = (deps.computeDigests ?? computeMetricsManifestDigests)({ run });
         // Repeat immediately before the write.
         quiescence();
@@ -698,7 +703,7 @@ export async function upgradeObjectStorageMetrics(request, deps = {}) {
         ) {
           throw new OwnerRefusal('successor chain does not preserve the predecessor identity');
         }
-        await verifyMarker({ uid: n.secretUid, resourceVersion: n.secretResourceVersion });
+        await verifyMarker({ uid: n.secretUid, resourceVersion: n.secretResourceVersion }, session.remaining());
         let families;
         try {
           families = await scrapeMetrics();

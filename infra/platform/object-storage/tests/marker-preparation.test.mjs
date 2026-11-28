@@ -15,6 +15,15 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  MARKER_READ_MIN_BUDGET_MS,
+  MARKER_WRITE_MIN_BUDGET_MS,
+  markerBucketAbsent,
+  readBoundedMarkerBody,
+  readMarkerObject,
+  writeMarkerObject,
+} from '../providers/seaweedfs/live-sdk.mjs';
+import { PassThrough } from 'node:stream';
 import { readMarkerDescriptorFile } from '../providers/seaweedfs/install.mjs';
 import {
   assertDescriptorDestination,
@@ -79,6 +88,7 @@ function world(options = {}) {
     writes: [],
     reads: 0,
     absentChecks: [],
+    budgets: [],
     intentAtWrite: null,
     ownedCalls: 0,
     quiescenceCalls: 0,
@@ -99,18 +109,21 @@ function world(options = {}) {
     },
     operationId: () => 'op-1',
     randomBytes: (n) => (++randomCall % 2 === 1 ? Buffer.alloc(n, 7) : Buffer.alloc(n, 0xab)),
-    bucketAbsent: async (bucket, secret) => {
+    bucketAbsent: async (bucket, secret, opts) => {
       w.absentChecks.push({ bucket, secret });
+      w.budgets.push(['absent', opts?.budgetMs]);
       if (options.absentThrows) throw new Error('secret-ish probe failure');
       return options.bucketExists ? false : true;
     },
-    writeMarker: async (descriptor, bytes, secret) => {
+    writeMarker: async (descriptor, bytes, secret, opts) => {
+      w.budgets.push(['write', opts?.budgetMs]);
       w.intentAtWrite = JSON.parse(readFileSync(w.pending, 'utf8'));
       w.writes.push({ descriptor, bytes: Buffer.from(bytes), secret });
       if (options.writeThrows) throw new Error('AKIA-secret-ish write failure');
     },
-    readMarker: async () => {
+    readMarker: async (_d, _s, opts) => {
       w.reads += 1;
+      w.budgets.push(['read', opts?.budgetMs]);
       if (options.readThrows) throw new Error('secret-ish read failure');
       return { sha256: FIXED_SHA, size: 64, ...options.readResult };
     },
@@ -460,4 +473,85 @@ test('CLI shape: only the exact argument vector is accepted', () => {
     { encoding: 'utf8', env: { PATH: process.env.PATH } });
   assert.equal(unauthorized.status, 1);
   assert.equal(JSON.parse(unauthorized.stdout).mutated, false);
+});
+
+// --- custody budget and stream deadline ---
+
+test('remaining custody budget reaches every marker SDK operation, decreasing and bounded', async () => {
+  const w = world();
+  const result = await w.run();
+  assert.equal(result.ok, true, result.reason);
+  assert.deepEqual(w.budgets.map(([name]) => name), ['absent', 'write', 'read']);
+  const values = w.budgets.map(([, budget]) => budget);
+  for (const value of values) assert.ok(Number.isFinite(value) && value > 0 && value <= 600_000);
+  assert.ok(values[0] >= values[1] && values[1] >= values[2]);
+  assert.ok(values[1] >= MARKER_WRITE_MIN_BUDGET_MS);
+});
+
+test('insufficient custody budget refuses before the absence probe, intent or any write', async () => {
+  const w = world({ deps: { budgetMs: 40_000 } });
+  const result = await w.run();
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, 'custody budget is insufficient');
+  assert.equal(result.mutated, false);
+  assert.equal(result.intentRetained, false);
+  assert.equal(w.absentChecks.length, 0);
+  assert.equal(w.writes.length, 0);
+  assert.equal(w.pendingText(), null);
+  assert.equal(existsSync(w.descriptorPath), false);
+});
+
+test('budget exhausted by the bounded readback after the write retains the intent, no retry', async () => {
+  const w = world({ deps: { readMarker: async () => { throw new Error('marker budget insufficient'); } } });
+  const result = await w.run();
+  assert.equal(result.ok, false);
+  assert.equal(result.mutated, true);
+  assert.equal(result.intentRetained, true);
+  assert.equal(w.writes.length, 1);
+  assert.equal(existsSync(w.descriptorPath), false);
+});
+
+test('SDK marker operations refuse a missing or insufficient budget before any credential or network use', async () => {
+  const d = { bucket: `offscreen-e2-marker-${'a'.repeat(32)}`, key: 'retained-marker.bin' };
+  const secret = { uid: 'u', resourceVersion: '1' };
+  await assert.rejects(readMarkerObject(d, secret), /marker budget insufficient/);
+  await assert.rejects(readMarkerObject(d, secret, { budgetMs: MARKER_READ_MIN_BUDGET_MS - 1 }), /marker budget insufficient/);
+  await assert.rejects(markerBucketAbsent(d.bucket, secret, { budgetMs: Number.NaN }), /marker budget insufficient/);
+  await assert.rejects(writeMarkerObject(d, Buffer.alloc(64), secret, { budgetMs: MARKER_WRITE_MIN_BUDGET_MS - 1 }), /marker budget insufficient/);
+});
+
+test('bounded body read: stall past the deadline destroys the stream', async () => {
+  const body = new PassThrough();
+  body.write(Buffer.alloc(10));
+  const started = performance.now();
+  await assert.rejects(readBoundedMarkerBody(body, 64, 50), /marker stream deadline/);
+  assert.ok(performance.now() - started < 2000);
+  assert.equal(body.destroyed, true);
+});
+
+for (const length of [undefined, null, -1, 4097, 1.5]) {
+  test(`bounded body read: invalid ContentLength ${String(length)} destroys the stream`, async () => {
+    const body = new PassThrough();
+    await assert.rejects(readBoundedMarkerBody(body, length, 1000), /marker length invalid/);
+    assert.equal(body.destroyed, true);
+  });
+}
+
+test('bounded body read: excess and short bodies are rejected and destroyed; exact body hashes', async () => {
+  const excess = new PassThrough();
+  const pending = readBoundedMarkerBody(excess, 40, 1000);
+  excess.write(Buffer.alloc(41));
+  await assert.rejects(pending, /marker too large/);
+  assert.equal(excess.destroyed, true);
+
+  const short = new PassThrough();
+  const shortPending = readBoundedMarkerBody(short, 64, 1000);
+  short.end(Buffer.alloc(40));
+  await assert.rejects(shortPending, /marker length mismatch/);
+  assert.equal(short.destroyed, true);
+
+  const exact = new PassThrough();
+  const ok = readBoundedMarkerBody(exact, 64, 1000);
+  exact.end(FIXED_BYTES);
+  assert.deepEqual(await ok, { size: 64, sha256: FIXED_SHA });
 });

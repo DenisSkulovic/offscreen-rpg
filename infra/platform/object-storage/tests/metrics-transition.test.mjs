@@ -119,8 +119,9 @@ function world(options = {}) {
       if (helmOutcome.status === 0 && !helmOutcome.signal) w.phase = 'upgraded';
       return fakeChild(helmOutcome);
     },
-    readMarker: async (descriptor, secret) => {
+    readMarker: async (descriptor, secret, opts) => {
       w.markerReads += 1;
+      (w.markerBudgets ??= []).push(opts?.budgetMs);
       options.markerRead?.(w, secret);
       return { sha256: MARKER.sha256, size: MARKER.size, ...options.markerResult };
     },
@@ -437,4 +438,25 @@ test('fixed CLI refuses any other shape before touching the cluster', () => {
   const missing = run('upgrade-metrics', 'dev', '--confirm-context', CONTEXT, '--marker-file', '/nonexistent/marker.json');
   assert.equal(missing.status, 1);
   assert.match(missing.stdout, /marker file is unreadable/);
+});
+
+test('remaining custody budget is propagated to each marker read', async () => {
+  const w = world();
+  const result = await w.run();
+  assert.equal(result.ok, true, result.reason);
+  assert.equal(w.markerBudgets.length, 2);
+  for (const budget of w.markerBudgets) assert.ok(Number.isFinite(budget) && budget > 0 && budget <= 600_000);
+  assert.ok(w.markerBudgets[0] >= w.markerBudgets[1]);
+});
+
+test('insufficient custody budget refuses before the marker read, intent or any write', async () => {
+  const w = world({ deps: { budgetMs: 100_000 } });
+  const result = await w.run();
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, 'custody budget is insufficient');
+  assert.equal(result.mutated, false);
+  assert.equal(result.intentRetained, false);
+  assert.equal(w.markerReads, 0);
+  assert.equal(w.spawns.length, 0);
+  assert.equal(w.pendingKind(), 'absent');
 });

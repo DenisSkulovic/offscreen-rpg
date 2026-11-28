@@ -126,6 +126,72 @@ export async function observeDevS3Sdk(tenant, observation, expectedBucketNames) 
 }
 
 const MARKER_MAX_BYTES = 4096;
+const MARKER_REQUEST_MS = 10_000;
+const FORWARD_MS = 15_000;
+/** Minimum custody budget for one marker read (forward + GET + stream). */
+export const MARKER_READ_MIN_BUDGET_MS = FORWARD_MS + MARKER_REQUEST_MS;
+/** Minimum custody budget for the bounded marker writes (forward + create + put). */
+export const MARKER_WRITE_MIN_BUDGET_MS = FORWARD_MS + 2 * MARKER_REQUEST_MS;
+
+/**
+ * Custody-budget clock for one marker SDK operation. Refuses (before any
+ * credential use or network call) when the supplied remaining budget is
+ * missing or smaller than the operation minimum.
+ * @param {unknown} budgetMs remaining custody budget
+ * @param {number} minimumMs
+ */
+function markerClock(budgetMs, minimumMs) {
+  if (!Number.isFinite(budgetMs) || budgetMs < minimumMs) throw new Error('marker budget insufficient');
+  const deadline = performance.now() + budgetMs;
+  return {
+    /** Per-request bound: 10s capped by what the custody budget has left. */
+    requestMs() {
+      const left = Math.floor(deadline - performance.now());
+      if (left < 1) throw new Error('marker budget exhausted');
+      return Math.min(MARKER_REQUEST_MS, left);
+    },
+  };
+}
+
+/**
+ * Bounded streaming read of a marker body: rejects a missing, negative or
+ * oversize length, bytes beyond the declared length, and any stall past
+ * `deadlineMs`. The stream is destroyed on every failure path.
+ * @param {AsyncIterable<Buffer> & { destroy?: (error?: Error) => void }} body
+ * @param {unknown} length declared ContentLength
+ * @param {number} deadlineMs
+ */
+export async function readBoundedMarkerBody(body, length, deadlineMs) {
+  const { createHash } = await import('node:crypto');
+  if (!Number.isInteger(length) || length < 0 || length > MARKER_MAX_BYTES) {
+    body?.destroy?.();
+    throw new Error('marker length invalid');
+  }
+  let timer;
+  const hash = createHash('sha256');
+  let size = 0;
+  const consume = (async () => {
+    for await (const chunk of body) {
+      size += chunk.length;
+      if (size > length || size > MARKER_MAX_BYTES) throw new Error('marker too large');
+      hash.update(chunk);
+    }
+    if (size !== length) throw new Error('marker length mismatch');
+    return { size, sha256: hash.digest('hex') };
+  })();
+  consume.catch(() => {});
+  const deadline = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error('marker stream deadline')), Math.max(1, deadlineMs));
+  });
+  try {
+    return await Promise.race([consume, deadline]);
+  } catch (error) {
+    body?.destroy?.();
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 const METRICS_MAX_BYTES = 2 * 1024 * 1024;
 
 function adminSecretIdentity(profile) {
@@ -142,33 +208,21 @@ function adminSecretIdentity(profile) {
  * equal `expectedSecret` before and after the read.
  * @param {{ bucket: string, key: string }} descriptor
  * @param {{ uid: string, resourceVersion: string }} expectedSecret
+ * @param {{ budgetMs: number }} options remaining custody budget (required)
  */
-export async function readMarkerObject(descriptor, expectedSecret) {
+export async function readMarkerObject(descriptor, expectedSecret, options = {}) {
+  const clock = markerClock(options.budgetMs, MARKER_READ_MIN_BUDGET_MS);
   const profile = readPlatformProfile('dev');
   const same = (id) => id.uid === expectedSecret.uid && id.resourceVersion === expectedSecret.resourceVersion;
   if (!same(adminSecretIdentity(profile))) throw new Error('marker admin Secret changed');
   const sdk = requireSdk('@aws-sdk/client-s3');
-  const { createHash } = await import('node:crypto');
   const result = await withForward(profile, async endpoint => {
     const client = new sdk.S3Client({ endpoint, region: 'us-east-1', forcePathStyle: true,
       credentials: credentials(profile, 'object-store-s3'), maxAttempts: 1 });
     try {
       const response = await client.send(new sdk.GetObjectCommand({ Bucket: descriptor.bucket, Key: descriptor.key }),
-        { abortSignal: AbortSignal.timeout(10_000) });
-      const length = response.ContentLength;
-      if (!Number.isInteger(length) || length < 0 || length > MARKER_MAX_BYTES) {
-        response.Body?.destroy?.();
-        throw new Error('marker length invalid');
-      }
-      const hash = createHash('sha256');
-      let size = 0;
-      for await (const chunk of response.Body) {
-        size += chunk.length;
-        if (size > MARKER_MAX_BYTES) { response.Body.destroy(); throw new Error('marker too large'); }
-        hash.update(chunk);
-      }
-      if (size !== length) throw new Error('marker length mismatch');
-      return { size, sha256: hash.digest('hex') };
+        { abortSignal: AbortSignal.timeout(clock.requestMs()) });
+      return await readBoundedMarkerBody(response.Body, response.ContentLength, clock.requestMs());
     } finally {
       client.destroy();
     }
@@ -186,8 +240,10 @@ const MARKER_BUCKET_NAME = /^offscreen-e2-marker-[0-9a-f]{32}$/;
  * after. Resolves true only for a definite absence.
  * @param {string} bucket
  * @param {{ uid: string, resourceVersion: string }} expectedSecret
+ * @param {{ budgetMs: number }} options remaining custody budget (required)
  */
-export async function markerBucketAbsent(bucket, expectedSecret) {
+export async function markerBucketAbsent(bucket, expectedSecret, options = {}) {
+  const clock = markerClock(options.budgetMs, MARKER_READ_MIN_BUDGET_MS);
   if (!MARKER_BUCKET_NAME.test(bucket)) throw new Error('marker bucket name invalid');
   const profile = readPlatformProfile('dev');
   if (!sameSecret(adminSecretIdentity(profile), expectedSecret)) throw new Error('marker admin Secret changed');
@@ -197,7 +253,7 @@ export async function markerBucketAbsent(bucket, expectedSecret) {
       credentials: credentials(profile, 'object-store-s3'), maxAttempts: 1 });
     try {
       await client.send(new sdk.HeadBucketCommand({ Bucket: bucket }),
-        { abortSignal: AbortSignal.timeout(10_000) });
+        { abortSignal: AbortSignal.timeout(clock.requestMs()) });
       return false;
     } catch (error) {
       if (error?.$metadata?.httpStatusCode === 404) return true;
@@ -217,8 +273,10 @@ export async function markerBucketAbsent(bucket, expectedSecret) {
  * @param {{ bucket: string, key: string }} descriptor
  * @param {Buffer} bytes
  * @param {{ uid: string, resourceVersion: string }} expectedSecret
+ * @param {{ budgetMs: number }} options remaining custody budget (required)
  */
-export async function writeMarkerObject(descriptor, bytes, expectedSecret) {
+export async function writeMarkerObject(descriptor, bytes, expectedSecret, options = {}) {
+  const clock = markerClock(options.budgetMs, MARKER_WRITE_MIN_BUDGET_MS);
   if (!MARKER_BUCKET_NAME.test(descriptor.bucket) || descriptor.key !== 'retained-marker.bin' ||
       !Buffer.isBuffer(bytes) || bytes.length < 32 || bytes.length > MARKER_MAX_BYTES) {
     throw new Error('marker write request invalid');
@@ -231,10 +289,10 @@ export async function writeMarkerObject(descriptor, bytes, expectedSecret) {
       credentials: credentials(profile, 'object-store-s3'), maxAttempts: 1 });
     try {
       await client.send(new sdk.CreateBucketCommand({ Bucket: descriptor.bucket }),
-        { abortSignal: AbortSignal.timeout(10_000) });
+        { abortSignal: AbortSignal.timeout(clock.requestMs()) });
       await client.send(new sdk.PutObjectCommand({ Bucket: descriptor.bucket, Key: descriptor.key,
         Body: bytes, ContentLength: bytes.length, IfNoneMatch: '*' }),
-      { abortSignal: AbortSignal.timeout(10_000) });
+      { abortSignal: AbortSignal.timeout(clock.requestMs()) });
     } catch {
       throw new Error('marker write incomplete or unknown');
     } finally {
