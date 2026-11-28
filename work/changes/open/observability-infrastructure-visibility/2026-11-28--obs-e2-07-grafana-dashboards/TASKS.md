@@ -19,7 +19,7 @@ DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/dashboards/postgres.json, temporal.json, storage.json, messaging-cache.json, observability.json
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/NATIVE-INPUTS.md (frozen exact coverage/query rows); TARGET section 4 dashboard table
+Read: work/changes/open/observability-infrastructure-visibility/NATIVE-INPUTS.md (frozen exact coverage/query rows); TARGET section 4 dashboard table
 Algorithm: Use offscreen-postgres/temporal/storage/messaging-cache/observability UIDs with exact metric-family/label/query mappings from frozen coverage rows. Each required panel is tied to a verified family; distinguish up vs backend health and freshness. Show unsupported optional domain panels explicitly rather than guessing metrics. Add links to overview and existing logs/traces Explore, no new log/trace enrollment. Use milliseconds/seconds/bytes/rates appropriate to actual metric units; histogram quantile only for verified buckets.
 Test: Source gate; T03 tests JSON and 13 verifies live queries.
 Negative: No arbitrary metric names or hidden unsupported service; real zero distinct from missing.
