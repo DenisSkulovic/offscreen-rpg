@@ -8,19 +8,27 @@ import test from 'node:test';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
 import { main, runLiveProof } from '../proof.mjs';
+import { runSignalsProof } from '../signals.mjs';
+import { runDeveloperProof } from '../developer.mjs';
 import {
   OUTAGE_TARGET,
+  guardedRolloutRestart,
+  guardedScaleTempo,
+  restoreTempoAfterOutage,
   runOutageProof,
   runPersistenceProof,
 } from '../disruptions.mjs';
 import {
   queryGrafanaDatasourceHealth,
+  runResourcesProof,
   summarizeResourceSamples,
 } from '../resources.mjs';
 import {
   buildExpectedLokiInstallArgv,
   maybeInjectQuotaForLokiInstall,
   quotaHardPopulated,
+  resolvePartialInstallPlans,
+  runIsolatedPartialInstallProof,
   runPartialInstallProof,
 } from '../partial-install.mjs';
 import {
@@ -36,7 +44,10 @@ import {
   refusePhaseStart,
   refuseProofInvocation,
   remainingWorkBudgetMs,
+  decideProofAdmission,
+  deriveStableSpec,
   runProofOperationSession,
+  sourceEnablesE2,
   stableIdentitiesCompatible,
 } from '../proof-host.mjs';
 
@@ -54,6 +65,131 @@ const ISOLATED_ENV = {
   OFFSCREEN_OBSERVABILITY_EXPECTED_CLUSTER_UID: CLUSTER_UID,
 };
 const SOURCE_SHA = 'abc123deadbeef';
+
+const FIXTURE_ROLES = {
+  collector: ['obs-collector', ['Deployment/obs-collector']],
+  prometheus: ['obs-prometheus', ['Deployment/obs-prometheus']],
+  grafana: ['obs-grafana', ['Deployment/obs-grafana']],
+  loki: ['obs-loki', ['StatefulSet/obs-loki']],
+  tempo: ['obs-tempo', ['StatefulSet/obs-tempo']],
+};
+const E2_HELPER_WORKLOAD = 'Deployment/obs-kube-state-metrics';
+
+/** Matched descriptor fixture: declared workloads per role (E2 adds a helper). */
+function bundleFixture(artifactId) {
+  return {
+    artifactId,
+    profile: { id: 'dev' },
+    releases: Object.entries(FIXTURE_ROLES).map(([role, [name, keys]]) => ({
+      role,
+      name,
+      expectedWorkloads: Object.fromEntries(
+        [
+          ...keys,
+          ...(artifactId === 'dev-e2' && role === 'prometheus'
+            ? [E2_HELPER_WORKLOAD]
+            : []),
+        ].map((key) => [
+          `namespaced/offscreen-dev-observability/${key}`,
+          [{ name: 'c' }],
+        ]),
+      ),
+    })),
+  };
+}
+
+/** Ready observation shaped for the matched row (E2 helper object when E2). */
+function matchedObservation(c, namespaceUid = NS_UID_A) {
+  const observation = readyObservation(namespaceUid);
+  if (c.artifactId === 'dev-e2') {
+    observation.snapshot.objects[E2_HELPER_WORKLOAD] = {
+      kind: 'Deployment',
+      metadata: { uid: 'uid-ksm', name: 'obs-kube-state-metrics' },
+      spec: { replicas: 1 },
+      status: { readyReplicas: 1, replicas: 1 },
+    };
+  }
+  if (c.historyId === 'developer-upgraded') {
+    const name = 'sh.helm.release.v1.obs-collector.v2';
+    observation.snapshot.objects[`Secret/${name}`] = {
+      kind: 'Secret',
+      metadata: { uid: `uid-${name}`, name },
+    };
+  }
+  return {
+    ...observation,
+    artifactId: c.artifactId,
+    historyId: c.historyId,
+    structuralReady: c.structuralReady,
+    pending: c.pending,
+  };
+}
+
+/** Operational classification fixtures (shape of classifyOperationalInventory). */
+function classification(kind, overrides = {}) {
+  const table = {
+    'e1-developer': {
+      state: 'not-ready',
+      reasonCode: 'upgrade-required',
+      artifactId: 'dev-e1-developer',
+      historyId: 'developer-fresh',
+      structuralReady: true,
+      desiredConverged: false,
+    },
+    'e1-developer-upgraded': {
+      state: 'not-ready',
+      reasonCode: 'upgrade-required',
+      artifactId: 'dev-e1-developer',
+      historyId: 'developer-upgraded',
+      structuralReady: true,
+      desiredConverged: false,
+    },
+    'e1-base': {
+      state: 'not-ready',
+      reasonCode: 'upgrade-required',
+      artifactId: 'dev-e1-base',
+      historyId: 'base-fresh',
+      structuralReady: false,
+      desiredConverged: false,
+    },
+    e2: {
+      state: 'ready',
+      reasonCode: 'ready',
+      artifactId: 'dev-e2',
+      historyId: 'e2-fresh',
+      structuralReady: true,
+      desiredConverged: true,
+    },
+    mixed: {
+      state: 'not-ready',
+      reasonCode: 'not-ready',
+      artifactId: null,
+      historyId: null,
+      structuralReady: false,
+      desiredConverged: false,
+    },
+  };
+  const base = table[kind];
+  return {
+    pending: false,
+    detail: kind,
+    artifacts: base.artifactId ? bundleFixture(base.artifactId) : null,
+    ...base,
+    ...overrides,
+  };
+}
+const E1_ADMIT = () => classification('e1-developer');
+const E1_ADMISSION = {
+  evolution: 'e1-developer',
+  artifactId: 'dev-e1-developer',
+  historyId: 'developer-fresh',
+  artifacts: { artifactId: 'dev-e1-developer' },
+};
+/** Admitted E1 session authority for direct runner tests. */
+const E1_SESSION = {
+  admission: E1_ADMISSION,
+  reclassifyAdmission: async () => ({ ok: true, admission: E1_ADMISSION }),
+};
 
 /**
  * @param {string} namespaceUid
@@ -688,6 +824,7 @@ test('D10 persistence positive path retains claims with query-only replay', asyn
   };
   const session = {
     gate: 'persistence',
+    ...E1_SESSION,
     profile: 'dev',
     context: CANONICAL_DEV_CONTEXT,
     env: DISRUPTION_ENV,
@@ -755,6 +892,7 @@ test('D10 persistence stale RV refuses rollout', async () => {
   const result = await runPersistenceProof(
     {
       gate: 'persistence',
+      ...E1_SESSION,
       profile: 'dev',
       context: CANONICAL_DEV_CONTEXT,
       env: DISRUPTION_ENV,
@@ -797,6 +935,7 @@ test('D10 persistence unknown write stops later restarts', async () => {
   const result = await runPersistenceProof(
     {
       gate: 'persistence',
+      ...E1_SESSION,
       profile: 'dev',
       context: CANONICAL_DEV_CONTEXT,
       env: DISRUPTION_ENV,
@@ -844,6 +983,7 @@ test('D10 persistence replaced claims fail after restart', async () => {
   const result = await runPersistenceProof(
     {
       gate: 'persistence',
+      ...E1_SESSION,
       profile: 'dev',
       context: CANONICAL_DEV_CONTEXT,
       env: DISRUPTION_ENV,
@@ -921,6 +1061,7 @@ test('D10 persistence replay POST is refused', async () => {
   const result = await runPersistenceProof(
     {
       gate: 'persistence',
+      ...E1_SESSION,
       profile: 'dev',
       context: CANONICAL_DEV_CONTEXT,
       env: DISRUPTION_ENV,
@@ -975,6 +1116,7 @@ test('D10 outage positive path down restores and recovers', async () => {
   let outageProbes = 0;
   const session = {
     gate: 'outage',
+    ...E1_SESSION,
     profile: 'dev',
     context: CANONICAL_DEV_CONTEXT,
     env: DISRUPTION_ENV,
@@ -1049,6 +1191,7 @@ test('D10 outage insufficient reserve refuses restore', async () => {
   const result = await runOutageProof(
     {
       gate: 'outage',
+      ...E1_SESSION,
       profile: 'dev',
       context: CANONICAL_DEV_CONTEXT,
       env: DISRUPTION_ENV,
@@ -1105,6 +1248,7 @@ test('D10 outage unknown restore fails without clear', async () => {
   const result = await runOutageProof(
     {
       gate: 'outage',
+      ...E1_SESSION,
       profile: 'dev',
       context: CANONICAL_DEV_CONTEXT,
       env: DISRUPTION_ENV,
@@ -1163,6 +1307,7 @@ test('D10 outage changed claims fail after restore', async () => {
   const result = await runOutageProof(
     {
       gate: 'outage',
+      ...E1_SESSION,
       profile: 'dev',
       context: CANONICAL_DEV_CONTEXT,
       env: DISRUPTION_ENV,
@@ -1267,6 +1412,7 @@ test('D10 outage changed Collector fails after restore', async () => {
   const result = await runOutageProof(
     {
       gate: 'outage',
+      ...E1_SESSION,
       profile: 'dev',
       context: CANONICAL_DEV_CONTEXT,
       env: DISRUPTION_ENV,
@@ -1325,6 +1471,7 @@ test('D10 outage cancelled POST is refused', async () => {
   const result = await runOutageProof(
     {
       gate: 'outage',
+      ...E1_SESSION,
       profile: 'dev',
       context: CANONICAL_DEV_CONTEXT,
       env: DISRUPTION_ENV,
@@ -1381,6 +1528,7 @@ test('D10 outage restoration failure fails receipt', async () => {
   });
   const session = {
     gate: 'outage',
+    ...E1_SESSION,
     profile: 'dev',
     context: CANONICAL_DEV_CONTEXT,
     env: DISRUPTION_ENV,
@@ -1426,6 +1574,7 @@ test('D10 outage restoration failure fails receipt', async () => {
   let outageCalled = false;
   const persisted = await runProofOperationSession({
     gate: 'outage',
+    ...E1_SESSION,
     profile: 'dev',
     context: CANONICAL_DEV_CONTEXT,
     env: DISRUPTION_ENV,
@@ -1436,6 +1585,7 @@ test('D10 outage restoration failure fails receipt', async () => {
     readSourceSha: () => SOURCE_SHA,
     captureIdentity: () => createFakeIdentity(),
     recheckIdentity: () => ({ ok: true }),
+    classifyAdmission: E1_ADMIT,
     runOutage: async () => {
       outageCalled = true;
       return {
@@ -1456,6 +1606,7 @@ test('missing disruption authorization refuses before scale or restart', async (
   let restarted = false;
   const session = {
     gate: 'persistence',
+    ...E1_SESSION,
     profile: 'dev',
     context: CANONICAL_DEV_CONTEXT,
     env: AUTH_ENV,
@@ -1517,6 +1668,7 @@ test('signals gate invokes injected runner through proof live session', async ()
       captureIdentity: () => createFakeIdentity(),
       recheckIdentity: () => ({ ok: true }),
       verifyCleanCheckout: () => ({ ok: true }),
+      classifyAdmission: E1_ADMIT,
       runSignals: async () => ({ ok: false, reasonCode: 'probe-failed' }),
       env: AUTH_ENV,
       signalsDeps: {
@@ -1677,6 +1829,7 @@ test('quota status.hard missing fails the receipt', async () => {
     readSourceSha: () => SOURCE_SHA,
     captureIdentity: () => createFakeIdentity(null),
     recheckIdentity: () => ({ ok: true }),
+    e2Enabled: false,
     runPartialInstall: async () => {
       partialCalled = true;
       return { ok: true };
@@ -1699,6 +1852,7 @@ test('missing isolated authorization refuses first', async () => {
     evidenceDir: mkdtempSync(join(tmpdir(), 'obs-partial-auth-')),
   };
   const result = await runPartialInstallProof(session, {
+    e2Enabled: false,
     writeWrapper: () => {
       wrapperWritten = true;
       return join(session.evidenceDir, 'helm-wrapper');
@@ -1730,6 +1884,7 @@ test('repeat ensure issues no write', async () => {
     evidenceDir: mkdtempSync(join(tmpdir(), 'obs-partial-repeat-')),
   };
   const result = await runPartialInstallProof(session, {
+    e2Enabled: false,
     resolvePlans: () => plans,
     verifyNamespaceAbsent: async () => ({ ok: true }),
     recheck: () => ({ ok: true }),
@@ -1840,6 +1995,7 @@ test('developer session accepts an injected runner', async () => {
       env: AUTH_ENV,
       custody: { fd: 3 },
       proofCustody: { fd: 4, lockDirectory: '/tmp/proof-locks' },
+      classifyAdmission: E1_ADMIT,
       runDeveloper: async (session) => {
         assert.equal(session.proofCustody.fd, 4);
         return { ok: true, cleanup: true };
@@ -1956,6 +2112,7 @@ test('D11 public repeat refuses without a second mutation', async () => {
     remainingWorkMs: () => 9_000_000,
   };
   const result = await runIsolatedPartialInstallProof(session, {
+    e2Enabled: false,
     readPolicy: async () => ({ policy: A9_POLICY, binding: A9_BINDING }),
     readHistory: async () => [
       {
@@ -1999,6 +2156,7 @@ test('D11 public repeat refuses without a second mutation', async () => {
   assert.equal(result.intentionalRetainedPlatform, true);
   let retainedReads = 0;
   const changed = await runIsolatedPartialInstallProof(session, {
+    e2Enabled: false,
     readPolicy: async () => ({ policy: A9_POLICY, binding: A9_BINDING }),
     readHistory: async () => [
       {
@@ -2043,4 +2201,683 @@ test('D11 public repeat refuses without a second mutation', async () => {
     },
   });
   assert.equal(changed.reasonCode, 'retained-state-changed');
+});
+
+// ---- OBS-E2-12 T01 | proof admission and unsupported-evolution gates ----
+
+/** Spy on every mutation class the disruption/resource runners can reach. */
+function spyRun(writes) {
+  return (command, argv) => {
+    writes.clusterMutations += 1;
+    if (argv?.includes('patch') || argv?.includes('scale')) writes.scaleRollout += 1;
+    return { ok: false, stdout: '', stderr: 'spy' };
+  };
+}
+function mutationDeps(writes) {
+  const bump = (key) => async () => {
+    writes[key] += 1;
+    return { ok: true };
+  };
+  return {
+    observe: async () => {
+      writes.observe = (writes.observe ?? 0) + 1;
+      return readyObservation();
+    },
+    run: spyRun(writes),
+    runMutation: bump('clusterMutations'),
+    rollWorkload: bump('scaleRollout'),
+    scaleWorkload: bump('scaleRollout'),
+    restoreTempo: bump('scaleRollout'),
+    runPythonProbe: bump('probes'),
+    finishProbePod: bump('probes'),
+    cleanupProofResources: bump('clusterMutations'),
+    custody: {
+      begin: bump('pendingWrites'),
+      advance: bump('pendingWrites'),
+      clear: bump('pendingWrites'),
+      restoreTempoOnce: bump('scaleRollout'),
+      confirmOutageDown: bump('pendingWrites'),
+      assertOwnPending: () => ({}),
+    },
+  };
+}
+
+function admissionSession(gate, extra = {}) {
+  const { dir, receiptPath } = sessionDirs();
+  const writes = {
+    clusterMutations: 0,
+    pendingWrites: 0,
+    scaleRollout: 0,
+    probes: 0,
+    runner: 0,
+    classify: 0,
+  };
+  const count = (key) => async () => {
+    writes[key] += 1;
+    return { ok: true };
+  };
+  const input = {
+    gate,
+    profile: 'dev',
+    context: CANONICAL_DEV_CONTEXT,
+    mutationSpy: writes,
+    env: { ...DISRUPTION_ENV },
+    evidenceDir: dir,
+    receiptPath,
+    io: defaultReceiptIo(dir),
+    clock: { now: () => 0 },
+    readSourceSha: () => SOURCE_SHA,
+    captureIdentity: () => createFakeIdentity(),
+    recheckIdentity: () => ({ ok: true }),
+    verifyCleanCheckout: () => ({ ok: true }),
+    classifyAdmission: () => {
+      writes.classify += 1;
+      return classification('e2');
+    },
+    runPersistence: (session) => runPersistenceProof(session, mutationDeps(writes)),
+    runOutage: (session) => runOutageProof(session, mutationDeps(writes)),
+    runResources: (session) =>
+      runResourcesProof(session, {
+        listNodes: () => {
+          writes.probes += 1;
+          return { ok: false, reasonCode: 'spy' };
+        },
+        run: spyRun(writes),
+      }),
+    runSignals: count('runner'),
+    runDeveloper: async () => {
+      writes.runner += 1;
+      return { ok: true, cleanup: true };
+    },
+    runPartialInstall: count('runner'),
+    deleteProofResources: count('clusterMutations'),
+    custody: mutationDeps(writes).custody,
+    ...extra,
+  };
+  return { input, writes, receiptPath };
+}
+
+for (const gate of ['persistence', 'outage', 'resources']) {
+  test(`T01 ${gate} refuses E2 as unsupported-evolution with zero mutations`, async () => {
+    const { input, writes } = admissionSession(gate);
+    const result = await runProofOperationSession(input);
+    assert.equal(result.ok, false);
+    assert.equal(result.reasonCode, 'unsupported-evolution');
+    assert.equal(writes.scaleRollout, 0);
+    assert.equal(writes.probes, 0);
+    assert.equal(writes.runner, 0);
+    assert.equal(writes.pendingWrites, 0);
+    assert.equal(writes.clusterMutations, 0);
+  });
+
+  for (const kind of ['e1-base', 'mixed']) {
+    test(`T01 ${gate} refuses ${kind} before dispatch`, async () => {
+      const { input, writes } = admissionSession(gate, {
+        classifyAdmission: () => classification(kind),
+      });
+      const result = await runProofOperationSession(input);
+      assert.equal(result.ok, false);
+      assert.equal(result.reasonCode, 'proof-not-admitted');
+      assert.equal(writes.runner, 0);
+      assert.equal(writes.pendingWrites, 0);
+    });
+  }
+
+  test(`T01 ${gate} refuses pending and unreadable classification`, async () => {
+    for (const [c, reason] of [
+      [classification('e1-developer', { pending: true }), 'pending-refused'],
+      [classification('e2', { pending: true }), 'pending-refused'],
+      [classification('e1-developer', { state: 'unreadable' }), 'admission-unreadable'],
+      [null, 'admission-unreadable'],
+    ]) {
+      const { input, writes } = admissionSession(gate, {
+        classifyAdmission: () => c,
+      });
+      const result = await runProofOperationSession(input);
+      assert.equal(result.reasonCode, reason);
+      assert.equal(writes.runner, 0);
+    }
+  });
+
+  test(`T01 ${gate} fails closed without a classifier`, async () => {
+    const { input, writes } = admissionSession(gate, {
+      classifyAdmission: undefined,
+    });
+    const result = await runProofOperationSession(input);
+    assert.equal(result.reasonCode, 'admission-required');
+    assert.equal(writes.runner, 0);
+  });
+
+  test(`T01 ${gate} dispatches exact E1 developer with carried identity and authorization`, async () => {
+    for (const kind of ['e1-developer', 'e1-developer-upgraded']) {
+      const { input, writes } = admissionSession(gate, {
+        classifyAdmission: () => classification(kind),
+      });
+      const key = {
+        persistence: 'runPersistence',
+        outage: 'runOutage',
+        resources: 'runResources',
+      }[gate];
+      let seen = null;
+      input[key] = async (session) => {
+        seen = session.admission;
+        const again = await session.reclassifyAdmission();
+        assert.equal(again.ok, true);
+        return { ok: true };
+      };
+      const result = await runProofOperationSession(input);
+      assert.equal(result.ok, true);
+      assert.equal(seen.evolution, 'e1-developer');
+      assert.equal(seen.artifactId, 'dev-e1-developer');
+      assert.equal(seen.historyId, kind === 'e1-developer' ? 'developer-fresh' : 'developer-upgraded');
+      assert.equal(writes.runner, 0);
+    }
+  });
+
+  test(`T01 ${gate} refuses when identity or classification changes between repeats`, async () => {
+    let n = 0;
+    const { input } = admissionSession(gate, {
+      classifyAdmission: () =>
+        classification(n++ === 0 ? 'e1-developer' : 'e1-developer-upgraded'),
+    });
+    let ran = false;
+    input.runPersistence = input.runOutage = input.runResources = async () => {
+      ran = true;
+      return { ok: true };
+    };
+    const result = await runProofOperationSession(input);
+    assert.equal(result.reasonCode, 'admission-identity-changed');
+    assert.equal(ran, false);
+
+    let rechecks = 0;
+    const second = admissionSession(gate, {
+      classifyAdmission: E1_ADMIT,
+      recheckIdentity: () =>
+        rechecks++ === 0
+          ? { ok: true }
+          : { ok: false, reason: 'namespace-uid-changed' },
+    });
+    ran = false;
+    second.input.runPersistence = second.input.runOutage = second.input.runResources =
+      async () => {
+        ran = true;
+        return { ok: true };
+      };
+    const changed = await runProofOperationSession(second.input);
+    assert.equal(changed.reasonCode, 'namespace-uid-changed');
+    assert.equal(ran, false);
+  });
+
+  test(`T01 ${gate} keeps authorization checks ahead of admission`, async () => {
+    const { input, writes } = admissionSession(gate, { env: AUTH_ENV });
+    const result = await runProofOperationSession(input);
+    assert.equal(result.reasonCode, gate === 'resources' ? 'unsupported-evolution' : 'disruption-unauthorized');
+    assert.equal(writes.classify, gate === 'resources' ? 1 : 0);
+    const none = await runProofOperationSession({ ...input, env: {} });
+    assert.equal(none.reasonCode, 'proof-unauthorized');
+  });
+}
+
+for (const gate of ['health', 'signals', 'developer']) {
+  test(`T01 ${gate} admits exact E1 developer and E2, refuses base/mixed/pending`, async () => {
+    const runnerKey = { signals: 'runSignals', developer: 'runDeveloper' }[gate];
+    for (const [c, ok, reason] of [
+      [classification('e1-developer'), true],
+      [classification('e1-developer-upgraded'), true],
+      [classification('e2'), true],
+      [classification('e1-base'), false, 'proof-not-admitted'],
+      [classification('mixed'), false, 'proof-not-admitted'],
+      [classification('e2', { pending: true }), false, 'pending-refused'],
+      [classification('e2', { structuralReady: false }), false, 'proof-not-admitted'],
+    ]) {
+      const { input } = admissionSession(gate, {
+        env: AUTH_ENV,
+        classifyAdmission: () => c,
+      });
+      let dispatched = null;
+      if (runnerKey) {
+        input[runnerKey] = async (session) => {
+          dispatched = session.admission;
+          return { ok: true, cleanup: true };
+        };
+        const result = await runProofOperationSession(input);
+        if (ok) {
+          assert.equal(result.ok, true);
+          assert.equal(dispatched.artifactId, c.artifactId);
+          assert.equal(dispatched.historyId, c.historyId);
+        } else {
+          assert.equal(result.reasonCode, reason);
+          assert.equal(dispatched, null);
+        }
+      } else {
+        const result = await runProofOperationSession({
+          ...input,
+          observe: async () => matchedObservation(c),
+          repeatObservation: async () => matchedObservation(c),
+          queryDatasourceHealth: async () => healthyDatasources(),
+        });
+        if (ok) {
+          assert.equal(result.ok, true);
+        } else {
+          assert.equal(result.reasonCode, reason);
+        }
+      }
+    }
+  });
+}
+
+test('T01 partial-install refuses E2-enabled source before cluster work', async () => {
+  assert.equal(sourceEnablesE2('dev'), true);
+  assert.equal(sourceEnablesE2('release'), false);
+  let identityCaptured = false;
+  const { input, writes } = admissionSession('partial-install', {
+    env: ISOLATED_ENV,
+    captureIdentity: () => {
+      identityCaptured = true;
+      return createFakeIdentity(null);
+    },
+  });
+  const result = await runProofOperationSession(input);
+  assert.equal(result.reasonCode, 'unsupported-evolution');
+  assert.equal(identityCaptured, false);
+  assert.equal(writes.runner, 0);
+  assert.equal(writes.pendingWrites, 0);
+  assert.equal(existsSync(input.receiptPath), false);
+  const live = await runLiveProof(
+    { gate: 'partial-install', profile: 'dev', context: CANONICAL_DEV_CONTEXT },
+    { env: ISOLATED_ENV, captureIdentity: () => { identityCaptured = true; } },
+  );
+  assert.equal(live.reasonCode, 'unsupported-evolution');
+  assert.equal(identityCaptured, false);
+});
+
+test('T01 decideProofAdmission never uses desired convergence for the E1 predecessor', () => {
+  const decision = decideProofAdmission(
+    'persistence',
+    classification('e1-developer', { desiredConverged: false }),
+  );
+  assert.equal(decision.ok, true);
+  assert.equal(decision.admission.evolution, 'e1-developer');
+  assert.equal(
+    decideProofAdmission('persistence', classification('e1-developer', { structuralReady: false })).ok,
+    false,
+  );
+});
+
+// ---- OBS-E2-12 T02 | direct runner and helper fences ----
+
+const E2_ADMISSION = {
+  evolution: 'e2',
+  artifactId: 'dev-e2',
+  historyId: 'e2-fresh',
+  artifacts: { artifactId: 'dev-e2' },
+};
+
+function zeroCounters(writes) {
+  for (const key of [
+    'clusterMutations',
+    'pendingWrites',
+    'scaleRollout',
+    'probes',
+  ]) {
+    assert.equal(writes[key], 0, key);
+  }
+}
+
+function directSession(gate, admissionFields) {
+  const { dir, receiptPath } = sessionDirs();
+  return {
+    gate,
+    profile: 'dev',
+    context: CANONICAL_DEV_CONTEXT,
+    env: DISRUPTION_ENV,
+    identity: createFakeIdentity(),
+    clock: { now: () => 0 },
+    remainingWorkMs: () => 3_300_000,
+    elapsedMs: () => 0,
+    evidenceDir: dir,
+    receiptPath,
+    custody: { begin() {}, advance() {}, clear() {} },
+    ...admissionFields,
+  };
+}
+
+const SESSION_VARIANTS = {
+  'no admission': {},
+  'E2 admission': {
+    admission: E2_ADMISSION,
+    reclassifyAdmission: async () => ({ ok: true, admission: E2_ADMISSION }),
+  },
+  'E1 session reclassified to E2 under custody': {
+    admission: E1_ADMISSION,
+    reclassifyAdmission: async () => ({ ok: true, admission: E2_ADMISSION }),
+  },
+  'E1 session reclassification fails': {
+    admission: E1_ADMISSION,
+    reclassifyAdmission: async () => ({ ok: false, reasonCode: 'pending-refused' }),
+  },
+  'E1 session without reclassify': { admission: E1_ADMISSION },
+  'E1 session with different history under custody': {
+    admission: E1_ADMISSION,
+    reclassifyAdmission: async () => ({
+      ok: true,
+      admission: { ...E1_ADMISSION, historyId: 'developer-upgraded' },
+    }),
+  },
+};
+
+for (const [label, fields] of Object.entries(SESSION_VARIANTS)) {
+  for (const [name, runner] of [
+    ['runPersistenceProof', runPersistenceProof],
+    ['runOutageProof', runOutageProof],
+    ['runResourcesProof', runResourcesProof],
+  ]) {
+    test(`T02 ${name} direct call with ${label} cannot reach any mutation`, async () => {
+      const writes = { clusterMutations: 0, pendingWrites: 0, scaleRollout: 0, probes: 0 };
+      const session = directSession(
+        name === 'runOutageProof' ? 'outage' : name === 'runResourcesProof' ? 'resources' : 'persistence',
+        fields,
+      );
+      const result = await runner(session, mutationDeps(writes));
+      assert.equal(result.ok, false);
+      assert.match(
+        result.reasonCode,
+        /^(unsupported-evolution|admission-required|pending-refused|admission-identity-changed)$/,
+      );
+      zeroCounters(writes);
+      assert.equal(writes.observe ?? 0, 0);
+    });
+  }
+
+  test(`T02 lower helpers with ${label} refuse without injected or real mutation`, async () => {
+    const writes = { clusterMutations: 0, pendingWrites: 0, scaleRollout: 0, probes: 0 };
+    const deps = mutationDeps(writes);
+    const session = directSession('outage', fields);
+    const admitted = fields.admission?.evolution === 'e1-developer';
+    const pre = { uid: 'u', resourceVersion: '1', generation: 1, replicas: 1, podUidBefore: 'p' };
+    const results = [
+      await guardedRolloutRestart(session, 'Deployment', 'obs-prometheus', pre, deps),
+      await guardedScaleTempo(session, 0, pre, deps),
+      await restoreTempoAfterOutage(session, deps, {}),
+    ];
+    if (admitted) {
+      // Sync helper check passes for an E1 admitted session (runner already
+      // reclassified); helpers then use injected spies. Only E2/none must refuse.
+      assert.equal(results.every((r) => r.reasonCode !== 'unsupported-evolution'), true);
+      return;
+    }
+    for (const result of results) {
+      assert.equal(result.ok, false);
+      assert.match(result.reasonCode, /^(unsupported-evolution|admission-required)$/);
+    }
+    zeroCounters(writes);
+    assert.equal(writes.observe ?? 0, 0);
+  });
+}
+
+test('T02 E1 correct path stays eligible with authorization', async () => {
+  const writes = { clusterMutations: 0, pendingWrites: 0, scaleRollout: 0, probes: 0 };
+  let reclassified = 0;
+  const session = directSession('resources', {
+    admission: E1_ADMISSION,
+    reclassifyAdmission: async () => {
+      reclassified += 1;
+      return { ok: true, admission: E1_ADMISSION };
+    },
+  });
+  const result = await runResourcesProof(session, {
+    listNodes: () => {
+      writes.probes += 1;
+      return { ok: false, reasonCode: 'nodes-spy' };
+    },
+  });
+  assert.equal(reclassified, 1);
+  assert.equal(result.reasonCode, 'nodes-spy');
+  assert.equal(writes.probes, 1);
+
+  const persistence = await runPersistenceProof(
+    { ...session, gate: 'persistence', env: AUTH_ENV },
+    mutationDeps(writes),
+  );
+  assert.equal(persistence.reasonCode, 'disruption-unauthorized');
+  assert.equal(writes.pendingWrites, 0);
+});
+
+test('T02 E2 session through the dispatcher reaches no real runner mutation', async () => {
+  for (const gate of ['persistence', 'outage', 'resources']) {
+    const { input, writes } = admissionSession(gate);
+    const result = await runProofOperationSession(input);
+    assert.equal(result.reasonCode, 'unsupported-evolution');
+    zeroCounters(writes);
+  }
+});
+
+test('T02 legacy partial-install refused at direct entries and resolver on E2-enabled tree', async () => {
+  const writes = { clusterMutations: 0, pendingWrites: 0, scaleRollout: 0, probes: 0 };
+  const session = {
+    ...directSession('partial-install', {}),
+    env: ISOLATED_ENV,
+    identity: createFakeIdentity(null),
+  };
+  const deps = {
+    run: spyRun(writes),
+    readPolicy: async () => {
+      writes.probes += 1;
+      return {};
+    },
+    runPublicCli: async () => {
+      writes.clusterMutations += 1;
+      return { ok: true };
+    },
+  };
+  for (const entry of [runPartialInstallProof, runIsolatedPartialInstallProof]) {
+    const result = await entry(session, deps);
+    assert.equal(result.ok, false);
+    assert.equal(result.reasonCode, 'unsupported-evolution');
+  }
+  assert.throws(() => resolvePartialInstallPlans('dev', deps), /unsupported-evolution/);
+  zeroCounters(writes);
+  // Authorization still comes first.
+  const unauthorized = await runPartialInstallProof(
+    { ...session, env: AUTH_ENV },
+    deps,
+  );
+  assert.equal(unauthorized.reasonCode, 'disruption-unauthorized');
+});
+
+// ---- OBS-E2-12 T03 | matched identity for nondisruptive proofs ----
+
+function admissionFor(kind) {
+  const c = classification(kind);
+  return {
+    evolution: kind === 'e2' ? 'e2' : 'e1-developer',
+    artifactId: c.artifactId,
+    historyId: c.historyId,
+    artifacts: c.artifacts,
+  };
+}
+
+test('T03 stable spec derives from matched history, not fixed five Secrets', () => {
+  const fresh = deriveStableSpec(admissionFor('e1-developer'));
+  assert.equal(fresh.ok, true);
+  assert.equal(fresh.spec.helmSecretNames.length, 5);
+  assert.equal(fresh.spec.workloadKeys.length, 5);
+  const upgraded = deriveStableSpec(admissionFor('e1-developer-upgraded'));
+  assert.equal(upgraded.spec.helmSecretNames.length, 6);
+  assert.ok(
+    upgraded.spec.helmSecretNames.includes('sh.helm.release.v1.obs-collector.v2'),
+  );
+  const e2 = deriveStableSpec(admissionFor('e2'));
+  assert.ok(e2.spec.workloadKeys.includes(E2_HELPER_WORKLOAD));
+  assert.equal(deriveStableSpec({ ...admissionFor('e2'), artifacts: null }).ok, false);
+  assert.equal(
+    deriveStableSpec({ ...admissionFor('e2'), historyId: 'nope' }).ok,
+    false,
+  );
+});
+
+async function runHealth(kind, mutate, extra = {}) {
+  const c = classification(kind);
+  const { input } = admissionSession('health', {
+    env: AUTH_ENV,
+    classifyAdmission: () => c,
+    observe: async () => matchedObservation(c),
+    repeatObservation: async () => {
+      const repeated = matchedObservation(c);
+      mutate?.(repeated);
+      return repeated;
+    },
+    queryDatasourceHealth: async () => healthyDatasources(),
+    ...extra,
+  });
+  const result = await runProofOperationSession(input);
+  return { result, receipt: JSON.parse(readFileSync(input.receiptPath, 'utf8')) };
+}
+
+test('T03 health on E2 passes with matched history and claims no E2 coverage', async () => {
+  const { result, receipt } = await runHealth('e2');
+  assert.equal(result.ok, true);
+  assert.equal(receipt.historyId, 'e2-fresh');
+  assert.equal(receipt.artifactId, 'dev-e2');
+  assert.equal(receipt.claim, 'structural-health');
+  assert.equal(receipt.e2Coverage, false);
+  assert.equal(receipt.disruptiveCertification, false);
+});
+
+test('T03 changed helper/history Secret/namespace/descriptor fails health', async () => {
+  const cases = [
+    ['e2', (o) => { o.snapshot.objects[E2_HELPER_WORKLOAD].metadata.uid = 'other'; }, 'workload-uid-changed'],
+    ['e2', (o) => { delete o.snapshot.objects[E2_HELPER_WORKLOAD]; }, 'workload-missing'],
+    ['e1-developer', (o) => { o.snapshot.objects['Secret/sh.helm.release.v1.obs-loki.v1'].metadata.uid = 'x'; }, 'helm-storage-uid-changed'],
+    ['e1-developer-upgraded', (o) => { delete o.snapshot.objects['Secret/sh.helm.release.v1.obs-collector.v2']; }, 'identity-incomplete'],
+    ['e1-developer', (o) => { o.snapshot.namespace.object.metadata.uid = NS_UID_B; }, 'namespace-uid-changed'],
+    ['e1-developer', (o) => { o.historyId = 'developer-upgraded'; }, 'history-changed'],
+    ['e1-developer', (o) => { o.artifactId = 'dev-e2'; }, 'history-changed'],
+  ];
+  for (const [kind, mutate, reason] of cases) {
+    const { result } = await runHealth(kind, mutate);
+    assert.equal(result.ok, false, reason);
+    assert.equal(result.reasonCode, reason);
+  }
+});
+
+test('T03 health refuses E1 predecessor that is only structurally not desired-converged only when history mismatches', async () => {
+  const { result } = await runHealth('e1-developer');
+  assert.equal(result.ok, true);
+});
+
+function signalsSession(admissionFields) {
+  const { dir } = sessionDirs();
+  return {
+    gate: 'signals',
+    profile: 'dev',
+    context: CANONICAL_DEV_CONTEXT,
+    identity: createFakeIdentity(),
+    clock: { now: () => 0 },
+    remainingWorkMs: () => 4_000_000,
+    evidenceDir: dir,
+    ...admissionFields,
+  };
+}
+
+function signalsDeps(log, cleanupOk = true) {
+  return {
+    ensureProofResources: async () => ({
+      ok: true,
+      resources: { namespace: 'p', namespaceUid: 'n', configMapUid: 'c', podUid: 'u' },
+    }),
+    pythonRunner: async () => ({ ok: true }),
+    cleanupProofResources: async ({ created }) => {
+      log.push(created.podUid);
+      return { ok: cleanupOk };
+    },
+  };
+}
+
+test('T03 signals records matched history, synthetic-only claim and UID-bound cleanup', async () => {
+  const log = [];
+  const admission = admissionFor('e2');
+  const result = await runSignalsProof(
+    signalsSession({
+      admission,
+      reclassifyAdmission: async () => ({ ok: true, admission }),
+    }),
+    signalsDeps(log),
+  );
+  assert.equal(result.ok, true);
+  assert.equal(result.claim, 'synthetic-signals');
+  assert.equal(result.matchedHistoryId, 'e2-fresh');
+  assert.equal(result.cleanup, true);
+  assert.deepEqual(log, ['u']);
+});
+
+test('T03 signals fails on changed history or cleanup mismatch', async () => {
+  const admission = admissionFor('e1-developer');
+  const log = [];
+  const changed = await runSignalsProof(
+    signalsSession({
+      admission,
+      reclassifyAdmission: async () => ({
+        ok: true,
+        admission: { ...admission, historyId: 'developer-upgraded' },
+      }),
+    }),
+    signalsDeps(log),
+  );
+  assert.equal(changed.ok, false);
+  assert.equal(changed.reasonCode, 'history-changed');
+  assert.deepEqual(log, ['u']);
+  const cleanup = await runSignalsProof(
+    signalsSession({
+      admission,
+      reclassifyAdmission: async () => ({ ok: true, admission }),
+    }),
+    signalsDeps([], false),
+  );
+  assert.equal(cleanup.ok, false);
+  assert.equal(cleanup.reasonCode, 'cleanup-failed');
+});
+
+test('T03 developer proof is forwards-only and rechecks matched history', async () => {
+  const admission = admissionFor('e2');
+  const base = {
+    gate: 'developer',
+    identity: createFakeIdentity(),
+    clock: { now: () => 0 },
+    remainingWorkMs: () => 1_000_000,
+    custody: { fd: 3 },
+    proofCustody: { fd: 4, lockDirectory: '/tmp/proof-locks' },
+    admission,
+  };
+  const deps = {
+    openForwards: async () => ({
+      ports: { developerHttp: 1, diagnosticHttp: 2, prometheus: 3, loki: 4, tempo: 5 },
+      close: async () => {},
+    }),
+    startOwnedChild: () => ({
+      outcome: Promise.resolve({ ok: true, stdout: JSON.stringify({ ok: true }) }),
+    }),
+  };
+  const ok = await runDeveloperProof(
+    { ...base, reclassifyAdmission: async () => ({ ok: true, admission }) },
+    deps,
+  );
+  if (ok.reasonCode === 'bindings-invalid' || ok.ok === false) {
+    assert.fail(`developer fixture refused: ${ok.reasonCode}`);
+  }
+  assert.equal(ok.claim, 'developer-forwards');
+  assert.equal(ok.matchedHistoryId, 'e2-fresh');
+  const changed = await runDeveloperProof(
+    {
+      ...base,
+      reclassifyAdmission: async () => ({
+        ok: true,
+        admission: { ...admission, artifactId: 'dev-e1-developer' },
+      }),
+    },
+    deps,
+  );
+  assert.equal(changed.ok, false);
+  assert.equal(changed.reasonCode, 'history-changed');
+  assert.equal(changed.cleanup, true);
 });
