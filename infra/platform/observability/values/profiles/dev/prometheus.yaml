@@ -207,7 +207,7 @@ scrapeConfigs:
       - target_label: env
         replacement: dev
       - target_label: component
-        replacement: kubelet-cadvisor
+        replacement: kubelet-cadvisor-network
     metric_relabel_configs:
       - source_labels: [__name__, container, namespace, pod, interface]
         separator: ";"

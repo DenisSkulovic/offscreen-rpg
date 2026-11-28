@@ -235,5 +235,107 @@
     },
     "coverage": "enabled",
     "reason": ""
+  },
+  {
+    "component": "kubelet-resource",
+    "namespace": null,
+    "workloadSelector": {
+      "nodeNames": [
+        "offscreen-dev-control-plane",
+        "offscreen-dev-worker"
+      ]
+    },
+    "jobs": [
+      "kubelet-resource"
+    ],
+    "requiredFamilies": [
+      "node_cpu_usage_seconds_total",
+      "node_memory_working_set_bytes",
+      "pod_cpu_usage_seconds_total",
+      "pod_memory_working_set_bytes",
+      "container_cpu_usage_seconds_total",
+      "container_memory_working_set_bytes"
+    ],
+    "panels": {
+      "offscreen-overview/104": {
+        "promql": "((sum (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() ((count(((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2))) and on() (count(((node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2)",
+        "unit": "none",
+        "interpretation": "CPU cores across both Kind nodes, only when both resource scrapes current. Require current node family on both nodes; suppress incomplete totals."
+      },
+      "offscreen-nodes/306": {
+        "promql": "sum by (node) (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "CPU cores per Kind node, missing/stale unknown."
+      },
+      "offscreen-nodes/308": {
+        "promql": "(sum by (node) (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) / on(node) (((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"} and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) > 0)",
+        "unit": "percentunit",
+        "interpretation": "CPU cores divided by current positive allocatable; may exceed 100%, not physical host usage."
+      },
+      "offscreen-overview/105": {
+        "promql": "((sum (((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() ((count(((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2))) and on() (count(((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2)",
+        "unit": "bytes",
+        "interpretation": "Working-set bytes across both Kind nodes, only when both resource scrapes current. Require current node family on both nodes; suppress incomplete totals."
+      },
+      "offscreen-nodes/307": {
+        "promql": "sum by (node) (((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "bytes",
+        "interpretation": "Working-set bytes per Kind node, missing/stale unknown."
+      },
+      "offscreen-nodes/309": {
+        "promql": "(sum by (node) (((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) / on(node) (((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"} and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) > 0)",
+        "unit": "percentunit",
+        "interpretation": "Working-set bytes divided by current positive allocatable; may exceed 100%, not physical host usage."
+      },
+      "offscreen-overview/106": {
+        "promql": "((sum by (namespace) (((rate(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() ((count(((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2))) and on() (count(((node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2)",
+        "unit": "none",
+        "interpretation": "Pod CPU cores by namespace across both current nodes; no absent-to-zero. Require current node family on both nodes; suppress incomplete totals."
+      },
+      "offscreen-nodes/310": {
+        "promql": "sum by (node,namespace) (((rate(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Pod CPU cores by node and namespace; do not add container copies."
+      },
+      "offscreen-overview/107": {
+        "promql": "((sum by (namespace) (((pod_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(pod_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) and on() ((count(((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2))) and on() (count(((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90))) == 2)",
+        "unit": "bytes",
+        "interpretation": "Pod working-set bytes by namespace across both current nodes; no absent-to-zero. Require current node family on both nodes; suppress incomplete totals."
+      },
+      "offscreen-nodes/311": {
+        "promql": "sum by (node,namespace) (((pod_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(pod_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "bytes",
+        "interpretation": "Pod working-set bytes by node and namespace; do not add container copies."
+      },
+      "offscreen-kubernetes/221": {
+        "promql": "sum by (node,namespace,pod,container) (((rate(container_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(container_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Container CPU cores by running workload container; excludes infrastructure; no samples for completed/pending containers."
+      },
+      "offscreen-kubernetes/222": {
+        "promql": "sum by (node,namespace,pod,container) (((container_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(container_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+        "unit": "bytes",
+        "interpretation": "Container working-set bytes by running workload container; excludes infrastructure; no samples for completed/pending containers."
+      }
+    },
+    "coverage": "enabled",
+    "reason": ""
+  },
+  {
+    "component": "kubelet-cadvisor-network",
+    "namespace": null,
+    "workloadSelector": {
+      "nodeNames": [
+        "offscreen-dev-control-plane",
+        "offscreen-dev-worker"
+      ]
+    },
+    "jobs": [
+      "kubelet-cadvisor"
+    ],
+    "requiredFamilies": [],
+    "panels": {},
+    "coverage": "inventory-only",
+    "reason": "Authenticated scrape selected; network family/label keys observed but sandbox values and uniqueness unqualified; no network or disk domain panel. G5 records actual supported coverage."
   }
 ]
