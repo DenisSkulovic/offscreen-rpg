@@ -1,5 +1,6 @@
-import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { Buffer } from 'node:buffer';
+import { createHash, X509Certificate } from 'node:crypto';
+import { lstatSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml, parseAllDocuments } from 'yaml';
@@ -80,6 +81,97 @@ const ALLOWED_INVENTORY_KINDS = new Set([
 ]);
 
 const GRAFANA_ADMIN_SECRET = 'obs-grafana-admin';
+
+const E2_ARTIFACT_ID = 'dev-e2';
+const E2_INVENTORY_KEY = 'dev-e2';
+const E2_HELPER_LOCK_HEADER = LOCK_HEADER;
+/** Selected helper roles, their frozen repositories and rendered tags. */
+const E2_HELPER_ROLES = Object.freeze({
+  'kube-state-metrics': Object.freeze({
+    repository: 'registry.k8s.io/kube-state-metrics/kube-state-metrics',
+    renderedTag: 'v2.20.0',
+  }),
+  'redis-exporter': Object.freeze({
+    repository: 'docker.io/oliver006/redis_exporter',
+    renderedTag: null,
+  }),
+});
+const KUBELET_TRUST_CONFIGMAP = 'obs-kubelet-trust';
+const KUBELET_TRUST_MOUNT = '/etc/offscreen/kubelet-trust';
+const KUBELET_TRUST_OWNER_LABEL = 'offscreen.dev/owner';
+const KUBELET_TRUST_OWNER_VALUE = 'offscreen-dev';
+const KUBELET_TRUST_ANNOTATION = 'offscreen.dev/kubelet-trust-binding-sha256';
+const KUBELET_NODES = Object.freeze([
+  'offscreen-dev-control-plane',
+  'offscreen-dev-worker',
+]);
+export const KUBELET_TRUST_UNAVAILABLE_REASON = 'kubelet-trust-unavailable';
+
+const DASHBOARD_CONFIGMAP = 'obs-grafana-dashboards-offscreen';
+const DASHBOARD_MOUNT_PATH = '/var/lib/grafana/dashboards/offscreen';
+const DASHBOARD_VOLUME = 'dashboards-offscreen';
+const DASHBOARD_DIGEST_ANNOTATION = 'checksum/offscreen-dashboard-files';
+const DASHBOARD_FILES = Object.freeze([
+  'kubernetes.json',
+  'messaging-cache.json',
+  'nodes.json',
+  'observability.json',
+  'overview.json',
+  'postgres.json',
+  'storage.json',
+  'temporal.json',
+]);
+/** Fixed literal; only this string is interpreted by the chart's tpl call. */
+const DASHBOARD_EXTRA_OBJECT_TEMPLATE = `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${DASHBOARD_CONFIGMAP}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:{{ include "grafana.labels" . | nindent 4 }}
+    dashboard-provider: offscreen
+data:{{ toYaml .Values.offscreenDashboardFiles | nindent 2 }}
+`;
+
+const E2_CLUSTER_KINDS = new Set(['ClusterRole', 'ClusterRoleBinding']);
+
+/** Exact selected E2 cluster-scoped RBAC (compared order-insensitively). */
+const E2_RBAC = Object.freeze({
+  'obs-kube-state-metrics': {
+    rules: [
+      ['apps', 'daemonsets', 'list,watch'],
+      ['apps', 'deployments', 'list,watch'],
+      ['batch', 'jobs', 'list,watch'],
+      ['', 'namespaces', 'list,watch'],
+      ['', 'nodes', 'list,watch'],
+      ['', 'persistentvolumeclaims', 'list,watch'],
+      ['', 'persistentvolumes', 'list,watch'],
+      ['', 'pods', 'list,watch'],
+      ['apps', 'replicasets', 'list,watch'],
+      ['apps', 'statefulsets', 'list,watch'],
+    ],
+    serviceAccount: 'obs-kube-state-metrics',
+  },
+  'obs-prometheus-kubelet': {
+    rules: [
+      ['', 'nodes', 'get,list,watch'],
+      ['', 'nodes/metrics', 'get'],
+      ['', 'pods', 'get,list,watch'],
+    ],
+    serviceAccount: 'obs-prometheus',
+  },
+});
+
+/** Pod-bearing kinds; any not declared by the selected artifact is refused. */
+const POD_BEARING_KINDS = new Set([
+  'Pod',
+  'Deployment',
+  'StatefulSet',
+  'DaemonSet',
+  'ReplicaSet',
+  'ReplicationController',
+  'Job',
+  'CronJob',
+]);
 
 /**
  * @param {string} message
@@ -379,7 +471,13 @@ function assertPrimaryWorkloadImage(documents, role, expectedImage) {
  * @param {string} releaseName
  * @param {string} namespace
  */
-function collectReleaseInventoryRows(documents, role, releaseName, namespace) {
+function collectReleaseInventoryRows(
+  documents,
+  role,
+  releaseName,
+  namespace,
+  allowClusterKinds = false,
+) {
   /** @type {[string, string, string, string, string][]} */
   const direct = [];
   /** @type {[string, string, string, string, string][]} */
@@ -401,15 +499,28 @@ function collectReleaseInventoryRows(documents, role, releaseName, namespace) {
     ) {
       throwArtifactInvalid('malformed manifest identity');
     }
-    if (docNs !== namespace)
-      throwArtifactInvalid('manifest namespace mismatch');
-    if (!ALLOWED_INVENTORY_KINDS.has(kind)) {
-      throwArtifactInvalid('unexpected manifest kind');
+    const clusterScoped = allowClusterKinds && E2_CLUSTER_KINDS.has(kind);
+    if (clusterScoped) {
+      if (docNs !== undefined) {
+        throwArtifactInvalid('cluster-scoped manifest carries a namespace');
+      }
+    } else {
+      if (docNs !== namespace)
+        throwArtifactInvalid('manifest namespace mismatch');
+      if (!ALLOWED_INVENTORY_KINDS.has(kind)) {
+        throwArtifactInvalid('unexpected manifest kind');
+      }
     }
     const key = `${kind}/${name}`;
     if (seen.has(key)) throwArtifactInvalid('duplicate manifest identity');
     seen.add(key);
-    direct.push([apiVersion, kind, namespace, name, releaseName]);
+    direct.push([
+      apiVersion,
+      kind,
+      clusterScoped ? '' : namespace,
+      name,
+      releaseName,
+    ]);
     if (kind === 'StatefulSet') {
       const claims =
         /** @type {{ spec?: { volumeClaimTemplates?: { metadata?: { name?: string } }[] } }} */ (
@@ -464,6 +575,530 @@ function assertInventoryMatch(profileId, expected, direct, generated) {
 }
 
 /**
+ * Parse the separate E2 helper lock: exactly one row for each selected helper
+ * role, frozen repositories, canonical digests.
+ * @param {string} tsvText
+ * @returns {Record<string, string>}
+ */
+export function parseHelperImageLock(tsvText) {
+  const lines = String(tsvText)
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .split('\n');
+  if (lines[0]?.trim() !== E2_HELPER_LOCK_HEADER) {
+    throwArtifactInvalid('malformed helper lock header');
+  }
+  /** @type {Record<string, string>} */
+  const locks = {};
+  let rows = 0;
+  for (const line of lines.slice(1)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    rows += 1;
+    const tab = trimmed.indexOf('\t');
+    if (tab < 1) throwArtifactInvalid('malformed helper lock');
+    const role = trimmed.slice(0, tab);
+    const reference = trimmed.slice(tab + 1);
+    if (!Object.hasOwn(E2_HELPER_ROLES, role)) {
+      throwArtifactInvalid('unknown helper lock role');
+    }
+    if (locks[role]) throwArtifactInvalid('duplicate helper lock role');
+    locks[role] = reference;
+  }
+  validateHelperLockRecord(locks);
+  if (rows !== Object.keys(E2_HELPER_ROLES).length) {
+    throwArtifactInvalid('helper lock row count mismatch');
+  }
+  return locks;
+}
+
+/** @param {Record<string, string>} locks */
+function validateHelperLockRecord(locks) {
+  const keys = Object.keys(locks);
+  for (const role of keys) {
+    if (!Object.hasOwn(E2_HELPER_ROLES, role)) {
+      throwArtifactInvalid('unknown helper lock role');
+    }
+  }
+  for (const role of Object.keys(E2_HELPER_ROLES)) {
+    const reference = locks[role];
+    if (typeof reference !== 'string' || reference.length === 0) {
+      throwArtifactInvalid('missing helper lock role');
+    }
+    const { repository } = parseCanonicalReference(reference);
+    if (repository !== E2_HELPER_ROLES[role].repository) {
+      throwArtifactInvalid('helper lock repository mismatch');
+    }
+  }
+  if (keys.length !== Object.keys(E2_HELPER_ROLES).length) {
+    throwArtifactInvalid('helper lock row count mismatch');
+  }
+}
+
+/**
+ * @param {string} role
+ * @param {string} canonicalReference
+ */
+function helperRenderedReference(role, canonicalReference) {
+  const { repository, digest } = parseCanonicalReference(canonicalReference);
+  const tag = E2_HELPER_ROLES[role].renderedTag;
+  return tag ? `${repository}:${tag}@${digest}` : `${repository}@${digest}`;
+}
+
+/** @param {Buffer} der */
+function canonicalCertificatePem(der) {
+  const lines = der.toString('base64').match(/.{1,64}/g) ?? [];
+  return `-----BEGIN CERTIFICATE-----\n${lines.join('\n')}\n-----END CERTIFICATE-----\n`;
+}
+
+/**
+ * Validate a cluster-bound kubelet trust binding as produced by
+ * kubelet-trust.mjs and project the two literal Helm values from it.
+ * The binding is never derived from rendered or live Helm data.
+ * @param {unknown} binding
+ */
+function validateKubeletTrustBinding(binding) {
+  const fail = (what) => throwArtifactInvalid(`kubelet trust binding ${what}`);
+  const isHex64 = (v) => typeof v === 'string' && /^[0-9a-f]{64}$/.test(v);
+  const nonEmpty = (v) => typeof v === 'string' && v.length > 0;
+  if (typeof binding !== 'object' || binding === null || Array.isArray(binding)) {
+    fail('malformed');
+  }
+  const b = /** @type {Record<string, any>} */ (binding);
+  const TOP = [
+    'schema',
+    'contextName',
+    'kubeSystemUid',
+    'baselineUid',
+    'nodes',
+    'bindingSha256',
+  ];
+  if (JSON.stringify(Object.keys(b)) !== JSON.stringify(TOP)) {
+    fail('shape mismatch');
+  }
+  if (b.schema !== 1) fail('schema mismatch');
+  for (const key of ['contextName', 'kubeSystemUid', 'baselineUid']) {
+    if (!nonEmpty(b[key])) fail('identity missing');
+  }
+  if (!isHex64(b.bindingSha256)) fail('digest malformed');
+  if (!Array.isArray(b.nodes) || b.nodes.length !== KUBELET_NODES.length) {
+    fail('node set mismatch');
+  }
+  const NODE_KEYS = ['name', 'nodeUid', 'dockerId', 'caSha256', 'caPem'];
+  const uids = new Set();
+  const dockerIds = new Set();
+  b.nodes.forEach((node, index) => {
+    if (
+      typeof node !== 'object' ||
+      node === null ||
+      JSON.stringify(Object.keys(node)) !== JSON.stringify(NODE_KEYS)
+    ) {
+      fail('node shape mismatch');
+    }
+    if (node.name !== KUBELET_NODES[index]) fail('node set mismatch');
+    if (!nonEmpty(node.nodeUid) || !isHex64(node.dockerId)) {
+      fail('node identity malformed');
+    }
+    uids.add(node.nodeUid);
+    dockerIds.add(node.dockerId);
+    if (!isHex64(node.caSha256)) fail('root digest malformed');
+    if (
+      typeof node.caPem !== 'string' ||
+      Buffer.byteLength(node.caPem) > 16 * 1024
+    ) {
+      fail('root pem malformed');
+    }
+    let cert;
+    try {
+      cert = new X509Certificate(node.caPem);
+    } catch {
+      fail('root pem malformed');
+    }
+    if (
+      canonicalCertificatePem(cert.raw) !== node.caPem ||
+      createHash('sha256').update(cert.raw).digest('hex') !== node.caSha256
+    ) {
+      fail('root pem not canonical');
+    }
+  });
+  if (uids.size !== b.nodes.length || dockerIds.size !== b.nodes.length) {
+    fail('node identity duplicated');
+  }
+  const { bindingSha256, ...body } = b;
+  const expected = createHash('sha256')
+    .update(JSON.stringify(body), 'utf8')
+    .digest('hex');
+  if (expected !== bindingSha256) fail('digest mismatch');
+  const caPem = b.nodes.map((n) => n.caPem).join('');
+  return { bindingSha256, caPem, binding: deepFreezeCopy(b) };
+}
+
+/** @template T @param {T} value @returns {T} */
+function deepFreezeCopy(value) {
+  const copy = JSON.parse(JSON.stringify(value));
+  const freeze = (v) => {
+    if (v && typeof v === 'object') {
+      for (const child of Object.values(v)) freeze(child);
+      Object.freeze(v);
+    }
+  };
+  freeze(copy);
+  return copy;
+}
+
+/**
+ * Read the exact eight repository-owned dashboard assets as UTF-8. Refuses
+ * a missing, extra, aliased or non-regular entry.
+ */
+function readDashboardAssets() {
+  const root = join(observabilityRoot, 'dashboards');
+  const entries = readdirSync(root).sort();
+  if (JSON.stringify(entries) !== JSON.stringify(DASHBOARD_FILES)) {
+    throwArtifactInvalid('unexpected dashboard asset set');
+  }
+  return DASHBOARD_FILES.map((file) => {
+    const path = join(root, file);
+    const stat = lstatSync(path);
+    if (!stat.isFile() || realpathSync(path) !== path) {
+      throwArtifactInvalid('dashboard asset is not a regular source file');
+    }
+    return {
+      file,
+      stem: file.slice(0, -'.json'.length),
+      path,
+      content: readFileSync(path, 'utf8'),
+    };
+  });
+}
+
+/** @param {{ file: string, content: string }[]} assets */
+function dashboardFilesDigest(assets) {
+  return createHash('sha256')
+    .update(JSON.stringify(assets.map((a) => [a.file, a.content])), 'utf8')
+    .digest('hex');
+}
+
+/**
+ * E2 Prometheus release-specific Helm arguments (trust only).
+ * @param {{ bindingSha256: string, caPem: string }} trust
+ */
+function e2PrometheusArgs(trust) {
+  return [
+    '--set-json',
+    `offscreenKubeletTrust=${JSON.stringify({
+      bindingSha256: trust.bindingSha256,
+      caPem: trust.caPem,
+    })}`,
+  ];
+}
+
+/**
+ * E2 Grafana local-file dashboard descriptor (TARGET.md section 4).
+ * @param {ReturnType<typeof readDashboardAssets>} assets
+ */
+function e2GrafanaArgs(assets) {
+  return [
+    '--set-string',
+    `dashboardsConfigMaps.offscreen=${DASHBOARD_CONFIGMAP}`,
+    '--set-json',
+    `extraObjects=${JSON.stringify([DASHBOARD_EXTRA_OBJECT_TEMPLATE])}`,
+    ...assets.flatMap((a) => [
+      '--set-file',
+      `offscreenDashboardFiles.${a.stem}\\.json=${a.path}`,
+    ]),
+    '--set-string',
+    `podAnnotations.${DASHBOARD_DIGEST_ANNOTATION}=${dashboardFilesDigest(assets)}`,
+  ];
+}
+
+/**
+ * @param {Record<string, unknown>} doc
+ * @returns {Record<string, any> | null}
+ */
+function podSpecOf(doc) {
+  const d = /** @type {any} */ (doc);
+  switch (d.kind) {
+    case 'Pod':
+      return d.spec ?? null;
+    case 'CronJob':
+      return d.spec?.jobTemplate?.spec?.template?.spec ?? null;
+    default:
+      return d.spec?.template?.spec ?? null;
+  }
+}
+
+/**
+ * @param {string} namespace
+ * @param {string} kind
+ * @param {string} name
+ */
+function workloadKey(namespace, kind, name) {
+  return `namespaced/${namespace}/${kind}/${name}`;
+}
+
+/**
+ * Declared exact workloads for one E2 release.
+ * @param {string} role
+ * @param {string} namespace
+ * @param {{ containerName: string, renderedReference: string, canonicalReference: string }} expectedImage
+ * @param {Record<string, string> | null} helperLocks
+ */
+function declaredWorkloads(role, namespace, expectedImage, helperLocks) {
+  const spec =
+    PRIMARY_WORKLOAD[/** @type {keyof typeof PRIMARY_WORKLOAD} */ (role)];
+  /** @type {Record<string, { name: string, renderedReference: string, canonicalReference: string }[]>} */
+  const declared = {
+    [workloadKey(namespace, spec.kind, spec.name)]: [
+      {
+        name: expectedImage.containerName,
+        renderedReference: expectedImage.renderedReference,
+        canonicalReference: expectedImage.canonicalReference,
+      },
+    ],
+  };
+  if (helperLocks && role === 'prometheus') {
+    const ksm = helperLocks['kube-state-metrics'];
+    const redis = helperLocks['redis-exporter'];
+    declared[workloadKey(namespace, 'Deployment', 'obs-kube-state-metrics')] = [
+      {
+        name: 'kube-state-metrics',
+        renderedReference: helperRenderedReference('kube-state-metrics', ksm),
+        canonicalReference: ksm,
+      },
+    ];
+    declared[workloadKey(namespace, 'Deployment', 'obs-redis-exporter')] = [
+      {
+        name: 'redis-exporter',
+        renderedReference: helperRenderedReference('redis-exporter', redis),
+        canonicalReference: redis,
+      },
+    ];
+  }
+  return declared;
+}
+
+/**
+ * Exact workload and container membership for an E2 release: every pod
+ * bearing object must be declared, with exactly the declared regular
+ * containers, no init or ephemeral containers.
+ * @param {Record<string, unknown>[]} documents
+ * @param {ReturnType<typeof declaredWorkloads>} declared
+ * @param {string} namespace
+ */
+function assertExactWorkloads(documents, declared, namespace) {
+  const seen = new Set();
+  for (const doc of documents) {
+    const d = /** @type {any} */ (doc);
+    if (!POD_BEARING_KINDS.has(d.kind)) continue;
+    const key = workloadKey(namespace, d.kind, d.metadata?.name);
+    const want = declared[key];
+    if (!want) throwArtifactInvalid('unexpected workload');
+    if (seen.has(key)) throwArtifactInvalid('duplicate workload');
+    seen.add(key);
+    const podSpec = podSpecOf(doc);
+    if (!podSpec) throwArtifactInvalid('missing workload pod spec');
+    if ((podSpec.initContainers ?? []).length > 0) {
+      throwArtifactInvalid('unexpected init container');
+    }
+    if ((podSpec.ephemeralContainers ?? []).length > 0) {
+      throwArtifactInvalid('unexpected ephemeral container');
+    }
+    const containers = podSpec.containers ?? [];
+    if (containers.length !== want.length) {
+      throwArtifactInvalid('unexpected regular container count');
+    }
+    want.forEach((expected, index) => {
+      const actual = containers[index];
+      if (actual?.name !== expected.name) {
+        throwArtifactInvalid('workload container name mismatch');
+      }
+      if (actual.image !== expected.renderedReference) {
+        throwArtifactInvalid('workload image reference mismatch');
+      }
+    });
+    if (podSpec.hostNetwork || podSpec.hostPID || podSpec.hostIPC) {
+      throwArtifactInvalid('unexpected host namespace access');
+    }
+    if ((podSpec.volumes ?? []).some((v) => v.hostPath)) {
+      throwArtifactInvalid('unexpected host path volume');
+    }
+  }
+  for (const key of Object.keys(declared)) {
+    if (!seen.has(key)) throwArtifactInvalid('missing declared workload');
+  }
+}
+
+/**
+ * Exact owned cluster RBAC and its subjects.
+ * @param {Record<string, unknown>[]} documents
+ * @param {string} namespace
+ */
+function assertExactE2Rbac(documents, namespace) {
+  const roles = documents.filter((d) => d.kind === 'ClusterRole');
+  const bindings = documents.filter((d) => d.kind === 'ClusterRoleBinding');
+  const canonRules = (rules) =>
+    (rules ?? [])
+      .flatMap((r) => {
+        if (
+          Object.keys(r).sort().join() !== 'apiGroups,resources,verbs' ||
+          r.apiGroups.length !== 1 ||
+          r.resources.length !== 1
+        ) {
+          throwArtifactInvalid('unexpected cluster role rule shape');
+        }
+        return [`${r.apiGroups[0]}|${r.resources[0]}|${[...r.verbs].sort().join(',')}`];
+      })
+      .sort();
+  const expectedNames = Object.keys(E2_RBAC).sort();
+  const names = (docs) => docs.map((d) => /** @type {any} */ (d).metadata.name).sort();
+  if (
+    JSON.stringify(names(roles)) !== JSON.stringify(expectedNames) ||
+    JSON.stringify(names(bindings)) !== JSON.stringify(expectedNames)
+  ) {
+    throwArtifactInvalid('unexpected cluster rbac set');
+  }
+  for (const [name, spec] of Object.entries(E2_RBAC)) {
+    const role = /** @type {any} */ (roles.find((r) => /** @type {any} */ (r).metadata.name === name));
+    const want = spec.rules.map(([g, r, v]) => `${g}|${r}|${v}`).sort();
+    if (JSON.stringify(canonRules(role.rules)) !== JSON.stringify(want)) {
+      throwArtifactInvalid(`unexpected cluster role rules for ${name}`);
+    }
+    const binding = /** @type {any} */ (bindings.find((r) => /** @type {any} */ (r).metadata.name === name));
+    const ref = binding.roleRef;
+    if (
+      JSON.stringify(ref) !==
+      JSON.stringify({
+        apiGroup: 'rbac.authorization.k8s.io',
+        kind: 'ClusterRole',
+        name,
+      })
+    ) {
+      throwArtifactInvalid(`unexpected cluster role binding roleRef for ${name}`);
+    }
+    if (
+      JSON.stringify(binding.subjects) !==
+      JSON.stringify([
+        { kind: 'ServiceAccount', name: spec.serviceAccount, namespace },
+      ])
+    ) {
+      throwArtifactInvalid(`unexpected cluster role binding subjects for ${name}`);
+    }
+  }
+}
+
+/**
+ * Exact immutable trust ConfigMap and its read-only mount (Prometheus).
+ * @param {Record<string, unknown>[]} documents
+ * @param {{ bindingSha256: string, caPem: string }} trust
+ * @param {string} namespace
+ */
+function assertE2Trust(documents, trust, namespace) {
+  const maps = documents.filter(
+    (d) => d.kind === 'ConfigMap' && /** @type {any} */ (d).metadata.name === KUBELET_TRUST_CONFIGMAP,
+  );
+  if (maps.length !== 1) throwArtifactInvalid('trust configmap count mismatch');
+  const cm = /** @type {any} */ (maps[0]);
+  if (
+    cm.apiVersion !== 'v1' ||
+    cm.metadata.namespace !== namespace ||
+    cm.immutable !== true ||
+    JSON.stringify(cm.metadata.labels) !==
+      JSON.stringify({ [KUBELET_TRUST_OWNER_LABEL]: KUBELET_TRUST_OWNER_VALUE }) ||
+    JSON.stringify(cm.metadata.annotations) !==
+      JSON.stringify({ [KUBELET_TRUST_ANNOTATION]: trust.bindingSha256 }) ||
+    JSON.stringify(cm.data) !== JSON.stringify({ 'ca.pem': trust.caPem }) ||
+    cm.binaryData !== undefined
+  ) {
+    throwArtifactInvalid('trust configmap content mismatch');
+  }
+  const deployment = /** @type {any} */ (
+    documents.find((d) => d.kind === 'Deployment' && /** @type {any} */ (d).metadata.name === 'obs-prometheus')
+  );
+  const podSpec = deployment?.spec?.template?.spec;
+  const volumes = (podSpec?.volumes ?? []).filter(
+    (v) => v.configMap?.name === KUBELET_TRUST_CONFIGMAP,
+  );
+  const mounts = (podSpec?.containers?.[0]?.volumeMounts ?? []).filter(
+    (m) => m.mountPath === KUBELET_TRUST_MOUNT,
+  );
+  if (
+    volumes.length !== 1 ||
+    mounts.length !== 1 ||
+    mounts[0].name !== volumes[0].name ||
+    mounts[0].readOnly !== true ||
+    mounts[0].subPath
+  ) {
+    throwArtifactInvalid('trust mount mismatch');
+  }
+}
+
+/**
+ * Exact chart-owned dashboard ConfigMap, directory mount and rollout digest.
+ * @param {Record<string, unknown>[]} documents
+ * @param {ReturnType<typeof readDashboardAssets>} assets
+ * @param {string} namespace
+ */
+function assertE2Dashboards(documents, assets, namespace) {
+  const maps = documents.filter(
+    (d) => d.kind === 'ConfigMap' && /** @type {any} */ (d).metadata.name === DASHBOARD_CONFIGMAP,
+  );
+  if (maps.length !== 1) throwArtifactInvalid('dashboard configmap count mismatch');
+  const cm = /** @type {any} */ (maps[0]);
+  if (cm.apiVersion !== 'v1' || cm.metadata.namespace !== namespace) {
+    throwArtifactInvalid('dashboard configmap identity mismatch');
+  }
+  const labels = cm.metadata.labels ?? {};
+  if (
+    labels['dashboard-provider'] !== 'offscreen' ||
+    labels['app.kubernetes.io/name'] !== 'grafana' ||
+    labels['app.kubernetes.io/instance'] !== 'obs-grafana'
+  ) {
+    throwArtifactInvalid('dashboard configmap labels mismatch');
+  }
+  const keys = Object.keys(cm.data ?? {});
+  if (JSON.stringify(keys.slice().sort()) !== JSON.stringify(DASHBOARD_FILES)) {
+    throwArtifactInvalid('dashboard configmap data keys mismatch');
+  }
+  for (const asset of assets) {
+    if (cm.data[asset.file] !== asset.content) {
+      throwArtifactInvalid(`dashboard content mismatch for ${asset.file}`);
+    }
+  }
+  if (cm.binaryData !== undefined) {
+    throwArtifactInvalid('dashboard configmap binary data');
+  }
+  const grafanaConfig = /** @type {any} */ (
+    documents.find((d) => d.kind === 'ConfigMap' && /** @type {any} */ (d).metadata.name === 'obs-grafana')
+  );
+  if (Object.keys(grafanaConfig?.data ?? {}).some((k) => /download/i.test(k))) {
+    throwArtifactInvalid('unexpected dashboard download script');
+  }
+  const deployment = /** @type {any} */ (
+    documents.find((d) => d.kind === 'Deployment' && /** @type {any} */ (d).metadata.name === 'obs-grafana')
+  );
+  const podSpec = deployment?.spec?.template?.spec;
+  const volumes = (podSpec?.volumes ?? []).filter(
+    (v) => v.configMap?.name === DASHBOARD_CONFIGMAP,
+  );
+  const mounts = (podSpec?.containers?.[0]?.volumeMounts ?? []).filter(
+    (m) => m.mountPath === DASHBOARD_MOUNT_PATH,
+  );
+  if (
+    volumes.length !== 1 ||
+    volumes[0].name !== DASHBOARD_VOLUME ||
+    mounts.length !== 1 ||
+    mounts[0].name !== DASHBOARD_VOLUME ||
+    mounts[0].subPath
+  ) {
+    throwArtifactInvalid('dashboard mount mismatch');
+  }
+  const annotations = deployment?.spec?.template?.metadata?.annotations ?? {};
+  if (annotations[DASHBOARD_DIGEST_ANNOTATION] !== dashboardFilesDigest(assets)) {
+    throwArtifactInvalid('dashboard rollout digest mismatch');
+  }
+}
+
+/**
  * @param {PlatformRun} run
  */
 function defaultHelmRun(command, args, options = {}) {
@@ -500,8 +1135,8 @@ export function helmValuesArgv(release) {
     .concat(release.helmValueArgs);
 }
 
-/** @typedef {'desired' | 'predecessor'} ObservabilityArtifactVariant */
-/** @typedef {'dev-e1-base' | 'dev-e1-developer' | 'release-e1'} ObservabilityArtifactId */
+/** @typedef {'desired' | 'predecessor' | 'e2'} ObservabilityArtifactVariant */
+/** @typedef {'dev-e1-base' | 'dev-e1-developer' | 'release-e1' | 'dev-e2'} ObservabilityArtifactId */
 
 /** Internal immutable E1 artifact IDs and the profile each belongs to. */
 const E1_ARTIFACT_IDS = Object.freeze({
@@ -510,8 +1145,6 @@ const E1_ARTIFACT_IDS = Object.freeze({
   'release-e1': { profileId: 'release', variant: 'desired' },
 });
 
-/** Reserved; refuses until a later Change adds a validated E2 bundle. */
-const RESERVED_E2_ARTIFACT_ID = 'dev-e2';
 
 /**
  * Resolve a historical alias or a named artifact ID to the internal variant
@@ -534,8 +1167,11 @@ function assertArtifactVariantAllowed(profileId, selector) {
           : 'dev-e1-base';
     return { artifactId, variant: selected };
   }
-  if (selected === RESERVED_E2_ARTIFACT_ID) {
-    throwArtifactInvalid('artifact dev-e2 is not available');
+  if (selected === E2_ARTIFACT_ID) {
+    if (profileId !== 'dev') {
+      throwArtifactInvalid('artifact id does not belong to profile');
+    }
+    return { artifactId: E2_ARTIFACT_ID, variant: 'e2' };
   }
   if (
     typeof selected !== 'string' ||
@@ -560,6 +1196,14 @@ function assertArtifactVariantAllowed(profileId, selector) {
  * @param {string} valuesFile
  */
 function resolveValuesPaths(profileId, variant, role, valuesFile) {
+  if (variant === 'e2') {
+    const base = join(valuesRoot, valuesFile);
+    if (role === 'prometheus' || role === 'grafana') {
+      return [base, join(valuesRoot, 'profiles', 'dev', valuesFile)];
+    }
+    if (role === 'collector') return [base, DEV_COLLECTOR_OVERLAY];
+    return [base];
+  }
   if (role !== 'collector') {
     return [join(valuesRoot, valuesFile)];
   }
@@ -592,7 +1236,7 @@ function readAndValidateValues(valuesPaths) {
 /**
  * @param {ObservabilityProfileId} profileId
  * @param {ObservabilityArtifactVariant} variant
- * @param {{ verifyArchive: boolean, pins: ReturnType<typeof loadPins>, imageLocks: Record<string, string> }} context
+ * @param {{ verifyArchive: boolean, pins: ReturnType<typeof loadPins>, imageLocks: Record<string, string>, e2?: ReturnType<typeof buildE2Context> | null }} context
  * @param {ReturnType<typeof readPlatformProfile>} profile
  */
 function buildValidatedReleasePlans(profileId, variant, context, profile) {
@@ -640,6 +1284,12 @@ function buildValidatedReleasePlans(profileId, variant, context, profile) {
     const helmValueArgs = [
       ...storageSubstitutionArgs(release.role, profile.storageClass),
       ...expectedImage.imageArgs,
+      ...(context.e2 && release.role === 'prometheus'
+        ? e2PrometheusArgs(context.e2.trust)
+        : []),
+      ...(context.e2 && release.role === 'grafana'
+        ? e2GrafanaArgs(context.e2.assets)
+        : []),
     ];
     releasePlans.push({
       release,
@@ -662,7 +1312,7 @@ function buildValidatedReleasePlans(profileId, variant, context, profile) {
  * @param {PlatformRun} run
  * @param {string} namespace
  */
-function renderValidatedPlan(plan, run, namespace) {
+function renderValidatedPlan(plan, run, namespace, e2 = null) {
   const helmArgs = [
     'template',
     plan.release.name,
@@ -682,11 +1332,40 @@ function renderValidatedPlan(plan, run, namespace) {
     plan.release.role,
     plan.expectedImage,
   );
+  /** @type {ReturnType<typeof declaredWorkloads>} */
+  let expectedWorkloads;
+  if (e2) {
+    expectedWorkloads = declaredWorkloads(
+      plan.release.role,
+      namespace,
+      plan.expectedImage,
+      e2.helperLocks,
+    );
+    assertExactWorkloads(releaseDocs, expectedWorkloads, namespace);
+    if (plan.release.role === 'prometheus') {
+      assertExactE2Rbac(releaseDocs, namespace);
+      assertE2Trust(releaseDocs, e2.trust, namespace);
+    } else if (plan.release.role === 'grafana') {
+      assertE2Dashboards(releaseDocs, e2.assets, namespace);
+    } else if (
+      releaseDocs.some((d) => E2_CLUSTER_KINDS.has(/** @type {string} */ (d.kind)))
+    ) {
+      throwArtifactInvalid('unexpected cluster-scoped object');
+    }
+  } else {
+    expectedWorkloads = declaredWorkloads(
+      plan.release.role,
+      namespace,
+      plan.expectedImage,
+      null,
+    );
+  }
   const { direct, generated } = collectReleaseInventoryRows(
     releaseDocs,
     plan.release.role,
     plan.release.name,
     namespace,
+    Boolean(e2),
   );
   return {
     name: plan.release.name,
@@ -699,6 +1378,7 @@ function renderValidatedPlan(plan, run, namespace) {
     valuesPaths: plan.valuesPaths,
     helmValueArgs: plan.helmValueArgs,
     expectedImage: plan.expectedImage,
+    expectedWorkloads,
     documents: releaseDocs,
     inventory: { direct, generated },
   };
@@ -711,6 +1391,7 @@ function renderValidatedPlan(plan, run, namespace) {
  * @param {Record<string, unknown>} expected
  * @param {Record<string, string>} imageLocks
  * @param {ObservabilityArtifactId} artifactId
+ * @param {ReturnType<typeof buildE2Context> | null} [e2]
  */
 function finalizeArtifactBundle(
   profileId,
@@ -719,6 +1400,7 @@ function finalizeArtifactBundle(
   expected,
   imageLocks,
   artifactId,
+  e2 = null,
 ) {
   /** @type {Record<string, unknown>[]} */
   const documents = [];
@@ -744,12 +1426,39 @@ function finalizeArtifactBundle(
     documents,
     expectedInventory: expected,
     imageLocks,
+    ...(e2
+      ? {
+          helperImageLocks: e2.helperLocks,
+          kubeletTrustBindingSha256: e2.trust.bindingSha256,
+          kubeletTrust: e2.trust.binding,
+          dashboardFilesSha256: dashboardFilesDigest(e2.assets),
+        }
+      : {}),
   };
 }
 
 /**
+ * @param {{ kubeletTrust?: unknown, helperImageLocks?: Record<string, string> }} deps
+ */
+function buildE2Context(deps) {
+  if (deps.kubeletTrust === undefined || deps.kubeletTrust === null) {
+    throwArtifactInvalid(KUBELET_TRUST_UNAVAILABLE_REASON);
+  }
+  const trust = validateKubeletTrustBinding(deps.kubeletTrust);
+  let helperLocks = deps.helperImageLocks;
+  if (helperLocks) {
+    validateHelperLockRecord(helperLocks);
+  } else {
+    helperLocks = parseHelperImageLock(
+      readFileSync(join(locksRoot, 'e2-images.tsv'), 'utf8'),
+    );
+  }
+  return { trust, helperLocks, assets: readDashboardAssets() };
+}
+
+/**
  * @param {ObservabilityProfileId} profileId
- * @param {{ run?: PlatformRun, verifyArchive?: boolean, imageLocks?: Record<string, string>, pins?: ReturnType<typeof loadPins>, variant?: ObservabilityArtifactVariant | ObservabilityArtifactId }} [deps]
+ * @param {{ run?: PlatformRun, verifyArchive?: boolean, imageLocks?: Record<string, string>, pins?: ReturnType<typeof loadPins>, variant?: ObservabilityArtifactVariant | ObservabilityArtifactId, kubeletTrust?: unknown, helperImageLocks?: Record<string, string> }} [deps]
  */
 export function loadArtifacts(profileId, deps = {}) {
   if (profileId !== 'dev' && profileId !== 'release') {
@@ -766,6 +1475,11 @@ export function loadArtifacts(profileId, deps = {}) {
   if (typeof namespace !== 'string' || namespace.length === 0) {
     throwArtifactInvalid('observability namespace missing from profile');
   }
+  const isE2 = artifactId === E2_ARTIFACT_ID;
+  if (!isE2 && (deps.kubeletTrust !== undefined || deps.helperImageLocks)) {
+    throwArtifactInvalid('e2 inputs supplied to a historical artifact');
+  }
+  const e2 = isE2 ? buildE2Context(deps) : null;
 
   const pins = deps.pins ?? loadPins();
   const canonicalImageLocks = parseImageLock(
@@ -778,12 +1492,12 @@ export function loadArtifacts(profileId, deps = {}) {
   const expectedInventory = JSON.parse(
     readFileSync(join(observabilityRoot, 'expected-inventory.json'), 'utf8'),
   );
-  const expected = expectedInventory[profileId];
+  const expected = expectedInventory[isE2 ? E2_INVENTORY_KEY : profileId];
   if (!expected?.direct || !expected?.generatedClaims) {
     throwArtifactInvalid('missing expected inventory profile');
   }
 
-  const context = { verifyArchive, pins, imageLocks };
+  const context = { verifyArchive, pins, imageLocks, e2 };
   const releasePlans = buildValidatedReleasePlans(
     profileId,
     variant,
@@ -791,7 +1505,7 @@ export function loadArtifacts(profileId, deps = {}) {
     profile,
   );
   const renderedReleases = releasePlans.map((plan) =>
-    renderValidatedPlan(plan, run, namespace),
+    renderValidatedPlan(plan, run, namespace, e2),
   );
   return finalizeArtifactBundle(
     profileId,
@@ -800,7 +1514,89 @@ export function loadArtifacts(profileId, deps = {}) {
     expected,
     imageLocks,
     artifactId,
+    e2,
   );
+}
+
+/**
+ * Exact desired and admissible operational artifacts for a profile.
+ * Release admits only release-e1. Dev admits the two historical E1 bundles
+ * and, when a verified cluster-bound trust binding is supplied or readable,
+ * the E2 bundle as desired. Without trust, desired is null with an explicit
+ * reason; the historical bundles stay admissible and the static E2 inventory
+ * identities stay observable. There is never an E1 fallback for desired.
+ * @param {ObservabilityProfileId} profileId
+ * @param {{ run?: PlatformRun, verifyArchive?: boolean, imageLocks?: Record<string, string>, pins?: ReturnType<typeof loadPins>, kubeletTrust?: unknown, readKubeletTrust?: () => unknown, helperImageLocks?: Record<string, string> }} [deps]
+ */
+export function loadOperationalArtifactSet(profileId, deps = {}) {
+  if (profileId !== 'dev' && profileId !== 'release') {
+    throw new Error(`unsupported platform profile: ${profileId}`);
+  }
+  const {
+    kubeletTrust: suppliedTrust,
+    readKubeletTrust,
+    helperImageLocks,
+    ...common
+  } = deps;
+  if (profileId === 'release') {
+    if (suppliedTrust !== undefined || readKubeletTrust || helperImageLocks) {
+      throwArtifactInvalid('e2 inputs supplied to the release profile');
+    }
+    const { desired } = loadObservabilityVariants('release', common);
+    return {
+      desired,
+      desiredArtifactId: 'release-e1',
+      desiredUnavailableReason: null,
+      admissible: [desired],
+      staticInventory: null,
+    };
+  }
+  const { desired: developer, predecessor: base } = loadObservabilityVariants(
+    'dev',
+    common,
+  );
+  /** @type {unknown} */
+  let trust = suppliedTrust;
+  if (trust === undefined && typeof readKubeletTrust === 'function') {
+    try {
+      trust = readKubeletTrust();
+    } catch (error) {
+      if (
+        /** @type {{ code?: string }} */ (error)?.code ===
+        KUBELET_TRUST_UNAVAILABLE_REASON
+      ) {
+        trust = undefined;
+      } else {
+        throw error;
+      }
+    }
+  }
+  const expectedInventory = JSON.parse(
+    readFileSync(join(observabilityRoot, 'expected-inventory.json'), 'utf8'),
+  );
+  const staticInventory = deepFreezeCopy(expectedInventory[E2_INVENTORY_KEY]);
+  if (trust === undefined || trust === null) {
+    return {
+      desired: null,
+      desiredArtifactId: E2_ARTIFACT_ID,
+      desiredUnavailableReason: KUBELET_TRUST_UNAVAILABLE_REASON,
+      admissible: [base, developer],
+      staticInventory,
+    };
+  }
+  const e2 = loadArtifacts('dev', {
+    ...common,
+    variant: E2_ARTIFACT_ID,
+    kubeletTrust: trust,
+    helperImageLocks,
+  });
+  return {
+    desired: e2,
+    desiredArtifactId: E2_ARTIFACT_ID,
+    desiredUnavailableReason: null,
+    admissible: [base, developer, e2],
+    staticInventory,
+  };
 }
 
 /**
