@@ -1,0 +1,1113 @@
+{
+  "uid": "offscreen-kubernetes",
+  "title": "Offscreen | Kubernetes",
+  "description": "Repository-owned and read-only. Edit in Git, not in the UI.",
+  "tags": [
+    "offscreen"
+  ],
+  "editable": false,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "version": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "timepicker": {},
+  "timezone": "browser",
+  "links": [
+    {
+      "type": "dashboards",
+      "title": "Offscreen dashboards",
+      "tags": [
+        "offscreen"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "icon": "external link",
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "Overview",
+      "url": "/d/offscreen-overview/offscreen-overview",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+          "refId": "ns"
+        },
+        "definition": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "workload",
+        "label": "Workload",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+          "refId": "wl"
+        },
+        "definition": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "node",
+        "label": "Node",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+          "refId": "node"
+        },
+        "definition": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1000,
+      "type": "text",
+      "title": "Scope and freshness",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Freshness rule: a current target is `up == 1` with sample age at most 90s. Missing or stale samples are unknown, never healthy and never zero. `up` is scrape availability only, not backend health.\n\nKubernetes inventory is a cached KSM observation, not strongly consistent API absence; use native kubectl for decisive absence checks. CNPG and Temporal Pods are shown as ordinary Pods. Container CPU/memory panels cover running workload containers only (no completed or pending containers, no infrastructure containers). Declared requests and limits are not usage."
+      }
+    },
+    {
+      "id": 1001,
+      "type": "row",
+      "title": "Namespaces and Pods",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 201,
+      "type": "table",
+      "title": "Observed namespaces and phase",
+      "description": "Observed namespaces and phase. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((kube_namespace_status_phase{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_namespace_status_phase{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 202,
+      "type": "table",
+      "title": "Pod phase table",
+      "description": "Pod phase table. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((kube_pod_status_phase{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_pod_status_phase{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 203,
+      "type": "table",
+      "title": "Pod readiness 1 or 0",
+      "description": "Pod readiness 1 or 0. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_pod_status_ready{job=\"kube-state-metrics\",condition=\"true\"}) and (time() - timestamp(kube_pod_status_ready{job=\"kube-state-metrics\",condition=\"true\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 204,
+      "type": "table",
+      "title": "Scheduling status",
+      "description": "Scheduling status. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_pod_status_scheduled{job=\"kube-state-metrics\",condition=\"true\"}) and (time() - timestamp(kube_pod_status_scheduled{job=\"kube-state-metrics\",condition=\"true\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 1002,
+      "type": "row",
+      "title": "Workload replicas",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 205,
+      "type": "table",
+      "title": "Deployment desired replicas",
+      "description": "Deployment desired replicas. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_deployment_spec_replicas{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_deployment_spec_replicas{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 206,
+      "type": "table",
+      "title": "Deployment available replicas",
+      "description": "Deployment available replicas. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 46,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_deployment_status_replicas_available{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_deployment_status_replicas_available{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 207,
+      "type": "table",
+      "title": "ReplicaSet desired replicas",
+      "description": "ReplicaSet desired replicas. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 54,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_replicaset_spec_replicas{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_replicaset_spec_replicas{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 208,
+      "type": "table",
+      "title": "ReplicaSet ready replicas",
+      "description": "ReplicaSet ready replicas. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 62,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_replicaset_status_ready_replicas{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_replicaset_status_ready_replicas{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 209,
+      "type": "table",
+      "title": "StatefulSet desired replicas",
+      "description": "StatefulSet desired replicas. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 70,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_statefulset_replicas{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_statefulset_replicas{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 210,
+      "type": "table",
+      "title": "StatefulSet ready replicas",
+      "description": "StatefulSet ready replicas. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 78,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_statefulset_status_replicas_ready{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_statefulset_status_replicas_ready{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 211,
+      "type": "table",
+      "title": "DaemonSet desired scheduled",
+      "description": "DaemonSet desired scheduled. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 86,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 212,
+      "type": "table",
+      "title": "DaemonSet ready",
+      "description": "DaemonSet ready. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 94,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_daemonset_status_number_ready{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_daemonset_status_number_ready{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 1003,
+      "type": "row",
+      "title": "Restarts, termination reasons and ownership",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 102,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 213,
+      "type": "table",
+      "title": "Container cumulative restarts",
+      "description": "Container cumulative restarts. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 103,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_pod_container_status_restarts_total{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 214,
+      "type": "table",
+      "title": "Last termination reason (1 indicates reason)",
+      "description": "Last termination reason (1 indicates reason). Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 111,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 215,
+      "type": "table",
+      "title": "Pod owner relationship",
+      "description": "Pod owner relationship. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 119,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_pod_owner{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_pod_owner{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 216,
+      "type": "table",
+      "title": "ReplicaSet owner relationship",
+      "description": "ReplicaSet owner relationship. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 127,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_replicaset_owner{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_replicaset_owner{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 1004,
+      "type": "row",
+      "title": "Requests, limits and running-container use",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 135,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 217,
+      "type": "table",
+      "title": "Declared container requests (CPU cores)",
+      "description": "Declared container requests; CPU cores or memory bytes, not usage. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 136,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_pod_container_resource_requests{job=\"kube-state-metrics\",resource=\"cpu\"}) and (time() - timestamp(kube_pod_container_resource_requests{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 218,
+      "type": "table",
+      "title": "Declared container limits (CPU cores)",
+      "description": "Declared container limits; CPU cores or memory bytes, not usage. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 144,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_pod_container_resource_limits{job=\"kube-state-metrics\",resource=\"cpu\"}) and (time() - timestamp(kube_pod_container_resource_limits{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 219,
+      "type": "table",
+      "title": "Declared container requests (memory bytes)",
+      "description": "Declared container requests; CPU cores or memory bytes, not usage. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 152,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_pod_container_resource_requests{job=\"kube-state-metrics\",resource=\"memory\"}) and (time() - timestamp(kube_pod_container_resource_requests{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 220,
+      "type": "table",
+      "title": "Declared container limits (memory bytes)",
+      "description": "Declared container limits; CPU cores or memory bytes, not usage. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 160,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_pod_container_resource_limits{job=\"kube-state-metrics\",resource=\"memory\"}) and (time() - timestamp(kube_pod_container_resource_limits{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 221,
+      "type": "timeseries",
+      "title": "Container CPU cores by running workload container",
+      "description": "Container CPU cores by running workload container; excludes infrastructure; no samples for completed/pending containers.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 168,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (node,namespace,pod,container) (((rate(container_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(container_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 222,
+      "type": "timeseries",
+      "title": "Container working-set bytes by running workload container",
+      "description": "Container working-set bytes by running workload container; excludes infrastructure; no samples for completed/pending containers.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 168,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (node,namespace,pod,container) (((container_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(container_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    }
+  ]
+}

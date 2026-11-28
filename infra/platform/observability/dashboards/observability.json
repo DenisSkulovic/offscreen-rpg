@@ -1,0 +1,1763 @@
+{
+  "uid": "offscreen-observability",
+  "title": "Offscreen | Observability stack",
+  "description": "Repository-owned and read-only. Edit in Git, not in the UI.",
+  "tags": [
+    "offscreen"
+  ],
+  "editable": false,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "version": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "timepicker": {},
+  "timezone": "browser",
+  "links": [
+    {
+      "type": "dashboards",
+      "title": "Offscreen dashboards",
+      "tags": [
+        "offscreen"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "icon": "external link",
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "Overview",
+      "url": "/d/offscreen-overview/offscreen-overview",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "Explore logs (Loki)",
+      "url": "/explore?left=%7B%22datasource%22:%22offscreen-logs%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22loki%22,%22uid%22:%22offscreen-logs%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D",
+      "keepTime": false,
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "Explore traces (Tempo)",
+      "url": "/explore?left=%7B%22datasource%22:%22offscreen-traces%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22offscreen-traces%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D",
+      "keepTime": false,
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+          "refId": "ns"
+        },
+        "definition": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "workload",
+        "label": "Workload",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+          "refId": "wl"
+        },
+        "definition": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "node",
+        "label": "Node",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+          "refId": "node"
+        },
+        "definition": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1000,
+      "type": "text",
+      "title": "Scope and freshness",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Freshness rule: a current target is `up == 1` with sample age at most 90s. Missing or stale samples are unknown, never healthy and never zero. `up` is scrape availability only, not backend health.\n\nSelf-health panels show the fixed selected signals only. Handler- and route-labelled latency histograms are not enrolled. The Collector exposes no accepted, sent, refused or dropped counters here, so end-to-end delivery and loss are **unsupported, not healthy**. Tempo batch sums are traces observed in batches, not durable ingestion."
+      }
+    },
+    {
+      "id": 1001,
+      "type": "row",
+      "title": "Kube-state-metrics self",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 801,
+      "type": "stat",
+      "title": "Current self-scrape state, not cache consistency",
+      "description": "Current self-scrape state, not cache consistency.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "up{job=\"kube-state-metrics-self\"} and (time() - timestamp(up{job=\"kube-state-metrics-self\"}) <= 90)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Scrape down",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Scrape current",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 802,
+      "type": "timeseries",
+      "title": "Observed watch results over five minutes",
+      "description": "Observed watch results over five minutes. Missing error series is not proof of absence of errors.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (resource,result) ((increase(kube_state_metrics_watch_total{job=\"kube-state-metrics-self\"}[5m]) and (time() - timestamp(kube_state_metrics_watch_total{job=\"kube-state-metrics-self\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics-self\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics-self\"}) <= 90)))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 803,
+      "type": "timeseries",
+      "title": "Conditional list results",
+      "description": "Conditional list results; not observed in initial specimen. No data remains unknown, validate native list/watch semantics at G5.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (resource,result) ((increase(kube_state_metrics_list_total{job=\"kube-state-metrics-self\"}[5m]) and (time() - timestamp(kube_state_metrics_list_total{job=\"kube-state-metrics-self\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics-self\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics-self\"}) <= 90)))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 1002,
+      "type": "row",
+      "title": "Loki",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 810,
+      "type": "stat",
+      "title": "Current scrape state only, not backend health",
+      "description": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "up{job=\"loki\"} and (time() - timestamp(up{job=\"loki\"}) <= 90)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Scrape down",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Scrape current",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 811,
+      "type": "timeseries",
+      "title": "Chunks in memory",
+      "description": "Chunks in memory; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((loki_ingester_memory_chunks{job=\"loki\"}) and (time() - timestamp(loki_ingester_memory_chunks{job=\"loki\"}) <= 90)) and on(job,instance) ((up{job=\"loki\"} == 1) and (time() - timestamp(up{job=\"loki\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 812,
+      "type": "timeseries",
+      "title": "Flush queue length (series pending)",
+      "description": "Flush queue length (series pending); missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 22,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((loki_ingester_flush_queue_length{job=\"loki\"}) and (time() - timestamp(loki_ingester_flush_queue_length{job=\"loki\"}) <= 90)) and on(job,instance) ((up{job=\"loki\"} == 1) and (time() - timestamp(up{job=\"loki\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 813,
+      "type": "timeseries",
+      "title": "Flush failures/s",
+      "description": "Flush failures/s; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 30,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(loki_ingester_chunks_flush_failures_total{job=\"loki\"}[5m])) and (time() - timestamp(loki_ingester_chunks_flush_failures_total{job=\"loki\"}) <= 90)) and on(job,instance) ((up{job=\"loki\"} == 1) and (time() - timestamp(up{job=\"loki\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 814,
+      "type": "timeseries",
+      "title": "WAL recovery bytes in use",
+      "description": "WAL recovery bytes in use; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 30,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((loki_ingester_wal_bytes_in_use{job=\"loki\"}) and (time() - timestamp(loki_ingester_wal_bytes_in_use{job=\"loki\"}) <= 90)) and on(job,instance) ((up{job=\"loki\"} == 1) and (time() - timestamp(up{job=\"loki\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 1003,
+      "type": "row",
+      "title": "Tempo",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 820,
+      "type": "stat",
+      "title": "Current scrape state only, not backend health [820]",
+      "description": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 39,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "up{job=\"tempo\"} and (time() - timestamp(up{job=\"tempo\"}) <= 90)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Scrape down",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Scrape current",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 821,
+      "type": "timeseries",
+      "title": "Distributor observed batches/s, not durable ingest",
+      "description": "Distributor observed batches/s, not durable ingest; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 43,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(tempo_distributor_traces_per_batch_count{job=\"tempo\"}[5m])) and (time() - timestamp(tempo_distributor_traces_per_batch_count{job=\"tempo\"}) <= 90)) and on(job,instance) ((up{job=\"tempo\"} == 1) and (time() - timestamp(up{job=\"tempo\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 822,
+      "type": "timeseries",
+      "title": "Distributor observed traces/s in batches, not durable ingest",
+      "description": "Distributor observed traces/s in batches, not durable ingest; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 43,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(tempo_distributor_traces_per_batch_sum{job=\"tempo\"}[5m])) and (time() - timestamp(tempo_distributor_traces_per_batch_sum{job=\"tempo\"}) <= 90)) and on(job,instance) ((up{job=\"tempo\"} == 1) and (time() - timestamp(up{job=\"tempo\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 1004,
+      "type": "row",
+      "title": "Grafana",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 51,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 830,
+      "type": "stat",
+      "title": "Current scrape state only, not backend health [830]",
+      "description": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "up{job=\"grafana\"} and (time() - timestamp(up{job=\"grafana\"}) <= 90)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Scrape down",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Scrape current",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 831,
+      "type": "timeseries",
+      "title": "HTTP requests in flight",
+      "description": "HTTP requests in flight; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 56,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((grafana_http_request_in_flight{job=\"grafana\"}) and (time() - timestamp(grafana_http_request_in_flight{job=\"grafana\"}) <= 90)) and on(job,instance) ((up{job=\"grafana\"} == 1) and (time() - timestamp(up{job=\"grafana\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 832,
+      "type": "timeseries",
+      "title": "API response rate by status code",
+      "description": "API response rate by status code; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 56,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(grafana_api_response_status_total{job=\"grafana\"}[5m])) and (time() - timestamp(grafana_api_response_status_total{job=\"grafana\"}) <= 90)) and on(job,instance) ((up{job=\"grafana\"} == 1) and (time() - timestamp(up{job=\"grafana\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 1005,
+      "type": "row",
+      "title": "Prometheus",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 64,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 840,
+      "type": "stat",
+      "title": "Current scrape state only, not backend health [840]",
+      "description": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 65,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "up{job=\"prometheus\"} and (time() - timestamp(up{job=\"prometheus\"}) <= 90)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Scrape down",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Scrape current",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 841,
+      "type": "timeseries",
+      "title": "Observed gauge: prometheus_tsdb_head_series",
+      "description": "Observed gauge: prometheus_tsdb_head_series; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 69,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((prometheus_tsdb_head_series{job=\"prometheus\"}) and (time() - timestamp(prometheus_tsdb_head_series{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 842,
+      "type": "timeseries",
+      "title": "Observed gauge: prometheus_tsdb_storage_blocks_bytes",
+      "description": "Observed gauge: prometheus_tsdb_storage_blocks_bytes; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 69,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((prometheus_tsdb_storage_blocks_bytes{job=\"prometheus\"}) and (time() - timestamp(prometheus_tsdb_storage_blocks_bytes{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 843,
+      "type": "timeseries",
+      "title": "Observed rate by native type where present: prometheus_tsdb_head_sa...",
+      "description": "Observed rate by native type where present: prometheus_tsdb_head_samples_appended_total; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 77,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(prometheus_tsdb_head_samples_appended_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_tsdb_head_samples_appended_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 844,
+      "type": "timeseries",
+      "title": "Observed rate by native type where present: prometheus_target_scrap...",
+      "description": "Observed rate by native type where present: prometheus_target_scrapes_exceeded_sample_limit_total; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 77,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(prometheus_target_scrapes_exceeded_sample_limit_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_target_scrapes_exceeded_sample_limit_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 845,
+      "type": "timeseries",
+      "title": "Observed rate by native type where present: prometheus_target_scrap... [845]",
+      "description": "Observed rate by native type where present: prometheus_target_scrapes_sample_duplicate_timestamp_total; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 85,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_target_scrapes_sample_duplicate_timestamp_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 846,
+      "type": "timeseries",
+      "title": "Observed rate by native type where present: prometheus_target_scrap... [846]",
+      "description": "Observed rate by native type where present: prometheus_target_scrapes_sample_out_of_bounds_total; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 85,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(prometheus_target_scrapes_sample_out_of_bounds_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_target_scrapes_sample_out_of_bounds_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 847,
+      "type": "timeseries",
+      "title": "Observed rate by native type where present: prometheus_target_scrap... [847]",
+      "description": "Observed rate by native type where present: prometheus_target_scrapes_sample_out_of_order_total; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 93,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(prometheus_target_scrapes_sample_out_of_order_total{job=\"prometheus\"}[5m])) and (time() - timestamp(prometheus_target_scrapes_sample_out_of_order_total{job=\"prometheus\"}) <= 90)) and on(job,instance) ((up{job=\"prometheus\"} == 1) and (time() - timestamp(up{job=\"prometheus\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 1006,
+      "type": "row",
+      "title": "Collector",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 101,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 850,
+      "type": "stat",
+      "title": "Current scrape state only, not backend health [850]",
+      "description": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 102,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "up{job=\"collector\"} and (time() - timestamp(up{job=\"collector\"}) <= 90)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Scrape down",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Scrape current",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 851,
+      "type": "timeseries",
+      "title": "Exporter queue capacity per exporter/data_type",
+      "description": "Exporter queue capacity per exporter/data_type; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 106,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((otelcol_exporter_queue_capacity{job=\"collector\"}) and (time() - timestamp(otelcol_exporter_queue_capacity{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 852,
+      "type": "timeseries",
+      "title": "Exporter queue size per exporter/data_type",
+      "description": "Exporter queue size per exporter/data_type; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 106,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((otelcol_exporter_queue_size{job=\"collector\"}) and (time() - timestamp(otelcol_exporter_queue_size{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 853,
+      "type": "timeseries",
+      "title": "Collector process RSS",
+      "description": "Collector process RSS; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 114,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((otelcol_process_memory_rss{job=\"collector\"}) and (time() - timestamp(otelcol_process_memory_rss{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 854,
+      "type": "timeseries",
+      "title": "Metrics HTTP handler errors/s by cause, not signal delivery failures",
+      "description": "Metrics HTTP handler errors/s by cause, not signal delivery failures; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 114,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(promhttp_metric_handler_errors_total{job=\"collector\"}[5m])) and (time() - timestamp(promhttp_metric_handler_errors_total{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 855,
+      "type": "timeseries",
+      "title": "Exporter queue usage ratio",
+      "description": "Exporter queue usage ratio; same exporter and signal type, positive capacity; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 122,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((otelcol_exporter_queue_size{job=\"collector\"}) and (time() - timestamp(otelcol_exporter_queue_size{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))) / on(job,instance,exporter,data_type) ((((otelcol_exporter_queue_capacity{job=\"collector\"}) and (time() - timestamp(otelcol_exporter_queue_capacity{job=\"collector\"}) <= 90)) and on(job,instance) ((up{job=\"collector\"} == 1) and (time() - timestamp(up{job=\"collector\"}) <= 90))) > 0)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    }
+  ]
+}

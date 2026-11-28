@@ -1,0 +1,1325 @@
+{
+  "uid": "offscreen-postgres",
+  "title": "Offscreen | PostgreSQL (CNPG)",
+  "description": "Repository-owned and read-only. Edit in Git, not in the UI.",
+  "tags": [
+    "offscreen"
+  ],
+  "editable": false,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "version": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "timepicker": {},
+  "timezone": "browser",
+  "links": [
+    {
+      "type": "dashboards",
+      "title": "Offscreen dashboards",
+      "tags": [
+        "offscreen"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "icon": "external link",
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "Overview",
+      "url": "/d/offscreen-overview/offscreen-overview",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+          "refId": "ns"
+        },
+        "definition": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "workload",
+        "label": "Workload",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+          "refId": "wl"
+        },
+        "definition": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "node",
+        "label": "Node",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+          "refId": "node"
+        },
+        "definition": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1000,
+      "type": "text",
+      "title": "Scope and freshness",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Freshness rule: a current target is `up == 1` with sample age at most 90s. Missing or stale samples are unknown, never healthy and never zero. `up` is scrape availability only, not backend health.\n\n**Partial scope (owner ratified).** Panels cover only admitted client groups (selected application names, roles and databases) of Cluster dev-pg. Connection counts and occupancy are lower bounds, not global saturation or distinct sessions. Replication panels apply only to an instance in recovery. No custom SQL, backup, WAL archive or per-query metrics are enrolled."
+      }
+    },
+    {
+      "id": 1001,
+      "type": "row",
+      "title": "Health and freshness",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 401,
+      "type": "stat",
+      "title": "Current scrape state only, not backend health",
+      "description": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "up{job=\"postgres-cnpg\"} and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Scrape down",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Scrape current",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 402,
+      "type": "stat",
+      "title": "Native PostgreSQL collector up",
+      "description": "Native PostgreSQL collector up; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 403,
+      "type": "stat",
+      "title": "Native collector collection error",
+      "description": "Native collector collection error; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 404,
+      "type": "stat",
+      "title": "Native last error",
+      "description": "Native last error; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 18,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 405,
+      "type": "stat",
+      "title": "Seconds since exporter last update",
+      "description": "Seconds since exporter last update; future/clock anomaly is not healthy; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90)))",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 1002,
+      "type": "row",
+      "title": "Transactions and database statistics",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 406,
+      "type": "timeseries",
+      "title": "Commits/s per admitted database and instance",
+      "description": "Commits/s per admitted database and instance; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((rate(cnpg_pg_stat_database_xact_commit{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_xact_commit{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 407,
+      "type": "timeseries",
+      "title": "Rollbacks/s per admitted database and instance",
+      "description": "Rollbacks/s per admitted database and instance; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 14,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((rate(cnpg_pg_stat_database_xact_rollback{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_xact_rollback{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 408,
+      "type": "timeseries",
+      "title": "Deadlocks/s per admitted database and instance",
+      "description": "Deadlocks/s per admitted database and instance; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((rate(cnpg_pg_stat_database_deadlocks{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_deadlocks{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 409,
+      "type": "timeseries",
+      "title": "Database size by admitted database and instance",
+      "description": "Database size by admitted database and instance; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 22,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((cnpg_pg_database_size_bytes{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_database_size_bytes{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 410,
+      "type": "timeseries",
+      "title": "Temporary bytes written/s",
+      "description": "Temporary bytes written/s; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 30,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((rate(cnpg_pg_stat_database_temp_bytes{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_temp_bytes{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 411,
+      "type": "timeseries",
+      "title": "Temporary files created/s",
+      "description": "Temporary files created/s; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 30,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((rate(cnpg_pg_stat_database_temp_files{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_temp_files{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 1003,
+      "type": "row",
+      "title": "Connections and locks (admitted client groups only)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 412,
+      "type": "timeseries",
+      "title": "Waiting lock-match contention indicator (not distinct sessions)",
+      "description": "Waiting lock-match contention indicator (not distinct sessions); missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 39,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((cnpg_backends_waiting_total{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_backends_waiting_total{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 413,
+      "type": "timeseries",
+      "title": "Maximum transaction duration in admitted client groups only",
+      "description": "Maximum transaction duration in admitted client groups only; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 39,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((cnpg_backends_max_tx_duration_seconds{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_backends_max_tx_duration_seconds{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 414,
+      "type": "timeseries",
+      "title": "Admitted backends only",
+      "description": "Admitted backends only; lower-bound subset, not all connections; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 47,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (job,instance,pod) ((((cnpg_backends_total{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_backends_total{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90)))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 415,
+      "type": "stat",
+      "title": "Actual configured max_connections",
+      "description": "Actual configured max_connections; not hardcoded; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 55,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((cnpg_pg_settings_setting{job=\"postgres-cnpg\",name=\"max_connections\"}) and (time() - timestamp(cnpg_pg_settings_setting{job=\"postgres-cnpg\",name=\"max_connections\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 416,
+      "type": "timeseries",
+      "title": "Admitted backend count divided by actual configured limit",
+      "description": "Admitted backend count divided by actual configured limit; lower-bound occupancy, never whole-instance saturation; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 59,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (job,instance,pod) ((((cnpg_backends_total{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_backends_total{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))) / on(job,instance,pod) (((((cnpg_pg_settings_setting{job=\"postgres-cnpg\",name=\"max_connections\"}) and (time() - timestamp(cnpg_pg_settings_setting{job=\"postgres-cnpg\",name=\"max_connections\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))) > 0)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 417,
+      "type": "timeseries",
+      "title": "PostgreSQL buffer hit fraction per database and instance, positive...",
+      "description": "PostgreSQL buffer hit fraction per database and instance, positive denominator only (not OS cache); missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 59,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((((rate(cnpg_pg_stat_database_blks_hit{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_blks_hit{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))) / ((((((rate(cnpg_pg_stat_database_blks_hit{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_blks_hit{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))) + ((((rate(cnpg_pg_stat_database_blks_read{job=\"postgres-cnpg\"}[5m])) and (time() - timestamp(cnpg_pg_stat_database_blks_read{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90)))) > 0)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 1004,
+      "type": "row",
+      "title": "Replication (applicable only in recovery)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 67,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 418,
+      "type": "stat",
+      "title": "Instance recovery indicator",
+      "description": "Instance recovery indicator; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 68,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 419,
+      "type": "timeseries",
+      "title": "Observed streaming replica connections",
+      "description": "Observed streaming replica connections; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 72,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((cnpg_pg_replication_streaming_replicas{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_streaming_replicas{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 420,
+      "type": "stat",
+      "title": "Cluster replica-mode indicator",
+      "description": "Cluster replica-mode indicator; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 80,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((cnpg_collector_replica_mode{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_replica_mode{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 421,
+      "type": "timeseries",
+      "title": "Lag only for instance in recovery",
+      "description": "Lag only for instance in recovery; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 84,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((cnpg_pg_replication_lag{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_lag{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90)) and on(job,instance) ((((cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 422,
+      "type": "timeseries",
+      "title": "WAL receiver state only for instance in recovery",
+      "description": "WAL receiver state only for instance in recovery; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 84,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((cnpg_pg_replication_is_wal_receiver_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_is_wal_receiver_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) and on(job,instance) ((((cnpg_collector_up{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_up{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1) and on(job,instance) ((((cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_collector_last_collection_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((((cnpg_last_error{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_error{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 0) and on(job,instance) ((time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) >= 0) and (time() - (((cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_last_update_timestamp{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) <= 90)) and on(job,instance) ((((cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) and (time() - timestamp(cnpg_pg_replication_in_recovery{job=\"postgres-cnpg\"}) <= 90)) and on(job,instance) ((up{job=\"postgres-cnpg\"} == 1) and (time() - timestamp(up{job=\"postgres-cnpg\"}) <= 90))) == 1)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    }
+  ]
+}

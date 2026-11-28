@@ -1,0 +1,680 @@
+{
+  "uid": "offscreen-nodes",
+  "title": "Offscreen | Nodes",
+  "description": "Repository-owned and read-only. Edit in Git, not in the UI.",
+  "tags": [
+    "offscreen"
+  ],
+  "editable": false,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "version": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "timepicker": {},
+  "timezone": "browser",
+  "links": [
+    {
+      "type": "dashboards",
+      "title": "Offscreen dashboards",
+      "tags": [
+        "offscreen"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "icon": "external link",
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "Overview",
+      "url": "/d/offscreen-overview/offscreen-overview",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+          "refId": "ns"
+        },
+        "definition": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "workload",
+        "label": "Workload",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+          "refId": "wl"
+        },
+        "definition": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "node",
+        "label": "Node",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+          "refId": "node"
+        },
+        "definition": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1000,
+      "type": "text",
+      "title": "Scope and freshness",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Freshness rule: a current target is `up == 1` with sample age at most 90s. Missing or stale samples are unknown, never healthy and never zero. `up` is scrape availability only, not backend health.\n\nKubernetes inventory is a cached KSM observation, not strongly consistent API absence; use native kubectl for decisive absence checks. Node CPU/memory use is the kubelet resource view of the two Kind nodes, not physical host usage; percentages may exceed 100% of allocatable. No host disk or network panels: those domains are not verified and are omitted rather than shown as zero."
+      }
+    },
+    {
+      "id": 1001,
+      "type": "row",
+      "title": "Node state and capacity",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 301,
+      "type": "table",
+      "title": "Node capacity or allocatable (CPU cores)",
+      "description": "Node capacity or allocatable; CPU cores or memory bytes. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"cpu\"}) and (time() - timestamp(kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 302,
+      "type": "table",
+      "title": "Node capacity or allocatable (CPU cores) [302]",
+      "description": "Node capacity or allocatable; CPU cores or memory bytes. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 303,
+      "type": "table",
+      "title": "Node capacity or allocatable (memory bytes)",
+      "description": "Node capacity or allocatable; CPU cores or memory bytes. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"memory\"}) and (time() - timestamp(kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 304,
+      "type": "table",
+      "title": "Node capacity or allocatable (memory bytes) [304]",
+      "description": "Node capacity or allocatable; CPU cores or memory bytes. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 305,
+      "type": "table",
+      "title": "Node condition table",
+      "description": "Node condition table. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((kube_node_status_condition{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_node_status_condition{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 1002,
+      "type": "row",
+      "title": "Node and Pod resource use (kubelet resource metrics)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 45,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 306,
+      "type": "timeseries",
+      "title": "CPU cores per Kind node, missing/stale unknown",
+      "description": "CPU cores per Kind node, missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 46,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (node) (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 307,
+      "type": "timeseries",
+      "title": "Working-set bytes per Kind node, missing/stale unknown",
+      "description": "Working-set bytes per Kind node, missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 46,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (node) (((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 308,
+      "type": "timeseries",
+      "title": "CPU cores divided by current positive allocatable",
+      "description": "CPU cores divided by current positive allocatable; may exceed 100%, not physical host usage.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 54,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(sum by (node) (((rate(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(node_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) / on(node) (((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"} and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) > 0)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 309,
+      "type": "timeseries",
+      "title": "Working-set bytes divided by current positive allocatable",
+      "description": "Working-set bytes divided by current positive allocatable; may exceed 100%, not physical host usage.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 54,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(sum by (node) (((node_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(node_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))) / on(node) (((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"} and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) > 0)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 310,
+      "type": "timeseries",
+      "title": "Pod CPU cores by node and namespace",
+      "description": "Pod CPU cores by node and namespace; do not add container copies.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 62,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (node,namespace) (((rate(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}[5m])) and (time() - timestamp(pod_cpu_usage_seconds_total{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 311,
+      "type": "timeseries",
+      "title": "Pod working-set bytes by node and namespace",
+      "description": "Pod working-set bytes by node and namespace; do not add container copies.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 62,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "sum by (node,namespace) (((pod_memory_working_set_bytes{job=\"kubelet-resource\"}) and (time() - timestamp(pod_memory_working_set_bytes{job=\"kubelet-resource\"}) <= 90)) and on(job,instance) ((up{job=\"kubelet-resource\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"kubelet-resource\"}) <= 90)))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    }
+  ]
+}

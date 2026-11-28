@@ -1,0 +1,527 @@
+{
+  "uid": "offscreen-temporal",
+  "title": "Offscreen | Temporal",
+  "description": "Repository-owned and read-only. Edit in Git, not in the UI.",
+  "tags": [
+    "offscreen"
+  ],
+  "editable": false,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "version": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "timepicker": {},
+  "timezone": "browser",
+  "links": [
+    {
+      "type": "dashboards",
+      "title": "Offscreen dashboards",
+      "tags": [
+        "offscreen"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "icon": "external link",
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "Overview",
+      "url": "/d/offscreen-overview/offscreen-overview",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+          "refId": "ns"
+        },
+        "definition": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "workload",
+        "label": "Workload",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+          "refId": "wl"
+        },
+        "definition": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "node",
+        "label": "Node",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+          "refId": "node"
+        },
+        "definition": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1000,
+      "type": "text",
+      "title": "Scope and freshness",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Freshness rule: a current target is `up == 1` with sample age at most 90s. Missing or stale samples are unknown, never healthy and never zero. `up` is scrape availability only, not backend health.\n\n**Partial scope (owner ratified).** Server and persistence families admit namespace-labelled samples for the system and _unknown_ namespaces only, so request, error and latency panels are not all-tenant service metrics. No matching backlog, task-queue or workflow aggregate is provided. A missing worker service series or typed error series is unknown, not zero."
+      }
+    },
+    {
+      "id": 1001,
+      "type": "row",
+      "title": "Server and persistence (admitted platform namespaces only)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 501,
+      "type": "stat",
+      "title": "Current scrape state only, not backend health",
+      "description": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "up{job=\"temporal-server\"} and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Scrape down",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Scrape current",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 502,
+      "type": "timeseries",
+      "title": "Platform-namespace server requests/s by role/instance/operation",
+      "description": "Platform-namespace server requests/s by role/instance/operation; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(service_requests{job=\"temporal-server\"}[5m])) and (time() - timestamp(service_requests{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 503,
+      "type": "timeseries",
+      "title": "Observed typed server errors/s in admitted platform namespaces",
+      "description": "Observed typed server errors/s in admitted platform namespaces; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 9,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(service_error_with_type{job=\"temporal-server\"}[5m])) and (time() - timestamp(service_error_with_type{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 504,
+      "type": "timeseries",
+      "title": "Persistence requests/s in admitted platform namespaces",
+      "description": "Persistence requests/s in admitted platform namespaces; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(persistence_requests{job=\"temporal-server\"}[5m])) and (time() - timestamp(persistence_requests{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 505,
+      "type": "timeseries",
+      "title": "SQL connections in use by role/instance/db_kind",
+      "description": "SQL connections in use by role/instance/db_kind; do not sum overlapping pool identities; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 17,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((persistence_sql_in_use{job=\"temporal-server\"}) and (time() - timestamp(persistence_sql_in_use{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 506,
+      "type": "timeseries",
+      "title": "Server request p95, seconds, admitted platform namespaces only",
+      "description": "Server request p95, seconds, admitted platform namespaces only; observed roles only; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "histogram_quantile(0.95, sum by (job,instance,pod,role,exported_namespace,operation,service_name,type,le) (((rate(service_latency_bucket{job=\"temporal-server\"}[5m])) and (time() - timestamp(service_latency_bucket{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)))) and on(job,instance,pod,role,exported_namespace,operation,service_name,type) ((sum by (job,instance,pod,role,exported_namespace,operation,service_name,type) (((rate(service_latency_count{job=\"temporal-server\"}[5m])) and (time() - timestamp(service_latency_count{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)))) > 0)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 507,
+      "type": "timeseries",
+      "title": "Persistence p95, seconds, admitted platform namespaces only",
+      "description": "Persistence p95, seconds, admitted platform namespaces only; observed roles only; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 25,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "histogram_quantile(0.95, sum by (job,instance,pod,role,exported_namespace,operation,service_name,type,le) (((rate(persistence_latency_bucket{job=\"temporal-server\"}[5m])) and (time() - timestamp(persistence_latency_bucket{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)))) and on(job,instance,pod,role,exported_namespace,operation,service_name,type) ((sum by (job,instance,pod,role,exported_namespace,operation,service_name,type) (((rate(persistence_latency_count{job=\"temporal-server\"}[5m])) and (time() - timestamp(persistence_latency_count{job=\"temporal-server\"}) <= 90)) and on(job,instance) ((up{job=\"temporal-server\"} == 1) and (time() - timestamp(up{job=\"temporal-server\"}) <= 90)))) > 0)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    }
+  ]
+}

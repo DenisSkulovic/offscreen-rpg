@@ -1,5 +1,5 @@
 # OBS-E2-07 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: READY (review 06; commission and applicable predecessor required). Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DONE source (T01–T03 executed 2026-11-28; receipt in PROOF.md). Shared contracts: [group](../../../../open/observability-infrastructure-visibility/README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
 ## T01 | Create provider and dashboard shells | READY (review 06; commission and applicable predecessor required)
@@ -7,7 +7,7 @@ DEPTH=PATCH
 Requires: Frozen selected metric families, labels, exact panel queries and coverage rows in NATIVE-INPUTS from G1–G4 (G4b before SeaweedFS enabled). Source joins of 02–06 are acceptance dependencies, not dashboard construction prerequisites.
 May write: infra/platform/observability/values/profiles/dev/grafana.yaml; dashboards/overview.json, kubernetes.json, nodes.json; coverage/inventory.json (only M03 offscreen-overview/104 query and interpretation)
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/values/grafana.yaml; NATIVE-INPUTS frozen inventory/resource rows including corrected M03 panel 104; [H03 exact overview contract](../OVERVIEW-CONTRACT.json) and [realization rules](../NATIVE-INPUTS.md#h03-correction--exact-overview-identity-and-status-contract); TARGET section 4; pinned Grafana chart dashboard templates
+Read: infra/platform/observability/values/grafana.yaml; NATIVE-INPUTS frozen inventory/resource rows including corrected M03 panel 104; [H03 exact overview contract](../../../../open/observability-infrastructure-visibility/OVERVIEW-CONTRACT.json) and [realization rules](../../../../open/observability-infrastructure-visibility/NATIVE-INPUTS.md#h03-correction--exact-overview-identity-and-status-contract); TARGET section 4; pinned Grafana chart dashboard templates
 Algorithm: Configure native provider `offscreen`, folder Offscreen, file path `/var/lib/grafana/dashboards/offscreen`, allowUiUpdates false, disableDeletion false; home path `/var/lib/grafana/dashboards/offscreen/overview.json`. Build stable UIDs offscreen-overview/kubernetes/nodes, native Prometheus datasource, variables namespace/workload/node and time-preserving links. Build exact fixed overview table panel 108 using OVERVIEW-CONTRACT.json: copy all 20 instant targets, title/type/datasource and transformations; use no inferred selectors, no variable filtering, no dynamic row discovery. Preserve explicit unknown/partial/namespace-only/parked/scrape statuses. Copy exact frozen inventory/resource panels. Synchronize the sole M03 coverage row to the exact revised panel 104 query and interpretation; test one node lacks enough rate samples and duplicate node identities. CPU rate over 5m, memory bytes, valid allocatable denominators; no vector(0) masking missing.
 Test: Source gate; 08 Helm mount/render; T03 tests JSON.
 Negative: Missing KSM or stale samples must not become green absence or zero; no secret/datasource changes.
@@ -19,7 +19,7 @@ DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/dashboards/postgres.json, temporal.json, storage.json, messaging-cache.json, observability.json
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: [selected JSON](../NATIVE-SERVICE-CANDIDATE.json) nativeServices/seaweedfs; existing frozen Redis row; NATIVE-INPUTS exact realization rules and frozen inventory panels 601–604 and 801–803 (M06); TARGET section 4 dashboard table
+Read: [selected JSON](../../../../open/observability-infrastructure-visibility/NATIVE-SERVICE-CANDIDATE.json) nativeServices/seaweedfs; existing frozen Redis row; NATIVE-INPUTS exact realization rules and frozen inventory panels 601–604 and 801–803 (M06); TARGET section 4 dashboard table
 Algorithm: Use offscreen-postgres/temporal/storage/messaging-cache/observability UIDs with exact metric-family/label/query mappings from frozen coverage rows. Each required panel is tied to a verified family; distinguish up vs backend health and freshness. Show owner-ratified partial-scope and unsupported domain limitations explicitly rather than guessing metrics; exact titles/description must not imply complete global counts. Add links to overview and existing logs/traces Explore, no new log/trace enrollment. Use milliseconds/seconds/bytes/rates appropriate to actual metric units; histogram quantile only for verified buckets.
 Test: Source gate; T03 tests JSON and 13 verifies live queries.
 Negative: No arbitrary metric names or hidden unsupported service; real zero distinct from missing.
