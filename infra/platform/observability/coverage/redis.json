@@ -1,0 +1,71 @@
+[
+  {
+    "component": "redis",
+    "namespace": "offscreen-dev-redis",
+    "workloadSelector": {
+      "app.kubernetes.io/name": "redis",
+      "app.kubernetes.io/instance": "redis"
+    },
+    "jobs": [
+      "redis-exporter"
+    ],
+    "requiredFamilies": [
+      "redis_up",
+      "redis_memory_used_bytes",
+      "redis_keyspace_hits_total",
+      "redis_keyspace_misses_total",
+      "redis_evicted_keys_total",
+      "redis_connected_clients",
+      "redis_commands_processed_total"
+    ],
+    "panels": {
+      "offscreen-messaging-cache/701": {
+        "promql": "up{job=\"redis-exporter\"} and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)",
+        "unit": "none",
+        "interpretation": "Scrape state 1/0 only for a current target; missing or stale unknown."
+      },
+      "offscreen-messaging-cache/702": {
+        "promql": "redis_up{job=\"redis-exporter\"} and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90))) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)",
+        "unit": "none",
+        "interpretation": "Backend 1/0 distinct from scrape state; missing or stale unknown."
+      },
+      "offscreen-messaging-cache/703": {
+        "promql": "((redis_memory_used_bytes{job=\"redis-exporter\"}) and on(job,instance) (time() - timestamp(redis_memory_used_bytes{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "bytes",
+        "interpretation": "Backend used memory; current healthy scrape and backend required."
+      },
+      "offscreen-messaging-cache/704": {
+        "promql": "((rate(redis_keyspace_hits_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_hits_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "ops",
+        "interpretation": "Keyspace hits per second over 5m; no data if absent."
+      },
+      "offscreen-messaging-cache/705": {
+        "promql": "((rate(redis_keyspace_misses_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_misses_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "ops",
+        "interpretation": "Keyspace misses per second over 5m; no data if absent."
+      },
+      "offscreen-messaging-cache/706": {
+        "promql": "((((rate(redis_keyspace_hits_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_hits_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))) / ((((rate(redis_keyspace_hits_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_hits_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))) + (((rate(redis_keyspace_misses_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_misses_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))))) and on(job,instance) (((((rate(redis_keyspace_hits_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_hits_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))) + (((rate(redis_keyspace_misses_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_keyspace_misses_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90))))) > 0)",
+        "unit": "percentunit",
+        "interpretation": "Hit fraction only for a positive denominator; zero traffic is undefined, not zero percent."
+      },
+      "offscreen-messaging-cache/707": {
+        "promql": "((rate(redis_evicted_keys_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_evicted_keys_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "ops",
+        "interpretation": "Evictions per second over 5m; zero valid only with current positive observation."
+      },
+      "offscreen-messaging-cache/708": {
+        "promql": "((redis_connected_clients{job=\"redis-exporter\"}) and on(job,instance) (time() - timestamp(redis_connected_clients{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Connected clients; no client identifiers."
+      },
+      "offscreen-messaging-cache/709": {
+        "promql": "((rate(redis_commands_processed_total{job=\"redis-exporter\"}[5m])) and on(job,instance) (time() - timestamp(redis_commands_processed_total{job=\"redis-exporter\"}) <= 90)) and on(job,instance) (((up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(up{job=\"redis-exporter\"}) <= 90)) and on(job,instance) ((redis_up{job=\"redis-exporter\"} == 1) and on(job,instance) (time() - timestamp(redis_up{job=\"redis-exporter\"}) <= 90)))",
+        "unit": "ops",
+        "interpretation": "Redis commands processed per second over 5m, including exporter traffic; not application-only."
+      }
+    },
+    "coverage": "enabled",
+    "reason": ""
+  }
+]
