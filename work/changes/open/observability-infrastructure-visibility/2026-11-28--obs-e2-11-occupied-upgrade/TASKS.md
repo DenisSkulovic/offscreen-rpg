@@ -1,8 +1,8 @@
 # OBS-E2-11 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: READY / DEPENDENCY-GATED — review 08; 08/09 joins pending. Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DONE source (T01–T03 executed 2026-11-28; receipt in PROOF.md). Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
-## T01 | Extend durable custody schema | READY (review 08; commission and applicable predecessors required)
+## T01 | Extend durable custody schema | DONE source
 DEPTH=PATCH
 Requires: 08/09 joined; G1–G4 selected scope frozen; 12 must finish before any E2 live activation; no live permission during construction.
 May write: infra/platform/observability/custody.mjs; tests/custody.test.mjs
@@ -14,7 +14,7 @@ Negative: Invalid history/phase/hash/identity, stale record, out-of-order phase,
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Project preservation and marker primitives | READY (review 08; commission and applicable predecessors required)
+## T02 | Project preservation and marker primitives | DONE source
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/e2-preservation.mjs (new); forward.mjs; tests/e2-upgrade.test.mjs
@@ -26,7 +26,7 @@ Negative: Missing/changed PVC or historical Secret UID, changed unupgraded backe
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Implement ordered two-phase upgrade | READY (review 08; commission and applicable predecessors required)
+## T03 | Implement ordered two-phase upgrade | DONE source
 DEPTH=PATCH
 Requires: T02 postcondition and packet prerequisites.
 May write: infra/platform/observability/upgrade.mjs; upgrade-e2.mjs (new); tests/upgrade.test.mjs; tests/e2-upgrade.test.mjs
