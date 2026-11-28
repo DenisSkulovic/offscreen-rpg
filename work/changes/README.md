@@ -1,6 +1,6 @@
 # Changes | active catalog
 
-**Durable Execution E1:** [DE-E1-01–03 current batch](open/durable-execution/README.md); owner-ratified defended architecture, source-anchored packets prepared, independent readiness pending. Planning proceeds before E2; dispatch after targeted post-E2 reconciliation and commission. Joint native qualification separately authorized; no queue change.
+**Durable Execution E1:** [DE-E1-01–03 current batch](open/durable-execution/README.md); owner-ratified defended architecture, all three Changes READY (dependency-gated) per [readiness review 02](open/durable-execution/READINESS-REVIEW-02.md) at `94da6ab0e187d8a4decd6f03f659940dbfc1b8f5`; both implementation-readiness High findings closed. Planning proceeds before E2; dispatch after targeted post-E2 reconciliation and commission. Joint native qualification separately authorized; no queue change.
 
 **Observability E2:** [OBS-E2-01–13 and PG01 current batch](open/observability-infrastructure-visibility/README.md) prepared against `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; architecture defended; 01/02/05 independently Ready (dependency order), PG01 independently Ready (review 02), 03/06 independently Ready (review 03); remaining native evidence and readiness gates retained; commission and join receipts owned by the active Design branch; no live commission recorded here.
 
