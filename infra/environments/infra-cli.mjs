@@ -19,7 +19,7 @@ import {
 import { observeGatewayStatus } from '../platform/gateway/install.mjs';
 import { observeRedisReady } from '../platform/redis/readiness.mjs';
 import { observeRabbitmqReady } from '../platform/rabbitmq/readiness.mjs';
-import { observeObservability } from '../platform/observability/readiness.mjs';
+import { observeOperationalObservability } from '../platform/observability/readiness.mjs';
 import {
   buildPlatformPlan,
   defaultPlatformRunner,
@@ -457,19 +457,48 @@ function deploymentIsReady(deployment) {
  */
 export function observabilityReadinessToServiceState(observation) {
   const detail = observation.detail ?? observation.reasonCode;
+  // Operational observations also report the exact artifact/history and the
+  // two readiness booleans; legacy-shaped observations stay unchanged.
+  const group =
+    observation.artifactId !== undefined
+      ? {
+          artifactId: observation.artifactId ?? null,
+          historyId: observation.historyId ?? null,
+          structuralReady: observation.structuralReady === true,
+          desiredConverged: observation.desiredConverged === true,
+        }
+      : {};
   if (observation.pending === true) {
-    return { state: 'not-ready', detail: detail ?? 'pending' };
+    return {
+      state: 'not-ready',
+      detail: detail ?? 'pending',
+      ...(observation.artifactId !== undefined
+        ? {
+            artifactId: null,
+            historyId: null,
+            structuralReady: false,
+            desiredConverged: false,
+          }
+        : {}),
+    };
   }
   if (observation.state === 'ready') {
-    return { state: 'installed', detail };
+    return {
+      state: 'installed',
+      detail,
+      ...group,
+      ...(observation.artifactId !== undefined
+        ? { desiredConverged: group.desiredConverged === true }
+        : {}),
+    };
   }
   if (observation.state === 'absent') {
-    return { state: 'not-installed', detail };
+    return { state: 'not-installed', detail, ...group };
   }
   if (observation.state === 'unreadable') {
-    return { state: 'unreadable', detail };
+    return { state: 'unreadable', detail, ...group };
   }
-  return { state: 'not-ready', detail };
+  return { state: 'not-ready', detail, ...group };
 }
 
 function rabbitmqReadinessToServiceState(observation) {
@@ -643,7 +672,7 @@ export function observeSelectedServiceState(profileId, serviceId, deps = {}) {
     }
     if (serviceId === 'observability') {
       return observabilityReadinessToServiceState(
-        observeObservability('dev', {
+        observeOperationalObservability('dev', {
           run: deps.run,
           ...deps.observability,
         }),
@@ -657,7 +686,7 @@ export function observeSelectedServiceState(profileId, serviceId, deps = {}) {
 
   if (serviceId === 'observability') {
     return observabilityReadinessToServiceState(
-      observeObservability('release', {
+      observeOperationalObservability('release', {
         run: deps.run,
         ...deps.observability,
       }),

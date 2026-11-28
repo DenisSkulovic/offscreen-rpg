@@ -4,10 +4,11 @@ import process from 'node:process';
 import { acquireCustody, readPending } from './custody.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
 import { captureIdentity, recheckIdentity, PREFLIGHT_BUDGET_MS } from './identity.mjs';
-import { loadObservabilityVariants } from './artifacts.mjs';
+import { loadOperationalArtifactSet } from './artifacts.mjs';
+import { readDevKubeletTrust } from './kubelet-trust.mjs';
 import { collectInventory, GRAFANA_ADMIN_SECRET } from './inventory.mjs';
 import { runPlatformCommand } from '../common/commands.mjs';
-import { classifyInventory } from './readiness.mjs';
+import { classifyOperationalInventory } from './readiness.mjs';
 import {
   connectLoopback,
   openForwards,
@@ -34,17 +35,23 @@ export function parseConnectArgs(argv) {
   throw error;
 }
 
+/** Exact operational artifacts connect admits: E1 developer or E2 only. */
+const CONNECT_ARTIFACT_IDS = new Set(['dev-e1-developer', 'dev-e2']);
+
 /**
  * @param {object} identity
- * @param {object} variants
+ * @param {{ desired?: object | null, admissible?: object[], staticInventory?: object | null }} artifactSet
  * @param {object} deps
  */
-function collectObserved(identity, variants, deps) {
+function collectObserved(identity, artifactSet, deps) {
   if (deps.collectInventory) {
     return deps.collectInventory(identity);
   }
   const now = deps.now ?? (() => Date.now());
-  const snapshot = collectInventory(identity, variants.desired, {
+  const inventoryArtifacts =
+    artifactSet.desired ?? [...(artifactSet.admissible ?? [])].reverse()[0];
+  const snapshot = collectInventory(identity, inventoryArtifacts, {
+    staticInventory: artifactSet.staticInventory ?? undefined,
     run: deps.run ?? runPlatformCommand,
     now,
     deadline: deps.deadline ?? now() + 120_000,
@@ -65,8 +72,9 @@ function collectObserved(identity, variants, deps) {
  *   acquireCustody?: typeof acquireCustody,
  *   captureIdentity?: typeof captureIdentity,
  *   recheckIdentity?: typeof recheckIdentity,
- *   loadObservabilityVariants?: typeof loadObservabilityVariants,
- *   classifyInventory?: typeof classifyInventory,
+ *   loadOperationalArtifactSet?: typeof loadOperationalArtifactSet,
+ *   readKubeletTrust?: (identity: object) => unknown,
+ *   classifyOperationalInventory?: typeof classifyOperationalInventory,
  *   readPending?: typeof readPending,
  *   collectInventory?: (identity: object) => Promise<object>,
  *   openForwards?: typeof openForwards,
@@ -128,21 +136,44 @@ export async function runObservabilityConnect(deps = {}) {
       now: deps.now,
       deadline: deps.deadline,
     });
-    const variants = (deps.loadObservabilityVariants ?? loadObservabilityVariants)('dev', deps);
-    const snapshot = await collectObserved(identity, variants, deps);
-    const classified = (deps.classifyInventory ?? classifyInventory)(snapshot, variants.desired, {
-      predecessorArtifacts: variants.predecessor ?? null,
+    if (identity?.contextName !== profile.contextName) {
+      await releaseAttempt();
+      return { ok: false, reasonCode: 'identity', ports: null, cleanup: null, exitCode: 1 };
+    }
+    // One operational artifact set; the matched descriptor and history are
+    // carried to forwarding and admin validation, never re-resolved.
+    const artifactSet = (deps.loadOperationalArtifactSet ?? loadOperationalArtifactSet)('dev', {
+      verifyArchive: deps.verifyArchive !== false,
+      run: deps.artifactRun,
+      readKubeletTrust: () =>
+        deps.readKubeletTrust
+          ? deps.readKubeletTrust(identity)
+          : readDevKubeletTrust(identity, deps.trustRun ? { run: deps.trustRun } : {}),
     });
-    if (classified.reasonCode !== 'ready' || classified.pending === true || classified.state !== 'ready') {
+    const snapshot = await collectObserved(identity, artifactSet, deps);
+    const classified = (deps.classifyOperationalInventory ?? classifyOperationalInventory)(
+      { ...snapshot, profileId: 'dev' },
+      artifactSet,
+    );
+    const admitted =
+      classified.pending !== true &&
+      classified.structuralReady === true &&
+      CONNECT_ARTIFACT_IDS.has(classified.artifactId) &&
+      classified.artifacts != null;
+    if (!admitted) {
       await releaseAttempt();
       return {
         ok: false,
-        reasonCode: classified.reasonCode ?? 'not-ready',
+        reasonCode:
+          classified.pending === true
+            ? 'pending'
+            : (classified.reasonCode ?? 'not-ready'),
         ports: null,
         cleanup: null,
         exitCode: 1,
       };
     }
+    const matched = classified.artifacts;
     const checked = (deps.recheckIdentity ?? recheckIdentity)(identity, {
       run: deps.run ?? runPlatformCommand,
       now: deps.now,
@@ -153,6 +184,19 @@ export async function runObservabilityConnect(deps = {}) {
       await releaseAttempt();
       return { ok: false, reasonCode: 'identity', ports: null, cleanup: null, exitCode: 1 };
     }
+    // Validate the admin Secret UID before any forward is opened.
+    const expectedSecretUid =
+      snapshot.objects?.[`Secret/${GRAFANA_ADMIN_SECRET}`]?.metadata?.uid ??
+      snapshot.grafanaAdminUid;
+    if (typeof expectedSecretUid !== 'string' || expectedSecretUid.length === 0) {
+      await releaseAttempt();
+      return { ok: false, reasonCode: 'admin-secret', ports: null, cleanup: null, exitCode: 1 };
+    }
+    const grafanaAuth = await (deps.readGrafanaAdmin ?? readGrafanaAdmin)(
+      identity,
+      expectedSecretUid,
+      deps,
+    );
     const bindings = [...PUBLIC_KEYS, ...(args.queries ? QUERY_KEYS : [])].map((key) => ({ key }));
     opened = await (deps.openForwards ?? openForwards)(
       identity,
@@ -162,17 +206,9 @@ export async function runObservabilityConnect(deps = {}) {
         signal: deps.signal,
         now: deps.now,
         deadline: deps.deadline,
-        artifacts: variants.desired,
+        artifacts: matched,
       },
     );
-    let grafanaAuth = null;
-    if (opened.ports.grafana != null) {
-      const expectedSecretUid =
-        snapshot.objects?.[`Secret/${GRAFANA_ADMIN_SECRET}`]?.metadata?.uid ??
-        snapshot.grafanaAdminUid;
-      const readAdmin = deps.readGrafanaAdmin ?? readGrafanaAdmin;
-      grafanaAuth = await readAdmin(identity, expectedSecretUid, deps);
-    }
     const transport = await (deps.probeForwardTransport ?? probeForwardTransport)(opened.ports, {
       signal: deps.signal,
       now: deps.now,
@@ -195,6 +231,8 @@ export async function runObservabilityConnect(deps = {}) {
       held,
       identity,
       profileContext: profile.contextName,
+      artifactId: classified.artifactId,
+      historyId: classified.historyId,
       failure: connected.failure,
       endpoint: connected.detail?.endpoint ?? null,
       failureReason: connected.detail ?? null,

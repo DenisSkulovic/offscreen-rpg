@@ -51,6 +51,7 @@ export const KNOWN_REASON_CODES = new Set([
   'worker-receipt-missing',
   'worker-receipt-malformed',
   'upgrade-required',
+  'kubelet-trust-unavailable',
 ]);
 
 const OBSERVATION_OPERATIONS = new Set(['plan', 'status']);
@@ -67,7 +68,91 @@ const RECEIPT_CLOSED_KEYS = new Set([
   'detail',
   'mutation',
   'completedPhases',
+  'artifactId',
+  'historyId',
+  'structuralReady',
+  'desiredConverged',
 ]);
+
+const GROUP_KEYS = Object.freeze([
+  'artifactId',
+  'historyId',
+  'structuralReady',
+  'desiredConverged',
+]);
+
+/** Exact final artifact/history/profile triples (the seven final rows). */
+const FINAL_ROW_PAIRS = Object.freeze({
+  'base-fresh': { artifactId: 'dev-e1-base', profile: 'dev' },
+  'developer-fresh': { artifactId: 'dev-e1-developer', profile: 'dev' },
+  'developer-upgraded': { artifactId: 'dev-e1-developer', profile: 'dev' },
+  'e2-fresh': { artifactId: 'dev-e2', profile: 'dev' },
+  'e2-from-developer-fresh': { artifactId: 'dev-e2', profile: 'dev' },
+  'e2-from-developer-upgraded': { artifactId: 'dev-e2', profile: 'dev' },
+  'release-e1': { artifactId: 'release-e1', profile: 'release' },
+});
+
+/**
+ * Validate the complete additive H05 group. Absent group (legacy receipt) is
+ * valid and returns null; a partial, malformed or contradictory group is not.
+ * @param {Record<string, unknown>} body
+ * @param {{ expectedProfile?: string }} options
+ * @returns {{ ok: true, group: null | {
+ *   artifactId: string | null, historyId: string | null,
+ *   structuralReady: boolean, desiredConverged: boolean } } | { ok: false }}
+ */
+function validateOperationalGroup(body, options) {
+  const present = GROUP_KEYS.filter((key) => Object.hasOwn(body, key));
+  if (present.length === 0) {
+    return { ok: true, group: null };
+  }
+  if (present.length !== GROUP_KEYS.length) {
+    return { ok: false };
+  }
+  const { artifactId, historyId, structuralReady, desiredConverged } = body;
+  if (
+    typeof structuralReady !== 'boolean' ||
+    typeof desiredConverged !== 'boolean' ||
+    (desiredConverged && !structuralReady)
+  ) {
+    return { ok: false };
+  }
+  const group = { artifactId, historyId, structuralReady, desiredConverged };
+  if (artifactId === null && historyId === null) {
+    return structuralReady || desiredConverged
+      ? { ok: false }
+      : { ok: true, group };
+  }
+  if (typeof artifactId !== 'string' || typeof historyId !== 'string') {
+    return { ok: false };
+  }
+  const pair = Object.hasOwn(FINAL_ROW_PAIRS, historyId)
+    ? FINAL_ROW_PAIRS[historyId]
+    : null;
+  if (pair == null || pair.artifactId !== artifactId) {
+    return { ok: false };
+  }
+  const profile = body.profile ?? options.expectedProfile;
+  if (profile !== undefined && profile !== pair.profile) {
+    return { ok: false };
+  }
+  if (body.pending === true || body.ok === undefined) {
+    return { ok: false };
+  }
+  if (artifactId === 'dev-e1-base' && (structuralReady || desiredConverged)) {
+    return { ok: false };
+  }
+  if (artifactId === 'dev-e1-developer' && (!structuralReady || desiredConverged)) {
+    return { ok: false };
+  }
+  if (
+    (artifactId === 'dev-e2' || artifactId === 'release-e1') &&
+    !structuralReady
+  ) {
+    return { ok: false };
+  }
+  return { ok: true, group };
+}
 
 /**
  * @param {unknown} value
@@ -290,6 +375,18 @@ function validateEnsureReceiptBody(body, options = {}) {
   ) {
     return { ok: false, reason: 'invalid-receipt' };
   }
+  const group = validateOperationalGroup(body, options);
+  if (!group.ok) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  if (
+    group.group != null &&
+    ((state === 'ready') !== group.group.desiredConverged ||
+      (group.group.desiredConverged &&
+        (body.pending === true || reasonCode !== 'ready')))
+  ) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
   return {
     ok: true,
     state,
@@ -297,6 +394,7 @@ function validateEnsureReceiptBody(body, options = {}) {
     mutation,
     pending: body.pending === true,
     completedPhases,
+    group: group.group,
   };
 }
 
@@ -361,12 +459,14 @@ export function parseEnsureReceipt(command, options = {}) {
   }
 
   const { state, reasonCode, mutation, pending, completedPhases } = validated;
+  const groupFields = validated.group ? { ...validated.group } : {};
   const bodyOk = /** @type {boolean} */ (
     /** @type {Record<string, unknown>} */ (extracted.value).ok
   );
 
   if (bodyOk !== (command.exitCode === 0)) {
     return ensureReceipt({
+    ...groupFields,
       ok: false,
       state,
       reasonCode: 'invalid-receipt',
@@ -387,6 +487,7 @@ export function parseEnsureReceipt(command, options = {}) {
 
   if (command.exitCode === 0 && bodyOk === true && !successfulEnsure) {
     return ensureReceipt({
+    ...groupFields,
       ok: false,
       state,
       reasonCode: 'invalid-receipt',
@@ -398,6 +499,7 @@ export function parseEnsureReceipt(command, options = {}) {
 
   if (command.exitCode !== 0 && bodyOk === true) {
     return ensureReceipt({
+    ...groupFields,
       ok: false,
       state,
       reasonCode: 'invalid-receipt',
@@ -414,6 +516,7 @@ export function parseEnsureReceipt(command, options = {}) {
     completedPhases.length === 0
   ) {
     return ensureReceipt({
+    ...groupFields,
       ok: false,
       state,
       reasonCode,
@@ -425,6 +528,7 @@ export function parseEnsureReceipt(command, options = {}) {
 
   if (command.exitCode !== 0 && bodyOk === false && mutation === 'confirmed') {
     return ensureReceipt({
+    ...groupFields,
       ok: false,
       state,
       reasonCode,
@@ -435,6 +539,7 @@ export function parseEnsureReceipt(command, options = {}) {
   }
 
   return ensureReceipt({
+    ...groupFields,
     ok: bodyOk === true && command.exitCode === 0,
     state,
     reasonCode,
@@ -551,11 +656,24 @@ function validateObservationReceiptBody(body, options) {
   if (!STRUCTURAL_STATES.has(state) || !KNOWN_REASON_CODES.has(reasonCode)) {
     return { ok: false, reason: 'invalid-receipt' };
   }
+  const group = validateOperationalGroup(body, options);
+  if (!group.ok) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
+  if (
+    group.group != null &&
+    body.ok === true &&
+    ((state === 'ready' && body.pending !== true) !==
+      group.group.desiredConverged)
+  ) {
+    return { ok: false, reason: 'invalid-receipt' };
+  }
   return {
     ok: true,
     state,
     reasonCode,
     pending: body.pending === true,
+    group: group.group,
   };
 }
 
@@ -622,12 +740,14 @@ export function evaluateObservationReceipt(result, options = {}) {
   }
 
   const body = /** @type {Record<string, unknown>} */ (extracted.value);
+  const groupFields = validated.group ? { ...validated.group } : {};
   if (body.ok !== true) {
     return {
       status: 'FAIL',
       reason: 'unreadable',
       state: validated.state,
       pending: validated.pending,
+      ...groupFields,
     };
   }
   if (validated.state === 'ready' && validated.pending) {
@@ -636,14 +756,18 @@ export function evaluateObservationReceipt(result, options = {}) {
       reason: 'pending',
       state: 'ready',
       pending: true,
+      ...groupFields,
     };
   }
-  return toObservationReceipt(
-    {
-      state: validated.state,
-      reasonCode: validated.reasonCode,
-      pending: validated.pending,
-    },
-    options,
-  );
+  return {
+    ...toObservationReceipt(
+      {
+        state: validated.state,
+        reasonCode: validated.reasonCode,
+        pending: validated.pending,
+      },
+      options,
+    ),
+    ...groupFields,
+  };
 }

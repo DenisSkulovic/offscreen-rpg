@@ -21,8 +21,11 @@ import {
   OBSERVABILITY_OBSERVATION_WORKER_MS,
   PREFLIGHT_BUDGET_MS,
 } from '../platform/observability/identity.mjs';
-import { observeObservability } from '../platform/observability/readiness.mjs';
-import { buildWorkerReceipt } from '../platform/observability/install.mjs';
+import { observeOperationalObservability } from '../platform/observability/readiness.mjs';
+import {
+  buildWorkerReceipt,
+  operationalGroup,
+} from '../platform/observability/install.mjs';
 import { evaluateObservationReceipt } from '../platform/observability/receipt.mjs';
 import { runCommand } from './diagnostic-engine.mjs';
 
@@ -99,7 +102,7 @@ export function createObservabilityDiagnosticBudget(deps = {}) {
  *   run?: typeof runPlatformCommand,
  *   readPending?: (contextName: string) => { pending: boolean, valid: boolean },
  *   stateRoot?: string,
- *   observe?: typeof observeObservability,
+ *   observe?: typeof observeOperationalObservability,
  *   deadline?: number,
  * }} [deps]
  */
@@ -112,7 +115,7 @@ export function runObservabilityDiagnosticWorker(
     throw new Error('invalid profile');
   }
   const budget = createObservabilityDiagnosticBudget(deps);
-  const observe = deps.observe ?? observeObservability;
+  const observe = deps.observe ?? observeOperationalObservability;
   const absoluteCap = budget.started + OBSERVABILITY_WORKER_BUDGET_MS;
   const observeDeadline =
     deps.deadline == null ? absoluteCap : Math.min(deps.deadline, absoluteCap);
@@ -140,6 +143,9 @@ export function runObservabilityDiagnosticWorker(
     mutation: 'none',
     completedPhases: [],
     pending: observation.pending === true,
+    ...(observation.artifactId !== undefined
+      ? operationalGroup(observation)
+      : {}),
   });
   const line = `${JSON.stringify(receipt)}\n`;
   if (options.onStdout) {
