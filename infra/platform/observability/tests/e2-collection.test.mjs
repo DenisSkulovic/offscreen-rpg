@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -13,6 +13,8 @@ const load = () => ({
   coverage: JSON.parse(read('coverage/inventory.json')),
   lock: read('locks/e2-images.tsv'),
   redisCoverage: JSON.parse(read('coverage/redis.json')),
+  nativeCoverage: JSON.parse(read('coverage/native-services.json')),
+  seaweedfsCoverage: JSON.parse(read('coverage/seaweedfs.json')),
 });
 const clone = (v) => structuredClone(v);
 
@@ -63,6 +65,10 @@ const sameSet = (a, b) => a.length === b.length && new Set(a).size === a.length 
 const split = (r) => String(r).split('|');
 
 const KUBELET_JOBS = ['kubelet-resource', 'kubelet-cadvisor'];
+const NATIVE_POD_JOBS = ['postgres-cnpg', 'temporal-server'];
+const NATIVE_STATIC_JOBS = ['rabbitmq', 'loki', 'tempo', 'grafana', 'seaweedfs'];
+const NATIVE_JOBS = [...NATIVE_POD_JOBS, ...NATIVE_STATIC_JOBS];
+const LEGACY_JOBS = ['prometheus', 'collector'];
 const KUBELET_MANIFEST_COUNT = 3;
 const TRUST_SENTINEL = { binding: 'b'.repeat(64), ca: 'ca-under-test' };
 /** Parse one extraManifests string; the two trust ConfigMap Helm expressions are replaced by fixed sentinels. */
@@ -119,9 +125,10 @@ function validateOverlay(cfg) {
   if (new Set(names).size !== names.length) p.push('duplicate-job');
   const targets = jobs.flatMap((j) => (j.static_configs ?? []).flatMap((s) => s.targets ?? []));
   if (new Set(targets).size !== targets.length) p.push('duplicate-target');
-  if (!sameSet(names, ['prometheus', 'collector', 'kube-state-metrics', 'kube-state-metrics-self', 'redis-exporter', ...KUBELET_JOBS])) p.push('job-set');
+  if (!sameSet(names, ['prometheus', 'collector', 'kube-state-metrics', 'kube-state-metrics-self', 'redis-exporter', ...KUBELET_JOBS, ...NATIVE_JOBS])) p.push('job-set');
   for (const j of jobs) {
     if (KUBELET_JOBS.includes(j.name)) continue; // exact node-discovery shape is asserted by validateKubeletJobs
+    if (NATIVE_POD_JOBS.includes(j.name)) continue; // exact Pod-discovery shape is asserted by validateNativeJobs
     if (j.kubernetes_sd_configs || (j.relabel_configs ?? []).some((r) => r.action === 'labelmap' || /annotation/.test(JSON.stringify(r)))) p.push(`generic-job:${j.name}`);
   }
   if (cfg.overlay.extraScrapeConfigs) p.push('extraScrapeConfigs');
@@ -133,8 +140,8 @@ function validateOverlay(cfg) {
   if (rj && (rj.scheme !== 'http' || rj.honor_labels !== false || rj.relabel_configs || rj.kubernetes_sd_configs || rj.params)) p.push('redis-job-shape');
   // Existing jobs keep their base semantics.
   if (JSON.stringify(byName.collector?.static_configs) !== JSON.stringify([{ targets: ['obs-collector:8888'] }])) p.push('collector-changed');
-  if (Object.keys(cfg.overlay.scrapeConfigs ?? {}).some((k) => !['kube-state-metrics', 'kube-state-metrics-self', 'redis-exporter', ...KUBELET_JOBS].includes(k))) p.push('overlay-extra-job');
-  p.push(...validateKubeletJobs(cfg), ...validateKubeletServer(cfg.overlay), ...validateKubeletManifests(cfg.overlay));
+  if (Object.keys(cfg.overlay.scrapeConfigs ?? {}).some((k) => !['kube-state-metrics', 'kube-state-metrics-self', 'redis-exporter', ...KUBELET_JOBS, ...NATIVE_JOBS].includes(k))) p.push('overlay-extra-job');
+  p.push(...validateKubeletJobs(cfg), ...validateKubeletServer(cfg.overlay), ...validateKubeletManifests(cfg.overlay), ...validateNativeJobs(cfg));
   return p;
 }
 
@@ -286,7 +293,8 @@ function validateKubeletManifests(overlay) {
   if ((t.match(/\{\{\s*required /g) ?? []).length !== 2 || (t.match(/\| quote/g) ?? []).length !== 2 || /\btpl\b|BEGIN CERTIFICATE|\.Files|lookup/.test(t)) p.push('kubelet-trust-template');
   eq('kubelet-clusterrole', cr[0].d, {
     apiVersion: 'rbac.authorization.k8s.io/v1', kind: 'ClusterRole', metadata: { name: 'obs-prometheus-kubelet' },
-    rules: [{ apiGroups: [''], resources: ['nodes'], verbs: ['get', 'list', 'watch'] }, { apiGroups: [''], resources: ['nodes/metrics'], verbs: ['get'] }],
+    // OBS-E2-03 node rules plus OBS-E2-04 Pod discovery (exactly get/list/watch on pods; no pods/exec, proxy, Secrets or mutation).
+    rules: [{ apiGroups: [''], resources: ['nodes'], verbs: ['get', 'list', 'watch'] }, { apiGroups: [''], resources: ['nodes/metrics'], verbs: ['get'] }, { apiGroups: [''], resources: ['pods'], verbs: ['get', 'list', 'watch'] }],
   });
   eq('kubelet-clusterrolebinding', crb[0].d, {
     apiVersion: 'rbac.authorization.k8s.io/v1', kind: 'ClusterRoleBinding', metadata: { name: 'obs-prometheus-kubelet' },
@@ -345,18 +353,23 @@ function validateCoverage(rows, cfg) {
     if (JSON.stringify(Object.keys(r).sort()) !== JSON.stringify([...FIELDS].sort())) p.push(`schema:${r.component}`);
     if (typeof r.component !== 'string' || !r.component) p.push('component');
     if (!(r.namespace === null || typeof r.namespace === 'string')) p.push(`namespace:${r.component}`);
-    if (!r.workloadSelector || typeof r.workloadSelector !== 'object' || !Object.keys(r.workloadSelector).length) p.push(`selector:${r.component}`);
+    // Inventory-only and not-applicable rows (OBS-E2-04) may carry an empty selector; enabled rows must name one.
+    if (!r.workloadSelector || typeof r.workloadSelector !== 'object' || (r.coverage === 'enabled' && !Object.keys(r.workloadSelector).length)) p.push(`selector:${r.component}`);
     if (!['enabled', 'inventory-only', 'not-applicable'].includes(r.coverage)) p.push(`coverage:${r.component}`);
     if (r.coverage !== 'enabled' && !r.reason) p.push(`reason:${r.component}`);
     if (!r.panels || (r.coverage === 'enabled' && !Object.keys(r.panels).length)) p.push(`panels:${r.component}`);
     for (const [id, pn] of Object.entries(r.panels ?? {})) {
       if (!/^offscreen-[a-z-]+\/\d+$/.test(id) || !pn.promql || !pn.unit || !pn.interpretation) p.push(`panel:${id}`);
     }
-    if (!r.jobs?.length) p.push(`jobs:${r.component}`);
+    if (!Array.isArray(r.jobs) || (r.coverage === 'enabled' && !r.jobs.length)) p.push(`jobs:${r.component}`);
+    // A row that is not enabled collects nothing: no families or panels may be claimed for it unless it names a job (kubelet network row).
+    if (r.coverage !== 'enabled' && !(r.jobs ?? []).length && ((r.requiredFamilies ?? []).length || Object.keys(r.panels ?? {}).length)) p.push(`inventory-only-claims:${r.component}`);
     for (const jn of r.jobs ?? []) {
       const job = jobs[jn];
       if (!job) { p.push(`unknown-job:${jn}`); continue; }
       const keep = (job.metric_relabel_configs ?? []).find((m) => m.action === 'keep');
+      // The legacy `prometheus` and `collector` jobs keep base semantics and have no family allowlist; native equality is asserted by validateNativeCoverage.
+      if (!keep && LEGACY_JOBS.includes(jn)) continue;
       const allowed = keep ? (KUBELET_JOBS.includes(jn) ? (String(keep.regex).match(/[a-z_]+_(?:total|bytes)/g) ?? []) : split(keep.regex)) : [];
       for (const f of r.requiredFamilies ?? []) if (!allowed.includes(f)) p.push(`family-not-allowed:${jn}:${f}`);
     }
@@ -392,6 +405,176 @@ function validateRedisCoverage(rows, cfg) {
   for (const [n, u] of Object.entries(units)) if (r.panels[`offscreen-messaging-cache/${n}`].unit !== u) p.push(`panel-${n}-unit`);
   return p;
 }
+
+// ---- OBS-E2-04: frozen native service jobs, Pod discovery, RBAC and coverage (NATIVE-SERVICE-CANDIDATE.json, owner-ratified 2026-11-28) ----
+// The candidate's newScrapePolicies, copied as the frozen expectation. When the planner's candidate file is still present it must agree exactly.
+const NATIVE_POLICY = {
+  "postgres-cnpg": {"families":["cnpg_pg_database_size_bytes","cnpg_pg_stat_database_xact_commit","cnpg_pg_stat_database_xact_rollback","cnpg_pg_stat_database_deadlocks","cnpg_pg_stat_database_blks_hit","cnpg_pg_stat_database_blks_read","cnpg_pg_stat_database_temp_bytes","cnpg_pg_stat_database_temp_files","cnpg_backends_total","cnpg_backends_max_tx_duration_seconds","cnpg_pg_settings_setting","cnpg_collector_up","cnpg_backends_waiting_total","cnpg_collector_last_collection_error","cnpg_last_error","cnpg_last_update_timestamp","cnpg_collector_replica_mode","cnpg_pg_replication_in_recovery","cnpg_pg_replication_is_wal_receiver_up","cnpg_pg_replication_lag","cnpg_pg_replication_streaming_replicas"],"retainedLabels":["__name__","job","instance","cluster","env","component","namespace","pod","datname","application_name","usename","state","name","exported_cluster"],"valueFilters":[{"source_labels":["__name__","datname","application_name","usename","state","name","exported_cluster"],"separator":";","regex":"(cnpg_pg_database_size_bytes|cnpg_pg_stat_database_xact_commit|cnpg_pg_stat_database_xact_rollback|cnpg_pg_stat_database_deadlocks|cnpg_pg_stat_database_blks_hit|cnpg_pg_stat_database_blks_read|cnpg_pg_stat_database_temp_bytes|cnpg_pg_stat_database_temp_files);(postgres|dev|temporal|temporal_visibility|dev_[1-9][0-9]*);;;;;|(cnpg_backends_total|cnpg_backends_max_tx_duration_seconds);(postgres|dev|temporal|temporal_visibility|dev_[1-9][0-9]*);(|cnpg_metrics_exporter);(postgres|dev|temporal|cnpg_metrics_exporter|dev_[1-9][0-9]*_(mig|run));(active|idle|idle in transaction|idle in transaction \\(aborted\\)|fastpath function call|disabled);;|cnpg_pg_settings_setting;;;;;max_connections;|cnpg_collector_up;;;;;;dev-pg|(cnpg_backends_waiting_total|cnpg_collector_last_collection_error|cnpg_last_error|cnpg_last_update_timestamp|cnpg_collector_replica_mode|cnpg_pg_replication_in_recovery|cnpg_pg_replication_is_wal_receiver_up|cnpg_pg_replication_lag|cnpg_pg_replication_streaming_replicas);;;;;;","action":"keep"}],"target":{"kind":"pod","namespace":"offscreen-dev-postgres","labels":{"cnpg.io/cluster":"dev-pg","app.kubernetes.io/name":"postgresql"},"container":"postgres","portName":"metrics","port":9187}},
+  "temporal-server": {"families":["service_requests","service_error_with_type","persistence_requests","persistence_sql_in_use","service_latency_bucket","service_latency_count","service_latency_sum","persistence_latency_bucket","persistence_latency_count","persistence_latency_sum"],"retainedLabels":["__name__","job","instance","cluster","env","component","namespace","pod","role","exported_namespace","operation","service_name","type","db_kind","error_type","le"],"valueFilters":[{"source_labels":["__name__","exported_namespace"],"separator":";","regex":"(service_requests|service_error_with_type|persistence_requests|service_latency_bucket|service_latency_count|service_latency_sum|persistence_latency_bucket|persistence_latency_count|persistence_latency_sum);(system|_unknown_)|persistence_sql_in_use;","action":"keep"}],"target":{"kind":"pod","namespace":"offscreen-dev-temporal","labels":{"app.kubernetes.io/instance":"temporal","app.kubernetes.io/name":"temporal","app.kubernetes.io/component":["frontend","history","matching","worker"]},"containerByRole":{"frontend":"temporal-frontend","history":"temporal-history","matching":"temporal-matching","worker":"temporal-worker"},"portName":"metrics","port":9090}},
+  "rabbitmq": {"families":["rabbitmq_queue_messages","rabbitmq_queue_messages_ready","rabbitmq_queue_messages_unacked","rabbitmq_connections","rabbitmq_queue_messages_published_total","rabbitmq_queue_messages_delivered_total","rabbitmq_queue_messages_acked_total","rabbitmq_alarms_free_disk_space_watermark","rabbitmq_alarms_memory_used_watermark","rabbitmq_process_resident_memory_bytes","rabbitmq_process_open_fds","rabbitmq_process_max_fds"],"retainedLabels":["__name__","job","instance","cluster","env","component","namespace"],"valueFilters":[],"target":{"kind":"static","address":"rabbitmq.offscreen-dev-rabbitmq.svc:15692","namespace":"offscreen-dev-rabbitmq"}},
+  "loki": {"families":["loki_ingester_memory_chunks","loki_ingester_flush_queue_length","loki_ingester_chunks_flush_failures_total","loki_ingester_wal_bytes_in_use"],"retainedLabels":["__name__","job","instance","cluster","env","component","namespace"],"valueFilters":[],"target":{"kind":"static","address":"obs-loki.offscreen-dev-observability.svc:3100","namespace":"offscreen-dev-observability"}},
+  "tempo": {"families":["tempo_distributor_traces_per_batch_count","tempo_distributor_traces_per_batch_sum"],"retainedLabels":["__name__","job","instance","cluster","env","component","namespace"],"valueFilters":[],"target":{"kind":"static","address":"obs-tempo.offscreen-dev-observability.svc:3200","namespace":"offscreen-dev-observability"}},
+  "grafana": {"families":["grafana_http_request_in_flight","grafana_api_response_status_total"],"retainedLabels":["__name__","job","instance","cluster","env","component","namespace","code"],"valueFilters":[{"source_labels":["__name__","code"],"separator":";","regex":"grafana_http_request_in_flight;|grafana_api_response_status_total;[1-5][0-9][0-9]","action":"keep"}],"target":{"kind":"static","address":"obs-grafana.offscreen-dev-observability.svc:80","namespace":"offscreen-dev-observability"}},
+  "seaweedfs": {"families":["SeaweedFS_master_is_leader","SeaweedFS_s3_in_flight_upload_bytes","SeaweedFS_s3_in_flight_upload_count","SeaweedFS_volumeServer_max_volumes","SeaweedFS_volumeServer_file_read_failures","SeaweedFS_volumeServer_file_write_failures","SeaweedFS_volumeServer_storage_io_error_total","SeaweedFS_s3_in_flight_requests","SeaweedFS_volumeServer_volumes","SeaweedFS_volumeServer_read_only_volumes","SeaweedFS_filer_request_total","SeaweedFS_volumeServer_request_total","SeaweedFS_s3_request_total","SeaweedFS_volumeServer_request_seconds_bucket","SeaweedFS_volumeServer_request_seconds_count","SeaweedFS_volumeServer_request_seconds_sum","SeaweedFS_s3_request_seconds_bucket","SeaweedFS_s3_request_seconds_count","SeaweedFS_s3_request_seconds_sum"],"retainedLabels":["__name__","job","instance","cluster","env","component","namespace","type","code","le","bucket","collection"],"valueFilters":[{"source_labels":["__name__","bucket","collection"],"separator":";","regex":"(SeaweedFS_master_is_leader|SeaweedFS_s3_in_flight_upload_bytes|SeaweedFS_s3_in_flight_upload_count|SeaweedFS_volumeServer_max_volumes|SeaweedFS_volumeServer_file_read_failures|SeaweedFS_volumeServer_file_write_failures|SeaweedFS_volumeServer_storage_io_error_total|SeaweedFS_s3_in_flight_requests|SeaweedFS_volumeServer_volumes|SeaweedFS_volumeServer_read_only_volumes|SeaweedFS_filer_request_total|SeaweedFS_volumeServer_request_total|SeaweedFS_s3_request_total|SeaweedFS_volumeServer_request_seconds_bucket|SeaweedFS_volumeServer_request_seconds_count|SeaweedFS_volumeServer_request_seconds_sum|SeaweedFS_s3_request_seconds_bucket|SeaweedFS_s3_request_seconds_count|SeaweedFS_s3_request_seconds_sum);;","action":"keep"}],"target":{"kind":"static","address":"object-store.offscreen-dev-objects.svc:9327","namespace":"offscreen-dev-objects"}},
+};
+const COMMON_JOB = { enabled: true, metrics_path: '/metrics', scheme: 'http', scrape_interval: '30s', scrape_timeout: '10s', sample_limit: 5000, label_limit: 40, label_name_length_limit: 128, label_value_length_limit: 512, target_limit: 100, honor_labels: false };
+const NATIVE_COMPONENT = { 'postgres-cnpg': 'postgres', 'temporal-server': 'temporal', rabbitmq: 'rabbitmq', loki: 'loki', tempo: 'tempo', grafana: 'grafana', seaweedfs: 'seaweedfs' };
+const podLabel = (k) => `__meta_kubernetes_pod_label_${k.replace(/[^A-Za-z0-9]/g, '_')}`;
+const nativeMetricRelabel = (pol) => [
+  { source_labels: ['__name__'], regex: pol.families.join('|'), action: 'keep' },
+  ...pol.valueFilters.map((f) => ({ source_labels: f.source_labels, separator: f.separator, regex: f.regex, action: f.action })),
+  { regex: pol.retainedLabels.join('|'), action: 'labelkeep' },
+];
+const podTail = (ns, component, role) => [
+  { target_label: 'cluster', replacement: 'offscreen-dev' },
+  { target_label: 'env', replacement: 'dev' },
+  { target_label: 'component', replacement: component },
+  { target_label: 'namespace', replacement: ns },
+  { source_labels: ['__meta_kubernetes_pod_name'], target_label: 'pod' },
+  ...(role ? [{ source_labels: [podLabel('app.kubernetes.io/component')], target_label: 'role' }] : []),
+];
+const podHead = (ns) => ({ kubernetes_sd_configs: [{ role: 'pod', namespaces: { names: [ns] } }], first: { source_labels: ['__meta_kubernetes_namespace'], regex: ns, action: 'keep' } });
+function expectedNativeJob(name) {
+  const pol = NATIVE_POLICY[name];
+  const base = { ...COMMON_JOB, job_name: name };
+  if (pol.target.kind === 'static') {
+    return { ...base, static_configs: [{ targets: [pol.target.address], labels: { cluster: 'offscreen-dev', env: 'dev', component: NATIVE_COMPONENT[name], namespace: pol.target.namespace } }], metric_relabel_configs: nativeMetricRelabel(pol) };
+  }
+  const t = pol.target;
+  const head = podHead(t.namespace);
+  const identity = name === 'postgres-cnpg'
+    ? { source_labels: [podLabel('cnpg.io/cluster'), podLabel('app.kubernetes.io/name'), '__meta_kubernetes_pod_container_name', '__meta_kubernetes_pod_container_port_name', '__meta_kubernetes_pod_container_port_number'], separator: ';', regex: [t.labels['cnpg.io/cluster'], t.labels['app.kubernetes.io/name'], t.container, t.portName, t.port].join(';'), action: 'keep' }
+    : { source_labels: [podLabel('app.kubernetes.io/instance'), podLabel('app.kubernetes.io/name'), podLabel('app.kubernetes.io/component'), '__meta_kubernetes_pod_container_name', '__meta_kubernetes_pod_container_port_name', '__meta_kubernetes_pod_container_port_number'], separator: ';', regex: `temporal;temporal;(${Object.entries(t.containerByRole).map(([r, c]) => `${r};${c}`).join('|')});${t.portName};${t.port}`, action: 'keep' };
+  return { ...base, kubernetes_sd_configs: head.kubernetes_sd_configs, relabel_configs: [head.first, identity, ...podTail(t.namespace, NATIVE_COMPONENT[name], name === 'temporal-server')], metric_relabel_configs: nativeMetricRelabel(pol) };
+}
+
+/** Exact equality of the seven native jobs plus the structural rules that must hold even if the frozen policy itself were edited. */
+function validateNativeJobs(cfg) {
+  const p = [];
+  const jobs = Object.fromEntries(mergedJobs(cfg).map((j) => [j.name, j]));
+  for (const name of NATIVE_JOBS) {
+    const j = jobs[name];
+    if (!j) { p.push(`${name}.missing`); continue; }
+    if (cfg.overlay.scrapeConfigs?.[name] === undefined) p.push(`${name}.not-in-overlay`);
+    if (canon(cfg.overlay.scrapeConfigs?.[name]) !== canon(expectedNativeJob(name))) p.push(`${name}.frozen-shape`);
+    if (j.honor_labels !== false) p.push(`${name}.honor-labels`);
+    if (j.authorization || j.tls_config || j.basic_auth || j.bearer_token || j.bearer_token_file || j.proxy_url || j.params || j.follow_redirects) p.push(`${name}.credentials-or-proxy`);
+    const rel = j.relabel_configs ?? [];
+    if (rel.some((r) => r.action === 'labelmap' || /annotation|__meta_kubernetes_(?!namespace|pod_name|pod_label_|pod_container_)|__address__|__metrics_path__|__scheme__|__param_/.test(JSON.stringify(r)))) p.push(`${name}.arbitrary-metadata`);
+    const mr = j.metric_relabel_configs ?? [];
+    if (JSON.stringify(mr[0]?.source_labels) !== '["__name__"]' || mr[0]?.action !== 'keep' || mr.at(-1)?.action !== 'labelkeep' || mr.slice(1, -1).some((r) => r.action !== 'keep')) p.push(`${name}.relabel-order`);
+    if (/\.\*|\.\+/.test(mr[0]?.regex ?? '')) p.push(`${name}.broad-family`);
+  }
+  for (const name of NATIVE_POD_JOBS) {
+    const j = jobs[name];
+    if (!j) continue;
+    if (canon(j.kubernetes_sd_configs?.map((s) => s.role)) !== canon(['pod']) || j.static_configs) p.push(`${name}.discovery`);
+  }
+  for (const name of NATIVE_STATIC_JOBS) {
+    const j = jobs[name];
+    if (j && (j.kubernetes_sd_configs || j.relabel_configs)) p.push(`${name}.discovery`);
+  }
+  // No target may be the S3 endpoint, and no static address may be duplicated.
+  const addrs = mergedJobs(cfg).flatMap((j) => (j.static_configs ?? []).flatMap((s) => s.targets ?? []));
+  if (addrs.some((a) => /:8333$/.test(a))) p.push('s3-endpoint-scraped');
+  return p;
+}
+
+/**
+ * Minimal Prometheus relabel evaluator for the rule kinds used here: keep/drop, replace (single label, `$1` replacement) and labelkeep.
+ * Regexes are fully anchored as in Prometheus. Returns the resulting label set or null when the sample/target is dropped.
+ */
+function relabel(rules, input) {
+  let ls = { ...input };
+  for (const r of rules) {
+    const val = (r.source_labels ?? []).map((l) => ls[l] ?? '').join(r.separator ?? ';');
+    const re = new RegExp(`^(?:${r.regex ?? '(.*)'})$`);
+    const action = r.action ?? 'replace';
+    if (action === 'keep') { if (!re.test(val)) return null; }
+    else if (action === 'drop') { if (re.test(val)) return null; }
+    else if (action === 'labelkeep') ls = Object.fromEntries(Object.entries(ls).filter(([k]) => re.test(k)));
+    else if (action === 'replace') {
+      const m = re.exec(val);
+      if (m) ls[r.target_label] = (r.replacement ?? '$1').replace(/\$(\d)/g, (_x, n) => m[Number(n)] ?? '');
+    } else throw new Error(`unsupported action ${action}`);
+  }
+  return ls;
+}
+const nativeMetricRules = (cfg, job) => mergedJobs(cfg).find((j) => j.name === job).metric_relabel_configs;
+const nativeTargetRules = (cfg, job) => mergedJobs(cfg).find((j) => j.name === job).relabel_configs;
+/** Samples with the same family that become identical after projection collide in Prometheus; return those collisions. */
+function projectedCollisions(rules, samples) {
+  const seen = new Map();
+  const dup = [];
+  for (const s of samples) {
+    const out = relabel(rules, s);
+    if (!out) continue;
+    const key = canon(out);
+    if (seen.has(key)) dup.push(key); else seen.set(key, true);
+  }
+  return dup;
+}
+
+const COVERAGE_COMPONENTS_ENABLED = ['postgres', 'temporal', 'rabbitmq', 'loki', 'tempo', 'grafana', 'prometheus', 'collector'];
+const COVERAGE_INVENTORY_ONLY = ['kubernetes-control-plane', 'cnpg-operator', 'rabbitmq-operator', 'cert-manager', 'local-path'];
+const coverageSources = (c) => [...c.coverage, ...c.redisCoverage, ...c.nativeCoverage, ...c.seaweedfsCoverage];
+
+/** Native and SeaweedFS coverage rows: exact component set, explicit non-enabled dispositions, one disposition per job, job/coverage family equality and panel semantics. */
+function validateNativeCoverage(c) {
+  const p = [];
+  const native = c.nativeCoverage;
+  const sea = c.seaweedfsCoverage;
+  p.push(...validateCoverage(native, c).map((x) => `native:${x}`), ...validateCoverage(sea, c).map((x) => `seaweedfs:${x}`));
+  if (!Array.isArray(native) || !Array.isArray(sea)) return [...p, 'native-not-array'];
+  if (!sameSet(native.map((r) => r.component), [...COVERAGE_COMPONENTS_ENABLED, ...COVERAGE_INVENTORY_ONLY, 'traefik'])) p.push('native-component-set');
+  if (sea.length !== 1 || sea[0].component !== 'seaweedfs') return [...p, 'seaweedfs-row-set'];
+  const all = coverageSources(c);
+  const comps = all.map((r) => r.component);
+  if (new Set(comps).size !== comps.length) p.push('coverage-component-not-unique');
+  const ids = all.flatMap((r) => Object.keys(r.panels));
+  if (new Set(ids).size !== ids.length) p.push('panel-id-not-unique');
+  const jobOwners = all.filter((r) => r.coverage === 'enabled').flatMap((r) => r.jobs.map((j) => [j, r.component]));
+  const jobNames = jobOwners.map(([j]) => j);
+  if (new Set(jobNames).size !== jobNames.length) p.push('job-has-two-coverage-rows');
+  for (const r of [...native, ...sea]) {
+    if (r.coverage === 'enabled') {
+      if (r.reason !== '' || !r.jobs.length || !Object.keys(r.workloadSelector).length || r.namespace === null) p.push(`enabled-shape:${r.component}`);
+      const ps = Object.entries(r.panels);
+      ps.forEach(([id, pn], i) => {
+        const q = pn.promql;
+        const job = r.jobs[0];
+        if (!r.jobs.some((jn) => q.includes(`job="${jn}"`))) p.push(`panel-job:${id}`);
+        if (!q.includes('<= 90')) p.push(`panel-freshness:${id}`);
+        if (/\bor\b|\bunless\b|vector\(/.test(q)) p.push(`panel-default-fill:${id}`);
+        if (/rate\(/.test(q) && !/\[(5m|10m|15m)\]/.test(q)) p.push(`panel-rate-window:${id}`);
+        // The first panel is scrape state only; every other panel needs a current successful scrape (exporter/endpoint up is not backend health).
+        if (i === 0 && (!/^up\{job="[a-z-]+"\} and /.test(q) || q.replace(/up\{job="[a-z-]+"\}/g, '').match(/[a-zA-Z_]+_[a-z_]+\{/))) p.push(`panel-scrape-state-mixed:${id}`);
+        if (i > 0 && !q.includes(`up{job="${job}"} == 1`)) p.push(`panel-needs-scrape-up:${id}`);
+      });
+    } else {
+      if (r.jobs.length || r.requiredFamilies.length || Object.keys(r.panels).length || !r.reason) p.push(`nonenabled-claims:${r.component}`);
+      if (!JSON.stringify(r.jobs) === '[]') p.push(`nonenabled-jobs:${r.component}`);
+    }
+  }
+  const byComp = Object.fromEntries(native.map((r) => [r.component, r]));
+  for (const comp of COVERAGE_INVENTORY_ONLY) if (byComp[comp]?.coverage !== 'inventory-only') p.push(`not-inventory-only:${comp}`);
+  if (byComp.traefik?.coverage !== 'not-applicable' || byComp.traefik.namespace !== null) p.push('traefik-not-applicable');
+  // Each job's family keep equals its coverage row's requiredFamilies for the seven new jobs; SeaweedFS exactly one row on the metrics port, not S3.
+  for (const [job, comp] of jobOwners) {
+    if (!NATIVE_JOBS.includes(job)) continue;
+    const row = all.find((r) => r.component === comp);
+    const keep = nativeMetricRules(c, job)?.[0];
+    if (!keep || !sameSet(split(keep.regex), row.requiredFamilies)) p.push(`job-families-equal-coverage:${job}`);
+    if (comp !== NATIVE_COMPONENT[job]) p.push(`job-component:${job}`);
+    if (row.namespace !== NATIVE_POLICY[job].target.namespace) p.push(`job-namespace:${job}`);
+  }
+  if (sea[0].coverage !== 'enabled' || canon(sea[0].jobs) !== canon(['seaweedfs']) || sea[0].namespace !== 'offscreen-dev-objects') p.push('seaweedfs-identity');
+  if (canon(sea[0].workloadSelector) !== canon({ app: 'object-store' })) p.push('seaweedfs-selector');
+  return p;
+}
+
+const CANDIDATE = join(root, '../../../work/changes/open/observability-infrastructure-visibility/NATIVE-SERVICE-CANDIDATE.json');
+const candidate = existsSync(CANDIDATE) ? JSON.parse(readFileSync(CANDIDATE, 'utf8')) : null;
 
 const mutate = (fn) => { const c = load(); const x = clone(c); fn(x); return x; };
 const base = load();
@@ -748,7 +931,7 @@ const KUBELET_MOUNT_RBAC_NEGATIVES = {
   'other service account': (x) => { x.overlay.serviceAccounts.server.name = 'default'; },
   'nodes/proxy added': (x) => { x.overlay.extraManifests[kubeletManifestIndex(x, 'ClusterRole')] = x.overlay.extraManifests[kubeletManifestIndex(x, 'ClusterRole')].replace('resources: [nodes/metrics]', 'resources: [nodes/metrics, nodes/proxy]'); },
   'nodes/metrics verbs widened': (x) => { const i = kubeletManifestIndex(x, 'ClusterRole'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('verbs: [get]', 'verbs: [get, create]'); },
-  'pod permission added': (x) => { const i = kubeletManifestIndex(x, 'ClusterRole'); x.overlay.extraManifests[i] += '  - apiGroups: [""]\n    resources: [pods]\n    verbs: [get, list, watch]\n'; },
+  'duplicate pod rule': (x) => { const i = kubeletManifestIndex(x, 'ClusterRole'); x.overlay.extraManifests[i] += '  - apiGroups: [""]\n    resources: [pods]\n    verbs: [get, list, watch]\n'; },
   'wildcard resource': (x) => { const i = kubeletManifestIndex(x, 'ClusterRole'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('resources: [nodes]', 'resources: ["*"]'); },
   'binding to other subject': (x) => { const i = kubeletManifestIndex(x, 'ClusterRoleBinding'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('name: obs-prometheus\n', 'name: default\n'); },
   'binding to cluster-admin': (x) => { const i = kubeletManifestIndex(x, 'ClusterRoleBinding'); x.overlay.extraManifests[i] = x.overlay.extraManifests[i].replace('name: obs-prometheus-kubelet\nsubjects', 'name: cluster-admin\nsubjects'); },
@@ -808,4 +991,339 @@ test('negative: a cAdvisor row cannot contribute a CPU/RAM family to coverage', 
 
 test('kubeletRows helper covers exactly the two frozen rows', () => {
   assert.deepEqual(kubeletRows(base).map((r) => r.component), ['kubelet-resource', 'kubelet-cadvisor-network']);
+});
+
+// ---- OBS-E2-04 T04: native enrollment boundaries ----
+const njob = (x, name) => x.overlay.scrapeConfigs[name];
+const cnpgPod = (o = {}) => ({ __meta_kubernetes_namespace: 'offscreen-dev-postgres', [podLabel('cnpg.io/cluster')]: 'dev-pg', [podLabel('app.kubernetes.io/name')]: 'postgresql', __meta_kubernetes_pod_name: 'dev-pg-1', __meta_kubernetes_pod_container_name: 'postgres', __meta_kubernetes_pod_container_port_name: 'metrics', __meta_kubernetes_pod_container_port_number: '9187', __address__: '10.0.0.5:9187', ...o });
+const temporalPod = (role, container, o = {}) => ({ __meta_kubernetes_namespace: 'offscreen-dev-temporal', [podLabel('app.kubernetes.io/instance')]: 'temporal', [podLabel('app.kubernetes.io/name')]: 'temporal', [podLabel('app.kubernetes.io/component')]: role, __meta_kubernetes_pod_name: `temporal-${role}-0`, __meta_kubernetes_pod_container_name: container, __meta_kubernetes_pod_container_port_name: 'metrics', __meta_kubernetes_pod_container_port_number: '9090', __address__: '10.0.0.6:9090', ...o });
+
+test('native: the exact twelve-job set, enabled rows reference existing jobs and no job is duplicated', () => {
+  assert.deepEqual(validateOverlay(base), []);
+  assert.deepEqual(validateNativeJobs(base), []);
+  assert.deepEqual(mergedJobs(base).map((j) => j.name).sort(), ['collector', 'grafana', 'kube-state-metrics', 'kube-state-metrics-self', 'kubelet-cadvisor', 'kubelet-resource', 'loki', 'postgres-cnpg', 'prometheus', 'rabbitmq', 'redis-exporter', 'seaweedfs', 'tempo', 'temporal-server']);
+  assert.equal(base.overlay.extraManifests.length, 5, 'no new workload or RBAC owner: only the pods rule is added to the existing ClusterRole');
+  for (const n of NATIVE_JOBS) {
+    const j = njob(base, n);
+    assert.deepEqual([j.metrics_path, j.scheme, j.scrape_interval, j.scrape_timeout, j.sample_limit, j.target_limit, j.label_limit, j.label_name_length_limit, j.label_value_length_limit, j.honor_labels], ['/metrics', 'http', '30s', '10s', 5000, 100, 40, 128, 512, false], n);
+  }
+});
+
+test('native: static job targets are the fixed internal Service endpoints; SeaweedFS is the metrics port, never S3', () => {
+  const targets = Object.fromEntries(NATIVE_STATIC_JOBS.map((n) => [n, njob(base, n).static_configs]));
+  assert.deepEqual(targets.rabbitmq[0].targets, ['rabbitmq.offscreen-dev-rabbitmq.svc:15692']);
+  assert.deepEqual(targets.loki[0].targets, ['obs-loki.offscreen-dev-observability.svc:3100']);
+  assert.deepEqual(targets.tempo[0].targets, ['obs-tempo.offscreen-dev-observability.svc:3200']);
+  assert.deepEqual(targets.grafana[0].targets, ['obs-grafana.offscreen-dev-observability.svc:80']);
+  assert.deepEqual(targets.seaweedfs, [{ targets: ['object-store.offscreen-dev-objects.svc:9327'], labels: { cluster: 'offscreen-dev', env: 'dev', component: 'seaweedfs', namespace: 'offscreen-dev-objects' } }]);
+  assert.ok(!mergedJobs(base).flatMap((j) => (j.static_configs ?? []).flatMap((s) => s.targets ?? [])).some((a) => /:8333$/.test(a)));
+  assert.equal(JSON.stringify(base.overlay).includes('8333'), false);
+});
+
+test('native: legacy prometheus and collector jobs and every predecessor job are untouched', () => {
+  const jobs = Object.fromEntries(mergedJobs(base).map((j) => [j.name, j]));
+  assert.deepEqual(jobs.collector.static_configs, [{ targets: ['obs-collector:8888'] }]);
+  assert.equal(jobs.prometheus.scrape_interval, undefined);
+  assert.equal(jobs.collector.scrape_interval, undefined);
+  assert.deepEqual(validateKubeletJobs(base), []);
+  assert.deepEqual(validateRedisManifests(base.overlay), []);
+});
+
+test('native: Pod discovery is namespace-bound, label/container/port-bound and ignores annotations and readiness', () => {
+  const rules = nativeTargetRules(base, 'postgres-cnpg');
+  const ok = relabel(rules, cnpgPod());
+  assert.equal(ok.namespace, 'offscreen-dev-postgres');
+  assert.equal(ok.pod, 'dev-pg-1');
+  assert.equal(ok.component, 'postgres');
+  assert.equal(ok.cluster, 'offscreen-dev');
+  assert.equal(ok.__address__, '10.0.0.5:9187');
+  for (const [why, o] of Object.entries({
+    'unrelated namespace': { __meta_kubernetes_namespace: 'offscreen-dev-temporal' },
+    'other CNPG cluster': { [podLabel('cnpg.io/cluster')]: 'other-pg' },
+    'wrong app label': { [podLabel('app.kubernetes.io/name')]: 'pgbouncer' },
+    'wrong container': { __meta_kubernetes_pod_container_name: 'bootstrap' },
+    'wrong port number': { __meta_kubernetes_pod_container_port_number: '5432' },
+    'wrong port name': { __meta_kubernetes_pod_container_port_name: 'postgresql' },
+  })) assert.equal(relabel(rules, cnpgPod(o)), null, why);
+  // An arbitrary scrape annotation never redirects the target or admits a pod that lacks the exact labels.
+  const annotated = cnpgPod({ __meta_kubernetes_pod_annotation_prometheus_io_port: '1234', __meta_kubernetes_pod_annotation_prometheus_io_scrape: 'true', [podLabel('cnpg.io/cluster')]: 'other-pg' });
+  assert.equal(relabel(rules, annotated), null);
+  assert.equal(relabel(rules, cnpgPod({ __meta_kubernetes_pod_annotation_prometheus_io_port: '1234' })).__address__, '10.0.0.5:9187');
+  assert.ok(!JSON.stringify(rules).includes('annotation') && !JSON.stringify(rules).includes('ready') && !JSON.stringify(rules).includes('phase'));
+});
+
+test('native: Temporal admits exactly the four role/container pairs and records the role', () => {
+  const rules = nativeTargetRules(base, 'temporal-server');
+  for (const [role, c] of [['frontend', 'temporal-frontend'], ['history', 'temporal-history'], ['matching', 'temporal-matching'], ['worker', 'temporal-worker']]) {
+    const r = relabel(rules, temporalPod(role, c));
+    assert.equal(r.role, role);
+    assert.equal(r.namespace, 'offscreen-dev-temporal');
+    assert.equal(r.component, 'temporal');
+  }
+  for (const [why, pod] of Object.entries({
+    'role/container mismatch': temporalPod('frontend', 'temporal-history'),
+    'unknown role': temporalPod('admintools', 'temporal-admintools'),
+    'web role': temporalPod('web', 'temporal-web'),
+    'wrong namespace': temporalPod('frontend', 'temporal-frontend', { __meta_kubernetes_namespace: 'offscreen-dev-postgres' }),
+    'wrong instance': temporalPod('frontend', 'temporal-frontend', { [podLabel('app.kubernetes.io/instance')]: 'other' }),
+    'wrong port': temporalPod('frontend', 'temporal-frontend', { __meta_kubernetes_pod_container_port_number: '7233' }),
+  })) assert.equal(relabel(rules, pod), null, why);
+});
+
+test('native: CNPG metric admission keeps only dev databases/roles, bounded settings and the dev-pg collector row', () => {
+  const m = nativeMetricRules(base, 'postgres-cnpg');
+  const s = (o) => ({ job: 'postgres-cnpg', instance: '10.0.0.5:9187', cluster: 'offscreen-dev', env: 'dev', component: 'postgres', namespace: 'offscreen-dev-postgres', pod: 'dev-pg-1', ...o });
+  const admitted = [
+    s({ __name__: 'cnpg_pg_database_size_bytes', datname: 'dev_3' }),
+    s({ __name__: 'cnpg_pg_database_size_bytes', datname: 'temporal_visibility' }),
+    s({ __name__: 'cnpg_pg_stat_database_xact_commit', datname: 'postgres' }),
+    s({ __name__: 'cnpg_backends_total', datname: 'dev_2', application_name: 'cnpg_metrics_exporter', usename: 'cnpg_metrics_exporter', state: 'idle in transaction (aborted)' }),
+    s({ __name__: 'cnpg_backends_total', datname: 'temporal', application_name: '', usename: 'dev_1_run', state: 'active' }),
+    s({ __name__: 'cnpg_pg_settings_setting', name: 'max_connections' }),
+    s({ __name__: 'cnpg_collector_up', exported_cluster: 'dev-pg' }),
+    s({ __name__: 'cnpg_last_error' }),
+    s({ __name__: 'cnpg_pg_replication_lag' }),
+  ];
+  for (const x of admitted) assert.ok(relabel(m, x), canon(x));
+  const rejected = [
+    s({ __name__: 'cnpg_pg_database_size_bytes', datname: 'customer_db' }),
+    s({ __name__: 'cnpg_pg_database_size_bytes', datname: 'dev_0' }),
+    s({ __name__: 'cnpg_backends_total', datname: 'dev_1', application_name: 'psql', usename: 'dev_1_run', state: 'active' }),
+    s({ __name__: 'cnpg_backends_total', datname: 'dev_1', application_name: '', usename: 'alice', state: 'active' }),
+    s({ __name__: 'cnpg_backends_total', datname: 'dev_1', application_name: '', usename: 'dev_1_run', state: 'unexpected' }),
+    s({ __name__: 'cnpg_pg_settings_setting', name: 'shared_buffers' }),
+    s({ __name__: 'cnpg_collector_up', exported_cluster: 'other-pg' }),
+    s({ __name__: 'cnpg_pg_stat_statements_calls', datname: 'dev_1' }),
+    s({ __name__: 'cnpg_pg_stat_activity_count' }),
+  ];
+  for (const x of rejected) assert.equal(relabel(m, x), null, canon(x));
+  const out = relabel(m, s({ __name__: 'cnpg_collector_up', exported_cluster: 'dev-pg', extra_label: 'x', cluster: 'offscreen-dev' }));
+  assert.equal(out.extra_label, undefined);
+  assert.equal(out.cluster, 'offscreen-dev');
+  assert.equal(out.exported_cluster, 'dev-pg');
+});
+
+test('native: Temporal admits only the system and unknown internal namespaces; sql_in_use has none', () => {
+  const m = nativeMetricRules(base, 'temporal-server');
+  const s = (o) => ({ job: 'temporal-server', instance: '10.0.0.6:9090', cluster: 'offscreen-dev', env: 'dev', component: 'temporal', namespace: 'offscreen-dev-temporal', pod: 'temporal-frontend-0', role: 'frontend', ...o });
+  assert.ok(relabel(m, s({ __name__: 'service_requests', exported_namespace: 'system', operation: 'StartWorkflowExecution', service_name: 'frontend' })));
+  assert.ok(relabel(m, s({ __name__: 'persistence_latency_bucket', exported_namespace: '_unknown_', operation: 'x', le: '0.5' })));
+  assert.ok(relabel(m, s({ __name__: 'persistence_sql_in_use', db_kind: 'sql' })));
+  assert.equal(relabel(m, s({ __name__: 'service_requests', exported_namespace: 'offscreen-app' })), null);
+  assert.equal(relabel(m, s({ __name__: 'service_requests', exported_namespace: '' })), null);
+  assert.equal(relabel(m, s({ __name__: 'persistence_sql_in_use', exported_namespace: 'offscreen-app' })), null);
+  assert.equal(relabel(m, s({ __name__: 'workflow_completed', exported_namespace: 'system' })), null, 'SDK/workflow families are not inferred');
+  const kept = relabel(m, s({ __name__: 'service_requests', exported_namespace: 'system', workflow_type: 'x', task_queue: 'y' }));
+  assert.equal(kept.workflow_type, undefined);
+  assert.equal(kept.task_queue, undefined);
+  assert.equal(kept.namespace, 'offscreen-dev-temporal');
+  assert.equal(kept.exported_namespace, 'system');
+});
+
+test('native: SeaweedFS rejects any nonempty bucket or collection before labelkeep and Grafana keeps only numeric status codes', () => {
+  const sm = nativeMetricRules(base, 'seaweedfs');
+  const s = (o) => ({ job: 'seaweedfs', instance: 'object-store.offscreen-dev-objects.svc:9327', cluster: 'offscreen-dev', env: 'dev', component: 'seaweedfs', namespace: 'offscreen-dev-objects', ...o });
+  assert.ok(relabel(sm, s({ __name__: 'SeaweedFS_volumeServer_volumes', type: 'volume' })));
+  assert.ok(relabel(sm, s({ __name__: 'SeaweedFS_s3_request_total', type: 'GET', code: '200' })));
+  assert.equal(relabel(sm, s({ __name__: 'SeaweedFS_volumeServer_volumes', bucket: 'customer-bucket' })), null);
+  assert.equal(relabel(sm, s({ __name__: 'SeaweedFS_volumeServer_volumes', collection: 'default' })), null);
+  assert.equal(relabel(sm, s({ __name__: 'SeaweedFS_volumeServer_volumes', bucket: 'b', collection: 'c' })), null);
+  assert.equal(relabel(sm, s({ __name__: 'SeaweedFS_master_replica_placement_mismatch' })), null);
+  const gm = nativeMetricRules(base, 'grafana');
+  const g = (o) => ({ job: 'grafana', instance: 'obs-grafana.offscreen-dev-observability.svc:80', cluster: 'offscreen-dev', env: 'dev', component: 'grafana', namespace: 'offscreen-dev-observability', ...o });
+  assert.ok(relabel(gm, g({ __name__: 'grafana_api_response_status_total', code: '200' })));
+  assert.ok(relabel(gm, g({ __name__: 'grafana_api_response_status_total', code: '503' })));
+  assert.ok(relabel(gm, g({ __name__: 'grafana_http_request_in_flight' })));
+  assert.equal(relabel(gm, g({ __name__: 'grafana_api_response_status_total', code: 'unknown' })), null);
+  assert.equal(relabel(gm, g({ __name__: 'grafana_api_response_status_total', code: '' })), null);
+  assert.equal(relabel(gm, g({ __name__: 'grafana_api_response_status_total', code: '600' })), null);
+  assert.equal(relabel(gm, g({ __name__: 'grafana_http_request_in_flight', code: '200' })), null);
+  assert.equal(relabel(gm, g({ __name__: 'grafana_stat_totals_dashboards' })), null);
+});
+
+test('native: representative projections never collide; a deliberately colliding pair is detected', () => {
+  const gm = nativeMetricRules(base, 'grafana');
+  const g = (o) => ({ job: 'grafana', instance: 'i', cluster: 'offscreen-dev', env: 'dev', component: 'grafana', namespace: 'offscreen-dev-observability', __name__: 'grafana_api_response_status_total', ...o });
+  assert.deepEqual(projectedCollisions(gm, [g({ code: '200', method: 'GET' }), g({ code: '500', method: 'GET' }), g({ code: '404', method: 'POST' })]), []);
+  assert.equal(projectedCollisions(gm, [g({ code: '200', method: 'GET' }), g({ code: '200', method: 'POST' })]).length, 1, 'dropped label would merge two series');
+  const tm = nativeMetricRules(base, 'temporal-server');
+  const t = (o) => ({ job: 'temporal-server', instance: 'i', cluster: 'offscreen-dev', env: 'dev', component: 'temporal', namespace: 'offscreen-dev-temporal', pod: 'p', role: 'history', __name__: 'service_requests', exported_namespace: 'system', ...o });
+  assert.deepEqual(projectedCollisions(tm, [t({ operation: 'a', service_name: 'history' }), t({ operation: 'b', service_name: 'history' }), t({ operation: 'a', service_name: 'history', pod: 'q' }), t({ operation: 'a', exported_namespace: '_unknown_', service_name: 'history' })]), []);
+  assert.equal(projectedCollisions(tm, [t({ operation: 'a', task_queue: 'x' }), t({ operation: 'a', task_queue: 'y' })]).length, 1);
+  const pm = nativeMetricRules(base, 'postgres-cnpg');
+  const c = (o) => ({ job: 'postgres-cnpg', instance: 'i', cluster: 'offscreen-dev', env: 'dev', component: 'postgres', namespace: 'offscreen-dev-postgres', pod: 'dev-pg-1', __name__: 'cnpg_pg_database_size_bytes', ...o });
+  assert.deepEqual(projectedCollisions(pm, [c({ datname: 'dev_1' }), c({ datname: 'dev_2' }), c({ datname: 'dev_1', pod: 'dev-pg-2' })]), []);
+  // The native `cluster` label must stay distinct from the target `cluster` label through exported_cluster.
+  const up = (x) => relabel(pm, c({ __name__: 'cnpg_collector_up', exported_cluster: x }));
+  assert.equal(up('dev-pg').cluster, 'offscreen-dev');
+  assert.equal(up('dev-pg').exported_cluster, 'dev-pg');
+});
+
+test('native: the pods ClusterRole rule is exactly get/list/watch on pods, with nodes rules and binding preserved', () => {
+  assert.deepEqual(validateKubeletManifests(base.overlay), []);
+  const cr = base.overlay.extraManifests.map(parseManifest).find((d) => d.kind === 'ClusterRole');
+  assert.deepEqual(cr.rules, [
+    { apiGroups: [''], resources: ['nodes'], verbs: ['get', 'list', 'watch'] },
+    { apiGroups: [''], resources: ['nodes/metrics'], verbs: ['get'] },
+    { apiGroups: [''], resources: ['pods'], verbs: ['get', 'list', 'watch'] },
+  ]);
+  const flat = JSON.stringify(cr.rules);
+  for (const bad of ['pods/exec', 'pods/proxy', 'pods/log', 'secrets', 'configmaps', '"*"', 'create', 'update', 'patch', 'delete']) assert.ok(!flat.includes(bad), bad);
+});
+
+test('native coverage: exact rows, explicit inventory-only/not-applicable dispositions and job/family equality', () => {
+  assert.deepEqual(validateNativeCoverage(base), []);
+  assert.deepEqual(base.nativeCoverage.map((r) => r.component), ['postgres', 'temporal', 'rabbitmq', 'loki', 'tempo', 'grafana', 'prometheus', 'collector', 'kubernetes-control-plane', 'cnpg-operator', 'rabbitmq-operator', 'cert-manager', 'local-path', 'traefik']);
+  for (const r of base.nativeCoverage.filter((x) => x.coverage !== 'enabled')) {
+    assert.deepEqual([r.jobs, r.requiredFamilies, r.panels], [[], [], {}], r.component);
+    assert.ok(r.reason.length > 0, r.component);
+  }
+  assert.equal(base.nativeCoverage.find((r) => r.component === 'traefik').coverage, 'not-applicable');
+  assert.equal(base.seaweedfsCoverage.length, 1);
+  assert.equal(base.seaweedfsCoverage[0].coverage, 'enabled');
+  assert.deepEqual(validateCoverage(base.coverage, base), []);
+  assert.deepEqual(validateRedisCoverage(base.redisCoverage, base), []);
+});
+
+test('native coverage: arrays equal the planner-frozen candidate when it is present', { skip: candidate ? false : 'NATIVE-SERVICE-CANDIDATE.json is retired with the Design; the coverage files are then the sole owner' }, () => {
+  assert.deepEqual(base.nativeCoverage, candidate.nativeServices);
+  assert.deepEqual(base.seaweedfsCoverage, candidate.seaweedfs);
+  assert.deepEqual(NATIVE_POLICY, Object.fromEntries(Object.entries(candidate.newScrapePolicies).map(([k, v]) => [k, { families: v.families, retainedLabels: v.retainedLabels, valueFilters: v.valueFilters, target: v.target }])));
+  assert.deepEqual(candidate.existingJobsUnchanged, LEGACY_JOBS);
+});
+
+const NATIVE_JOB_NEGATIVES = {
+  'duplicate job name': (x) => { x.overlay.scrapeConfigs.dup = { enabled: true, job_name: 'loki', static_configs: [{ targets: ['other:1'] }] }; },
+  'duplicate target': (x) => { x.overlay.scrapeConfigs.tempo.static_configs[0].targets = ['obs-loki.offscreen-dev-observability.svc:3100']; },
+  'unapproved extra job': (x) => { x.overlay.scrapeConfigs.alertmanager = { enabled: true, static_configs: [{ targets: ['am:9093'] }] }; },
+  'job removed (postgres)': (x) => { delete x.overlay.scrapeConfigs['postgres-cnpg']; },
+  'job removed (seaweedfs)': (x) => { delete x.overlay.scrapeConfigs.seaweedfs; },
+  'seaweedfs S3 endpoint': (x) => { njob(x, 'seaweedfs').static_configs[0].targets = ['object-store.offscreen-dev-objects.svc:8333']; },
+  'seaweedfs wrong port': (x) => { njob(x, 'seaweedfs').static_configs[0].targets = ['object-store.offscreen-dev-objects.svc:9328']; },
+  'seaweedfs second target': (x) => { njob(x, 'seaweedfs').static_configs[0].targets.push('object-store.offscreen-dev-objects.svc:8333'); },
+  'seaweedfs bucket filter removed': (x) => { njob(x, 'seaweedfs').metric_relabel_configs.splice(1, 1); },
+  'seaweedfs bucket allowed': (x) => { njob(x, 'seaweedfs').metric_relabel_configs[1].regex = njob(x, 'seaweedfs').metric_relabel_configs[1].regex.replace(/;;$/, ';.*;.*'); },
+  'rabbitmq wrong port': (x) => { njob(x, 'rabbitmq').static_configs[0].targets = ['rabbitmq.offscreen-dev-rabbitmq.svc:15672']; },
+  'rabbitmq per-object family': (x) => { njob(x, 'rabbitmq').metric_relabel_configs[0].regex += '|rabbitmq_detailed_queue_messages'; },
+  'rabbitmq blanket family': (x) => { njob(x, 'rabbitmq').metric_relabel_configs[0].regex = 'rabbitmq_.*'; },
+  'loki wildcard family': (x) => { njob(x, 'loki').metric_relabel_configs[0].regex = 'loki_.*'; },
+  'tempo extra label': (x) => { njob(x, 'tempo').metric_relabel_configs[1].regex += '|tenant'; },
+  'grafana status filter removed': (x) => { njob(x, 'grafana').metric_relabel_configs.splice(1, 1); },
+  'grafana status filter widened': (x) => { njob(x, 'grafana').metric_relabel_configs[1].regex = 'grafana_http_request_in_flight;|grafana_api_response_status_total;.*'; },
+  'label keep removed': (x) => { njob(x, 'grafana').metric_relabel_configs.pop(); },
+  'honor_labels true (loki)': (x) => { njob(x, 'loki').honor_labels = true; },
+  'honor_labels removed (cnpg)': (x) => { delete njob(x, 'postgres-cnpg').honor_labels; },
+  'sample limit raised': (x) => { njob(x, 'rabbitmq').sample_limit = 20000; },
+  'target limit removed': (x) => { delete njob(x, 'loki').target_limit; },
+  'interval changed': (x) => { njob(x, 'tempo').scrape_interval = '15s'; },
+  'https scheme': (x) => { njob(x, 'grafana').scheme = 'https'; },
+  'other metrics path': (x) => { njob(x, 'loki').metrics_path = '/loki/api/v1/push'; },
+  'credentials added': (x) => { njob(x, 'grafana').basic_auth = { username: 'admin', password: 'x' }; },
+  'bearer token file added': (x) => { njob(x, 'tempo').authorization = { credentials_file: '/var/run/secrets/kubernetes.io/serviceaccount/token' }; },
+  'cnpg other namespace': (x) => { njob(x, 'postgres-cnpg').kubernetes_sd_configs[0].namespaces.names = ['offscreen-dev-temporal']; },
+  'cnpg all namespaces': (x) => { delete njob(x, 'postgres-cnpg').kubernetes_sd_configs[0].namespaces; },
+  'cnpg endpoints role': (x) => { njob(x, 'postgres-cnpg').kubernetes_sd_configs[0].role = 'endpoints'; },
+  'cnpg wrong port': (x) => { njob(x, 'postgres-cnpg').relabel_configs[1].regex = 'dev-pg;postgresql;postgres;metrics;5432'; },
+  'cnpg label match widened': (x) => { njob(x, 'postgres-cnpg').relabel_configs[1].regex = '.*;postgresql;postgres;metrics;9187'; },
+  'cnpg namespace keep removed': (x) => { njob(x, 'postgres-cnpg').relabel_configs.splice(0, 1); },
+  'cnpg annotation port': (x) => { njob(x, 'postgres-cnpg').relabel_configs.push({ source_labels: ['__address__', '__meta_kubernetes_pod_annotation_prometheus_io_port'], regex: '([^:]+)(?::\\d+)?;(\\d+)', replacement: '$1:$2', target_label: '__address__' }); },
+  'cnpg annotation scrape keep': (x) => { njob(x, 'postgres-cnpg').relabel_configs.push({ source_labels: ['__meta_kubernetes_pod_annotation_prometheus_io_scrape'], regex: 'true', action: 'keep' }); },
+  'cnpg labelmap': (x) => { njob(x, 'postgres-cnpg').relabel_configs.push({ action: 'labelmap', regex: '__meta_kubernetes_pod_label_(.+)' }); },
+  'cnpg readiness filter': (x) => { njob(x, 'postgres-cnpg').relabel_configs.push({ source_labels: ['__meta_kubernetes_pod_ready'], regex: 'true', action: 'keep' }); },
+  'cnpg value filter removed': (x) => { njob(x, 'postgres-cnpg').metric_relabel_configs.splice(1, 1); },
+  'cnpg datname widened': (x) => { njob(x, 'postgres-cnpg').metric_relabel_configs[1].regex = njob(x, 'postgres-cnpg').metric_relabel_configs[1].regex.replace('(postgres|dev|temporal|temporal_visibility|dev_[1-9][0-9]*)', '.+'); },
+  'cnpg exported_cluster dropped': (x) => { njob(x, 'postgres-cnpg').metric_relabel_configs[2].regex = njob(x, 'postgres-cnpg').metric_relabel_configs[2].regex.replace('|exported_cluster', ''); },
+  'cnpg query text family': (x) => { njob(x, 'postgres-cnpg').metric_relabel_configs[0].regex += '|cnpg_pg_stat_statements_calls'; },
+  'temporal role/container widened': (x) => { njob(x, 'temporal-server').relabel_configs[1].regex = 'temporal;temporal;(frontend|history|matching|worker);.*;metrics;9090'; },
+  'temporal role removed': (x) => { njob(x, 'temporal-server').relabel_configs.pop(); },
+  'temporal web role admitted': (x) => { njob(x, 'temporal-server').relabel_configs[1].regex = njob(x, 'temporal-server').relabel_configs[1].regex.replace('(frontend;', '(web;temporal-web|frontend;'); },
+  'temporal namespace filter widened': (x) => { njob(x, 'temporal-server').metric_relabel_configs[1].regex = njob(x, 'temporal-server').metric_relabel_configs[1].regex.replace(';(system|_unknown_)', ';.+'); },
+  'temporal wildcard family': (x) => { njob(x, 'temporal-server').metric_relabel_configs[0].regex = 'service_.*|persistence_.*'; },
+  'temporal exported_namespace dropped': (x) => { njob(x, 'temporal-server').metric_relabel_configs.at(-1).regex = njob(x, 'temporal-server').metric_relabel_configs.at(-1).regex.replace('|exported_namespace', ''); },
+  'temporal static target': (x) => { njob(x, 'temporal-server').static_configs = [{ targets: ['temporal-frontend.offscreen-dev-temporal.svc:9090'] }]; },
+};
+for (const [name, fn] of Object.entries(NATIVE_JOB_NEGATIVES)) {
+  test(`negative: native job ${name} is rejected`, () => {
+    const x = mutate(fn);
+    // A removed or retargeted job leaves coverage dangling; either validator may be the one that flags it.
+    assert.ok(validateOverlay(x).length > 0 || validateNativeCoverage(x).length > 0);
+  });
+}
+
+const NATIVE_RBAC_NEGATIVES = {
+  'pods rule removed': (r) => r.splice(2, 1),
+  'pods verbs widened': (r) => { r[2].verbs.push('delete'); },
+  'pods create': (r) => { r[2].verbs = ['get', 'list', 'watch', 'create']; },
+  'pods/exec': (r) => { r[2].resources.push('pods/exec'); },
+  'pods/proxy': (r) => { r[2].resources.push('pods/proxy'); },
+  'secrets': (r) => { r[2].resources.push('secrets'); },
+  'wildcard resource': (r) => { r[2].resources = ['*']; },
+  'wildcard verb': (r) => { r[2].verbs = ['*']; },
+  'second pods rule': (r) => r.push({ apiGroups: [''], resources: ['pods'], verbs: ['get'] }),
+  'nodes/metrics widened': (r) => { r[1].verbs.push('create'); },
+  'nodes rule removed': (r) => r.splice(0, 1),
+  'extra API group': (r) => r.push({ apiGroups: ['apps'], resources: ['deployments'], verbs: ['get'] }),
+};
+for (const [name, fn] of Object.entries(NATIVE_RBAC_NEGATIVES)) {
+  test(`negative: native RBAC ${name} is rejected`, () => {
+    const x = mutate((y) => {
+      const i = kubeletManifestIndex(y, 'ClusterRole');
+      const d = parseManifest(y.overlay.extraManifests[i]);
+      fn(d.rules);
+      d.metadata.namespace = undefined;
+      y.overlay.extraManifests[i] = stringifyYaml(d);
+    });
+    assert.notDeepEqual(validateKubeletManifests(x.overlay), []);
+  });
+}
+
+const NATIVE_COVERAGE_NEGATIVES = {
+  'native row dropped (grafana)': (c) => { c.nativeCoverage.splice(5, 1); },
+  'seaweedfs row dropped': (c) => { c.seaweedfsCoverage.pop(); },
+  'seaweedfs duplicated': (c) => { c.seaweedfsCoverage.push(clone(c.seaweedfsCoverage[0])); },
+  'seaweedfs in native array duplicates component': (c) => { c.nativeCoverage.push(clone(c.seaweedfsCoverage[0])); },
+  'seaweedfs disabled silently': (c) => { c.seaweedfsCoverage[0].coverage = 'inventory-only'; c.seaweedfsCoverage[0].reason = 'x'; },
+  'seaweedfs silent omission (no reason)': (c) => { c.seaweedfsCoverage[0].coverage = 'inventory-only'; c.seaweedfsCoverage[0].reason = ''; },
+  'seaweedfs family not collected': (c) => { c.seaweedfsCoverage[0].requiredFamilies.push('SeaweedFS_master_replica_placement_mismatch'); },
+  'seaweedfs family dropped from coverage': (c) => { c.seaweedfsCoverage[0].requiredFamilies.pop(); },
+  'seaweedfs wrong job': (c) => { c.seaweedfsCoverage[0].jobs = ['seaweed']; },
+  'seaweedfs wrong namespace': (c) => { c.seaweedfsCoverage[0].namespace = 'offscreen-dev-storage'; },
+  'seaweedfs selector changed': (c) => { c.seaweedfsCoverage[0].workloadSelector = { app: 's3' }; },
+  'inventory-only promoted to enabled': (c) => { c.nativeCoverage[8].coverage = 'enabled'; c.nativeCoverage[8].reason = ''; },
+  'inventory-only given a job': (c) => { c.nativeCoverage[9].jobs = ['loki']; },
+  'inventory-only given a panel': (c) => { c.nativeCoverage[10].panels['offscreen-observability/899'] = { promql: 'up{job="loki"} and (time() - timestamp(up{job="loki"}) <= 90)', unit: 'none', interpretation: 'x' }; },
+  'inventory-only reason removed': (c) => { c.nativeCoverage[11].reason = ''; },
+  'inventory-only row dropped (cert-manager)': (c) => { c.nativeCoverage.splice(11, 1); },
+  'traefik no longer not-applicable': (c) => { c.nativeCoverage[13].coverage = 'inventory-only'; },
+  'traefik row dropped': (c) => { c.nativeCoverage.pop(); },
+  'unknown extra component': (c) => { c.nativeCoverage.push({ component: 'alertmanager', namespace: 'x', workloadSelector: {}, jobs: [], requiredFamilies: [], panels: {}, coverage: 'inventory-only', reason: 'x' }); },
+  'extra field': (c) => { c.nativeCoverage[0].labelMap = {}; },
+  'missing field': (c) => { delete c.nativeCoverage[0].reason; },
+  'two rows own one job': (c) => { c.nativeCoverage[3].jobs = ['rabbitmq']; },
+  'family not collected (loki)': (c) => { c.nativeCoverage[3].requiredFamilies.push('loki_request_duration_seconds'); },
+  'family dropped (rabbitmq)': (c) => { c.nativeCoverage[2].requiredFamilies.pop(); },
+  'unknown job (temporal)': (c) => { c.nativeCoverage[1].jobs = ['temporal']; },
+  'panel id collides across sources': (c) => { c.nativeCoverage[2].panels['offscreen-messaging-cache/701'] = clone(c.nativeCoverage[2].panels['offscreen-messaging-cache/710']); },
+  'panel id duplicates seaweedfs panel': (c) => { c.nativeCoverage[3].panels['offscreen-storage/610'] = clone(c.nativeCoverage[3].panels['offscreen-observability/810']); },
+  'scrape-state panel reads backend family': (c) => { c.nativeCoverage[3].panels['offscreen-observability/810'].promql = 'loki_ingester_memory_chunks{job="loki"} and (time() - timestamp(loki_ingester_memory_chunks{job="loki"}) <= 90)'; },
+  'backend panel ignores scrape up': (c) => { c.nativeCoverage[0].panels['offscreen-postgres/402'].promql = 'cnpg_collector_up{job="postgres-cnpg"} and (time() - timestamp(cnpg_collector_up{job="postgres-cnpg"}) <= 90)'; },
+  'panel staleness bound removed': (c) => { c.nativeCoverage[1].panels['offscreen-temporal/502'].promql = c.nativeCoverage[1].panels['offscreen-temporal/502'].promql.replaceAll('<= 90', '<= 99999'); },
+  'panel zero default': (c) => { c.nativeCoverage[2].panels['offscreen-messaging-cache/711'].promql += ' or vector(0)'; },
+  'panel on wrong job': (c) => { c.nativeCoverage[4].panels['offscreen-observability/821'].promql = c.nativeCoverage[4].panels['offscreen-observability/821'].promql.replaceAll('job="tempo"', 'job="loki"'); },
+  'enabled row without panels': (c) => { c.nativeCoverage[5].panels = {}; },
+  'enabled row empty selector': (c) => { c.nativeCoverage[0].workloadSelector = {}; },
+  'enabled row with reason': (c) => { c.nativeCoverage[0].reason = 'nope'; },
+};
+for (const [name, fn] of Object.entries(NATIVE_COVERAGE_NEGATIVES)) {
+  test(`negative: native coverage ${name} is rejected`, () => {
+    const x = mutate(fn);
+    assert.notDeepEqual(validateNativeCoverage(x), []);
+  });
+}
+
+test('native: no service-owner workload, credential or host exposure is introduced by the overlay', () => {
+  const docs = base.overlay.extraManifests.map(parseManifest);
+  assert.deepEqual(docs.map((d) => `${d.kind}/${d.metadata.name}`).sort(), ['ClusterRole/obs-prometheus-kubelet', 'ClusterRoleBinding/obs-prometheus-kubelet', 'ConfigMap/obs-kubelet-trust', 'Deployment/obs-redis-exporter', 'Service/obs-redis-exporter']);
+  const text = JSON.stringify(NATIVE_JOBS.map((n) => njob(base, n)));
+  for (const bad of ['password', 'secret', 'token', 'credentials', 'insecure', 'hostPort', 'proxy']) assert.ok(!text.toLowerCase().includes(bad.toLowerCase()), bad);
 });
