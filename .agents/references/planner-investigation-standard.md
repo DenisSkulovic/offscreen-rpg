@@ -42,7 +42,13 @@ When the assigned designer, planner or reviewer lacks repository write access, p
 
 **Downloadable Git patches:** Every patch delivery must include a copy-paste-ready terminal command for that exact filename and the owner’s actual shell and download location (state any path assumption). Run from the repository root; include `git apply --check` before `git apply` and make application conditional on a successful check. Include a way to inspect the resulting diff. Never provide a patch download alone. The custodian’s branch, HEAD, dirty-path and drift checks above still apply.
 
-For Windows browser downloads applied in WSL, discover the exact filename with Bash `nullglob` and `matches=(/mnt/c/Users/*/Downloads/"$name")`; require exactly one match, abort on zero or ambiguity, then `git apply --check "${matches[0]}"` before application. Do not hardcode usernames, depend on `cmd.exe`, or store personal machine paths. Adapt to the actual shell and OS when different.
+For this owner's Windows browser downloads applied in WSL, assume Windows executable interoperability is unavailable. Use this Linux-native command template, substituting the actual delivered patch filename, not a placeholder in the handoff. Invoke Bash explicitly so the interactive shell need not be Bash. Do not use `powershell.exe`, `cmd.exe`, Windows environment variables, `wslpath` or inferred usernames to discover the download. The normal Windows Downloads location is `/mnt/c/Users/*/Downloads/`; if it is unavailable, redirected or ambiguous, stop and ask for the actual Linux-visible file path. Never silently select the first match.
+
+```bash
+bash -c 'shopt -s nullglob; p=(/mnt/c/Users/*/Downloads/"$1"); if (( ${#p[@]} != 1 )) || [[ ! -f ${p[0]:-} ]]; then printf "Expected exactly one patch file in Windows Downloads: %s\n" "$1" >&2; exit 1; fi; git apply --stat "${p[0]}" && git apply --check "${p[0]}" && git apply "${p[0]}" && git status --short' bash actual-patch-filename.patch
+```
+
+Use the exact literal filename as the final argument (quote it if needed). The command stops on missing, multiple or non-file matches or any failed Git check. Before application verify the repository, branch, HEAD and affected-file drift; afterward inspect `git diff` and any new untracked files. Adapt the path only when the owner confirms a different location.
 
 ## Responsibility split
 
