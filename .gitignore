@@ -56,3 +56,6 @@ saves/
 
 # Private autonomous infrastructure verification receipts
 .offscreen/verification/
+
+# Observability E2 coverage declarations are source, not test coverage output.
+!infra/platform/observability/coverage/

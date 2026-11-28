@@ -1,0 +1,239 @@
+[
+  {
+    "component": "kubernetes-inventory",
+    "namespace": null,
+    "workloadSelector": {
+      "service": "obs-kube-state-metrics"
+    },
+    "jobs": [
+      "kube-state-metrics"
+    ],
+    "requiredFamilies": [
+      "kube_namespace_status_phase",
+      "kube_node_status_condition",
+      "kube_node_status_capacity",
+      "kube_node_status_allocatable",
+      "kube_pod_status_phase",
+      "kube_pod_status_ready",
+      "kube_pod_status_scheduled",
+      "kube_pod_owner",
+      "kube_pod_container_status_ready",
+      "kube_pod_container_status_restarts_total",
+      "kube_pod_container_status_last_terminated_reason",
+      "kube_pod_container_resource_requests",
+      "kube_pod_container_resource_limits",
+      "kube_deployment_spec_replicas",
+      "kube_deployment_status_replicas_ready",
+      "kube_deployment_status_replicas_available",
+      "kube_replicaset_spec_replicas",
+      "kube_replicaset_status_ready_replicas",
+      "kube_replicaset_owner",
+      "kube_statefulset_replicas",
+      "kube_statefulset_status_replicas_ready",
+      "kube_daemonset_status_desired_number_scheduled",
+      "kube_daemonset_status_number_ready",
+      "kube_persistentvolumeclaim_status_phase",
+      "kube_persistentvolumeclaim_resource_requests_storage_bytes",
+      "kube_persistentvolumeclaim_info",
+      "kube_persistentvolume_status_phase",
+      "kube_persistentvolume_capacity_bytes",
+      "kube_persistentvolume_claim_ref"
+    ],
+    "panels": {
+      "offscreen-overview/101": {
+        "promql": "sum(((kube_node_status_condition{job=\"kube-state-metrics\",condition=\"Ready\",status=\"true\"}) and (time() - timestamp(kube_node_status_condition{job=\"kube-state-metrics\",condition=\"Ready\",status=\"true\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Ready nodes, current cache. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-overview/102": {
+        "promql": "count(((kube_node_status_condition{job=\"kube-state-metrics\",condition=\"Ready\",status=\"true\"}) and (time() - timestamp(kube_node_status_condition{job=\"kube-state-metrics\",condition=\"Ready\",status=\"true\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Observed nodes. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-overview/103": {
+        "promql": "sum by (phase) (((kube_pod_status_phase{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_pod_status_phase{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Observed pods by phase, including Succeeded. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/201": {
+        "promql": "(((kube_namespace_status_phase{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_namespace_status_phase{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+        "unit": "none",
+        "interpretation": "Observed namespaces and phase. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/202": {
+        "promql": "(((kube_pod_status_phase{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_pod_status_phase{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+        "unit": "none",
+        "interpretation": "Pod phase table. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/203": {
+        "promql": "((kube_pod_status_ready{job=\"kube-state-metrics\",condition=\"true\"}) and (time() - timestamp(kube_pod_status_ready{job=\"kube-state-metrics\",condition=\"true\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Pod readiness 1 or 0. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/204": {
+        "promql": "((kube_pod_status_scheduled{job=\"kube-state-metrics\",condition=\"true\"}) and (time() - timestamp(kube_pod_status_scheduled{job=\"kube-state-metrics\",condition=\"true\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Scheduling status. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/205": {
+        "promql": "((kube_deployment_spec_replicas{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_deployment_spec_replicas{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Deployment desired replicas. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/206": {
+        "promql": "((kube_deployment_status_replicas_available{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_deployment_status_replicas_available{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Deployment available replicas. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/207": {
+        "promql": "((kube_replicaset_spec_replicas{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_replicaset_spec_replicas{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "ReplicaSet desired replicas. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/208": {
+        "promql": "((kube_replicaset_status_ready_replicas{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_replicaset_status_ready_replicas{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "ReplicaSet ready replicas. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/209": {
+        "promql": "((kube_statefulset_replicas{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_statefulset_replicas{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "StatefulSet desired replicas. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/210": {
+        "promql": "((kube_statefulset_status_replicas_ready{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_statefulset_status_replicas_ready{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "StatefulSet ready replicas. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/211": {
+        "promql": "((kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_daemonset_status_desired_number_scheduled{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "DaemonSet desired scheduled. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/212": {
+        "promql": "((kube_daemonset_status_number_ready{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_daemonset_status_number_ready{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "DaemonSet ready. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/213": {
+        "promql": "((kube_pod_container_status_restarts_total{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Container cumulative restarts. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/214": {
+        "promql": "((kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_pod_container_status_last_terminated_reason{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Last termination reason (1 indicates reason). Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/215": {
+        "promql": "((kube_pod_owner{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_pod_owner{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Pod owner relationship. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/216": {
+        "promql": "((kube_replicaset_owner{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_replicaset_owner{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "ReplicaSet owner relationship. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/217": {
+        "promql": "((kube_pod_container_resource_requests{job=\"kube-state-metrics\",resource=\"cpu\"}) and (time() - timestamp(kube_pod_container_resource_requests{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Declared container requests; CPU cores or memory bytes, not usage. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/218": {
+        "promql": "((kube_pod_container_resource_limits{job=\"kube-state-metrics\",resource=\"cpu\"}) and (time() - timestamp(kube_pod_container_resource_limits{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Declared container limits; CPU cores or memory bytes, not usage. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/219": {
+        "promql": "((kube_pod_container_resource_requests{job=\"kube-state-metrics\",resource=\"memory\"}) and (time() - timestamp(kube_pod_container_resource_requests{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "bytes",
+        "interpretation": "Declared container requests; CPU cores or memory bytes, not usage. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-kubernetes/220": {
+        "promql": "((kube_pod_container_resource_limits{job=\"kube-state-metrics\",resource=\"memory\"}) and (time() - timestamp(kube_pod_container_resource_limits{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "bytes",
+        "interpretation": "Declared container limits; CPU cores or memory bytes, not usage. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-storage/601": {
+        "promql": "(((kube_persistentvolumeclaim_status_phase{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_persistentvolumeclaim_status_phase{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+        "unit": "none",
+        "interpretation": "Claim phase. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-storage/602": {
+        "promql": "((kube_persistentvolumeclaim_resource_requests_storage_bytes{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_persistentvolumeclaim_resource_requests_storage_bytes{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "bytes",
+        "interpretation": "Requested claim bytes. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-storage/603": {
+        "promql": "((kube_persistentvolume_capacity_bytes{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_persistentvolume_capacity_bytes{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "bytes",
+        "interpretation": "PV capacity bytes, not actual usage. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-storage/604": {
+        "promql": "(((kube_persistentvolume_status_phase{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_persistentvolume_status_phase{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+        "unit": "none",
+        "interpretation": "PV phase. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-nodes/301": {
+        "promql": "((kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"cpu\"}) and (time() - timestamp(kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Node capacity or allocatable; CPU cores or memory bytes. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-nodes/302": {
+        "promql": "((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "none",
+        "interpretation": "Node capacity or allocatable; CPU cores or memory bytes. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-nodes/303": {
+        "promql": "((kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"memory\"}) and (time() - timestamp(kube_node_status_capacity{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "bytes",
+        "interpretation": "Node capacity or allocatable; CPU cores or memory bytes. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-nodes/304": {
+        "promql": "((kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) and (time() - timestamp(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"memory\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+        "unit": "bytes",
+        "interpretation": "Node capacity or allocatable; CPU cores or memory bytes. Cached observation, not definitive API absence; missing/stale unknown."
+      },
+      "offscreen-nodes/305": {
+        "promql": "(((kube_node_status_condition{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_node_status_condition{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+        "unit": "none",
+        "interpretation": "Node condition table. Cached observation, not definitive API absence; missing/stale unknown."
+      }
+    },
+    "coverage": "enabled",
+    "reason": ""
+  },
+  {
+    "component": "kubernetes-inventory-health",
+    "namespace": "offscreen-dev-observability",
+    "workloadSelector": {
+      "service": "obs-kube-state-metrics"
+    },
+    "jobs": [
+      "kube-state-metrics-self"
+    ],
+    "requiredFamilies": [
+      "kube_state_metrics_watch_total"
+    ],
+    "panels": {
+      "offscreen-observability/801": {
+        "promql": "up{job=\"kube-state-metrics-self\"} and (time() - timestamp(up{job=\"kube-state-metrics-self\"}) <= 90)",
+        "unit": "none",
+        "interpretation": "Current self-scrape state, not cache consistency."
+      },
+      "offscreen-observability/802": {
+        "promql": "sum by (resource,result) ((increase(kube_state_metrics_watch_total{job=\"kube-state-metrics-self\"}[5m]) and (time() - timestamp(kube_state_metrics_watch_total{job=\"kube-state-metrics-self\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics-self\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics-self\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Observed watch results over five minutes. Missing error series is not proof of absence of errors."
+      },
+      "offscreen-observability/803": {
+        "promql": "sum by (resource,result) ((increase(kube_state_metrics_list_total{job=\"kube-state-metrics-self\"}[5m]) and (time() - timestamp(kube_state_metrics_list_total{job=\"kube-state-metrics-self\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics-self\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics-self\"}) <= 90)))",
+        "unit": "none",
+        "interpretation": "Conditional list results; not observed in initial specimen. No data remains unknown, validate native list/watch semantics at G5."
+      }
+    },
+    "coverage": "enabled",
+    "reason": ""
+  }
+]

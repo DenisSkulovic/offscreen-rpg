@@ -1,0 +1,177 @@
+# Dev-only E2 overlay: enables bundled kube-state-metrics and its two explicit static scrape jobs.
+# Parent chart RBAC stays disabled (see base values); KSM subchart owns its own list/watch ClusterRole.
+serviceAccounts:
+  server:
+    create: true
+    name: obs-prometheus
+kube-state-metrics:
+  enabled: true
+  fullnameOverride: obs-kube-state-metrics
+  replicas: 1
+  updateStrategy: Recreate
+  prometheusScrape: false
+  image:
+    tag: v2.20.0
+    sha: sha256:01171220c7c059afc85034ffe687bfe7249e41c0cc46fbe9a5128503ceee3016
+  service:
+    port: 8080
+  selfMonitor:
+    enabled: true
+    telemetryPort: 8081
+  collectors:
+    - nodes
+    - namespaces
+    - pods
+    - deployments
+    - replicasets
+    - statefulsets
+    - daemonsets
+    - jobs
+    - persistentvolumeclaims
+    - persistentvolumes
+  metricLabelsAllowlist: []
+  metricAnnotationsAllowList: []
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {memory: 128Mi}
+scrapeConfigs:
+  kube-state-metrics:
+    enabled: true
+    job_name: kube-state-metrics
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 20000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 1
+    honor_labels: false
+    static_configs:
+      - targets: [obs-kube-state-metrics:8080]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: kubernetes-inventory
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: kube_namespace_status_phase|kube_node_status_condition|kube_node_status_capacity|kube_node_status_allocatable|kube_pod_status_phase|kube_pod_status_ready|kube_pod_status_scheduled|kube_pod_owner|kube_pod_container_status_ready|kube_pod_container_status_restarts_total|kube_pod_container_status_last_terminated_reason|kube_pod_container_resource_requests|kube_pod_container_resource_limits|kube_deployment_spec_replicas|kube_deployment_status_replicas_ready|kube_deployment_status_replicas_available|kube_replicaset_spec_replicas|kube_replicaset_status_ready_replicas|kube_replicaset_owner|kube_statefulset_replicas|kube_statefulset_status_replicas_ready|kube_daemonset_status_desired_number_scheduled|kube_daemonset_status_number_ready|kube_persistentvolumeclaim_status_phase|kube_persistentvolumeclaim_resource_requests_storage_bytes|kube_persistentvolumeclaim_info|kube_persistentvolume_status_phase|kube_persistentvolume_capacity_bytes|kube_persistentvolume_claim_ref
+        action: keep
+      - regex: __name__|job|instance|cluster|env|component|claim_namespace|condition|container|daemonset|deployment|name|namespace|node|owner_is_controller|owner_kind|owner_name|persistentvolume|persistentvolumeclaim|phase|pod|reason|replicaset|resource|statefulset|status|storageclass|uid|unit|volumemode|volumename
+        action: labelkeep
+  kube-state-metrics-self:
+    enabled: true
+    job_name: kube-state-metrics-self
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 1
+    honor_labels: false
+    static_configs:
+      - targets: [obs-kube-state-metrics:8081]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: kubernetes-inventory-health
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: kube_state_metrics_watch_total|kube_state_metrics_list_total
+        action: keep
+      - regex: __name__|job|instance|cluster|env|component|resource|result
+        action: labelkeep
+  redis-exporter:
+    enabled: true
+    job_name: redis-exporter
+    metrics_path: /metrics
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    sample_limit: 5000
+    label_limit: 40
+    label_name_length_limit: 128
+    label_value_length_limit: 512
+    target_limit: 1
+    honor_labels: false
+    static_configs:
+      - targets: [obs-redis-exporter:9121]
+        labels:
+          cluster: offscreen-dev
+          env: dev
+          component: redis
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: redis_up|redis_memory_used_bytes|redis_keyspace_hits_total|redis_keyspace_misses_total|redis_evicted_keys_total|redis_connected_clients|redis_commands_processed_total
+        action: keep
+      - regex: __name__|job|instance|cluster|env|component
+        action: labelkeep
+# OBS-E2-05: release-owned fixed Redis exporter. Targets only the existing Redis Service; does not modify Redis.
+# extraManifests is a list of strings rendered through tpl; no base-values entries existed to preserve.
+extraManifests:
+  - |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: obs-redis-exporter
+      namespace: {{ .Release.Namespace }}
+      labels:
+        app.kubernetes.io/name: obs-redis-exporter
+        app.kubernetes.io/component: redis-exporter
+    spec:
+      replicas: 1
+      strategy:
+        type: Recreate
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: obs-redis-exporter
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: obs-redis-exporter
+            app.kubernetes.io/component: redis-exporter
+        spec:
+          automountServiceAccountToken: false
+          containers:
+            - name: redis-exporter
+              image: docker.io/oliver006/redis_exporter@sha256:d16780dcfefc6e42f48682ecc5fbd6dd3207938b1ee88f766b838436a4e27e6e
+              args:
+                - --redis.addr=redis://redis.offscreen-dev-redis.svc:6379
+                - --disable-scrape-endpoint
+                - --config-command=-
+                - --disable-exporting-key-values
+                - --export-client-list=false
+                - --check-keys=
+                - --check-single-keys=
+                - --check-streams=
+                - --exclude-slowlog-metrics
+                - --exclude-commandlog-metrics
+              ports:
+                - name: metrics
+                  containerPort: 9121
+                  protocol: TCP
+              resources:
+                requests: {cpu: 50m, memory: 64Mi}
+                limits: {memory: 128Mi}
+  - |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: obs-redis-exporter
+      namespace: {{ .Release.Namespace }}
+      labels:
+        app.kubernetes.io/name: obs-redis-exporter
+        app.kubernetes.io/component: redis-exporter
+    spec:
+      type: ClusterIP
+      selector:
+        app.kubernetes.io/name: obs-redis-exporter
+      ports:
+        - name: metrics
+          port: 9121
+          targetPort: metrics
+          protocol: TCP

@@ -999,3 +999,64 @@ test('negative: missing dev overlay refuses before template', () => {
     writeFileSync(COLLECTOR_OVERLAY_PATH, backup);
   }
 });
+
+test('named E1 artifact IDs load and match their historical alias renders', () => {
+  const cases = [
+    ['dev', 'dev-e1-developer', 'desired'],
+    ['dev', 'dev-e1-base', 'predecessor'],
+    ['release', 'release-e1', 'desired'],
+  ];
+  for (const [profileId, artifactId, alias] of cases) {
+    const named = loadArtifacts(profileId, { run: helmRun, variant: artifactId });
+    const legacy = loadArtifacts(profileId, { run: helmRun, variant: alias });
+    assert.equal(named.artifactId, artifactId);
+    assert.equal(legacy.artifactId, artifactId);
+    assert.deepEqual(named.documents, legacy.documents);
+    assert.deepEqual(named.releases, legacy.releases);
+  }
+  const variants = loadObservabilityVariants('dev', { run: helmRun });
+  assert.equal(variants.desired.artifactId, 'dev-e1-developer');
+  assert.equal(variants.predecessor.artifactId, 'dev-e1-base');
+  assert.equal(loadArtifacts('dev', { run: helmRun }).artifactId, 'dev-e1-developer');
+  assert.equal(
+    loadObservabilityVariants('release', { run: helmRun }).desired.artifactId,
+    'release-e1',
+  );
+});
+
+test('named dev base vs developer differs only in the collector release', () => {
+  const base = loadArtifacts('dev', { run: helmRun, variant: 'dev-e1-base' });
+  const developer = loadArtifacts('dev', {
+    run: helmRun,
+    variant: 'dev-e1-developer',
+  });
+  for (let i = 0; i < base.releases.length; i += 1) {
+    const same =
+      JSON.stringify(base.releases[i].documents) ===
+      JSON.stringify(developer.releases[i].documents);
+    assert.equal(same, base.releases[i].role !== 'collector');
+  }
+});
+
+test('negative: unknown, cross-profile and reserved dev-e2 artifact IDs reject', () => {
+  for (const [profileId, variant] of [
+    ['dev', 'nope'],
+    ['dev', 'release-e1'],
+    ['release', 'dev-e1-developer'],
+    ['release', 'dev-e1-base'],
+    ['dev', 'dev-e2'],
+    ['release', 'dev-e2'],
+  ]) {
+    let helmCalls = 0;
+    const countingRun = (command, args, options) => {
+      if (command === 'helm') helmCalls += 1;
+      return helmRun(command, args, options);
+    };
+    assert.throws(
+      () => loadArtifacts(profileId, { run: countingRun, variant }),
+      /artifact-invalid/,
+      `${profileId}/${variant}`,
+    );
+    assert.equal(helmCalls, 0);
+  }
+});
