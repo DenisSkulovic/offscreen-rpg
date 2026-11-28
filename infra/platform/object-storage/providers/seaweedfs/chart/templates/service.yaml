@@ -21,3 +21,8 @@ spec:
 {{- if eq .Values.mode "release" }}
       protocol: TCP
 {{- end }}
+{{- if and (eq .Values.mode "development") .Values.metricsEnabled }}
+    - name: metrics
+      port: 9327
+      targetPort: metrics
+{{- end }}

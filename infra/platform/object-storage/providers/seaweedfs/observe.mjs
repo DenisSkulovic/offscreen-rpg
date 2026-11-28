@@ -236,12 +236,21 @@ function listSecretNames({ profileId, contextName, namespace, run }) {
   } catch {
     return { state: 'unknown', reason: 'secret name inventory malformed' };
   }
-  const names = Array.isArray(body?.items)
-    ? body.items
-        .map((item) => item?.metadata?.name)
-        .filter((name) => typeof name === 'string')
-    : [];
-  return { state: 'ok', names };
+  const items = Array.isArray(body?.items) ? body.items : [];
+  const names = items
+    .map((item) => item?.metadata?.name)
+    .filter((name) => typeof name === 'string');
+  // Metadata and type only; Helm Secret data is never read or decoded.
+  const records = items
+    .filter((item) => typeof item?.metadata?.name === 'string')
+    .map((item) => ({
+      name: item.metadata.name,
+      type: item.type,
+      uid: item.metadata.uid,
+      labels: item.metadata.labels,
+      terminating: item.metadata.deletionTimestamp != null,
+    }));
+  return { state: 'ok', names, records };
 }
 
 /**
@@ -443,6 +452,19 @@ export function observeObjectStorageHistory(profileId, deps = {}) {
     };
   }
 
+  if (profileId === 'dev') {
+    return observeDevNativeHistory({
+      profileId,
+      profile,
+      namespace,
+      releaseName,
+      release: objectStoreReleases[0],
+      secrets,
+      configMaps,
+      run,
+    });
+  }
+
   const release = objectStoreReleases[0];
   const revision = Number(release.revision);
   const status = String(release.status ?? '');
@@ -577,6 +599,346 @@ export function observeObjectStorageHistory(profileId, deps = {}) {
     reason: 'object-store revision 1 matches native Helm history',
     releaseName,
     namespace,
+    artifactId: 'release-s3-base',
+    historyId: 'release-base-r1',
+    metricsEnabled: false,
+  };
+}
+
+const NATIVE_CHART_ID = 'platform-object-storage-seaweedfs-0.1.0';
+const HELM_STORAGE_TYPE = 'helm.sh/release.v1';
+
+/** @type {Record<'base' | 'metrics', { artifactId: string, metricsEnabled: boolean }>} */
+const DEV_VARIANTS = {
+  base: { artifactId: 'dev-s3-base', metricsEnabled: false },
+  metrics: { artifactId: 'dev-s3-metrics', metricsEnabled: true },
+};
+
+/**
+ * Exact user values for a dev variant. The base variant is the current dev
+ * profile with the single added key removed, never a loosened comparison.
+ * @param {'base' | 'metrics'} variant
+ */
+function devVariantValues(variant) {
+  const values = { ...loadNativeProfileValues('dev') };
+  if (variant === 'base') {
+    delete values.metricsEnabled;
+  }
+  return values;
+}
+
+/**
+ * @param {string} reason
+ * @param {'unknown' | 'refused'} state
+ * @param {{ releaseName: string, namespace: string }} base
+ */
+function historyFailure(state, reason, base) {
+  return {
+    state,
+    reason,
+    releaseName: base.releaseName,
+    namespace: base.namespace,
+  };
+}
+
+/**
+ * Verify that one retained dev revision exactly matches one variant. Returns
+ * `{ match: true }`, `{ match: false, state, reason }`.
+ * @param {{
+ *   revision: number,
+ *   variant: 'base' | 'metrics',
+ *   profile: ReturnType<typeof readPlatformProfile>,
+ *   namespace: string,
+ *   releaseName: string,
+ *   run: typeof runPlatformCommand,
+ *   expected: Map<string, object[]>,
+ * }} spec
+ */
+function matchDevRevision(spec) {
+  const { revision, variant, profile, namespace, releaseName, run } = spec;
+  const common = [
+    '--revision',
+    String(revision),
+    '--kube-context',
+    profile.contextName,
+    '--namespace',
+    namespace,
+  ];
+  const valuesResult = run(
+    'helm',
+    ['get', 'values', releaseName, ...common, '-o', 'yaml'],
+    { timeoutMs: PLATFORM_COMMAND_TIMEOUT_MS },
+  );
+  if (commandUnreadable(valuesResult)) {
+    return { match: false, state: 'unknown', reason: 'helm get values failed' };
+  }
+  let installedValues;
+  try {
+    installedValues = parse(valuesResult.stdout ?? '');
+  } catch {
+    return {
+      match: false,
+      state: 'unknown',
+      reason: 'helm values response malformed',
+    };
+  }
+  if (!valuesExactlyEqual(installedValues, devVariantValues(variant))) {
+    return {
+      match: false,
+      state: 'refused',
+      reason: 'installed Helm values differ from native profile',
+    };
+  }
+  const manifestResult = run(
+    'helm',
+    ['get', 'manifest', releaseName, ...common],
+    { timeoutMs: PLATFORM_COMMAND_TIMEOUT_MS },
+  );
+  if (commandUnreadable(manifestResult)) {
+    return {
+      match: false,
+      state: 'unknown',
+      reason: 'helm get manifest failed',
+    };
+  }
+  let installedWorkloads;
+  try {
+    installedWorkloads = parseHelmManifestDocuments(
+      manifestResult.stdout ?? '',
+    );
+  } catch (error) {
+    return {
+      match: false,
+      state: 'unknown',
+      reason: error instanceof Error ? error.message : String(error),
+    };
+  }
+  let expectedWorkloads = spec.expected.get(variant);
+  if (!expectedWorkloads) {
+    try {
+      // Base is the explicit fixed-false overlay; metrics is the profile as is.
+      expectedWorkloads = renderPlatformDocuments(
+        { service: 'object-storage', profile: 'dev', section: 'workloads' },
+        variant === 'base'
+          ? { run, stdinOverlay: { metricsEnabled: false } }
+          : { run },
+      );
+    } catch (error) {
+      return {
+        match: false,
+        state: 'unknown',
+        reason: error instanceof Error ? error.message : String(error),
+      };
+    }
+    spec.expected.set(variant, expectedWorkloads);
+  }
+  if (!workloadsMatch(installedWorkloads, expectedWorkloads)) {
+    return {
+      match: false,
+      state: 'refused',
+      reason: 'installed Helm manifest differs from native chart workloads',
+    };
+  }
+  return { match: true };
+}
+
+/**
+ * Exact Helm revision Secret evidence for revisions 1..N: names, type, labels,
+ * distinct nonterminating UIDs, status equal to the history row, and no
+ * ConfigMap or extra matching record. Metadata only.
+ * @param {{ revision: number, status: string }[]} rows
+ * @param {{ records: object[], names: string[] }} secrets
+ * @param {{ names: string[] }} configMaps
+ * @returns {string | null} refusal reason, or null when exact
+ */
+function devStorageRefusal(rows, secrets, configMaps) {
+  if (configMaps.names.some((name) => isObjectStoreHelmStorageName(name))) {
+    return 'object-store Helm storage includes a ConfigMap record';
+  }
+  const matching = secrets.records.filter((record) =>
+    isObjectStoreHelmStorageName(record.name),
+  );
+  if (matching.length !== rows.length) {
+    return 'object-store Helm storage records do not match history';
+  }
+  const uids = new Set();
+  for (const row of rows) {
+    const name = `${HELM_STORAGE_PREFIX}.v${row.revision}`;
+    const found = matching.filter((record) => record.name === name);
+    if (found.length !== 1) {
+      return 'object-store Helm storage record is missing or duplicated';
+    }
+    const record = found[0];
+    if (record.type !== HELM_STORAGE_TYPE) {
+      return 'object-store Helm storage record type is not helm.sh/release.v1';
+    }
+    if (typeof record.uid !== 'string' || record.uid.length === 0) {
+      return 'object-store Helm storage record has no UID';
+    }
+    uids.add(record.uid);
+    if (record.terminating) {
+      return 'object-store Helm storage record is terminating';
+    }
+    const labels = record.labels ?? {};
+    if (
+      labels.owner !== 'helm' ||
+      labels.name !== OBJECT_STORE_RELEASE_NAME ||
+      labels.version !== String(row.revision) ||
+      labels.status !== row.status
+    ) {
+      return 'object-store Helm storage record labels differ from history';
+    }
+  }
+  if (uids.size !== rows.length) {
+    return 'object-store Helm storage record UIDs are not distinct';
+  }
+  return null;
+}
+
+/**
+ * Dev native history: fresh base, fresh metrics, or upgraded base -> metrics.
+ * @param {{
+ *   profileId: 'dev',
+ *   profile: ReturnType<typeof readPlatformProfile>,
+ *   namespace: string,
+ *   releaseName: string,
+ *   release: Record<string, unknown>,
+ *   secrets: { records: object[], names: string[] },
+ *   configMaps: { names: string[] },
+ *   run: typeof runPlatformCommand,
+ * }} spec
+ */
+function observeDevNativeHistory(spec) {
+  const { profile, namespace, releaseName, release, run } = spec;
+  const base = { releaseName, namespace };
+  const revision = Number(release.revision);
+  const status = String(release.status ?? '');
+  if (revision !== 1 && revision !== 2) {
+    return historyFailure(
+      'refused',
+      `object-store Helm revision is ${String(release.revision)}`,
+      base,
+    );
+  }
+  if (status !== 'deployed') {
+    return historyFailure(
+      'refused',
+      `object-store Helm status is ${status || 'missing'}`,
+      base,
+    );
+  }
+  if (release.chart !== NATIVE_CHART_ID) {
+    return historyFailure(
+      'refused',
+      'object-store Helm chart is not the native chart',
+      base,
+    );
+  }
+
+  const historyResult = run(
+    'helm',
+    [
+      'history',
+      releaseName,
+      '--kube-context',
+      profile.contextName,
+      '--namespace',
+      namespace,
+      '-o',
+      'json',
+    ],
+    { timeoutMs: PLATFORM_COMMAND_TIMEOUT_MS },
+  );
+  const history = parseJsonList(historyResult);
+  if (history.state === 'unknown') {
+    return historyFailure('unknown', `helm history ${history.reason}`, base);
+  }
+  const rows = history.items.map((row) => ({
+    revision: Number(row?.revision),
+    status: String(row?.status ?? ''),
+    chart: row?.chart,
+  }));
+  rows.sort((a, b) => a.revision - b.revision);
+  const wantStatuses =
+    revision === 1 ? ['deployed'] : ['superseded', 'deployed'];
+  if (
+    rows.length !== revision ||
+    rows.some(
+      (row, index) =>
+        row.revision !== index + 1 ||
+        row.status !== wantStatuses[index] ||
+        row.chart !== NATIVE_CHART_ID,
+    )
+  ) {
+    return historyFailure(
+      'refused',
+      'object-store Helm history rows are not exact native history',
+      base,
+    );
+  }
+
+  const storageRefusal = devStorageRefusal(rows, spec.secrets, spec.configMaps);
+  if (storageRefusal) {
+    return historyFailure('refused', storageRefusal, base);
+  }
+
+  const expected = new Map();
+  const common = { profile, namespace, releaseName, run, expected };
+  /** @type {'base' | 'metrics'} */
+  let finalVariant = 'metrics';
+  let historyId;
+  if (revision === 1) {
+    let first = matchDevRevision({ ...common, revision: 1, variant: 'base' });
+    finalVariant = 'base';
+    historyId = 'dev-base-r1';
+    if (!first.match && first.state === 'refused') {
+      const second = matchDevRevision({
+        ...common,
+        revision: 1,
+        variant: 'metrics',
+      });
+      if (second.match || second.state !== 'refused') {
+        first = second;
+        finalVariant = 'metrics';
+        historyId = 'dev-metrics-r1';
+      } else if (/values/.test(second.reason ?? '') === false) {
+        // Values matched the metrics variant but the manifest did not.
+        first = second;
+      }
+    }
+    if (!first.match) {
+      return historyFailure(first.state, first.reason, base);
+    }
+  } else {
+    const predecessor = matchDevRevision({
+      ...common,
+      revision: 1,
+      variant: 'base',
+    });
+    if (!predecessor.match) {
+      return historyFailure(predecessor.state, predecessor.reason, base);
+    }
+    const successor = matchDevRevision({
+      ...common,
+      revision: 2,
+      variant: 'metrics',
+    });
+    if (!successor.match) {
+      return historyFailure(successor.state, successor.reason, base);
+    }
+    historyId = 'dev-metrics-r1-r2';
+  }
+  return {
+    state: 'native-compatible',
+    reason:
+      revision === 1
+        ? 'object-store revision 1 matches native Helm history'
+        : 'object-store revisions 1 and 2 match native Helm history',
+    releaseName,
+    namespace,
+    artifactId: DEV_VARIANTS[finalVariant].artifactId,
+    historyId,
+    metricsEnabled: DEV_VARIANTS[finalVariant].metricsEnabled,
   };
 }
 
@@ -754,9 +1116,14 @@ function validateDataMountinfo(mountinfoText, hostPath, directoryIdentity) {
   if (!opts.includes('rw') || opts.includes('ro')) {
     return { ok: false, reason: '/data mount is not read-write' };
   }
-  if (!mountRootMatchesHostPath(mount.root, hostPath) &&
-      !(directoryIdentity && /^[0-9]+:[0-9]+$/.test(directoryIdentity.node) &&
-        directoryIdentity.node === directoryIdentity.pod)) {
+  if (
+    !mountRootMatchesHostPath(mount.root, hostPath) &&
+    !(
+      directoryIdentity &&
+      /^[0-9]+:[0-9]+$/.test(directoryIdentity.node) &&
+      directoryIdentity.node === directoryIdentity.pod
+    )
+  ) {
     return {
       ok: false,
       reason: '/data mount root does not match bound PV hostPath',
@@ -1639,35 +2006,101 @@ function readLiveChainObservation(run, profile, namespace, priorReceipt) {
     // case verify directory identity on the exact local node and selected pod.
     const hostPath = pvRead.body?.spec?.hostPath?.path;
     const nodeName = podPick.item.spec?.nodeName;
-    const dataMount = parseMountinfoEntries(mountinfo).find(entry => entry.mountPoint === '/data');
-    if (dataMount && typeof hostPath === 'string' &&
-        !mountRootMatchesHostPath(dataMount.root, hostPath)) {
-      const allowedNodes = [profile.clusterName + '-control-plane', profile.clusterName + '-worker'];
-      const expectedPath = '/var/local-path-provisioner/' + 'pvc-' + pvcBody?.metadata?.uid + '_' + namespace + '_object-store-data';
-      if (!allowedNodes.includes(nodeName) || hostPath !== expectedPath ||
-          process.env.DOCKER_HOST || process.env.DOCKER_CONTEXT || process.env.DOCKER_TLS_VERIFY) {
-        return { state: 'unknown', reason: 'untrusted Kind mount translation target' };
+    const dataMount = parseMountinfoEntries(mountinfo).find(
+      (entry) => entry.mountPoint === '/data',
+    );
+    if (
+      dataMount &&
+      typeof hostPath === 'string' &&
+      !mountRootMatchesHostPath(dataMount.root, hostPath)
+    ) {
+      const allowedNodes = [
+        profile.clusterName + '-control-plane',
+        profile.clusterName + '-worker',
+      ];
+      const expectedPath =
+        '/var/local-path-provisioner/' +
+        'pvc-' +
+        pvcBody?.metadata?.uid +
+        '_' +
+        namespace +
+        '_object-store-data';
+      if (
+        !allowedNodes.includes(nodeName) ||
+        hostPath !== expectedPath ||
+        process.env.DOCKER_HOST ||
+        process.env.DOCKER_CONTEXT ||
+        process.env.DOCKER_TLS_VERIFY
+      ) {
+        return {
+          state: 'unknown',
+          reason: 'untrusted Kind mount translation target',
+        };
       }
       const context = run('docker', ['context', 'show']);
-      if (!context.ok || !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(context.stdout.trim())) {
+      if (
+        !context.ok ||
+        !/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(context.stdout.trim())
+      ) {
         return { state: 'unknown', reason: 'Docker context unreadable' };
       }
-      const endpoint = run('docker', ['context', 'inspect', context.stdout.trim(), '--format', '{{.Endpoints.docker.Host}}']);
+      const endpoint = run('docker', [
+        'context',
+        'inspect',
+        context.stdout.trim(),
+        '--format',
+        '{{.Endpoints.docker.Host}}',
+      ]);
       const transport = endpoint.stdout?.trim();
-      if (!endpoint.ok || !(transport?.startsWith('unix:///') || transport === 'npipe:////./pipe/dockerDesktopLinuxEngine')) {
+      if (
+        !endpoint.ok ||
+        !(
+          transport?.startsWith('unix:///') ||
+          transport === 'npipe:////./pipe/dockerDesktopLinuxEngine'
+        )
+      ) {
         return { state: 'unknown', reason: 'nonlocal Docker endpoint' };
       }
-      const node = run('docker', ['inspect', '--format', '{{ index .Config.Labels "io.x-k8s.kind.cluster" }}', nodeName]);
+      const node = run('docker', [
+        'inspect',
+        '--format',
+        '{{ index .Config.Labels "io.x-k8s.kind.cluster" }}',
+        nodeName,
+      ]);
       if (!node.ok || node.stdout.trim() !== profile.clusterName) {
         return { state: 'unknown', reason: 'Kind node ownership mismatch' };
       }
-      const nodeStat = run('docker', ['exec', nodeName, 'stat', '-Lc', '%d:%i', hostPath]);
-      const podStat = run('kubectl', ['--context', contextName, 'exec', '-n', namespace,
-        podPick.item.metadata.name, '--', 'stat', '-Lc', '%d:%i', '/data']);
+      const nodeStat = run('docker', [
+        'exec',
+        nodeName,
+        'stat',
+        '-Lc',
+        '%d:%i',
+        hostPath,
+      ]);
+      const podStat = run('kubectl', [
+        '--context',
+        contextName,
+        'exec',
+        '-n',
+        namespace,
+        podPick.item.metadata.name,
+        '--',
+        'stat',
+        '-Lc',
+        '%d:%i',
+        '/data',
+      ]);
       if (!nodeStat.ok || !podStat.ok) {
-        return { state: 'unknown', reason: 'storage directory identity unreadable' };
+        return {
+          state: 'unknown',
+          reason: 'storage directory identity unreadable',
+        };
       }
-      directoryIdentity = { node: nodeStat.stdout.trim(), pod: podStat.stdout.trim() };
+      directoryIdentity = {
+        node: nodeStat.stdout.trim(),
+        pod: podStat.stdout.trim(),
+      };
     }
   }
 

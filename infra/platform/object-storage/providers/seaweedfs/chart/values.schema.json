@@ -6,7 +6,10 @@
     "mode": { "enum": ["development", "release"] },
     "namespace": { "type": "string", "minLength": 1 },
     "storageClass": { "type": "string", "minLength": 1 },
-    "image": { "type": "string", "minLength": 1 }
+    "image": { "type": "string", "minLength": 1 },
+    "metricsEnabled": { "type": "boolean", "default": false }
   },
+  "if": { "properties": { "mode": { "const": "release" } } },
+  "then": { "properties": { "metricsEnabled": { "const": false } } },
   "additionalProperties": false
 }

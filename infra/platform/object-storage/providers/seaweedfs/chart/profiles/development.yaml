@@ -1,3 +1,4 @@
 mode: development
 namespace: offscreen-dev-objects
 storageClass: standard
+metricsEnabled: true

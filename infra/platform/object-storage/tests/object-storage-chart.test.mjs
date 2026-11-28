@@ -116,7 +116,11 @@ test('native dev deployment matches baseline contract without S3_BUCKET', () => 
   assert.equal(deploy.metadata.namespace, profile.namespaces.objectStorage);
   assert.equal(deploy.spec.template.spec.containers[0].image, DEV_S3_IMAGE);
   const container = deploy.spec.template.spec.containers[0];
-  assert.deepEqual(container.args, ['mini', '-dir=/data']);
+  assert.deepEqual(container.args, ['mini', '-dir=/data', '-metricsPort=9327']);
+  assert.deepEqual(container.ports, [
+    { name: 's3', containerPort: 8333 },
+    { name: 'metrics', containerPort: 9327 },
+  ]);
   assert.ok(container.readinessProbe?.exec);
   assert.equal(container.livenessProbe, undefined);
   assert.equal(
@@ -137,7 +141,48 @@ test('native dev deployment matches baseline contract without S3_BUCKET', () => 
   assert.equal(service.spec.type, 'ClusterIP');
   assert.deepEqual(service.spec.ports, [
     { name: 's3', port: 8333, targetPort: 's3' },
+    { name: 'metrics', port: 9327, targetPort: 'metrics' },
   ]);
+});
+
+const renderDev = (stdinOverlay) =>
+  renderPlatformDocuments(
+    { service: 'object-storage', profile: 'dev', section: 'workloads' },
+    stdinOverlay ? { stdinOverlay } : {},
+  );
+
+test('dev with fixed false overlay differs from target only in args and named ports', () => {
+  assertHelmAvailable();
+  const old = renderDev({ metricsEnabled: false });
+  const target = renderDev();
+  const oldDeploy = findDoc(old, 'Deployment', 'object-store');
+  const oldContainer = oldDeploy.spec.template.spec.containers[0];
+  assert.deepEqual(oldContainer.args, ['mini', '-dir=/data']);
+  assert.deepEqual(oldContainer.ports, [{ name: 's3', containerPort: 8333 }]);
+  const strip = (docs) => {
+    const copy = structuredClone(docs);
+    const c = findDoc(copy, 'Deployment', 'object-store').spec.template.spec
+      .containers[0];
+    delete c.args;
+    delete c.ports;
+    findDoc(copy, 'Service', 'object-store').spec.ports.splice(1);
+    return copy;
+  };
+  assert.deepEqual(strip(old), strip(target));
+});
+
+test('release render is unchanged by the default and rejects metricsEnabled true', () => {
+  assertHelmAvailable();
+  const run = (overlay) =>
+    renderPlatformDocuments(
+      { service: 'object-storage', profile: 'release', section: 'workloads' },
+      overlay ? { stdinOverlay: overlay } : {},
+    );
+  assert.deepEqual(run(), run({ metricsEnabled: false }));
+  const container = findDoc(run(), 'Deployment', 'object-store').spec.template
+    .spec.containers[0];
+  assert.deepEqual(container.args, ['mini', '-dir=/data']);
+  assert.throws(() => run({ metricsEnabled: true }), /helm template failed/);
 });
 
 test('native release deployment keeps probes and rejects S3_BUCKET bootstrap', () => {

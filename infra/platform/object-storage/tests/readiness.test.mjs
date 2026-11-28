@@ -296,7 +296,11 @@ function buildChainState(options = {}) {
       endpoints: [
         {
           addresses: [podIp],
-          conditions: { ready: options.endpointReady !== false, serving: options.endpointReady !== false, terminating: false },
+          conditions: {
+            ready: options.endpointReady !== false,
+            serving: options.endpointReady !== false,
+            terminating: false,
+          },
           targetRef: {
             kind: 'Pod',
             name: 'object-store-pod',
@@ -419,6 +423,9 @@ const NATIVE_DEV_VALUES_YAML = `mode: development
 namespace: offscreen-dev-objects
 storageClass: standard
 `;
+const NATIVE_DEV_METRICS_VALUES_YAML = `${NATIVE_DEV_VALUES_YAML}metricsEnabled: true
+`;
+const NATIVE_CHART_ID = 'platform-object-storage-seaweedfs-0.1.0';
 
 const HELM_HISTORY_ANNOTATIONS = {
   'meta.helm.sh/release-name': 'object-store',
@@ -428,8 +435,12 @@ const HELM_HISTORY_ANNOTATIONS = {
 
 /**
  * @param {string} [image]
+ * @param {boolean} [metrics]
  */
-function buildNativeManifest(image = 'docker.io/chrislusf/seaweedfs:4.54') {
+function buildNativeManifest(
+  image = 'docker.io/chrislusf/seaweedfs:4.54',
+  metrics = false,
+) {
   const docs = [
     {
       apiVersion: 'v1',
@@ -491,8 +502,15 @@ function buildNativeManifest(image = 'docker.io/chrislusf/seaweedfs:4.54') {
                 name: 'seaweedfs',
                 image,
                 imagePullPolicy: 'IfNotPresent',
-                args: ['mini', '-dir=/data'],
-                ports: [{ name: 's3', containerPort: 8333 }],
+                args: metrics
+                  ? ['mini', '-dir=/data', '-metricsPort=9327']
+                  : ['mini', '-dir=/data'],
+                ports: metrics
+                  ? [
+                      { name: 's3', containerPort: 8333 },
+                      { name: 'metrics', containerPort: 9327 },
+                    ]
+                  : [{ name: 's3', containerPort: 8333 }],
                 env: [
                   {
                     name: 'AWS_ACCESS_KEY_ID',
@@ -565,7 +583,12 @@ function buildNativeManifest(image = 'docker.io/chrislusf/seaweedfs:4.54') {
       spec: {
         type: 'ClusterIP',
         selector: { app: 'object-store' },
-        ports: [{ name: 's3', port: 8333, targetPort: 's3' }],
+        ports: metrics
+          ? [
+              { name: 's3', port: 8333, targetPort: 's3' },
+              { name: 'metrics', port: 9327, targetPort: 'metrics' },
+            ]
+          : [{ name: 's3', port: 8333, targetPort: 's3' }],
       },
     },
   ];
@@ -573,6 +596,34 @@ function buildNativeManifest(image = 'docker.io/chrislusf/seaweedfs:4.54') {
 }
 
 const NATIVE_DEV_MANIFEST = buildNativeManifest();
+const NATIVE_DEV_METRICS_MANIFEST = buildNativeManifest(
+  'docker.io/chrislusf/seaweedfs:4.54',
+  true,
+);
+
+/**
+ * @param {number} revision
+ * @param {string} status
+ * @param {{ uid?: string, type?: string, labels?: object, terminating?: boolean }} [over]
+ */
+function buildStorageSecret(revision, status, over = {}) {
+  return {
+    type: over.type ?? 'helm.sh/release.v1',
+    metadata: {
+      name: `sh.helm.release.v1.object-store.v${revision}`,
+      uid: over.uid ?? `helm-storage-uid-${revision}`,
+      labels: over.labels ?? {
+        owner: 'helm',
+        name: 'object-store',
+        version: String(revision),
+        status,
+      },
+      ...(over.terminating
+        ? { deletionTimestamp: '2026-11-28T00:00:00Z' }
+        : {}),
+    },
+  };
+}
 
 /**
  * @param {string} contextName
@@ -626,6 +677,12 @@ function buildMinifiedKubeConfig(contextName) {
  *   chainEnabled?: boolean,
  *   chainState?: ReturnType<typeof buildChainState>,
  *   profileId?: 'dev' | 'release',
+ *   variant?: 'base' | 'metrics' | 'upgrade',
+ *   historyRows?: object[],
+ *   storageSecrets?: object[],
+ *   revisionValues?: Record<number, string>,
+ *   revisionManifests?: Record<number, string>,
+ *   listChart?: string,
  * }} [options]
  */
 function createHistoryMockRun(options = {}) {
@@ -644,7 +701,26 @@ function createHistoryMockRun(options = {}) {
     chainEnabled = false,
     chainState = buildChainState(),
     profileId = 'dev',
+    variant = 'base',
+    historyRows,
+    storageSecrets,
+    revisionValues = {},
+    revisionManifests = {},
+    listChart = NATIVE_CHART_ID,
   } = options;
+  const effectiveRevision = options.revision ?? (variant === 'upgrade' ? 2 : 1);
+  const variantByRevision =
+    variant === 'upgrade'
+      ? { 1: 'base', 2: 'metrics' }
+      : { 1: variant, 2: variant };
+  const defaultRows = Array.from({ length: effectiveRevision }, (_, index) => ({
+    revision: index + 1,
+    status: index + 1 === effectiveRevision ? 'deployed' : 'superseded',
+    chart: NATIVE_CHART_ID,
+  }));
+  const defaultSecrets = defaultRows.map((row) =>
+    buildStorageSecret(row.revision, row.status),
+  );
   const profileContext =
     profileId === 'release' ? RELEASE_S3_CONTEXT : DEV_S3_CONTEXT;
   const profileCluster =
@@ -665,9 +741,9 @@ function createHistoryMockRun(options = {}) {
     {
       name: DEPLOYMENT_NAME,
       namespace: objectNamespace,
-      revision: String(revision),
+      revision: String(effectiveRevision),
       status: releaseStatus,
-      chart: 'seaweedfs-object-store-0.1.0',
+      chart: listChart,
     },
   ];
 
@@ -752,9 +828,13 @@ function createHistoryMockRun(options = {}) {
         };
       }
       if (resource === 'secrets') {
-        const items = helmStorageNames
+        const namedItems = helmStorageNames
           .filter((entry) => entry.startsWith('sh.helm.release'))
           .map((secretName) => ({ metadata: { name: secretName } }));
+        const items =
+          helmStorageNames.length > 0 || historyAbsent
+            ? namedItems
+            : (storageSecrets ?? defaultSecrets);
         return {
           ok: true,
           status: 0,
@@ -815,16 +895,52 @@ function createHistoryMockRun(options = {}) {
       return { ok: true, status: 0, stdout: JSON.stringify(helmRelease) };
     }
 
+    if (command === 'helm' && args[0] === 'history') {
+      return {
+        ok: true,
+        status: 0,
+        stdout: JSON.stringify(historyRows ?? defaultRows),
+      };
+    }
+
+    const revisionIndex = args.indexOf('--revision');
+    const askedRevision =
+      revisionIndex >= 0 ? Number(args[revisionIndex + 1]) : effectiveRevision;
+    const askedMetrics = variantByRevision[askedRevision] === 'metrics';
+
     if (command === 'helm' && args[0] === 'get' && args[1] === 'values') {
-      return { ok: true, status: 0, stdout: NATIVE_DEV_VALUES_YAML };
+      return {
+        ok: true,
+        status: 0,
+        stdout:
+          revisionValues[askedRevision] ??
+          (askedMetrics
+            ? NATIVE_DEV_METRICS_VALUES_YAML
+            : NATIVE_DEV_VALUES_YAML),
+      };
     }
 
     if (command === 'helm' && args[0] === 'get' && args[1] === 'manifest') {
-      return { ok: true, status: 0, stdout: manifestYaml };
+      return {
+        ok: true,
+        status: 0,
+        stdout:
+          revisionManifests[askedRevision] ??
+          (options.manifestYaml
+            ? manifestYaml
+            : askedMetrics
+              ? NATIVE_DEV_METRICS_MANIFEST
+              : NATIVE_DEV_MANIFEST),
+      };
     }
 
     if (command === 'helm' && args[0] === 'template') {
-      return { ok: true, status: 0, stdout: NATIVE_DEV_MANIFEST };
+      const fixedFalse = /"metricsEnabled":false/.test(runOptions.input ?? '');
+      return {
+        ok: true,
+        status: 0,
+        stdout: fixedFalse ? NATIVE_DEV_MANIFEST : NATIVE_DEV_METRICS_MANIFEST,
+      };
     }
 
     if (command === 'helm' && args[0] === 'version') {
@@ -1045,13 +1161,243 @@ test('revision 1 deployed values and manifest is native-compatible', () => {
   const result = observeObjectStorageHistory('dev', { run });
   assert.equal(result.state, 'native-compatible');
   assert.equal(result.releaseName, DEPLOYMENT_NAME);
+  assert.equal(result.artifactId, 'dev-s3-base');
+  assert.equal(result.historyId, 'dev-base-r1');
+  assert.equal(result.metricsEnabled, false);
   assertNoWrites(calls);
 });
 
-test('helm revision 2 refuses native object-store history', () => {
+const DEV_METRICS_STATES = [
+  ['base', 'dev-s3-base', 'dev-base-r1', false],
+  ['metrics', 'dev-s3-metrics', 'dev-metrics-r1', true],
+  ['upgrade', 'dev-s3-metrics', 'dev-metrics-r1-r2', true],
+];
+for (const [
+  variant,
+  artifactId,
+  historyId,
+  metricsEnabled,
+] of DEV_METRICS_STATES) {
+  test(`exact ${variant} dev history matches ${historyId} with additive fields`, () => {
+    const { run, calls } = createHistoryMockRun({ variant });
+    const result = observeObjectStorageHistory('dev', { run });
+    assert.equal(result.state, 'native-compatible', result.reason);
+    assert.equal(result.artifactId, artifactId);
+    assert.equal(result.historyId, historyId);
+    assert.equal(result.metricsEnabled, metricsEnabled);
+    assertNoWrites(calls);
+    assert.ok(
+      calls.some(
+        (call) => call.command === 'helm' && call.args[0] === 'history',
+      ),
+    );
+    const getCalls = calls.filter(
+      (call) => call.command === 'helm' && call.args[0] === 'get',
+    );
+    assert.ok(getCalls.every((call) => call.args.includes('--revision')));
+    assert.ok(
+      getCalls
+        .filter((call) => call.args[1] === 'values')
+        .every((call) => !call.args.includes('--all')),
+    );
+  });
+}
+
+test('old base render uses the explicit fixed false overlay', () => {
+  const { run, calls } = createHistoryMockRun({ variant: 'upgrade' });
+  observeObjectStorageHistory('dev', { run });
+  const templates = calls.filter(
+    (call) => call.command === 'helm' && call.args[0] === 'template',
+  );
+  assert.equal(templates.length, 2);
+  assert.ok(
+    templates.some(
+      (call) => call.runOptions.input === '{"metricsEnabled":false}\n',
+    ),
+  );
+  assert.ok(templates.some((call) => call.runOptions.input == null));
+});
+
+/** @type {[string, object][]} */
+const REFUSED_DEV_HISTORIES = [
+  [
+    'wrong retained status row',
+    {
+      variant: 'upgrade',
+      historyRows: [
+        { revision: 1, status: 'failed', chart: NATIVE_CHART_ID },
+        { revision: 2, status: 'deployed', chart: NATIVE_CHART_ID },
+      ],
+    },
+  ],
+  [
+    'missing retained history row',
+    {
+      variant: 'upgrade',
+      historyRows: [
+        { revision: 2, status: 'deployed', chart: NATIVE_CHART_ID },
+      ],
+    },
+  ],
+  [
+    'wrong retained chart row',
+    {
+      variant: 'upgrade',
+      historyRows: [
+        { revision: 1, status: 'superseded', chart: 'other-0.1.0' },
+        { revision: 2, status: 'deployed', chart: NATIVE_CHART_ID },
+      ],
+    },
+  ],
+  ['wrong list chart', { variant: 'metrics', listChart: 'other-0.1.0' }],
+  [
+    'missing retained storage record',
+    { variant: 'upgrade', storageSecrets: [buildStorageSecret(2, 'deployed')] },
+  ],
+  [
+    'duplicate storage UID',
+    {
+      variant: 'upgrade',
+      storageSecrets: [
+        buildStorageSecret(1, 'superseded', { uid: 'same' }),
+        buildStorageSecret(2, 'deployed', { uid: 'same' }),
+      ],
+    },
+  ],
+  [
+    'empty storage UID',
+    {
+      variant: 'metrics',
+      storageSecrets: [buildStorageSecret(1, 'deployed', { uid: '' })],
+    },
+  ],
+  [
+    'terminating storage record',
+    {
+      variant: 'metrics',
+      storageSecrets: [
+        buildStorageSecret(1, 'deployed', { terminating: true }),
+      ],
+    },
+  ],
+  [
+    'wrong storage type',
+    {
+      variant: 'metrics',
+      storageSecrets: [buildStorageSecret(1, 'deployed', { type: 'Opaque' })],
+    },
+  ],
+  [
+    'wrong storage status label',
+    {
+      variant: 'upgrade',
+      storageSecrets: [
+        buildStorageSecret(1, 'deployed'),
+        buildStorageSecret(2, 'deployed'),
+      ],
+    },
+  ],
+  [
+    'extra storage record',
+    {
+      variant: 'metrics',
+      storageSecrets: [
+        buildStorageSecret(1, 'deployed'),
+        buildStorageSecret(2, 'superseded'),
+      ],
+    },
+  ],
+  [
+    'wrong retained values',
+    {
+      variant: 'upgrade',
+      revisionValues: {
+        1: NATIVE_DEV_METRICS_VALUES_YAML,
+      },
+    },
+  ],
+  [
+    'extra retained value key',
+    {
+      variant: 'metrics',
+      revisionValues: {
+        1: `${NATIVE_DEV_METRICS_VALUES_YAML}extra: true\n`,
+      },
+    },
+  ],
+  [
+    'wrong retained manifest',
+    {
+      variant: 'upgrade',
+      revisionManifests: {
+        1: NATIVE_DEV_METRICS_MANIFEST,
+      },
+    },
+  ],
+  [
+    'target manifest with extra arg',
+    {
+      variant: 'metrics',
+      revisionManifests: {
+        1: NATIVE_DEV_METRICS_MANIFEST.replace(
+          '-metricsPort=9327',
+          '-metricsPort=9327","-extra=1',
+        ),
+      },
+    },
+  ],
+  [
+    'target manifest with wrong port',
+    {
+      variant: 'metrics',
+      revisionManifests: {
+        1: NATIVE_DEV_METRICS_MANIFEST.replaceAll('9327', '9328'),
+      },
+    },
+  ],
+  [
+    'target manifest under base values',
+    {
+      variant: 'metrics',
+      revisionValues: {
+        1: NATIVE_DEV_VALUES_YAML,
+      },
+    },
+  ],
+];
+for (const [label, options] of REFUSED_DEV_HISTORIES) {
+  test(`dev history refuses ${label}`, () => {
+    const { run } = createHistoryMockRun(options);
+    const result = observeObjectStorageHistory('dev', { run });
+    assert.equal(result.state, 'refused', result.reason);
+    assert.equal(result.artifactId, undefined);
+    assert.equal(result.historyId, undefined);
+  });
+}
+
+test('dev history refuses a ConfigMap Helm storage record', () => {
+  const { run } = createHistoryMockRun({
+    variant: 'metrics',
+    helmStorageNames: ['sh.helm.release.v1.object-store.v1'],
+  });
+  const result = observeObjectStorageHistory('dev', { run });
+  assert.notEqual(result.state, 'native-compatible');
+});
+
+test('dev history with wrong profile values for metrics is refused', () => {
+  const { run } = createHistoryMockRun({
+    variant: 'metrics',
+    revisionValues: {
+      1: NATIVE_DEV_METRICS_VALUES_YAML.replace('standard', 'other'),
+    },
+  });
+  assert.equal(observeObjectStorageHistory('dev', { run }).state, 'refused');
+});
+
+test('helm revision 3 refuses native object-store history', () => {
   const { run } = createHistoryMockRun({
     nativeCompatible: true,
-    revision: 2,
+    revision: 3,
   });
   const result = observeObjectStorageHistory('dev', { run });
   assert.equal(result.state, 'refused');
