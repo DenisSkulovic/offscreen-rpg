@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
+import process from 'node:process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -16,6 +23,37 @@ import {
   OBSERVABILITY_RELEASE_ORDER,
   renderObservabilityDocuments,
 } from '../artifacts.mjs';
+
+// render.test.mjs tampers with checked-in values files in place, and both files
+// load them. Serialize the two files (separate processes under `node --test`)
+// with a process-lifetime lock so neither observes the other's temporary edits.
+function acquireSourceTreeLock() {
+  const dir = join(tmpdir(), 'offscreen-obs-artifact-tests.lock');
+  const pidFile = join(dir, 'pid');
+  for (;;) {
+    try {
+      mkdirSync(dir);
+      writeFileSync(pidFile, String(process.pid));
+      break;
+    } catch (error) {
+      if (error?.code !== 'EEXIST') throw error;
+      let owner = NaN;
+      try {
+        owner = Number(readFileSync(pidFile, 'utf8'));
+        process.kill(owner, 0);
+      } catch (probe) {
+        if (probe?.code === 'ESRCH' || Number.isNaN(owner)) {
+          // Stale only when the recorded owner is gone (or never wrote a pid
+          // for more than a moment).
+          if (probe?.code === 'ESRCH') rmSync(dir, { recursive: true, force: true });
+        }
+      }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+    }
+  }
+  process.on('exit', () => rmSync(dir, { recursive: true, force: true }));
+}
+acquireSourceTreeLock();
 
 const observabilityRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const valuesRoot = join(observabilityRoot, 'values');
@@ -1038,7 +1076,7 @@ test('named dev base vs developer differs only in the collector release', () => 
   }
 });
 
-test('negative: unknown, cross-profile and reserved dev-e2 artifact IDs reject', () => {
+test('negative: unknown, cross-profile and trustless dev-e2 artifact IDs reject before any template', () => {
   for (const [profileId, variant] of [
     ['dev', 'nope'],
     ['dev', 'release-e1'],
