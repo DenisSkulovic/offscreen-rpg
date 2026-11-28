@@ -1,5 +1,5 @@
 # OBS-E2-11 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DONE source (T01–T03 executed 2026-11-28; receipt in PROOF.md). Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DONE source (T01–T03 executed 2026-11-28; receipt in PROOF.md). Shared contracts: [group](../../../../open/observability-infrastructure-visibility/README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
 ## T01 | Extend durable custody schema | DONE source
@@ -7,7 +7,7 @@ DEPTH=PATCH
 Requires: 08/09 joined; G1–G4 selected scope frozen; 12 must finish before any E2 live activation; no live permission during construction.
 May write: infra/platform/observability/custody.mjs; tests/custody.test.mjs
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/custody.mjs: classifyPending, inspectPending, validateStoredUpgrade, createHandle, runMutation; group E2 pending contract and [H04 exact custody/phase matrix](../README.md#review-07-corrections--owned-shape-and-normal-receipt-contracts)
+Read: infra/platform/observability/custody.mjs: classifyPending, inspectPending, validateStoredUpgrade, createHandle, runMutation; group E2 pending contract and [H04 exact custody/phase matrix](../../../../open/observability-infrastructure-visibility/README.md#review-07-corrections--owned-shape-and-normal-receipt-contracts)
 Algorithm: Add distinct E2 operation `upgrade-e2` using existing durable record envelope, version and lock path; fixed three phases, immutable preservation/intent details including exact G2 trust binding SHA-256; exact schema reject extras/malformed. Begin only E1 developer history, allowed revision steps 1->2 P/G; compare-and-swap advance only from current owned record after explicit verifier result; final clear only final-verification. Reuse private fsync/rename/inherited lock and cancellation. Preserve `assertOwnPending()` as the real mutable-capability check returning the current cloned owned record, extending only exact E2 discriminator/details support; do not replace it with pending inspection or a caller-supplied operation ID. Old reader rejects unknown E2 record, new reader still fences legacy/invalid; no resume API.
 Test: node --test infra/platform/observability/tests/custody.test.mjs
 Negative: Invalid history/phase/hash/identity, stale record, out-of-order phase, lost ownership, malformed or legacy pending cannot be cleared/adopted. Valid foreign/replaced pending, missing/nonexclusive capability and incorrect phase/operation/namespace/predecessor/target refuse with no advance/clear.
