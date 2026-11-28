@@ -34,6 +34,8 @@
 
 ## Current / immediate work
 
+- [Observability E2 / OBS-E2-01–13](observability-infrastructure-visibility/README.md): complete proposed current-sprint batch; source and native evidence prerequisites recorded, not commissioned. No global queue change.
+
 **2026-11-23 source-only commissions:** [TURN03-R2C scripted player-smoke composition](../archive/2026-11/storyteller/2026-11-23--turn03-r2c-scripted-smoke-composition/CHANGE.md) is archived Done at injected-trace tier, 9/9. [TURN03-R2D](../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) is archived Done at injected-query tier, 6/6. Neither produces cross-Pod PASS. R2A and R2B remain archived Done at source-only tier. Parent TURN03 cancelled; legacy operator not commissioned.
 
 **2026-11-23:** [TURN03-R2A secure HTTP transport](../archive/2026-11/storyteller/2026-11-23--turn03-r2a-secure-http-transport/CHANGE.md) is Done as an injected fake-fetch check. It is not a live login or cross-Pod PASS. [TURN03-R2B pinned fixture verifier](../archive/2026-11/storyteller/2026-11-23--turn03-r2b-pinned-fixture-verifier/CHANGE.md) is Done as an injected read-only check. [TURN03-R2D causal SQL observer](../archive/2026-11/storyteller/2026-11-23--turn03-r2d-causal-sql-observer/CHANGE.md) is Done as an injected read-only query check, 6/6. It is not a live database read or cross-Pod PASS. Parent [TURN03](../archive/2026-11/distributed/2026-11-19--turn03-full-distributed-forkable-turn-proof/CHANGE.md) is cancelled (legacy acceptance retired).
