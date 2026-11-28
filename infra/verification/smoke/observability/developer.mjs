@@ -1,6 +1,7 @@
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { recheckAdmissionUnchanged } from './proof-host.mjs';
 import { openForwards, startOwnedChild } from '../../../platform/observability/forward.mjs';
 
 const MODULE_ROOT = dirname(fileURLToPath(import.meta.url));
@@ -97,10 +98,17 @@ export async function runDeveloperProof(session, deps = {}) {
         cleanup: true,
       };
     }
+    const history = await recheckAdmissionUnchanged(session);
+    if (!history.ok) {
+      return { ok: false, reasonCode: history.reasonCode, cleanup: true };
+    }
     return {
       ok: true,
       reasonCode: null,
       cleanup: true,
+      claim: 'developer-forwards',
+      matchedHistoryId: session.admission?.historyId ?? null,
+      matchedArtifactId: session.admission?.artifactId ?? null,
       identities: parsed.identities ?? null,
     };
   } finally {
