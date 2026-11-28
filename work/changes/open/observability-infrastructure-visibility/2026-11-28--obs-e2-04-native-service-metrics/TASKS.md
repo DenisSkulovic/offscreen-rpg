@@ -1,8 +1,8 @@
 # OBS-E2-04 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: PROPOSED (targeted readiness pending). Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: READY (review 04; commission and task dependencies apply). Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03 → T04; selected: none.
 
-## T01 | Add per-instance native discovery | PROPOSED (targeted readiness pending)
+## T01 | Add per-instance native discovery | READY (review 04; commission and task dependencies apply)
 DEPTH=PATCH
 Requires: 02 joined; PG01 positive native receipt; 06 joined and G4b positive owner receipt; planner-frozen G3/G4 exact endpoints, families, labels and queries for full selected scope; exclusive overlay ownership.
 May write: infra/platform/observability/values/profiles/dev/prometheus.yaml
@@ -14,7 +14,7 @@ Negative: Unrelated namespace, wrong instance/port, arbitrary annotation, creden
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Add fixed native jobs and coverage | PROPOSED (targeted readiness pending)
+## T02 | Add fixed native jobs and coverage | READY (review 04; commission and task dependencies apply)
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/values/profiles/dev/prometheus.yaml; infra/platform/observability/coverage/native-services.json (new)
@@ -26,7 +26,7 @@ Negative: Exporter up is not backend healthy; absent service does not create hea
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Enroll proven SeaweedFS endpoint | PROPOSED (targeted readiness pending)
+## T03 | Enroll proven SeaweedFS endpoint | READY (review 04; commission and task dependencies apply)
 DEPTH=PATCH
 Requires: T02 postcondition, joined 06 source, positive G4b owner receipt and frozen exact metric/label/panel rows; exclusive overlay ownership.
 May write: infra/platform/observability/values/profiles/dev/prometheus.yaml; infra/platform/observability/coverage/seaweedfs.json
@@ -38,12 +38,12 @@ Negative: Missing owner receipt, wrong port, absent/unsupported family never tre
 Stop: missing frozen rows or owner receipt, unexpected service/source identity, permission/coverage drift.
 Receipt: exact source postcondition and downstream proof obligations.
 
-## T04 | Test enrollment boundaries | PROPOSED (targeted readiness pending)
+## T04 | Test enrollment boundaries | READY (review 04; commission and task dependencies apply)
 DEPTH=PATCH
 Requires: T03 postcondition and packet prerequisites.
 May write: infra/platform/observability/tests/e2-collection.test.mjs
 Must not write: other Change owners; live resources; shared catalogs except coordinator lifecycle.
-Read: infra/platform/observability/tests/e2-collection.test.mjs; coverage/native-services.json; coverage/seaweedfs.json
+Read: infra/platform/observability/tests/e2-collection.test.mjs (`validateOverlay`, `validateKubeletManifests`, `validateCoverage`); coverage/native-services.json; coverage/seaweedfs.json. Preserve all predecessor assertions; M05: adapt exact job count, Pod discovery/RBAC and explicit inventory-only/not-applicable rows to the frozen contract.
 Algorithm: Assert exact job set, fixed namespaces/labels, ports/families and no wildcard metadata copy, explicit optional/unsupported rows, positive exact SeaweedFS endpoint/receipt and no S3 endpoint, no service-owner changes. Compare arrays to the selected JSON; test both admitted and rejected CNPG identity groups, Temporal namespaces and role/container mismatch, SeaweedFS bucket/collection, Grafana status and label projection collision examples; exact RBAC rules.
 Test: node --test infra/platform/observability/tests/e2-collection.test.mjs
 Negative: Wrong selectors, duplicate job, unapproved endpoint or missing coverage disposition fails.

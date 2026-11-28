@@ -1,8 +1,8 @@
 # OBS-E2-07 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: PROPOSED (targeted readiness pending). Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: PLANNER-BLOCKED (H03; downstream tasks await T01). Shared contracts: [group](../README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
-## T01 | Create provider and dashboard shells | PROPOSED (targeted readiness pending)
+## T01 | Create provider and dashboard shells | PLANNER-BLOCKED (H03; downstream tasks await T01)
 DEPTH=PATCH
 Requires: Frozen selected metric families, labels, exact panel queries and coverage rows in NATIVE-INPUTS from G1–G4 (G4b before SeaweedFS enabled). Source joins of 02–06 are acceptance dependencies, not dashboard construction prerequisites.
 May write: infra/platform/observability/values/profiles/dev/grafana.yaml; dashboards/overview.json, kubernetes.json, nodes.json; coverage/inventory.json (only M03 offscreen-overview/104 query and interpretation)
@@ -14,7 +14,7 @@ Negative: Missing KSM or stale samples must not become green absence or zero; no
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T02 | Build service drilldowns | PROPOSED (targeted readiness pending)
+## T02 | Build service drilldowns | PLANNER-BLOCKED (H03; downstream tasks await T01)
 DEPTH=PATCH
 Requires: T01 postcondition and packet prerequisites.
 May write: infra/platform/observability/dashboards/postgres.json, temporal.json, storage.json, messaging-cache.json, observability.json
@@ -26,7 +26,7 @@ Negative: No arbitrary metric names or hidden unsupported service; real zero dis
 Stop: unresolved native facts, drift contradicting the accepted contract, unavailable assigned proof, identity/permission/data-safety failure. Do not redesign or broaden scope.
 Receipt: exact diff, postcondition, assigned actual check result or NOT RUN and blocker; coordinator owns commit and join.
 
-## T03 | Validate dashboard/query contract | PROPOSED (targeted readiness pending)
+## T03 | Validate dashboard/query contract | PLANNER-BLOCKED (H03; downstream tasks await T01)
 DEPTH=PATCH
 Requires: T02 postcondition and packet prerequisites.
 May write: infra/platform/observability/tests/e2-dashboards.test.mjs
