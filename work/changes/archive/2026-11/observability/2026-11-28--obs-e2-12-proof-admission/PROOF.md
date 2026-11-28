@@ -6,7 +6,7 @@ Focused proof.test.mjs and proof-resources.test.mjs; injected mutation spy asser
 
 **At join:** review collision-free diff, exact assigned postcondition, focused results, regression limits and ownership. **Joint owner:** 13 final regression and joint qualification; no E2 outage/persistence recertification.. Source success does not certify native deployment.
 
-For E2-supported normal proof admission and repeat, use independently bound descriptor from 09 and reject G2 trust drift; historical E1-only proof resolution is unchanged, even if E2 trust unavailable. See [G2 candidate](../NATIVE-INPUTS.md#g2-construction-freeze-candidate--direct-https-and-cluster-bound-trust).
+For E2-supported normal proof admission and repeat, use independently bound descriptor from 09 and reject G2 trust drift; historical E1-only proof resolution is unchanged, even if E2 trust unavailable. See [G2 candidate](../../../../open/observability-infrastructure-visibility/NATIVE-INPUTS.md#g2-construction-freeze-candidate--direct-https-and-cluster-bound-trust).
 
 ## Construction receipt (2026-11-28)
 

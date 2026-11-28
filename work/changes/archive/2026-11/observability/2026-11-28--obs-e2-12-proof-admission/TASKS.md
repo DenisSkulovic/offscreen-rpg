@@ -1,5 +1,5 @@
 # OBS-E2-12 | task queue
-Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DONE source (T01–T03 executed 2026-11-28; receipt in PROOF.md). Shared contracts: [group](../README.md#frozen-packet-interfaces).
+Base: `1fa759b980d275ef4ad9d11590cf080fc807ccd2`; refresh against recorded Design integration branch. State: DONE source (T01–T03 executed 2026-11-28; receipt in PROOF.md). Shared contracts: [group](../../../../open/observability-infrastructure-visibility/README.md#frozen-packet-interfaces).
 Tasks: T01 → T02 → T03; selected: none.
 
 ## T01 | Make eligibility explicit before dispatch | DONE source
