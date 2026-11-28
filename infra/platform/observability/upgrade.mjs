@@ -15,6 +15,7 @@ import {
 import { captureIdentity, recheckIdentity } from './identity.mjs';
 import { collectInventory, GRAFANA_ADMIN_SECRET } from './inventory.mjs';
 import { readPlatformProfile } from '../common/profile.mjs';
+import { runE2Upgrade } from './upgrade-e2.mjs';
 import { classifyInventory, verifyOwnedFinalShape } from './readiness.mjs';
 
 const ADMISSION_MS = 30_000;
@@ -508,11 +509,15 @@ function fenced(reasonCode, mutation = 'possible') {
  */
 export async function runObservabilityUpgrade(deps = {}) {
   const argv = deps.argv ?? [];
-  if (argv.length !== 0) {
+  const e2 = argv.length === 2 && argv[0] === '--evolution' && argv[1] === 'e2';
+  if (argv.length !== 0 && !e2) {
     return refused('invalid-invocation');
   }
   if (process.env.OFFSCREEN_OBSERVABILITY_UPGRADE !== 'authorized') {
     return refused('ensure-not-authorized');
+  }
+  if (e2) {
+    return runE2Upgrade(deps);
   }
   const started = deps.now?.() ?? Date.now();
   const available = await readMemory(deps, performance.now());

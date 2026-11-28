@@ -1200,3 +1200,243 @@ test('D10 public advance is refused after cancellation for outage down confirm',
   custody.close();
   rmSync(stateRoot, { recursive: true, force: true });
 });
+
+/** @param {string} [history] */
+function e2Request(history = 'developer-fresh', mutate = (details) => details) {
+  const request = ensureRequest('prometheus-intent', 'namespace-uid');
+  request.operation = 'upgrade-e2';
+  request.details = mutate({
+    predecessorId: 'dev-e1-developer',
+    predecessorHistoryId: history,
+    targetId: 'dev-e2',
+    predecessorManifestSetSha256: 'aa'.repeat(32),
+    targetManifestSetSha256: 'bb'.repeat(32),
+    kubeletTrustBindingSha256: 'cc'.repeat(32),
+    originalCollectorRevision: history === 'developer-fresh' ? 1 : 2,
+    originalPrometheusRevision: 1,
+    originalGrafanaRevision: 1,
+    targetPrometheusRevision: 2,
+    targetGrafanaRevision: 2,
+    preservedUids: { namespace: 'namespace-uid', claim: 'claim-uid' },
+    markerIds: { trace: 'trace-id' },
+  });
+  return request;
+}
+
+/** @param {string} historyId @param {string | null} phase */
+function verdict(historyId, phase) {
+  return { ok: true, detail: 'owned-history-shape', artifactId: 'x', historyId, phase };
+}
+
+/** @param {string} stateRoot */
+async function e2Custody(stateRoot) {
+  return acquireCustody(devKind.contextName, { stateRoot, lockWaitSec: 5 });
+}
+
+/** @param {any} custody @param {string} phase @param {any} verified @param {any} [details] */
+function e2Advance(custody, phase, verified, details) {
+  const request = ensureRequest(phase, 'namespace-uid');
+  request.details = details ?? custody.assertOwnPending().details;
+  return custody.advance({ ...request, verified });
+}
+
+test('upgrade-e2 runs the three fixed phases and clears only from final', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-e2-'));
+  const paths = prepareState(stateRoot);
+  const custody = await e2Custody(stateRoot);
+  custody.begin(e2Request('developer-upgraded'));
+  const first = custody.assertOwnPending();
+  assert.equal(first.operation, 'upgrade-e2');
+  assert.equal(first.phase, 'prometheus-intent');
+  assert.equal(inspectPendingRecord(devKind.contextName, { stateRoot }).outcome, 'record');
+  assert.throws(
+    () => custody.clear({ verified: verdict('e2-from-developer-upgraded', null) }),
+    /not final/,
+  );
+  e2Advance(custody, 'grafana-intent', verdict('developer-upgraded', 'prometheus-intent'));
+  e2Advance(custody, 'final-verification', verdict('e2-from-developer-upgraded', null));
+  assert.equal(custody.assertOwnPending().phase, 'final-verification');
+  custody.clear({ verified: verdict('e2-from-developer-upgraded', null) });
+  assert.equal(existsSync(paths.pendingPath), false);
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('upgrade-e2 refuses invalid begin shapes without a record', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-e2-bad-'));
+  const paths = prepareState(stateRoot);
+  const custody = await e2Custody(stateRoot);
+  const bad = [
+    e2Request('developer-fresh', (d) => ({ ...d, extra: 1 })),
+    e2Request('developer-fresh', ({ markerIds, ...d }) => d),
+    e2Request('e2-from-developer-fresh'),
+    e2Request('developer-base'),
+    e2Request('developer-fresh', (d) => ({ ...d, predecessorId: 'dev-e1-base' })),
+    e2Request('developer-fresh', (d) => ({ ...d, targetId: 'dev-e1-developer' })),
+    e2Request('developer-fresh', (d) => ({ ...d, originalCollectorRevision: 2 })),
+    e2Request('developer-fresh', (d) => ({ ...d, originalPrometheusRevision: 2 })),
+    e2Request('developer-fresh', (d) => ({ ...d, targetGrafanaRevision: 1 })),
+    e2Request('developer-fresh', (d) => ({ ...d, targetManifestSetSha256: 'AB'.repeat(32) })),
+    e2Request('developer-fresh', (d) => ({ ...d, kubeletTrustBindingSha256: 'ab' })),
+    e2Request('developer-fresh', (d) => ({ ...d, preservedUids: {} })),
+    e2Request('developer-fresh', (d) => ({ ...d, markerIds: { trace: 7 } })),
+  ];
+  for (const request of bad) {
+    assert.throws(() => custody.begin(request), /upgrade-e2 details are invalid/);
+  }
+  for (const phase of ['grafana-intent', 'final-verification', 'other']) {
+    const request = e2Request();
+    request.phase = phase;
+    assert.throws(() => custody.begin(request), /phase is invalid/);
+  }
+  assert.equal(existsSync(paths.pendingPath), false);
+  custody.begin(e2Request());
+  assert.throws(() => custody.begin(e2Request()), /already established/);
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('upgrade-e2 refuses unverified, wrong, skipped and mutated advance', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-e2-adv-'));
+  prepareState(stateRoot);
+  const custody = await e2Custody(stateRoot);
+  custody.begin(e2Request());
+  const start = custody.assertOwnPending();
+  const good = verdict('developer-fresh', 'prometheus-intent');
+  const refusals = [
+    ['grafana-intent', undefined, /verification is missing/],
+    ['grafana-intent', { ...good, ok: false }, /verification is missing/],
+    ['grafana-intent', { ...good, detail: 'x' }, /verification is missing/],
+    ['grafana-intent', verdict('developer-fresh', null), /verification is missing/],
+    ['grafana-intent', verdict('developer-upgraded', 'prometheus-intent'), /verification is missing/],
+    ['grafana-intent', verdict('e2-from-developer-fresh', null), /verification is missing/],
+    ['final-verification', verdict('e2-from-developer-fresh', null), /out of order/],
+    ['prometheus-intent', good, /out of order/],
+    ['bogus', good, /out of order/],
+  ];
+  for (const [phase, verified, pattern] of refusals) {
+    assert.throws(() => e2Advance(custody, phase, verified), pattern);
+    assert.deepEqual(custody.assertOwnPending(), start);
+  }
+  assert.throws(
+    () =>
+      e2Advance(custody, 'grafana-intent', good, {
+        ...start.details,
+        markerIds: { trace: 'other' },
+      }),
+    /details changed/,
+  );
+  assert.throws(
+    () => e2Advance(custody, 'grafana-intent', good, { ...start.details, x: 1 }),
+    /details are invalid/,
+  );
+  assert.deepEqual(custody.assertOwnPending(), start);
+  e2Advance(custody, 'grafana-intent', good);
+  // stale verdict for the previous row cannot advance or clear later phases
+  assert.throws(() => e2Advance(custody, 'final-verification', good), /verification is missing/);
+  assert.throws(() => custody.clear({ verified: good }), /not final/);
+  e2Advance(custody, 'final-verification', verdict('e2-from-developer-fresh', null));
+  for (const verified of [undefined, good, verdict('developer-fresh', null), { ...verdict('e2-from-developer-fresh', null), ok: false }]) {
+    assert.throws(() => custody.clear(verified === undefined ? undefined : { verified }), /verification is missing/);
+  }
+  assert.throws(() => e2Advance(custody, 'final-verification', verdict('e2-from-developer-fresh', null)), /out of order/);
+  assert.equal(custody.assertOwnPending().phase, 'final-verification');
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('upgrade-e2 tuple and namespace binding stay immutable', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-e2-tuple-'));
+  prepareState(stateRoot);
+  const custody = await e2Custody(stateRoot);
+  custody.begin(e2Request());
+  const request = ensureRequest('grafana-intent', 'other-uid');
+  request.details = custody.assertOwnPending().details;
+  assert.throws(
+    () => custody.advance({ ...request, verified: verdict('developer-fresh', 'prometheus-intent') }),
+    /namespace binding changed/,
+  );
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('upgrade-e2 lost, replaced or malformed pending cannot advance or clear', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-e2-lost-'));
+  const paths = prepareState(stateRoot);
+  const custody = await e2Custody(stateRoot);
+  custody.begin(e2Request());
+  const body = readFileSync(paths.pendingPath);
+  const copy = `${paths.pendingPath}.copy`;
+  writeFileSync(copy, body, { mode: 0o600 });
+  renameSync(copy, paths.pendingPath);
+  assert.throws(() => custody.assertOwnPending(), /changed/);
+  assert.throws(
+    () => e2Advance(custody, 'grafana-intent', verdict('developer-fresh', 'prometheus-intent'), e2Request().details),
+    /authority failed|changed/,
+  );
+  assert.throws(
+    () => custody.clear({ verified: verdict('e2-from-developer-fresh', null) }),
+    /authority failed|changed|not final/,
+  );
+  assert.equal(JSON.parse(readFileSync(paths.pendingPath, 'utf8')).phase, 'prometheus-intent');
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('upgrade-e2 records from a foreign owner or malformed shape stay fences', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-e2-fence-'));
+  const paths = prepareState(stateRoot);
+  const owner = await e2Custody(stateRoot);
+  owner.begin(e2Request());
+  const valid = JSON.parse(readFileSync(paths.pendingPath, 'utf8'));
+  owner.close();
+  // a fresh handle never adopts the valid record
+  const second = await e2Custody(stateRoot).catch((error) => error);
+  assert.match(String(second?.message ?? ''), /pending|receipt/);
+  assert.equal(readPending(devKind.contextName, { stateRoot }).pending, true);
+  assert.throws(() => (second.assertOwnPending ?? (() => { throw new Error('none'); }))());
+  const variants = [
+    { ...valid, extra: true },
+    { ...valid, phase: 'collector-upgrade' },
+    { ...valid, phase: 'unknown' },
+    { ...valid, operation: 'upgrade-e3' },
+    { ...valid, details: { ...valid.details, extra: 1 } },
+    { ...valid, details: { ...valid.details, predecessorHistoryId: 'developer-base' } },
+    { ...valid, details: { ...valid.details, kubeletTrustBindingSha256: 'zz' } },
+    { ...valid, context: 'other' },
+  ];
+  for (const variant of variants) {
+    writeFileSync(paths.pendingPath, `${JSON.stringify(variant)}\n`, { mode: 0o600 });
+    assert.deepEqual(readPending(devKind.contextName, { stateRoot }), {
+      pending: true,
+      valid: false,
+    });
+    assert.equal(inspectPendingRecord(devKind.contextName, { stateRoot }).outcome, 'invalid');
+    await assert.rejects(
+      () => acquireCustody(devKind.contextName, { stateRoot, lockWaitSec: 1 }),
+      /invalid receipt/,
+    );
+  }
+  // legacy (schema-less) pending remains a fence
+  writeFileSync(
+    paths.pendingPath,
+    `${JSON.stringify({ operationId: 'op', service: 'observability', context: devKind.contextName, phase: 'x', tuple: {}, start: 'now' })}\n`,
+    { mode: 0o600 },
+  );
+  assert.equal(inspectPendingRecord(devKind.contextName, { stateRoot }).outcome, 'legacy');
+  rmSync(stateRoot, { recursive: true, force: true });
+});
+
+test('ensure and historical upgrade records cannot use the E2 advance or clear gate', async () => {
+  const stateRoot = mkdtempSync(join(tmpdir(), 'obs-custody-e2-ens-'));
+  prepareState(stateRoot);
+  const custody = await e2Custody(stateRoot);
+  custody.begin(ensureRequest());
+  assert.throws(
+    () => custody.advance({ ...ensureRequest('obs-grafana', 'namespace-uid'), details: e2Request().details }),
+    /ensure details must be empty/,
+  );
+  custody.clear();
+  custody.close();
+  rmSync(stateRoot, { recursive: true, force: true });
+});

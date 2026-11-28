@@ -10,6 +10,7 @@ import {
   GRAFANA_DATASOURCE_UIDS,
 } from './proof-host.mjs';
 import { PLATFORM_OBSERVABILITY_NS } from './signals.mjs';
+import { requireE1Eligibility } from './disruptions.mjs';
 
 const DATASOURCE_CONTRACT = Object.freeze({
   'offscreen-metrics': {
@@ -260,6 +261,9 @@ function roundCpu(nanoCores) {
  * @param {{ runObservation?: Function, runPython?: Function, listNodes?: Function }} [deps]
  */
 export async function runResourcesProof(session, deps = {}) {
+  // The resources gate carries the E1 budget: E2 and unadmitted sessions refuse.
+  const eligibility = await requireE1Eligibility(session);
+  if (eligibility) return eligibility;
   if (session.remainingWorkMs() < RESOURCES_PHASE_BUDGET_MS.sampling) {
     return { ok: false, reasonCode: 'resources-budget', phase: 'preflight' };
   }

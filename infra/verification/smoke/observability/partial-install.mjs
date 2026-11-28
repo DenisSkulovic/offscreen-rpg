@@ -11,6 +11,7 @@ import { runPlatformCommand } from '../../../platform/common/commands.mjs';
 import {
   refuseDisruptionInvocation,
   RESTORATION_RESERVE_MS,
+  sourceEnablesE2,
 } from './proof-host.mjs';
 import { PLATFORM_OBSERVABILITY_NS } from './signals.mjs';
 
@@ -76,10 +77,24 @@ export function requireIsolatedProofAuthorization(env = process.env) {
 }
 
 /**
+ * Legacy partial-install is E1-only: refused on an E2-enabled source tree.
+ * @param {string} profileId
+ * @param {{ e2Enabled?: boolean | ((profile: string) => boolean) }} [deps]
+ */
+export function legacyPartialInstallRefused(profileId, deps = {}) {
+  return typeof deps.e2Enabled === 'function'
+    ? deps.e2Enabled(profileId)
+    : (deps.e2Enabled ?? sourceEnablesE2(profileId));
+}
+
+/**
  * @param {string} profileId
  * @param {object} [deps]
  */
 export function resolvePartialInstallPlans(profileId, deps = {}) {
+  if (legacyPartialInstallRefused(profileId, deps)) {
+    throw new Error('unsupported-evolution');
+  }
   const artifacts = loadArtifacts(profileId, {
     run: deps.run ?? (() => ({ ok: true, stdout: '', stderr: '' })),
     verifyArchive: deps.verifyArchive === true,
@@ -534,6 +549,13 @@ export async function runIsolatedPartialInstallProof(session, deps = {}) {
   if (auth.refused) {
     return { ok: false, reasonCode: auth.reasonCode, phase: 'isolated-auth' };
   }
+  if (legacyPartialInstallRefused(session.profile ?? 'dev', deps)) {
+    return {
+      ok: false,
+      reasonCode: 'unsupported-evolution',
+      phase: 'admission',
+    };
+  }
   if (session.identity.tuple.kubeSystemUid !== auth.expectedClusterUid) {
     return {
       ok: false,
@@ -648,6 +670,13 @@ export async function runPartialInstallProof(session, deps = {}) {
   const auth = requireIsolatedProofAuthorization(session.env ?? process.env);
   if (auth.refused) {
     return { ok: false, reasonCode: auth.reasonCode, phase: 'isolated-auth' };
+  }
+  if (legacyPartialInstallRefused(session.profile ?? 'dev', deps)) {
+    return {
+      ok: false,
+      reasonCode: 'unsupported-evolution',
+      phase: 'admission',
+    };
   }
 
   if (

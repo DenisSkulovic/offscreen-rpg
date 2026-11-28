@@ -607,6 +607,61 @@ async function readFreshClaims(session, observation, deps) {
   return projectDisruptionClaims(observation);
 }
 
+const E1_DEVELOPER_ARTIFACT_ID = 'dev-e1-developer';
+const E1_DEVELOPER_HISTORY_IDS = ['developer-fresh', 'developer-upgraded'];
+
+/**
+ * Sync check that the session carries an admitted E1-developer authority
+ * (T01 `session.admission`). E2 is `unsupported-evolution`; anything else is
+ * `admission-required`. No standalone bypass: lower helpers call this before
+ * any injected or real mutation.
+ * @param {object | null | undefined} session
+ * @returns {null | { ok: false, reasonCode: string, phase: string }}
+ */
+export function e1AdmissionRefusal(session) {
+  const admission = session?.admission;
+  if (admission?.evolution === 'e2' || admission?.artifactId === 'dev-e2') {
+    return { ok: false, reasonCode: 'unsupported-evolution', phase: 'admission' };
+  }
+  if (
+    admission?.evolution !== 'e1-developer' ||
+    admission.artifactId !== E1_DEVELOPER_ARTIFACT_ID ||
+    !E1_DEVELOPER_HISTORY_IDS.includes(admission.historyId)
+  ) {
+    return { ok: false, reasonCode: 'admission-required', phase: 'admission' };
+  }
+  return null;
+}
+
+/**
+ * Explicit E1 eligibility at a runner boundary: sync admission, then repeat
+ * the classification under the held custody and require the same identity.
+ * @param {object} session
+ */
+export async function requireE1Eligibility(session) {
+  const refusal = e1AdmissionRefusal(session);
+  if (refusal) return refusal;
+  if (typeof session.reclassifyAdmission !== 'function') {
+    return { ok: false, reasonCode: 'admission-required', phase: 'admission' };
+  }
+  const again = await session.reclassifyAdmission();
+  if (
+    !again?.ok ||
+    again.admission?.artifactId !== session.admission.artifactId ||
+    again.admission?.historyId !== session.admission.historyId
+  ) {
+    return {
+      ok: false,
+      reasonCode:
+        again?.admission?.artifactId === 'dev-e2'
+          ? 'unsupported-evolution'
+          : (again?.reasonCode ?? 'admission-identity-changed'),
+      phase: 'admission',
+    };
+  }
+  return null;
+}
+
 /**
  * @param {object} session
  * @param {string} kind
@@ -621,6 +676,8 @@ export async function guardedRolloutRestart(
   pre,
   deps = {},
 ) {
+  const admissionRefusal = e1AdmissionRefusal(session);
+  if (admissionRefusal) return admissionRefusal;
   if (deps.rollWorkload) {
     return deps.rollWorkload({ session, kind, name, pre });
   }
@@ -722,6 +779,8 @@ export async function guardedRolloutRestart(
  * @param {{ scaleWorkload?: Function, run?: typeof runPlatformCommand, runMutation?: Function }} [deps]
  */
 export async function guardedScaleTempo(session, replicas, pre, deps = {}) {
+  const admissionRefusal = e1AdmissionRefusal(session);
+  if (admissionRefusal) return admissionRefusal;
   if (deps.scaleWorkload) {
     return deps.scaleWorkload({
       session,
@@ -903,6 +962,8 @@ export async function runPersistenceProof(session, deps = {}) {
   if (!custody?.begin || !custody?.advance || !custody?.clear) {
     return { ok: false, reasonCode: 'custody-required', phase: 'custody' };
   }
+  const eligibility = await requireE1Eligibility(session);
+  if (eligibility) return eligibility;
 
   const observe =
     deps.observe ??
@@ -1326,6 +1387,8 @@ async function buildOutageRestoreFresh(
  * @param {{ disruptionBaseline: object, downResourceVersion?: string }} outageState
  */
 export async function restoreTempoAfterOutage(session, deps, outageState = {}) {
+  const admissionRefusal = e1AdmissionRefusal(session);
+  if (admissionRefusal) return admissionRefusal;
   if (deps.restoreTempo) {
     return deps.restoreTempo({ session, outageState });
   }
@@ -1440,6 +1503,8 @@ export async function runOutageProof(session, deps = {}) {
     return { ok: false, reasonCode: 'outage-budget', phase: 'preflight' };
   }
 
+  const eligibility = await requireE1Eligibility(session);
+  if (eligibility) return eligibility;
   const custody = deps.custody ?? session.custody;
   const observe =
     deps.observe ??
