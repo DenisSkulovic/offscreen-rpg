@@ -1,6 +1,6 @@
 # OBS-E2-PG01 | Dedicated CNPG monitoring connectivity
 
-**Kind:** implementation. **Standing:** PLANNER-BLOCKED pending targeted independent re-review of corrected H01/H02; no live permission. [Review 01](../READINESS-REVIEW-01.md) at `9b113bd8e877a6c957750b9ece606223dd15e5a6`. **Baseline:** `main` `497176baa34c868107399936f16c432137bbab3e`. Owner accepted narrow CONNECT evolution after the recorded failed collector and denied CONNECT on all five existing databases. [Native evidence](../NATIVE-INPUTS.md) and [group register](../README.md).
+**Kind:** implementation. **Standing:** READY — independent [review 02](../READINESS-REVIEW-02.md) at `a602bd405e1430e6c8d2905db9181af5580e856b` closes H01/H02; owner commission required; no live permission. [Review 01](../READINESS-REVIEW-01.md) at `9b113bd8e877a6c957750b9ece606223dd15e5a6`. **Baseline:** `main` `497176baa34c868107399936f16c432137bbab3e`. Owner accepted narrow CONNECT evolution after the recorded failed collector and denied CONNECT on all five existing databases. [Native evidence](../NATIVE-INPUTS.md) and [group register](../README.md).
 
 ## Outcome and boundaries
 
