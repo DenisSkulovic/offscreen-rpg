@@ -1,14 +1,24 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { prepareFreshTemporalPersistence } from '../temporal-persistence/prepare.mjs';
+import {
+  prepareFreshTemporalPersistence,
+  verifyDatabase,
+  verifyExistingTemporalPersistence,
+} from '../temporal-persistence/prepare.mjs';
 
 const context = 'kind-offscreen-dev';
 const namespace = 'offscreen-dev-postgres';
 const roleType = 'databaserole.postgresql.cnpg.io';
 const databaseType = 'database.postgresql.cnpg.io';
 
-function fixture({ collision = false, publicConnect = false, failSchema = false } = {}) {
+const EXPORTER = 'cnpg_metrics_exporter';
+
+// monitor: 'absent' | 'safe' | 'unsafe' is the collector role state PostgreSQL
+// would report. ACL rows per store are modelled explicitly; GRANT/REVOKE update them.
+function fixture({ collision = false, publicConnect = false, failSchema = false, monitor = 'absent', grantFault = null } = {}) {
   const calls = [];
+  const grants = [];
+  const acl = { temporal: ['PUBLIC'], temporal_visibility: ['PUBLIC'] };
   const resources = new Map();
   let revision = 100;
   const put = (type, body) => {
@@ -100,14 +110,32 @@ function fixture({ collision = false, publicConnect = false, failSchema = false 
     if (verb === 'exec') {
       assert.ok(args.includes('dev-pg-2'));
       const statement = args.at(-1);
+      const store = /datname = '(temporal(?:_visibility)?)'|DATABASE "(temporal(?:_visibility)?)"/.exec(statement);
+      const name = store?.[1] ?? store?.[2];
+      if (statement.includes("'absent'")) return ok(monitor);
       if (statement.includes('a.grantee = 0')) return ok(publicConnect ? 'f' : 't');
-      if (statement.startsWith('REVOKE')) return ok('REVOKE');
+      if (statement.startsWith('REVOKE')) {
+        acl[name] = acl[name].filter((entry) => entry !== 'PUBLIC');
+        return ok('REVOKE');
+      }
+      if (statement.startsWith('GRANT')) {
+        assert.equal(statement, `GRANT CONNECT ON DATABASE "${name}" TO "${EXPORTER}"`);
+        grants.push(name);
+        acl[name].push(grantFault ?? 'exporter');
+        return ok('GRANT');
+      }
+      if (statement.includes('a.grantee <> d.datdba')) {
+        // Owner-only unless the exception is part of the predicate (dev).
+        const permitted = statement.includes(EXPORTER) && monitor === 'safe';
+        return ok(acl[name].every((entry) => entry === 'exporter' && permitted) ? 't' : 'f');
+      }
+      if (statement.includes('pg_database d, aclexplode')) return ok(acl[name].includes('exporter') ? 't' : 'f');
       if (failSchema && statement.includes('has_schema_privilege')) return ok('f');
       return ok('t');
     }
     throw new Error('unexpected mocked command');
   };
-  return { run, calls };
+  return { run, calls, grants, acl };
 }
 
 function mutations(calls) {
@@ -136,7 +164,7 @@ test('PUBLIC CONNECT refuses before creating any credentials', () => {
 test('fresh preparation orders closed stores and ACLs before login; credentials only via stdin', () => {
   const { run, calls } = fixture();
   const result = prepareFreshTemporalPersistence('dev', { confirmContext: context }, { run });
-  assert.deepEqual(result, { namespace, secretName: 'temporal-db', secretVersion: '100' });
+  assert.deepEqual(result, { namespace, secretName: 'temporal-db', secretVersion: '100', monitoring: 'not-ready-role-absent' });
   const writes = mutations(calls);
   const creates = writes.filter(({ args }) => args.includes('create')).map(({ options }) => JSON.parse(options.input));
   assert.equal(creates.length, 4);
@@ -157,4 +185,76 @@ test('failed schema verification preserves resources and never enables login', (
   assert.ok(!calls.some(({ args }) => args.includes('patch') &&
     args.includes(roleType)));
   assert.ok(calls.every(({ args }) => !args.includes('delete')));
+});
+
+const grantIndex = (calls) => calls.findIndex(({ args }) => args.at(-1)?.startsWith('GRANT'));
+
+test('fresh dev grants exact exporter CONNECT after the PUBLIC revoke and before opening', () => {
+  const { run, calls, grants, acl } = fixture({ monitor: 'safe' });
+  const result = prepareFreshTemporalPersistence('dev', { confirmContext: context }, { run });
+  assert.equal(result.monitoring, 'ready');
+  assert.deepEqual(grants, ['temporal', 'temporal_visibility']);
+  assert.deepEqual(acl.temporal, ['exporter']);
+  const sequence = calls.map(({ args }) => args.at(-1)).filter((sql) => /^(REVOKE|GRANT)/.test(sql) ||
+    sql.startsWith('{"metadata"'));
+  assert.deepEqual(sequence.filter((sql) => /^(REVOKE|GRANT)/.test(sql)), [
+    'REVOKE CONNECT, TEMPORARY ON DATABASE "temporal" FROM PUBLIC',
+    `GRANT CONNECT ON DATABASE "temporal" TO "${EXPORTER}"`,
+    'REVOKE CONNECT, TEMPORARY ON DATABASE "temporal_visibility" FROM PUBLIC',
+    `GRANT CONNECT ON DATABASE "temporal_visibility" TO "${EXPORTER}"`,
+  ]);
+  const firstOpen = calls.findIndex(({ args }) => args.includes('patch') &&
+    args.includes(databaseType));
+  assert.ok(grantIndex(calls) < firstOpen);
+});
+
+test('absent collector role leaves owner-only creation and issues no grant', () => {
+  const { run, calls, grants } = fixture({ monitor: 'absent' });
+  assert.equal(prepareFreshTemporalPersistence('dev', { confirmContext: context }, { run }).monitoring,
+    'not-ready-role-absent');
+  assert.deepEqual(grants, []);
+  assert.equal(grantIndex(calls), -1);
+});
+
+test('unsafe collector role refuses the grant, reports it and keeps owner-only stores', () => {
+  const { run, calls, grants, acl } = fixture({ monitor: 'unsafe' });
+  assert.equal(prepareFreshTemporalPersistence('dev', { confirmContext: context }, { run }).monitoring,
+    'refused-role-unsafe');
+  assert.deepEqual(grants, []);
+  assert.equal(grantIndex(calls), -1);
+  assert.deepEqual(acl.temporal, []);
+});
+
+test('a grant that does not read back as the exact exporter ACL aborts before opening', () => {
+  const { run, calls } = fixture({ monitor: 'safe', grantFault: 'unrelated' });
+  assert.throws(() => prepareFreshTemporalPersistence('dev', { confirmContext: context }, { run }),
+    /monitoring grant mismatch/);
+  assert.ok(!calls.some(({ args }) => args.includes('patch') && args.includes(databaseType)));
+});
+
+test('existing-store verifier admits owner-only and exact successor, refuses everything else', () => {
+  const { run, acl } = fixture({ monitor: 'safe' });
+  prepareFreshTemporalPersistence('dev', { confirmContext: context }, { run });
+  assert.deepEqual(verifyExistingTemporalPersistence('dev', { run }), { ok: true });
+  acl.temporal = [];
+  assert.deepEqual(verifyExistingTemporalPersistence('dev', { run }), { ok: true });
+  for (const entry of ['PUBLIC', 'unrelated', 'exporter-grantable', 'exporter-create']) {
+    acl.temporal = [entry];
+    assert.equal(verifyExistingTemporalPersistence('dev', { run }).ok, false, entry);
+  }
+});
+
+test('release ACL predicate stays owner-only and carries no exporter exception', () => {
+  const seen = [];
+  const access = { sql: (statement) => { seen.push(statement); return 't'; } };
+  verifyDatabase(access, 'temporal', true, 'release');
+  verifyDatabase(access, 'temporal', true, 'dev');
+  assert.ok(!seen[0].includes(EXPORTER));
+  assert.match(seen[0], /WHERE a\.grantee <> d\.datdba\s*\)/);
+  for (const needle of [EXPORTER, 'NOT a.is_grantable', "a.privilege_type = 'CONNECT'",
+    'a.grantor = d.datdba', "pg_has_role(r.oid, 'pg_monitor', 'MEMBER')",
+    'pg_has_role(o.oid, r.oid', 'NOT o.rolsuper', 'r.rolcanlogin']) {
+    assert.ok(seen[1].includes(needle), needle);
+  }
+  assert.throws(() => verifyDatabase(access, 'temporal', true, 'staging'), /unknown Temporal/);
 });
