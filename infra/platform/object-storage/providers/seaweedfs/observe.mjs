@@ -10,6 +10,7 @@ import {
 } from '../../../common/commands.mjs';
 import { readPlatformProfile } from '../../../common/profile.mjs';
 import {
+  assertOwnedMarkerIntent,
   assertOwnedMetricsIntent,
   defaultObjectStorageStateRoot,
   readObjectStoragePendingState,
@@ -2500,6 +2501,20 @@ export function observeOwnedMetricsTransition(
   assertOwnedMetricsIntent(handle);
   const result = observeOwnerProjection(expectedHistoryId, deps);
   assertOwnedMetricsIntent(handle);
+  return result;
+}
+
+/**
+ * Post-intent observation for marker preparation only. Requires the active
+ * marker-session capability (never a metrics handle, never a flag) before and
+ * after the read, and is limited to the exact predecessor history.
+ * @param {object} handle opaque capability from the marker preparation guard
+ * @param {{ run?: typeof runPlatformCommand }} [deps]
+ */
+export function observeOwnedMarkerPreparation(handle, deps = {}) {
+  assertOwnedMarkerIntent(handle);
+  const result = observeOwnerProjection('dev-base-r1', deps);
+  assertOwnedMarkerIntent(handle);
   return result;
 }
 
