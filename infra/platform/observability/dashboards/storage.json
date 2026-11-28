@@ -1,0 +1,1169 @@
+{
+  "uid": "offscreen-storage",
+  "title": "Offscreen | Storage (SeaweedFS and PVC)",
+  "description": "Repository-owned and read-only. Edit in Git, not in the UI.",
+  "tags": [
+    "offscreen"
+  ],
+  "editable": false,
+  "graphTooltip": 1,
+  "schemaVersion": 41,
+  "version": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "timepicker": {},
+  "timezone": "browser",
+  "links": [
+    {
+      "type": "dashboards",
+      "title": "Offscreen dashboards",
+      "tags": [
+        "offscreen"
+      ],
+      "asDropdown": true,
+      "includeVars": true,
+      "keepTime": true,
+      "icon": "external link",
+      "targetBlank": false
+    },
+    {
+      "type": "link",
+      "title": "Overview",
+      "url": "/d/offscreen-overview/offscreen-overview",
+      "includeVars": true,
+      "keepTime": true,
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "label": "Namespace",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+          "refId": "ns"
+        },
+        "definition": "label_values(kube_namespace_status_phase{job=\"kube-state-metrics\"}, namespace)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "workload",
+        "label": "Workload",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+          "refId": "wl"
+        },
+        "definition": "label_values(kube_pod_owner{job=\"kube-state-metrics\",namespace=~\"$namespace\"}, owner_name)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "node",
+        "label": "Node",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "offscreen-metrics"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "query": {
+          "query": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+          "refId": "node"
+        },
+        "definition": "label_values(kube_node_status_condition{job=\"kube-state-metrics\"}, node)",
+        "includeAll": true,
+        "multi": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1000,
+      "type": "text",
+      "title": "Scope and freshness",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 4
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Freshness rule: a current target is `up == 1` with sample age at most 90s. Missing or stale samples are unknown, never healthy and never zero. `up` is scrape availability only, not backend health.\n\n**Partial scope (owner ratified).** S3 request rate and latency are bucketless only; volume counts are default-collection only; neither is a global aggregate. `max_volumes` is a count, not capacity. No physical disk occupancy and no per-bucket or per-collection panels. PVC and PV capacity is declared or requested size from KSM, not actual usage."
+      }
+    },
+    {
+      "id": 1001,
+      "type": "row",
+      "title": "PVC and PV inventory (KSM cache)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 601,
+      "type": "table",
+      "title": "Claim phase",
+      "description": "Claim phase. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((kube_persistentvolumeclaim_status_phase{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_persistentvolumeclaim_status_phase{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 602,
+      "type": "table",
+      "title": "Requested claim bytes",
+      "description": "Requested claim bytes. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_persistentvolumeclaim_resource_requests_storage_bytes{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_persistentvolumeclaim_resource_requests_storage_bytes{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 603,
+      "type": "table",
+      "title": "PV capacity bytes, not actual usage",
+      "description": "PV capacity bytes, not actual usage. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((kube_persistentvolume_capacity_bytes{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_persistentvolume_capacity_bytes{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 604,
+      "type": "table",
+      "title": "PV phase",
+      "description": "PV phase. Cached observation, not definitive API absence; missing/stale unknown.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "(((kube_persistentvolume_status_phase{job=\"kube-state-metrics\"}) and (time() - timestamp(kube_persistentvolume_status_phase{job=\"kube-state-metrics\"}) <= 90)) and on(job,instance) ((up{job=\"kube-state-metrics\"} == 1) and (time() - timestamp(up{job=\"kube-state-metrics\"}) <= 90))) == 1",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      }
+    },
+    {
+      "id": 1002,
+      "type": "row",
+      "title": "SeaweedFS native metrics (partial scope)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 37,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 610,
+      "type": "stat",
+      "title": "Current scrape state only, not backend health",
+      "description": "Current scrape state only, not backend health; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 38,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "up{job=\"seaweedfs\"} and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90)",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "Scrape down",
+                  "color": "red",
+                  "index": 1
+                },
+                "1": {
+                  "text": "Scrape current",
+                  "color": "green",
+                  "index": 0
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 611,
+      "type": "stat",
+      "title": "Master leader indicator",
+      "description": "Master leader indicator; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 38,
+        "w": 6,
+        "h": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((SeaweedFS_master_is_leader{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_master_is_leader{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": true,
+          "range": false,
+          "format": "time_series"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name",
+        "colorMode": "none",
+        "graphMode": "none"
+      }
+    },
+    {
+      "id": 612,
+      "type": "timeseries",
+      "title": "S3 upload bytes in flight",
+      "description": "S3 upload bytes in flight; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 42,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((SeaweedFS_s3_in_flight_upload_bytes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_s3_in_flight_upload_bytes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 613,
+      "type": "timeseries",
+      "title": "S3 uploads in flight",
+      "description": "S3 uploads in flight; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 42,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((SeaweedFS_s3_in_flight_upload_count{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_s3_in_flight_upload_count{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 614,
+      "type": "timeseries",
+      "title": "Configured maximum volumes, not bytes",
+      "description": "Configured maximum volumes, not bytes; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 50,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((SeaweedFS_volumeServer_max_volumes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_volumeServer_max_volumes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 615,
+      "type": "timeseries",
+      "title": "Volume file read failures/s",
+      "description": "Volume file read failures/s; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 50,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(SeaweedFS_volumeServer_file_read_failures{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_file_read_failures{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 616,
+      "type": "timeseries",
+      "title": "Volume file write failures/s",
+      "description": "Volume file write failures/s; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 58,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(SeaweedFS_volumeServer_file_write_failures{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_file_write_failures{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 617,
+      "type": "timeseries",
+      "title": "Volume/shard storage EIO errors/s",
+      "description": "Volume/shard storage EIO errors/s; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 58,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(SeaweedFS_volumeServer_storage_io_error_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_storage_io_error_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 618,
+      "type": "timeseries",
+      "title": "S3 requests in flight by operation type",
+      "description": "S3 requests in flight by operation type; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 66,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((SeaweedFS_s3_in_flight_requests{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_s3_in_flight_requests{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 619,
+      "type": "timeseries",
+      "title": "Default/empty-collection volumes or shards by type, not a global count",
+      "description": "Default/empty-collection volumes or shards by type, not a global count; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 66,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((SeaweedFS_volumeServer_volumes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_volumeServer_volumes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 620,
+      "type": "timeseries",
+      "title": "Default/empty-collection read-only volumes by type, not a global count",
+      "description": "Default/empty-collection read-only volumes by type, not a global count; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 74,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((SeaweedFS_volumeServer_read_only_volumes{job=\"seaweedfs\"}) and (time() - timestamp(SeaweedFS_volumeServer_read_only_volumes{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 621,
+      "type": "timeseries",
+      "title": "Filer request rate by type/status",
+      "description": "Filer request rate by type/status; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 74,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(SeaweedFS_filer_request_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_filer_request_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 622,
+      "type": "timeseries",
+      "title": "Volume-server request rate by type/status",
+      "description": "Volume-server request rate by type/status; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 82,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(SeaweedFS_volumeServer_request_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_request_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 623,
+      "type": "timeseries",
+      "title": "Bucketless S3 request rate by type/status only, not global",
+      "description": "Bucketless S3 request rate by type/status only, not global; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 82,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "((rate(SeaweedFS_s3_request_total{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_s3_request_total{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 624,
+      "type": "timeseries",
+      "title": "Volume-server p95 request time by type, seconds",
+      "description": "Volume-server p95 request time by type, seconds; S3 excludes all nonempty bucket names; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 90,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "histogram_quantile(0.95, sum by (job,instance,type,le) (((rate(SeaweedFS_volumeServer_request_seconds_bucket{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_request_seconds_bucket{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90)))) and on(job,instance,type) (sum by (job,instance,type) (((rate(SeaweedFS_volumeServer_request_seconds_count{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_volumeServer_request_seconds_count{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))) > 0)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 625,
+      "type": "timeseries",
+      "title": "Bucketless S3 p95 request time by type, seconds",
+      "description": "Bucketless S3 p95 request time by type, seconds; S3 excludes all nonempty bucket names; missing/stale unknown, never synthetic zero.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "offscreen-metrics"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 90,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "offscreen-metrics"
+          },
+          "expr": "histogram_quantile(0.95, sum by (job,instance,type,le) (((rate(SeaweedFS_s3_request_seconds_bucket{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_s3_request_seconds_bucket{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90)))) and on(job,instance,type) (sum by (job,instance,type) (((rate(SeaweedFS_s3_request_seconds_count{job=\"seaweedfs\"}[5m])) and (time() - timestamp(SeaweedFS_s3_request_seconds_count{job=\"seaweedfs\"}) <= 90)) and on(job,instance) ((up{job=\"seaweedfs\"} == 1) and (time() - timestamp(up{job=\"seaweedfs\"}) <= 90))) > 0)",
+          "instant": false,
+          "range": true,
+          "legendFormat": "__auto"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "noValue": "No data (unknown, not zero)",
+          "mappings": [],
+          "custom": {
+            "spanNulls": false,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    }
+  ]
+}
