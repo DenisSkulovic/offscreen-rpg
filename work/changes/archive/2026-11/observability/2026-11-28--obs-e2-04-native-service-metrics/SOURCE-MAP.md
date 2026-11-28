@@ -1,6 +1,6 @@
 # OBS-E2-04 | verified source map
 
-Baseline `1fa759b980d275ef4ad9d11590cf080fc807ccd2`: source from clean `c3900da1e15bba456c71dcb799698fe2a0f7db5f` lean export; GitHub comparison confirms the intervening three commits touch only the E2 dossier and Design catalog. Source anchors below refer to that baseline; new paths/symbols are proposed. Review [integration contract](<../../../../designs/open/observability-infrastructure-visibility/INTEGRATION.md>) only at the cited sections. Gates are recorded in the [evidence register](../NATIVE-INPUTS.md).
+Baseline `1fa759b980d275ef4ad9d11590cf080fc807ccd2`: source from clean `c3900da1e15bba456c71dcb799698fe2a0f7db5f` lean export; GitHub comparison confirms the intervening three commits touch only the E2 dossier and Design catalog. Source anchors below refer to that baseline; new paths/symbols are proposed. Review [integration contract](<../../../../../designs/open/observability-infrastructure-visibility/INTEGRATION.md>) only at the cited sections. Gates are recorded in the [evidence register](../../../../open/observability-infrastructure-visibility/NATIVE-INPUTS.md).
 
 - `infra/platform/postgres/chart/templates/`, `infra/platform/postgres/vendor/cnpg-1.30.2.yaml`: selected CNPG instance port 9187; exact discovered labels/protocol G3.
 - Temporal vendored 1.8.0 chart, current dev profile native pods; 9090 server metrics only, frontend/history/matching/worker. No Temporal SDK metrics inferred.
