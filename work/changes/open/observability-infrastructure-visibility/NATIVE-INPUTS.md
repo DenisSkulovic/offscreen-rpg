@@ -1,6 +1,6 @@
 # E2 | native input closure (planner/operator evidence only)
 
-**Status:** G1 KSM specimen passed; Redis v1.97.0 replacement native specimen PASSED with frozen coverage. G2 node-local trusted HTTPS feasibility and Collector existing scrape PASSED. 03 and 06 source construction joined. PG01 occupied repair and collector recovery PASS; full existing-tenant executor admission remains unexercised. G4b predecessor, capacity and quiescence PASS after guarded registry v1→v2 migration; synthetic marker preparation and rollout remain OPEN. Remaining exact native panel/coverage contracts and G5 remain OPEN. Verified remote planning base `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. [Defended dossier](../../../designs/open/observability-infrastructure-visibility/EVIDENCE.md) owns architecture and scope. This is the one bounded evidence handoff for all affected packets, not an implementation research assignment. Owner ran the read-only native probe at the committed batch SHA; planner records the observed subset below. No native commands executed by planner; no fabricated digest, cert, endpoint, family or PASS. G5 is downstream construction and qualification. Owner must explicitly authorize any live probe creating resources, executing a helper container, or mutating data. Read-only metadata/port-forwards need correct fixed dev target and must not disclose credentials. No release commands, no provider spend.
+**Status:** G1 KSM specimen passed; Redis v1.97.0 replacement native specimen PASSED with frozen coverage. G2 node-local trusted HTTPS feasibility and Collector existing scrape PASSED. 03 and 06 source construction joined. PG01 occupied repair and collector recovery PASS; full existing-tenant executor admission remains unexercised. G4b marker preparation and occupied metrics rollout PASS; retained data verified, 112 native sample names observed. Exact selected metric/label/query rows remain OPEN. Remaining exact native panel/coverage contracts and G5 remain OPEN. Verified remote planning base `1fa759b980d275ef4ad9d11590cf080fc807ccd2`. [Defended dossier](../../../designs/open/observability-infrastructure-visibility/EVIDENCE.md) owns architecture and scope. This is the one bounded evidence handoff for all affected packets, not an implementation research assignment. Owner ran the read-only native probe at the committed batch SHA; planner records the observed subset below. No native commands executed by planner; no fabricated digest, cert, endpoint, family or PASS. G5 is downstream construction and qualification. Owner must explicitly authorize any live probe creating resources, executing a helper container, or mutating data. Read-only metadata/port-forwards need correct fixed dev target and must not disclose credentials. No release commands, no provider spend.
 
 ## G1 | helper image identity
 
@@ -734,13 +734,171 @@ Pinned default query definitions (`infra/platform/postgres/vendor/cnpg-1.30.2.ya
 
 **Label-identity safeguard:** vendor `backends` groups by database, state, user and application. Dropping `usename`/`application_name` in metric relabeling can merge distinct series with identical remaining labels; do not do it. Nor silently store arbitrary freeform client/application identifiers. The planner must resolve a bounded, privacy-compatible connection-family admission (retaining an approved identity tuple if justified) or explicitly obtain owner scope disposition; do not fake complete connection saturation from waiting matches. For saturation, `cnpg_pg_settings_setting` was observed with `name` key, but the actual `max_connections` sample/value was not retained in the supplied evidence; verify its presence and restrict to selected setting, not all settings. Exclude extension metadata from the selected scrape unless explicitly needed; avoid collapsing any other native label dimensions. No blanket family regex. This records concrete semantic decisions for the final CNPG row, not a complete freeze of exact panel IDs, PromQL, labels and coverage JSON. Finish those alongside the remaining service rows; the existing 04/07 readiness fences remain.
 
-### G4b owner preflight and registry cutover: PASS; no rollout yet
+### G4b owner preflight and registry cutover: PASS
 
 The joined `install.mjs status dev` returned `state=native-noop`, `artifactId=dev-s3-base`, `historyId=dev-base-r1`, `metricsEnabled=false`, `actions=[]`; Helm independently showed exactly revision 1 deployed, chart `platform-object-storage-seaweedfs-0.1.0`. Host `MemAvailable` 12407800 kB (approximately 11.8 GiB), above the 4096 MiB floor. The first exact `assertMetricsQuiescence` refused because the actual canonical machine-local dev registry was still version 1, not because SeaweedFS was unhealthy. Direct `readExistingRegistryV2` exposed `registry-version` (unsupported version 1); configured and canonical roots matched. V1 validation showed one retained reservation, no lease or process identity, next allocation sequence 2; all six actual application Deployments had desired replicas zero.
 
 The owner separately authorized the existing registry-only live cutover, using `preflightLiveCutover` with fixed dev namespace/Deployment observations and `cutoverAuthorizedLiveRegistry` (not manual JSON rewriting). Native preflight reported `ok=true`, `sessionsVerified=true`, the sole environment `parked_verified`, no recorded process/lease, verified namespace and six Deployment identities, zero preflight registry writes, signals or scales. Guarded cutover returned version 2, nextSequence 2 and the same sole slot. Existing function preserves reservations/ports/UIDs, writes the original v1 backup and hash-bound cutover receipt under the registry lock; no cluster scaling/deletion or tenant mutation. Machine-local registry contents, checkout paths and resource UIDs are intentionally not committed. This is a host operational migration, not new source construction or certification of slot activation. The exact G4b `assertMetricsQuiescence` was rerun against the live v2 registry and printed `G4b quiescence: PASS`. Do not repeat cutover or reset registry. Repeat quiescence/capacity/identity under storage custody at live preparation and rollout; present evidence does not fence arbitrary external S3 writers.
 
-**Next:** no valid retained synthetic marker descriptor has been established. Owner is arranging the separate bounded acceptance-lead marker preparation implementation specified under G4a; no live marker write authorized by this record. Use the existing canonical object-storage flock, durable marker-specific intent and private capability, exact predecessor/Secret/chain, random dedicated bucket and 64-byte object, conditional put, bounded independent GET and private descriptor; any ambiguity retains pending, no retry/cleanup. Reuse existing SDK transport and bounded marker reader; confirm stream deadline and no credential leakage. Source and fixture proof for the marker operation must be recorded and joined before separately authorized live execution from the resulting exact clean Design SHA. Once positive marker receipt exists, separately commission the existing 06 `upgrade-metrics dev` operation and capture preserved chain/marker, Helm history and native metrics. No storage mutation occurred during the preflight/cutover; G4b rollout remains NOT RUN. 04/07 remain gated; no inventory-only scope reduction authorized.
+### G4b occupied transition: PASS (2026-11-28)
+
+Acceptance-lead source work was separately commissioned under the existing G4a contract (not a new Design or numbered Change). Marker preparation source `ccb1e02e94e7b1857f67a5daa4bfe6bf699595f8`, joined `0ba56ad34aeb3a67ce26c8a71adcf7f4a8424e0e`: owner-reported 34 focused tests and 207/207 joined object-storage suite, no live operation by the implementation agent. The owner then executed `prepare-marker.mjs dev --confirm-context kind-offscreen-dev --descriptor-file <private-local-json>` with both selected authorizations; result `ok=true`, `mutated=true`, `intentRetained=false`, `state=marker-prepared`, exactly 64 bytes and SHA-256 `2f804c33d7b8382f9996a925a480f30c929c4b7f7b74f4ccbd784ac0599ef252`. Remote documentation commit `ea8928f33aa25fdf14d033ba6d5e48817fb3a0a4` was present when the receipt was reported, but the marker command did not explicitly print/check HEAD; do not claim a stronger exact-source binding for marker preparation. The private descriptor and object remain retained; no credential, descriptor path or bucket name needs to be tracked.
+
+The focused deadline correction source `36b9965581bc1d96984c849b7511f1deb590a550`, joined `f5a229c52008bbe6927539e8f9b4458db925c3a1`: owner-reported object-storage tests 220/220 (13 new), explicit bounded marker streaming and remaining custody-budget propagation through both owner operations, no live operation by implementation agent. Planner inspected corrected source and verified remote Design HEAD. Owner verified exact branch, HEAD, clean status and existing descriptor, authorized the distinct storage-only operation and ran the frozen `upgrade-metrics dev` command once. Terminal elapsed time 14 seconds. Actual sanitized receipt (metric names follow separately):
+
+```json
+{
+  "mode": "upgrade-metrics",
+  "profileId": "dev",
+  "context": "kind-offscreen-dev",
+  "namespace": "offscreen-dev-objects",
+  "ok": true,
+  "mutated": true,
+  "intentRetained": false,
+  "state": "transition-proven",
+  "predecessorHistoryId": "dev-base-r1",
+  "historyId": "dev-metrics-r1-r2",
+  "manifestDigests": {
+    "predecessorManifestSha256": "1ba8635d88d2d56d3ea0c286c1e35312c58f1551fdb7bd67514ff20e57296f64",
+    "targetManifestSha256": "b7f1da0720d1a3d6c591555c1318188d442fc5d57cd82da621eaca8afec3c17e"
+  },
+  "replicaSets": {
+    "old": "438e7094-764f-4fcb-befa-98d992d868e1",
+    "new": "a918628d-b954-4f38-bb3a-ae1bd67474ae"
+  },
+  "pods": {
+    "old": "9b5d6ce8-d1ef-45d4-aa10-3f5959a5ccb8",
+    "new": "1784ca2e-299b-497e-b6ad-ca3dcf54b410"
+  },
+  "retainedMarker": {
+    "sha256": "2f804c33d7b8382f9996a925a480f30c929c4b7f7b74f4ccbd784ac0599ef252",
+    "size": 64
+  }
+}
+```
+
+The guarded operation verified the exact old/new history, unchanged stable owner-chain fields (cluster, namespace, Deployment, Service UID/ClusterIP, admin Secret UID/resourceVersion, PVC/PV/hostPath/node/data-directory identity), preserved revision-1 Helm storage UID, distinct new revision-2 record, exact predecessor/current RS and replacement Pod, matching marker bytes/hash, native metrics and final identity before clearing the owned pending record. This is source-enforced proof reported by the actual operation, not independent observation of every raw UID. No general E2 activation, release mutation, or fresh-install qualification implied. Do not rerun the transition, prepare another marker, delete the marker, or repeat host registry migration. G4b occupied transition native proof is satisfied; 04/07 still need the exact selected coverage contract and 13 owns integrated Prometheus health and joint G5.
+
+### SeaweedFS native metric inventory (observed, not scrape allowlist)
+
+112 distinct sample names: 72 `SeaweedFS_`, 31 `go_`, 9 `process_`. The runtime parser maps `# TYPE` by literal sample name, so histogram/summary component samples can be reported `untyped` even when the base family is typed; do not infer missing histogram metadata or use a quantile solely from this projection. Preserve exact case of names.
+
+| Sample name | Reported type | Label keys |
+| --- | --- | --- |
+| `SeaweedFS_admin_maintenance_last_scan_timestamp_seconds` | gauge | none |
+| `SeaweedFS_admin_maintenance_next_scan_timestamp_seconds` | gauge | none |
+| `SeaweedFS_admin_worker_events_total` | counter | `event` |
+| `SeaweedFS_admin_workers_connected` | gauge | none |
+| `SeaweedFS_build_info` | gauge | `commit`, `goarch`, `goos`, `sizelimit`, `version` |
+| `SeaweedFS_filerStore_request_seconds_bucket` | untyped | `le`, `store`, `type` |
+| `SeaweedFS_filerStore_request_seconds_count` | untyped | `store`, `type` |
+| `SeaweedFS_filerStore_request_seconds_sum` | untyped | `store`, `type` |
+| `SeaweedFS_filerStore_request_total` | counter | `store`, `type` |
+| `SeaweedFS_filer_handler_total` | counter | `type` |
+| `SeaweedFS_filer_in_flight_requests` | gauge | `type` |
+| `SeaweedFS_filer_in_flight_upload_bytes` | gauge | none |
+| `SeaweedFS_filer_in_flight_upload_count` | gauge | none |
+| `SeaweedFS_filer_last_send_timestamp_of_subscribe` | gauge | `clientName`, `path`, `sourceFiler` |
+| `SeaweedFS_filer_object_size_bytes_bucket` | untyped | `le` |
+| `SeaweedFS_filer_object_size_bytes_count` | untyped | none |
+| `SeaweedFS_filer_object_size_bytes_sum` | untyped | none |
+| `SeaweedFS_filer_remote_deletion_tombstones` | gauge | none |
+| `SeaweedFS_filer_remote_deletion_tombstones_full` | gauge | none |
+| `SeaweedFS_filer_request_seconds_bucket` | untyped | `le`, `type` |
+| `SeaweedFS_filer_request_seconds_count` | untyped | `type` |
+| `SeaweedFS_filer_request_seconds_sum` | untyped | `type` |
+| `SeaweedFS_filer_request_total` | counter | `code`, `type` |
+| `SeaweedFS_master_admin_lock` | gauge | `client` |
+| `SeaweedFS_master_broadcast_to_full` | counter | none |
+| `SeaweedFS_master_is_leader` | gauge | none |
+| `SeaweedFS_master_leader_changes` | counter | `type` |
+| `SeaweedFS_master_pick_for_write_error` | counter | none |
+| `SeaweedFS_master_received_heartbeats` | counter | `type` |
+| `SeaweedFS_master_start_time_seconds` | gauge | none |
+| `SeaweedFS_master_volume_growth_frozen` | gauge | none |
+| `SeaweedFS_remote_cache_evicted_total` | counter | none |
+| `SeaweedFS_s3_bucket_traffic_sent_bytes_total` | counter | `bucket` |
+| `SeaweedFS_s3_in_flight_requests` | gauge | `type` |
+| `SeaweedFS_s3_in_flight_upload_bytes` | gauge | none |
+| `SeaweedFS_s3_in_flight_upload_count` | gauge | none |
+| `SeaweedFS_s3_lifecycle_daily_run_last_full_pass_timestamp_seconds` | gauge | none |
+| `SeaweedFS_s3_lifecycle_dispatch_limiter_wait_seconds_bucket` | untyped | `le` |
+| `SeaweedFS_s3_lifecycle_dispatch_limiter_wait_seconds_count` | untyped | none |
+| `SeaweedFS_s3_lifecycle_dispatch_limiter_wait_seconds_sum` | untyped | none |
+| `SeaweedFS_s3_request_seconds_bucket` | untyped | `bucket`, `le`, `type` |
+| `SeaweedFS_s3_request_seconds_count` | untyped | `bucket`, `type` |
+| `SeaweedFS_s3_request_seconds_sum` | untyped | `bucket`, `type` |
+| `SeaweedFS_s3_request_total` | counter | `bucket`, `code`, `type` |
+| `SeaweedFS_s3_time_to_first_byte_millisecond_bucket` | untyped | `bucket`, `le`, `type` |
+| `SeaweedFS_s3_time_to_first_byte_millisecond_count` | untyped | `bucket`, `type` |
+| `SeaweedFS_s3_time_to_first_byte_millisecond_sum` | untyped | `bucket`, `type` |
+| `SeaweedFS_volumeServer_concurrent_download_limit` | gauge | none |
+| `SeaweedFS_volumeServer_concurrent_upload_limit` | gauge | none |
+| `SeaweedFS_volumeServer_disk_error_status` | gauge | `name`, `type` |
+| `SeaweedFS_volumeServer_file_read_failures` | counter | none |
+| `SeaweedFS_volumeServer_file_read_invalid_needles` | counter | none |
+| `SeaweedFS_volumeServer_file_write_failures` | counter | none |
+| `SeaweedFS_volumeServer_in_flight_download_size` | gauge | none |
+| `SeaweedFS_volumeServer_in_flight_requests` | gauge | `type` |
+| `SeaweedFS_volumeServer_in_flight_upload_size` | gauge | none |
+| `SeaweedFS_volumeServer_io_quarantine` | gauge | `kind` |
+| `SeaweedFS_volumeServer_max_volumes` | gauge | none |
+| `SeaweedFS_volumeServer_read_only_volumes` | gauge | `collection`, `type` |
+| `SeaweedFS_volumeServer_replication_targets_bucket` | untyped | `le` |
+| `SeaweedFS_volumeServer_replication_targets_count` | untyped | none |
+| `SeaweedFS_volumeServer_replication_targets_sum` | untyped | none |
+| `SeaweedFS_volumeServer_request_seconds_bucket` | untyped | `le`, `type` |
+| `SeaweedFS_volumeServer_request_seconds_count` | untyped | `type` |
+| `SeaweedFS_volumeServer_request_seconds_sum` | untyped | `type` |
+| `SeaweedFS_volumeServer_request_total` | counter | `code`, `type` |
+| `SeaweedFS_volumeServer_resource` | gauge | `name`, `type` |
+| `SeaweedFS_volumeServer_start_time_seconds` | gauge | none |
+| `SeaweedFS_volumeServer_storage_io_error_total` | counter | none |
+| `SeaweedFS_volumeServer_total_disk_size` | gauge | `collection`, `type` |
+| `SeaweedFS_volumeServer_volumes` | gauge | `collection`, `type` |
+| `SeaweedFS_wdclient_connect_updates` | counter | `type` |
+| `go_gc_duration_seconds` | summary | `quantile` |
+| `go_gc_duration_seconds_count` | untyped | none |
+| `go_gc_duration_seconds_sum` | untyped | none |
+| `go_gc_gogc_percent` | gauge | none |
+| `go_gc_gomemlimit_bytes` | gauge | none |
+| `go_goroutines` | gauge | none |
+| `go_info` | gauge | `version` |
+| `go_memstats_alloc_bytes` | gauge | none |
+| `go_memstats_alloc_bytes_total` | counter | none |
+| `go_memstats_buck_hash_sys_bytes` | gauge | none |
+| `go_memstats_frees_total` | counter | none |
+| `go_memstats_gc_sys_bytes` | gauge | none |
+| `go_memstats_heap_alloc_bytes` | gauge | none |
+| `go_memstats_heap_idle_bytes` | gauge | none |
+| `go_memstats_heap_inuse_bytes` | gauge | none |
+| `go_memstats_heap_objects` | gauge | none |
+| `go_memstats_heap_released_bytes` | gauge | none |
+| `go_memstats_heap_sys_bytes` | gauge | none |
+| `go_memstats_last_gc_time_seconds` | gauge | none |
+| `go_memstats_mallocs_total` | counter | none |
+| `go_memstats_mcache_inuse_bytes` | gauge | none |
+| `go_memstats_mcache_sys_bytes` | gauge | none |
+| `go_memstats_mspan_inuse_bytes` | gauge | none |
+| `go_memstats_mspan_sys_bytes` | gauge | none |
+| `go_memstats_next_gc_bytes` | gauge | none |
+| `go_memstats_other_sys_bytes` | gauge | none |
+| `go_memstats_stack_inuse_bytes` | gauge | none |
+| `go_memstats_stack_sys_bytes` | gauge | none |
+| `go_memstats_sys_bytes` | gauge | none |
+| `go_sched_gomaxprocs_threads` | gauge | none |
+| `go_threads` | gauge | none |
+| `process_cpu_seconds_total` | counter | none |
+| `process_max_fds` | gauge | none |
+| `process_network_receive_bytes_total` | counter | none |
+| `process_network_transmit_bytes_total` | counter | none |
+| `process_open_fds` | gauge | none |
+| `process_resident_memory_bytes` | gauge | none |
+| `process_start_time_seconds` | gauge | none |
+| `process_virtual_memory_bytes` | gauge | none |
+| `process_virtual_memory_max_bytes` | gauge | none |
+
+**Planner constraints for final 04/07 freeze:** enroll only the fixed `seaweedfs` job at `object-store.offscreen-dev-objects.svc:9327/metrics`, never port 8333; retain selected 30s/10s, 5000 samples and 100 target ceiling. Select meaningful bounded families, not all 112. Candidate aggregate signals include S3 in-flight upload count/bytes, filer requests, volume-server file read/write failures and storage I/O errors, volume count/capacity, process memory and CPU. Confirm actual HELP/TYPE and semantics before final exact panel/coverage freeze; request counts and time-to-first-byte/latency grouped by `bucket` cannot simply drop that label (series collision) or retain arbitrary tenant/marker bucket names without a reviewed bounded privacy-compatible selection. Prefer safe aggregate native signals; no fabricated aggregate S3 request rate or capacity utilization, no raw paths/clientName/sourceFiler or arbitrary collection/bucket identities. Filer and volume-server request families are not equivalent to S3 requests; label each panel honestly. Histogram component names and units need base TYPE/HELP confirmation; `_seconds` versus `_millisecond` are different. Counters use reset-aware rates, gauges use current values, distinguish absent/stale/up vs healthy; KSM PVC binding is not proof of byte utilization. No workload or additional storage writes to manufacture evidence. Record final exact rows, panel IDs, units and selectors in this register before dispatch.
 
 ## Freeze record (current)
 
@@ -750,7 +908,7 @@ The owner separately authorized the existing registry-only live cutover, using `
 | G1 Redis | v1.93.0 rejected; v1.97.0 pin, exclusion flags, disposable command/negative evidence and selected coverage RESOLVED | planner + owner | 05,07,08 |
 | G2 | Native feasibility PASSED; scoped trust/render and resource coverage frozen; 03 source archived/joined; integrated render/trust and G5 NOT RUN | owner/cluster owner + planner | 03,07,08 |
 | G3 | Collector existing scrape PASS; Redis replacement specimen PASS; PG01 occupied repair and CNPG collector recovery PASS (74 observed names, exact isolation); full existing-tenant executor admission and remaining exact panel contracts OPEN | service owner + planner | 04,05,07,08 |
-| G4a/b | 06 source archived/joined; exact predecessor, memory and quiescence PASS after registry v2 cutover; marker preparation source/live proof and separately authorized G4b rollout remain OPEN | object-store owner + planner/acceptance lead | 06 source; 04/07/08/13 native |
+| G4a/b | 06 source archived/joined; guarded registry cutover, marker preparation and occupied transition PASS; 112 observed sample names; exact selected metric/label/query rows remain OPEN | object-store owner + planner/acceptance lead | 06 source; 04/07/08/13 native |
 | G5 | NOT RUN | acceptance lead + owner | 13 |
 
 Append only actual evidence references and current resolved input values here or in existing evidence owner; update corresponding affected cards in place. No third comprehensive architecture review for ordinary facts. No implementation-ready claim for dependent scope until material facts resolved and reviewed. Keep raw secret data outside Git. The owner can send one consolidated nonsecret terminal summary for G1–G3; G4 owner transition requires separate bounded closure, not an arbitrary live patch.
